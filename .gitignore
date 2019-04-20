@@ -22,7 +22,6 @@ desktop.ini
 [Rr]elease/
 [Rr]eleases/
 Temporary/
-Run_*/*.exe
 x64/
 x86/
 bld/
@@ -324,3 +323,4 @@ ASALocalRun/
 
 # MSBuild Binary and Structured Log
 *.binlog
+*.exe
