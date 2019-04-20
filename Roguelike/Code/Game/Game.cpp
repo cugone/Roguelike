@@ -53,8 +53,7 @@ void Game::Render() const {
 
     g_theRenderer->ClearColor(Rgba::Olive);
 
-    g_theRenderer->SetViewport(0, 0, static_cast<unsigned int>(GRAPHICS_OPTION_WINDOW_WIDTH), static_cast<unsigned int>(GRAPHICS_OPTION_WINDOW_HEIGHT));
-
+    g_theRenderer->SetViewportAsPercent();
     //3D View / CAMERA
     const float world_view_height = GAME_OPTION_TILE_VIEW_HEIGHT;
     const float world_view_width = world_view_height * _world_camera.GetAspectRatio();
@@ -73,12 +72,12 @@ void Game::Render() const {
     //2D View / HUD
     const float ui_view_height = GRAPHICS_OPTION_WINDOW_HEIGHT;
     const float ui_view_width = ui_view_height * _ui_camera.GetAspectRatio();
-    const float ui_view_half_height = ui_view_height * 0.5f;
-    const float ui_view_half_width = ui_view_width * 0.5f;
-    auto ui_leftBottom = Vector2{ -ui_view_half_width, ui_view_half_height };
-    auto ui_rightTop = Vector2{ ui_view_half_width, -ui_view_half_height };
+    const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
+    const auto ui_view_half_extents = ui_view_extents * 0.5f;
+    auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
+    auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
     auto ui_nearFar = Vector2{ 0.0f, 1.0f };
-    auto ui_cam_pos = Vector2{ ui_view_half_width, ui_view_half_height };
+    auto ui_cam_pos = ui_view_half_extents;
     _ui_camera.position = ui_cam_pos;
     _ui_camera.orientation_degrees = 0.0f;
     _ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
@@ -95,6 +94,13 @@ void Game::Render() const {
         g_theRenderer->SetModelMatrix(M);
         g_theRenderer->DrawMultilineText(f, ss.str(), Rgba::Black);
     }
+    auto S = Matrix4::CreateScaleMatrix(ui_view_extents * Vector2{ 0.9f, 0.9999f });
+    auto R = Matrix4::I;
+    auto T = Matrix4::CreateTranslationMatrix(ui_view_half_extents);
+    auto M = T * R * S;
+    g_theRenderer->SetModelMatrix(M);
+    g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+    g_theRenderer->DrawAABB2(Rgba::Black, Rgba::NoAlpha);
 
 }
 
