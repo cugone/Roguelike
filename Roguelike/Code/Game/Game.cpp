@@ -1,8 +1,9 @@
 #include "Game/Game.hpp"
 
-#include "Engine/Math/Vector2.hpp"
-
+#include "Engine/Core/BuildConfig.hpp"
 #include "Engine/Core/KerningFont.hpp"
+
+#include "Engine/Math/Vector2.hpp"
 
 #include "Game/GameCommon.hpp"
 #include "Game/GameConfig.hpp"
@@ -109,9 +110,11 @@ void Game::EndFrame() {
 }
 
 void Game::ShowDebugUI() {
+#ifdef UI_DEBUG
     ImGui::Begin("Tile Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize);
     {
         ImGui::Checkbox("Grid", &_show_grid);
     }
     ImGui::End();
+#endif
 }
