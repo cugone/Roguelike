@@ -44,7 +44,6 @@ private:
     virtual bool ProcessSystemMessage(const EngineMessage& msg) override;
 
     void LogSystemDescription() const;
-    bool ShowQuitRequest() const;
 
     bool _isQuitting = false;
     bool _current_focus = false;

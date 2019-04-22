@@ -204,19 +204,6 @@ void App::RunFrame() {
     EndFrame();
 }
 
-bool App::ShowQuitRequest() const {
-    bool requested_quit = false;
-    ImGui::Begin("Quit");
-    {
-        ImGui::Text("Are you sure you want to quit?");
-        requested_quit = ImGui::Button("Yes");
-        ImGui::SameLine();
-        ImGui::Button("No");
-    }
-    ImGui::End();
-    return requested_quit;
-}
-
 void App::LogSystemDescription() const {
     auto system = System::GetSystemDesc();
     std::ostringstream ss;
