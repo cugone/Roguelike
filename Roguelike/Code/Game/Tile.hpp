@@ -7,7 +7,6 @@
 #include "Engine/Math/IntVector2.hpp"
 #include <vector>
 
-class Renderer;
 class TileDefinition;
 
 class Tile {
@@ -20,7 +19,7 @@ public:
     ~Tile() = default;
 
     void Update(TimeUtils::FPSeconds deltaSeconds);
-    void Render(Renderer& renderer, std::vector<Vertex3D>& verts, size_t layer_index) const;
+    void Render(std::vector<Vertex3D>& verts, size_t layer_index) const;
 
     void ChangeTypeFromName(const std::string& name);
 
