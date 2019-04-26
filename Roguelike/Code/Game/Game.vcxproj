@@ -145,6 +145,7 @@
     <ClCompile Include="GameConfig.cpp" />
     <ClCompile Include="Layer.cpp" />
     <ClCompile Include="Main_Win32.cpp" />
+    <ClCompile Include="Map.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="TileDefinition.cpp" />
   </ItemGroup>
@@ -159,6 +160,7 @@
     <ClInclude Include="GameCommon.hpp" />
     <ClInclude Include="GameConfig.hpp" />
     <ClInclude Include="Layer.hpp" />
+    <ClInclude Include="Map.hpp" />
     <ClInclude Include="Tile.hpp" />
     <ClInclude Include="TileDefinition.hpp" />
   </ItemGroup>
