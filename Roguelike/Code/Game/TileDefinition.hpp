@@ -1,0 +1,43 @@
+#pragma once
+
+#include "Engine/Core/DataUtils.hpp"
+
+#include <map>
+#include <memory>
+#include <string>
+
+class SpriteSheet;
+class Texture;
+
+class TileDefinition {
+public:
+    TileDefinition() = delete;
+    TileDefinition(const TileDefinition& other) = default;
+    TileDefinition(TileDefinition&& other) = default;
+    TileDefinition& operator=(const TileDefinition& other) = default;
+    TileDefinition& operator=(TileDefinition&& other) = default;
+    ~TileDefinition() = default;
+
+    static void CreateTileDefinition(const XMLElement& elem, SpriteSheet* sheet);
+    static void DestroyTileDefinitions();
+
+    static TileDefinition* GetTileDefinitionByName(const std::string& name);
+    static TileDefinition* GetTileDefinitionByGlyph(char glyph);
+    static void ClearTileRegistry();
+
+    bool _is_opaque = false;
+    bool _is_solid = false;
+    std::string _name{};
+    IntVector2 _index{};
+
+    const Texture* GetTexture() const;
+    const SpriteSheet* GetSheet() const;
+
+    TileDefinition(const XMLElement& elem, SpriteSheet* sheet);
+protected:
+private:
+    bool LoadFromXml(const XMLElement& elem);
+
+    static std::map<std::string, std::unique_ptr<TileDefinition>> s_registry;
+    SpriteSheet* _sheet = nullptr;
+};
