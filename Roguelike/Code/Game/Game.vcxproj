@@ -145,6 +145,7 @@
     <ClCompile Include="GameConfig.cpp" />
     <ClCompile Include="Layer.cpp" />
     <ClCompile Include="Main_Win32.cpp" />
+    <ClCompile Include="Tile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Abrams2018\Engine\Code\Engine\Engine.vcxproj">
@@ -157,6 +158,7 @@
     <ClInclude Include="GameCommon.hpp" />
     <ClInclude Include="GameConfig.hpp" />
     <ClInclude Include="Layer.hpp" />
+    <ClInclude Include="Tile.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
