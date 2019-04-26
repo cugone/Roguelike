@@ -7,16 +7,17 @@
 
 #include "Game/GameCommon.hpp"
 #include "Game/GameConfig.hpp"
+#include "Game/Layer.hpp"
 
 void Game::Initialize() {
-    _world_camera.position = Vector2{ 8.0f, 4.0f };
+    _layer = std::make_unique<Layer>();
 }
 
 void Game::BeginFrame() {
-
+    _layer->BeginFrame();
 }
 
-void Game::Update(TimeUtils::FPSeconds /*deltaSeconds*/) {
+void Game::Update(TimeUtils::FPSeconds deltaSeconds) {
     if(_show_debug_window) {
         ShowDebugUI();
     }
@@ -27,24 +28,27 @@ void Game::Update(TimeUtils::FPSeconds /*deltaSeconds*/) {
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F1)) {
         _show_debug_window = !_show_debug_window;
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::D)) {
+    if(g_theInputSystem->IsKeyDown(KeyCode::D)) {
         _world_camera.Translate(Vector2{1.0f, 0.0f} * _cam_speed);
-    } else if(g_theInputSystem->WasKeyJustPressed(KeyCode::A)) {
+    } else if(g_theInputSystem->IsKeyDown(KeyCode::A)) {
         _world_camera.Translate(Vector2{-1.0f, 0.0f} *_cam_speed);
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::W)) {
+    if(g_theInputSystem->IsKeyDown(KeyCode::W)) {
         _world_camera.Translate(Vector2{0.0f, -1.0f} *_cam_speed);
-    } else if(g_theInputSystem->WasKeyJustPressed(KeyCode::S)) {
+    } else if(g_theInputSystem->IsKeyDown(KeyCode::S)) {
         _world_camera.Translate(Vector2{0.0f, 1.0f} *_cam_speed);
     }
-    if(g_theInputSystem->IsKeyDown(KeyCode::Up)) {
-        GAME_OPTION_TILE_VIEW_HEIGHT += 1.0f;
-    } else if(g_theInputSystem->IsKeyDown(KeyCode::Down)) {
-        GAME_OPTION_TILE_VIEW_HEIGHT -= 1.0f;
-    } else if(g_theInputSystem->IsKeyDown(KeyCode::Right)) {
-        GAME_OPTION_TILE_VIEW_HEIGHT = 10.0f;
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::Right)) {
+        _world_camera.Translate(Vector2{1.0f, 0.0f} * _cam_speed);
+    } else if(g_theInputSystem->WasKeyJustPressed(KeyCode::Left)) {
+        _world_camera.Translate(Vector2{-1.0f, 0.0f} *_cam_speed);
     }
-
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::Up)) {
+        _world_camera.Translate(Vector2{0.0f, -1.0f} *_cam_speed);
+    } else if(g_theInputSystem->WasKeyJustPressed(KeyCode::Down)) {
+        _world_camera.Translate(Vector2{0.0f, 1.0f} *_cam_speed);
+    }
+    _layer->Update(deltaSeconds);
 }
 
 void Game::Render() const {
@@ -56,12 +60,14 @@ void Game::Render() const {
 
     g_theRenderer->SetViewportAsPercent();
     //3D View / CAMERA
-    const float world_view_height = GAME_OPTION_TILE_VIEW_HEIGHT;
+    const float world_view_height = _layer->viewHeight;
     const float world_view_width = world_view_height * _world_camera.GetAspectRatio();
-    const float world_view_half_height = world_view_height * 0.5f;
-    const float world_view_half_width = world_view_width * 0.5f;
-    auto world_leftBottom = Vector2{ -world_view_half_width, world_view_half_height };
-    auto world_rightTop = Vector2{ world_view_half_width, -world_view_half_height };
+    const auto world_view_extents = Vector2{ world_view_width, world_view_height };
+    const auto world_view_half_extents = world_view_extents * 0.5f;
+    const float world_view_half_height = world_view_half_extents.x;
+    const float world_view_half_width = world_view_half_extents.y;
+    auto world_leftBottom = Vector2{ 0.0f, world_view_height };//-world_view_half_width, world_view_half_height };
+    auto world_rightTop = Vector2{ world_view_width, 0.0f }; //world_view_half_width, -world_view_half_height };
     auto world_nearFar = Vector2{ 0.0f, 1.0f };
     _world_camera.SetupView(world_leftBottom, world_rightTop, world_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(_world_camera);
@@ -69,6 +75,12 @@ void Game::Render() const {
     g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
     g_theRenderer->SetModelMatrix(Matrix4::CreateScaleMatrix(Vector2::ONE * 2.0f));
     g_theRenderer->DrawQuad();
+
+    _layer->Render(*g_theRenderer);
+
+    if(_debug || _show_grid) {
+        _layer->DebugRender(*g_theRenderer);
+    }
 
     //2D View / HUD
     const float ui_view_height = GRAPHICS_OPTION_WINDOW_HEIGHT;
@@ -87,26 +99,23 @@ void Game::Render() const {
     {
         auto* f = g_theRenderer->GetFont("System32");
         std::ostringstream ss;
-        ss << "Cam Pos: " << _world_camera.position << "\nTile View Height: " << GAME_OPTION_TILE_VIEW_HEIGHT;
+        ss << "Cam Pos: " << _world_camera.position;
         auto S = Matrix4::I;
         auto R = Matrix4::I;
         auto T = Matrix4::CreateTranslationMatrix(Vector2(0.0f, f->GetLineHeight() * 1.0f));
         auto M = T * R * S;
         g_theRenderer->SetModelMatrix(M);
-        g_theRenderer->DrawMultilineText(f, ss.str(), Rgba::Black);
+        g_theRenderer->DrawMultilineText(f, ss.str(), Rgba::White);
     }
-    auto S = Matrix4::CreateScaleMatrix(ui_view_extents * Vector2{ 0.9f, 0.9999f });
-    auto R = Matrix4::I;
-    auto T = Matrix4::CreateTranslationMatrix(ui_view_half_extents);
-    auto M = T * R * S;
-    g_theRenderer->SetModelMatrix(M);
-    g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
-    g_theRenderer->DrawAABB2(Rgba::Black, Rgba::NoAlpha);
 
 }
 
 void Game::EndFrame() {
 
+}
+
+const Camera2D& Game::GetCamera() const {
+    return _world_camera;
 }
 
 void Game::ShowDebugUI() {
