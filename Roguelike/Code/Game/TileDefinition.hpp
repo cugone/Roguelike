@@ -27,6 +27,7 @@ public:
 
     bool _is_opaque = false;
     bool _is_solid = false;
+    char _glyph = ' ';
     std::string _name{};
     IntVector2 _index{};
 
@@ -38,6 +39,6 @@ protected:
 private:
     bool LoadFromXml(const XMLElement& elem);
 
-    static std::map<std::string, std::unique_ptr<TileDefinition>> s_registry;
     SpriteSheet* _sheet = nullptr;
+    static std::map<std::string, std::unique_ptr<TileDefinition>> s_registry;
 };

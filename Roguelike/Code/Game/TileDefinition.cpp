@@ -14,7 +14,7 @@ void TileDefinition::CreateTileDefinition(const XMLElement& elem, SpriteSheet* s
 }
 
 void TileDefinition::DestroyTileDefinitions() {
-
+    s_registry.clear();
 }
 
 TileDefinition* TileDefinition::GetTileDefinitionByName(const std::string& name) {
@@ -25,20 +25,16 @@ TileDefinition* TileDefinition::GetTileDefinitionByName(const std::string& name)
     return nullptr;
 }
 
-TileDefinition* TileDefinition::GetTileDefinitionByGlyph(char /*glyph*/) {
-    //for(const auto& tile : s_registry) {
-    //    if(tile.second->_glyph == glyph) {
-    //        return tile.second.get();
-    //    }
-    //}
+TileDefinition* TileDefinition::GetTileDefinitionByGlyph(char glyph) {
+    for(const auto& tile : s_registry) {
+        if(tile.second->_glyph == glyph) {
+            return tile.second.get();
+        }
+    }
     return nullptr;
 }
 
 void TileDefinition::ClearTileRegistry() {
-    for(auto& tile : s_registry) {
-        tile.second.reset();
-        tile.second;
-    }
     s_registry.clear();
 }
 
@@ -57,6 +53,21 @@ TileDefinition::TileDefinition(const XMLElement& elem, SpriteSheet* sheet)
     }
 }
 
- bool TileDefinition::LoadFromXml(const XMLElement& /*elem*/) {
-     return false;
+ bool TileDefinition::LoadFromXml(const XMLElement& elem) {
+
+     DataUtils::ValidateXmlElement(elem, "tileDefinition", "glyph,opaque,solid", "name,index", "color");
+
+     _name = DataUtils::ParseXmlAttribute(elem, "name", _name);
+     _index = DataUtils::ParseXmlAttribute(elem, "index", _index);
+
+     auto xml_glyph = elem.FirstChildElement("glyph");
+     _glyph = DataUtils::ParseXmlAttribute(*xml_glyph, "value", _glyph);
+
+     auto xml_opaque = elem.FirstChildElement("opaque");
+     _is_opaque = DataUtils::ParseXmlAttribute(*xml_opaque, "value", _is_opaque);
+
+     auto xml_solid = elem.FirstChildElement("solid");
+     _is_solid = DataUtils::ParseXmlAttribute(*xml_solid, "value", _is_solid);
+
+     return true;
  }
