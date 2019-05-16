@@ -164,6 +164,16 @@
     <ClInclude Include="Tile.hpp" />
     <ClInclude Include="TileDefinition.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\Run_x64\Data\Definitions\Map00.xml" />
+    <Xml Include="..\..\Run_x64\Data\Definitions\Tiles.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Run_x64\Data\Materials\Tile.material" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\Run_x64\Data\Images\Tiles.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

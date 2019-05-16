@@ -1,0 +1,18 @@
+<tileDefinitions>
+    <spritesheet src="Data/Images/Tiles.png" dimensions="[32,32]" />
+    <tileDefinition name="void" index="[0,0]">
+        <glyph value=" " />
+        <opaque value="false" />
+        <solid value="false" />
+    </tileDefinition>
+    <tileDefinition name="wall" index="[0,10]">
+        <glyph value="#" />
+        <opaque value="true" />
+        <solid value="true" />
+    </tileDefinition>
+    <tileDefinition name="grass" index="[1,0]">
+        <glyph value="." />
+        <opaque value="true" />
+        <solid value="true" />
+    </tileDefinition>
+</tileDefinitions>

@@ -1,0 +1,18 @@
+<map name="Level 1">
+    <material name="Tile" />
+    <tiles src="Data/Definitions/Tiles.xml" />
+    <layers>
+        <layer>
+            <row glyphs="##########" />
+            <row glyphs="##########" />
+            <row glyphs="##########" />
+            <row glyphs="##########" />
+            <row glyphs="##########" />
+            <row glyphs="##########" />
+            <row glyphs="##########" />
+            <row glyphs="##########" />
+            <row glyphs="##########" />
+            <row glyphs="##########" />
+        </layer>
+    </layers>
+</map>

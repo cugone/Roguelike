@@ -11,6 +11,15 @@
     <Filter Include="Data">
       <UniqueIdentifier>{e55b867b-04ce-4af6-8c4f-f1490f896af2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data\Definitions">
+      <UniqueIdentifier>{51732993-18f9-405b-b697-60f965ca948c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data\Materials">
+      <UniqueIdentifier>{f7b9382b-ef91-46fc-bd81-f820bda7fec2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data\Images">
+      <UniqueIdentifier>{4ff2fdbf-8196-4aa9-a982-698d45f2e3ea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main_Win32.cpp">
@@ -66,5 +75,23 @@
     <ClInclude Include="Map.hpp">
       <Filter>Game</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\Run_x64\Data\Definitions\Map00.xml">
+      <Filter>Data\Definitions</Filter>
+    </Xml>
+    <Xml Include="..\..\Run_x64\Data\Definitions\Tiles.xml">
+      <Filter>Data\Definitions</Filter>
+    </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Run_x64\Data\Materials\Tile.material">
+      <Filter>Data\Materials</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\Run_x64\Data\Images\Tiles.png">
+      <Filter>Data\Images</Filter>
+    </Image>
   </ItemGroup>
 </Project>
