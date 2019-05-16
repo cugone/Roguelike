@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Engine/Core/DataUtils.hpp"
 #include "Engine/Core/TimeUtils.hpp"
 
 #include "Engine/Math/AABB2.hpp"
@@ -14,6 +15,7 @@ class Vector3;
 class Layer {
 public:
     Layer() = default;
+    explicit Layer(Map* map, const XMLElement& elem);
     Layer(const Layer& other) = default;
     Layer(Layer&& other) = default;
     Layer& operator=(const Layer& other) = default;
@@ -38,11 +40,15 @@ public:
     int z_index{ 0 };
     float viewHeight{1.0f};
     IntVector2 tileDimensions{1, 1};
-
+    Rgba color{ Rgba::White };
 protected:
 private:
-    std::vector<Tile> _tiles{};
-    Map* _map = nullptr;
+    bool LoadFromXml(const XMLElement& elem);
+    void InitializeTiles(const std::size_t row_count, const std::size_t max_row_length, const std::vector<std::string>& glyph_strings);
+    std::size_t NormalizeLayerRows(std::vector<std::string>& glyph_strings);
     void SetModelViewProjectionBounds(Renderer& renderer) const;
     void RenderTiles(Renderer& renderer) const;
+
+    std::vector<Tile> _tiles{};
+    Map* _map = nullptr;
 };

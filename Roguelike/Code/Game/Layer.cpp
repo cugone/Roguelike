@@ -1,13 +1,83 @@
 #include "Game/Layer.hpp"
 
 #include "Engine/Core/BuildConfig.hpp"
+#include "Engine/Core/DataUtils.hpp"
 
 #include "Engine/Math/Vector3.hpp"
 
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
 
+#include <algorithm>
 #include <numeric>
+
+Layer::Layer(Map* map, const XMLElement& elem)
+    : _map(map)
+{
+    if(!LoadFromXml(elem)) {
+        ERROR_AND_DIE("Invalid Layer");
+    }
+}
+
+bool Layer::LoadFromXml(const XMLElement& elem) {
+    //Load Layer from Xml
+    DataUtils::ValidateXmlElement(elem, "layer", "row", "");
+    std::size_t row_count = DataUtils::GetChildElementCount(elem, "row");
+    std::vector<std::string> glyph_strings;
+    glyph_strings.reserve(row_count);
+    DataUtils::ForEachChildElement(elem, "row",
+    [this, &glyph_strings](const XMLElement& elem) {
+        DataUtils::ValidateXmlElement(elem, "row", "", "glyphs");
+        auto glyph_str = DataUtils::ParseXmlAttribute(elem, "glyphs", std::string{});
+        glyph_strings.push_back(glyph_str);
+    });
+    auto max_row_length = NormalizeLayerRows(glyph_strings);
+    InitializeTiles(max_row_length, row_count, glyph_strings);
+    return true;
+}
+
+void Layer::InitializeTiles(const std::size_t layer_width, const std::size_t layer_height, const std::vector<std::string>& glyph_strings) {
+    _tiles.resize(layer_width * layer_height);
+    tileDimensions.SetXY(static_cast<int>(layer_width), static_cast<int>(layer_height));
+    viewHeight = static_cast<float>(layer_height);
+    auto tile_iter = std::begin(_tiles);
+    int tile_x = 0;
+    int tile_y = 0;
+    for(const auto& str : glyph_strings) {
+        for(const auto& c : str) {
+            tile_iter->ChangeTypeFromGlyph(c);
+            tile_iter->SetCoords(tile_x, tile_y);
+            ++tile_iter;
+            ++tile_x;
+        }
+        ++tile_y;
+        tile_x = 0;
+    }
+    tile_y = 0;
+}
+
+std::size_t Layer::NormalizeLayerRows(std::vector<std::string>& glyph_strings) {
+    const auto longest_element = std::max_element(std::begin(glyph_strings), std::end(glyph_strings),
+        [](const std::string& a, const std::string& b)->bool {
+        return a.size() < b.size();
+    });
+    const auto max_row_length = longest_element->size();
+    for(auto& str : glyph_strings) {
+        if(str.empty()) {
+            str.assign(max_row_length, ' ');
+        }
+        if(str.size() < max_row_length) {
+            const auto delta_row_length = max_row_length - str.size();
+            if(delta_row_length < 2) {
+                str.append(1, ' ');
+            } else {
+                str.append(delta_row_length, ' ');
+            }
+            str.shrink_to_fit();
+        }
+    }
+    return max_row_length;
+}
 
 void Layer::SetModelViewProjectionBounds(Renderer& renderer) const {
 
@@ -40,16 +110,14 @@ void Layer::RenderTiles(Renderer& renderer) const {
     for(auto& t : _tiles) {
         AABB2 tile_bounds = t.GetBounds();
         if(MathUtils::DoAABBsOverlap(cullbounds, tile_bounds)) {
-            t.Render(verts, z_index);
+            t.Render(verts, color, z_index);
         }
     }
 
     std::vector<unsigned int> ibo(verts.size());
     std::iota(ibo.begin(), ibo.end(), 0); //Fill ibo from 0 to size - 1
 
-    //TODO: Map tile materials
-    //renderer.SetMaterial(_map->GetTileMaterial());
-    renderer.SetMaterial(renderer.GetMaterial("__2D"));
+    renderer.SetMaterial(_map->GetTileMaterial());
     renderer.DrawIndexed(PrimitiveType::Triangles, verts, ibo);
 }
 
