@@ -3,7 +3,7 @@
 #include "Engine/Core/TimeUtils.hpp"
 #include "Engine/Renderer/Camera2D.hpp"
 
-#include "Game/Layer.hpp"
+#include "Game/Map.hpp"
 
 #include <memory>
 
@@ -23,7 +23,7 @@ public:
     void Render() const;
     void EndFrame();
 
-    const Camera2D& GetCamera() const;
+    Camera2D& GetCamera() const;
 
 protected:
 private:
@@ -32,8 +32,7 @@ private:
     bool _debug = false;
     bool _show_grid = false;
     bool _show_debug_window = false;
-    std::unique_ptr<Layer> _layer{nullptr};
+    std::unique_ptr<Map> _map{nullptr};
     float _cam_speed = 1.0f;
     mutable Camera2D _ui_camera{};
-    mutable Camera2D _world_camera{};
 };
