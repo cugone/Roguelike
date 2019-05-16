@@ -16,8 +16,7 @@ void Tile::Update(TimeUtils::FPSeconds deltaSeconds) {
     UNUSED(deltaSeconds);
 }
 
-void Tile::Render(std::vector<Vertex3D>& verts, size_t layer_index) const {
-
+void Tile::Render(std::vector<Vertex3D>& verts, const Rgba& layer_color, size_t layer_index) const {
     if(IsTransparent()) {
         return;
     }
@@ -45,21 +44,31 @@ void Tile::Render(std::vector<Vertex3D>& verts, size_t layer_index) const {
     auto tx_br = Vector2(tx_right, tx_bottom);
 
     float z = static_cast<float>(layer_index);
-    verts.push_back(Vertex3D(Vector3(vert_bl, z), Rgba::White, tx_bl));
-    verts.push_back(Vertex3D(Vector3(vert_tl, z), Rgba::White, tx_tl));
-    verts.push_back(Vertex3D(Vector3(vert_tr, z), Rgba::White, tx_tr));
+    verts.push_back(Vertex3D(Vector3(vert_bl, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_bl));
+    verts.push_back(Vertex3D(Vector3(vert_tl, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_tl));
+    verts.push_back(Vertex3D(Vector3(vert_tr, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_tr));
 
-    verts.push_back(Vertex3D(Vector3(vert_bl, z), Rgba::White, tx_bl));
-    verts.push_back(Vertex3D(Vector3(vert_tr, z), Rgba::White, tx_tr));
-    verts.push_back(Vertex3D(Vector3(vert_br, z), Rgba::White, tx_br));
+    verts.push_back(Vertex3D(Vector3(vert_bl, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_bl));
+    verts.push_back(Vertex3D(Vector3(vert_tr, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_tr));
+    verts.push_back(Vertex3D(Vector3(vert_br, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_br));
 }
 
 void Tile::ChangeTypeFromName(const std::string& name) {
-    if(_def->_name == name) {
+    if(_def && _def->_name == name) {
         return;
     }
-    auto new_def = TileDefinition::GetTileDefinitionByName(name);
-    _def = new_def;
+    if(auto new_def = TileDefinition::GetTileDefinitionByName(name)) {
+        _def = new_def;
+    }
+}
+
+void Tile::ChangeTypeFromGlyph(char glyph) {
+    if(_def && _def->_glyph == glyph) {
+        return;
+    }
+    if(auto new_def = TileDefinition::GetTileDefinitionByGlyph(glyph)) {
+        _def = new_def;
+    }
 }
 
 AABB2 Tile::GetBounds() const {
@@ -71,7 +80,7 @@ const TileDefinition* Tile::GetDefinition() const {
 }
 
 bool Tile::IsOpaque() const {
-    return _def->_is_opaque;
+    return _def->_is_opaque || color.a == 0;
 }
 
 bool Tile::IsTransparent() const {
@@ -84,4 +93,12 @@ bool Tile::IsSolid() const {
 
 bool Tile::IsPassable() const {
     return !IsSolid();
+}
+
+void Tile::SetCoords(int x, int y) {
+    SetCoords(IntVector2{ x, y });
+}
+
+void Tile::SetCoords(const IntVector2& coords) {
+    _tile_coords = coords;
 }

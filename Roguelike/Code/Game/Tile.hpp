@@ -19,9 +19,10 @@ public:
     ~Tile() = default;
 
     void Update(TimeUtils::FPSeconds deltaSeconds);
-    void Render(std::vector<Vertex3D>& verts, size_t layer_index) const;
+    void Render(std::vector<Vertex3D>& verts, const Rgba& layer_color, size_t layer_index) const;
 
     void ChangeTypeFromName(const std::string& name);
+    void ChangeTypeFromGlyph(char glyph);
 
     AABB2 GetBounds() const;
     const TileDefinition* GetDefinition() const;
@@ -32,6 +33,10 @@ public:
     bool IsSolid() const;
     bool IsPassable() const;
 
+    void SetCoords(int x, int y);
+    void SetCoords(const IntVector2& coords);
+
+    Rgba color = Rgba::White;
 protected:
 private:
     TileDefinition* _def{};
