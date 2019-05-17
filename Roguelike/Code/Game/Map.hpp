@@ -30,16 +30,20 @@ public:
     void EndFrame();
 
     Vector2 GetMaxDimensions() const;
-    Camera2D& GetCamera() const;
     Material* GetTileMaterial() const;
+    std::size_t GetLayerCount() const;
     Layer* GetLayer(std::size_t index);
+    Tile* GetTile(const IntVector2& location);
+    Tile* GetTile(int x, int y);
+
+    mutable Camera2D camera{};
+
 protected:
 private:
     bool LoadFromXML(const XMLElement& elem);
     std::string _name{};
     std::vector<std::unique_ptr<Layer>> _layers{};
     Material* _tileMaterial{};
-    mutable Camera2D _camera{};
     float _camera_speed = 1.0f;
     static unsigned long long default_map_index;
 };

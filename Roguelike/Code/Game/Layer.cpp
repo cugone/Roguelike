@@ -6,6 +6,7 @@
 #include "Engine/Math/Vector3.hpp"
 
 #include "Game/GameCommon.hpp"
+#include "Game/GameConfig.hpp"
 #include "Game/Map.hpp"
 
 #include <algorithm>
@@ -17,6 +18,39 @@ Layer::Layer(Map* map, const XMLElement& elem)
     if(!LoadFromXml(elem)) {
         ERROR_AND_DIE("Invalid Layer");
     }
+}
+
+Tile* Layer::GetNeighbor(const NeighborDirection& direction) {
+    switch(direction) {
+    case NeighborDirection::Self:
+        return GetNeighbor(IntVector2::ZERO);
+    case NeighborDirection::East:
+        return GetNeighbor(IntVector2::X_AXIS);
+    case NeighborDirection::NorthEast:
+        return GetNeighbor(IntVector2{ -1, 1 });
+    case NeighborDirection::North:
+        return GetNeighbor(-IntVector2::Y_AXIS);
+    case NeighborDirection::NorthWest:
+        return GetNeighbor(-IntVector2::XY_AXIS);
+    case NeighborDirection::West:
+        return GetNeighbor(-IntVector2::X_AXIS);
+    case NeighborDirection::SouthWest:
+        return GetNeighbor(IntVector2{ -1, 1 });
+    case NeighborDirection::South:
+        return GetNeighbor(IntVector2::Y_AXIS);
+    case NeighborDirection::SouthEast:
+        return GetNeighbor(IntVector2::XY_AXIS);
+    default:
+        return nullptr;
+    }
+}
+
+Tile* Layer::GetNeighbor(const IntVector2& direction) {
+    return GetTile(direction.x, direction.y);
+}
+
+float Layer::GetDefaultViewHeight() const {
+    return _defaultViewHeight;
 }
 
 bool Layer::LoadFromXml(const XMLElement& elem) {
@@ -40,6 +74,7 @@ void Layer::InitializeTiles(const std::size_t layer_width, const std::size_t lay
     _tiles.resize(layer_width * layer_height);
     tileDimensions.SetXY(static_cast<int>(layer_width), static_cast<int>(layer_height));
     viewHeight = static_cast<float>(layer_height);
+    _defaultViewHeight = viewHeight;
     auto tile_iter = std::begin(_tiles);
     int tile_x = 0;
     int tile_y = 0;
@@ -89,10 +124,19 @@ void Layer::SetModelViewProjectionBounds(Renderer& renderer) const {
     auto rightTop = Vector2{ ortho_bounds.maxs.x, ortho_bounds.mins.y };
     renderer.SetOrthoProjection(leftBottom, rightTop, Vector2(0.0f, 1000.0f));
 
-    float cam_rotation_z = g_theGame->GetCamera().GetOrientation();
+    Camera2D& base_camera = _map->camera;
+    Camera2D shakyCam = _map->camera;
+    float shake = shakyCam.GetShake();
+    float shaky_angle = GAME_OPTION_MAX_SHAKE_ANGLE * shake * MathUtils::GetRandomFloatNegOneToOne();
+    float shaky_offsetX = GAME_OPTION_MAX_SHAKE_OFFSET_H * shake * MathUtils::GetRandomFloatNegOneToOne();
+    float shaky_offsetY = GAME_OPTION_MAX_SHAKE_OFFSET_V * shake * MathUtils::GetRandomFloatNegOneToOne();
+    shakyCam.orientation_degrees = base_camera.orientation_degrees + shaky_angle;
+    shakyCam.position = base_camera.position + Vector2{ shaky_offsetX, shaky_offsetY };
+
+    float cam_rotation_z = shakyCam.GetOrientation();
     auto VRz = Matrix4::Create2DRotationDegreesMatrix(-cam_rotation_z);
 
-    auto cam_pos = g_theGame->GetCamera().GetPosition();
+    auto cam_pos = shakyCam.GetPosition();
     auto Vt = Matrix4::CreateTranslationMatrix(-cam_pos);
     auto v = VRz * Vt;
     renderer.SetViewMatrix(v);
@@ -102,7 +146,7 @@ void Layer::SetModelViewProjectionBounds(Renderer& renderer) const {
 void Layer::RenderTiles(Renderer& renderer) const {
     renderer.SetModelMatrix(Matrix4::GetIdentity());
 
-    AABB2 cullbounds = CalcCullBounds(g_theGame->GetCamera().GetPosition());
+    AABB2 cullbounds = CalcCullBounds(_map->camera.position);
 
     static std::vector<Vertex3D> verts;
     verts.clear();
@@ -137,7 +181,7 @@ void Layer::Render(Renderer& renderer) const {
 }
 
 void Layer::DebugRender(Renderer& renderer) const {
-    renderer.SetModelMatrix(Matrix4::CreateTranslationMatrix(Vector2::ONE * -1.0f));
+    renderer.SetModelMatrix(Matrix4::I);
     renderer.DrawWorldGrid2D(tileDimensions, Rgba::Black);
 }
 
@@ -147,7 +191,7 @@ void Layer::EndFrame() {
 
 AABB2 Layer::CalcOrthoBounds() const {
     float half_view_height = viewHeight * 0.5f;
-    float half_view_width = half_view_height * g_theGame->GetCamera().GetAspectRatio();
+    float half_view_width = half_view_height * _map->camera.GetAspectRatio();
     auto ortho_mins = Vector2{ -half_view_width, -half_view_height };
     auto ortho_maxs = Vector2{ half_view_width, half_view_height };
     return AABB2{ ortho_mins, ortho_maxs };

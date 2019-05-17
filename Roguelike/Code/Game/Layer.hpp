@@ -14,6 +14,18 @@ class Vector3;
 
 class Layer {
 public:
+    enum class NeighborDirection {
+        Self,
+        East,
+        NorthEast,
+        North,
+        NorthWest,
+        West,
+        SouthWest,
+        South,
+        SouthEast,
+    };
+
     Layer() = default;
     explicit Layer(Map* map, const XMLElement& elem);
     Layer(const Layer& other) = default;
@@ -37,6 +49,11 @@ public:
     Tile* GetTile(std::size_t x, std::size_t y);
     Tile* GetTile(std::size_t index);
 
+    Tile* GetNeighbor(const NeighborDirection& direction);
+    Tile* GetNeighbor(const IntVector2& direction);
+
+    float GetDefaultViewHeight() const;
+
     int z_index{ 0 };
     float viewHeight{1.0f};
     IntVector2 tileDimensions{1, 1};
@@ -51,4 +68,5 @@ private:
 
     std::vector<Tile> _tiles{};
     Map* _map = nullptr;
+    float _defaultViewHeight = 1.0f;
 };

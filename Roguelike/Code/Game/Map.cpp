@@ -65,12 +65,12 @@ Vector2 Map::GetMaxDimensions() const {
     return results;
 }
 
-Camera2D& Map::GetCamera() const {
-    return _camera;
-}
-
 Material* Map::GetTileMaterial() const {
     return _tileMaterial;
+}
+
+std::size_t Map::GetLayerCount() const {
+    return _layers.size();
 }
 
 Layer* Map::GetLayer(std::size_t index) {
@@ -78,6 +78,14 @@ Layer* Map::GetLayer(std::size_t index) {
         return nullptr;
     }
     return _layers[index].get();
+}
+
+Tile* Map::GetTile(const IntVector2& location) {
+    return GetTile(location.x, location.y);
+}
+
+Tile* Map::GetTile(int x, int y) {
+    return GetLayer(0)->GetTile(x, y);
 }
 
 bool Map::LoadFromXML(const XMLElement& elem) {

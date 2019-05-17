@@ -9,6 +9,7 @@
         <glyph value="#" />
         <opaque value="true" />
         <solid value="true" />
+        <allowDiagonalMovement value="false" />
     </tileDefinition>
     <tileDefinition name="grass" index="[1,0]">
         <glyph value="." />

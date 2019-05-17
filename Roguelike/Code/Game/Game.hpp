@@ -23,16 +23,17 @@ public:
     void Render() const;
     void EndFrame();
 
-    Camera2D& GetCamera() const;
-
 protected:
 private:
     void ShowDebugUI();
 
+    std::unique_ptr<Map> _map{nullptr};
+    mutable Camera2D _ui_camera{};
+    float _cam_speed = 1.0f;
+    float _max_shake_angle = 0.0f;
+    float _max_shake_x = 0.0f;
+    float _max_shake_y = 0.0f;
     bool _debug = false;
     bool _show_grid = false;
     bool _show_debug_window = false;
-    std::unique_ptr<Map> _map{nullptr};
-    float _cam_speed = 1.0f;
-    mutable Camera2D _ui_camera{};
 };

@@ -27,6 +27,7 @@ public:
 
     bool _is_opaque = false;
     bool _is_solid = false;
+    bool _allow_diagonal_movement = true;
     char _glyph = ' ';
     std::string _name{};
     IntVector2 _index{};

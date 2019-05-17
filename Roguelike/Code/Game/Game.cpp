@@ -25,7 +25,7 @@ void Game::Initialize() {
             }
         }
     }
-    _map->GetCamera().position = _map->GetMaxDimensions() * 0.5f;
+    _map->camera.position = _map->GetMaxDimensions() * 0.5f;
 }
 
 void Game::BeginFrame() {
@@ -43,30 +43,60 @@ void Game::Update(TimeUtils::FPSeconds deltaSeconds) {
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F1)) {
         _show_debug_window = !_show_debug_window;
     }
+    Camera2D& base_camera = _map->camera;
     if(g_theInputSystem->IsKeyDown(KeyCode::D)) {
-        _map->GetCamera().Translate(Vector2{1.0f, 0.0f} * _cam_speed);
+        base_camera.Translate(Vector2{1.0f, 0.0f} * _cam_speed);
     } else if(g_theInputSystem->IsKeyDown(KeyCode::A)) {
-        _map->GetCamera().Translate(Vector2{-1.0f, 0.0f} *_cam_speed);
+        base_camera.Translate(Vector2{-1.0f, 0.0f} *_cam_speed);
     }
     if(g_theInputSystem->IsKeyDown(KeyCode::W)) {
-        _map->GetCamera().Translate(Vector2{0.0f, -1.0f} *_cam_speed);
+        base_camera.Translate(Vector2{0.0f, -1.0f} *_cam_speed);
     } else if(g_theInputSystem->IsKeyDown(KeyCode::S)) {
-        _map->GetCamera().Translate(Vector2{0.0f, 1.0f} *_cam_speed);
+        base_camera.Translate(Vector2{0.0f, 1.0f} *_cam_speed);
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::Right)) {
-        _map->GetCamera().Translate(Vector2{1.0f, 0.0f} * _cam_speed);
+        base_camera.Translate(Vector2{1.0f, 0.0f} * _cam_speed);
     } else if(g_theInputSystem->WasKeyJustPressed(KeyCode::Left)) {
-        _map->GetCamera().Translate(Vector2{-1.0f, 0.0f} *_cam_speed);
+        base_camera.Translate(Vector2{-1.0f, 0.0f} *_cam_speed);
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::Up)) {
-        _map->GetCamera().Translate(Vector2{0.0f, -1.0f} *_cam_speed);
+        base_camera.Translate(Vector2{0.0f, -1.0f} *_cam_speed);
     } else if(g_theInputSystem->WasKeyJustPressed(KeyCode::Down)) {
-        _map->GetCamera().Translate(Vector2{0.0f, 1.0f} *_cam_speed);
+        base_camera.Translate(Vector2{0.0f, 1.0f} *_cam_speed);
     }
 
-    _map->GetCamera().Update(deltaSeconds);
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::LeftBracket)) {
+        const auto count = _map->GetLayerCount();
+        for(std::size_t i = 0; i < count; ++i) {
+            auto* cur_layer = _map->GetLayer(i);
+            if(cur_layer) {
+                ++cur_layer->viewHeight;
+            }
+        }
+    } else if(g_theInputSystem->WasKeyJustPressed(KeyCode::RightBracket)) {
+        const auto count = _map->GetLayerCount();
+        for(std::size_t i = 0; i < count; ++i) {
+            auto* cur_layer = _map->GetLayer(i);
+            if(cur_layer) {
+                --cur_layer->viewHeight;
+            }
+        }
+    }
+
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::R)) {
+        const auto count = _map->GetLayerCount();
+        for(std::size_t i = 0; i < count; ++i) {
+            auto* cur_layer = _map->GetLayer(i);
+            if(cur_layer) {
+                cur_layer->viewHeight = cur_layer->GetDefaultViewHeight();
+            }
+        }
+    }
+
+    _map->camera.Update(deltaSeconds);
 
     _map->Update(deltaSeconds);
+
 }
 
 void Game::Render() const {
@@ -101,7 +131,7 @@ void Game::Render() const {
     {
         auto* f = g_theRenderer->GetFont("System32");
         std::ostringstream ss;
-        ss << "Cam Pos: " << _map->GetCamera().position;
+        ss << "Cam Pos: " << _map->camera.position;
         auto S = Matrix4::I;
         auto R = Matrix4::I;
         auto T = Matrix4::CreateTranslationMatrix(Vector2(0.0f, f->GetLineHeight() * 1.0f));
@@ -116,15 +146,17 @@ void Game::EndFrame() {
 
 }
 
-Camera2D& Game::GetCamera() const {
-    return _map->GetCamera();
-}
-
 void Game::ShowDebugUI() {
 #ifdef UI_DEBUG
     ImGui::Begin("Tile Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize);
     {
         ImGui::Checkbox("Grid", &_show_grid);
+        ImGui::SliderFloat("Camera Shake Angle", &_max_shake_angle, 0.0f, 90.0f);
+        ImGui::SliderFloat("Camera Shake X Offset", &_max_shake_x, 0.0f, 0.00000025f, "%.8f");
+        ImGui::SliderFloat("Camera Shake Y Offset", &_max_shake_y, 0.0f, 0.00000025f, "%.8f");
+        GAME_OPTION_MAX_SHAKE_ANGLE = _max_shake_angle;
+        GAME_OPTION_MAX_SHAKE_OFFSET_H = _max_shake_x;
+        GAME_OPTION_MAX_SHAKE_OFFSET_V = _max_shake_y;
     }
     ImGui::End();
 #endif
