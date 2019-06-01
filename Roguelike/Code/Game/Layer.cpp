@@ -164,6 +164,12 @@ void Layer::RenderTiles(Renderer& renderer) const {
 
     renderer.SetMaterial(_map->GetTileMaterial());
     renderer.DrawIndexed(PrimitiveType::Triangles, verts, ibo);
+
+    if(auto tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords())) {
+        auto tile_bounds = tile->GetBounds();
+        renderer.SetMaterial(renderer.GetMaterial("__2D"));
+        renderer.DrawAABB2(tile_bounds, Rgba::White, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
+    }
 }
 
 void Layer::BeginFrame() {
