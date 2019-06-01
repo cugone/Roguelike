@@ -16,4 +16,14 @@
         <opaque value="true" />
         <solid value="true" />
     </tileDefinition>
+    <tileDefinition name="stairsUp" index="[30,14]">
+        <glyph value="&gt;" />
+        <opaque value="true" />
+        <solid value="false" />
+    </tileDefinition>
+    <tileDefinition name="stairsDown" index="[30,13]">
+        <glyph value="&lt;" />
+        <opaque value="false" />
+        <solid value="false" />
+    </tileDefinition>
 </tileDefinitions>
