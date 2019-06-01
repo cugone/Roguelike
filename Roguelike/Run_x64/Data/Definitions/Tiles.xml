@@ -4,6 +4,7 @@
         <glyph value=" " />
         <opaque value="false" />
         <solid value="false" />
+        <visible value="false" />
     </tileDefinition>
     <tileDefinition name="wall" index="[0,10]">
         <glyph value="#" />
@@ -23,6 +24,36 @@
     </tileDefinition>
     <tileDefinition name="stairsDown" index="[30,13]">
         <glyph value="&lt;" />
+        <opaque value="false" />
+        <solid value="false" />
+    </tileDefinition>
+    <tileDefinition name="doorClosed" index="[31,11]">
+        <glyph value="=" />
+        <opaque value="true" />
+        <solid value="true" />
+    </tileDefinition>
+    <tileDefinition name="doorDestroyed" index="[31,12]">
+        <glyph value="-" />
+        <opaque value="false" />
+        <solid value="false" />
+    </tileDefinition>
+    <tileDefinition name="doorOpenOut" index="[31,13]">
+        <glyph value="^" />
+        <opaque value="false" />
+        <solid value="false" />
+    </tileDefinition>
+    <tileDefinition name="doorOpenIn" index="[31,14]">
+        <glyph value="v" />
+        <opaque value="false" />
+        <solid value="false" />
+    </tileDefinition>
+    <tileDefinition name="ladderUp" index="[29,14]">
+        <glyph value="/" />
+        <opaque value="false" />
+        <solid value="false" />
+    </tileDefinition>
+    <tileDefinition name="ladderDown" index="[29,13]">
+        <glyph value="\" />
         <opaque value="false" />
         <solid value="false" />
     </tileDefinition>
