@@ -10,7 +10,7 @@ std::map<std::string, std::unique_ptr<TileDefinition>> TileDefinition::s_registr
 
 void TileDefinition::CreateTileDefinition(const XMLElement& elem, SpriteSheet* sheet) {
     auto new_def = std::make_unique<TileDefinition>(elem, sheet);
-    s_registry.insert_or_assign(new_def->_name, std::move(new_def));
+    s_registry.insert_or_assign(new_def->name, std::move(new_def));
 }
 
 void TileDefinition::DestroyTileDefinitions() {
@@ -27,7 +27,7 @@ TileDefinition* TileDefinition::GetTileDefinitionByName(const std::string& name)
 
 TileDefinition* TileDefinition::GetTileDefinitionByGlyph(char glyph) {
     for(const auto& tile : s_registry) {
-        if(tile.second->_glyph == glyph) {
+        if(tile.second->glyph == glyph) {
             return tile.second.get();
         }
     }
@@ -38,11 +38,11 @@ void TileDefinition::ClearTileRegistry() {
     s_registry.clear();
 }
 
-const Texture* TileDefinition::GetTexture() const {
-    return &(GetSheet()->GetTexture());
+Texture* TileDefinition::GetTexture() {
+    return GetSheet()->GetTexture();
 }
 
-const SpriteSheet* TileDefinition::GetSheet() const {
+SpriteSheet* TileDefinition::GetSheet() {
     return _sheet;
 }
 
@@ -57,20 +57,20 @@ TileDefinition::TileDefinition(const XMLElement& elem, SpriteSheet* sheet)
 
      DataUtils::ValidateXmlElement(elem, "tileDefinition", "glyph,opaque,solid", "name,index", "allowDiagonalMovement");
 
-     _name = DataUtils::ParseXmlAttribute(elem, "name", _name);
-     _index = DataUtils::ParseXmlAttribute(elem, "index", _index);
+     name = DataUtils::ParseXmlAttribute(elem, "name", name);
+     index = DataUtils::ParseXmlAttribute(elem, "index", index);
 
      auto xml_glyph = elem.FirstChildElement("glyph");
-     _glyph = DataUtils::ParseXmlAttribute(*xml_glyph, "value", _glyph);
+     glyph = DataUtils::ParseXmlAttribute(*xml_glyph, "value", glyph);
 
      auto xml_opaque = elem.FirstChildElement("opaque");
-     _is_opaque = DataUtils::ParseXmlAttribute(*xml_opaque, "value", _is_opaque);
+     is_opaque = DataUtils::ParseXmlAttribute(*xml_opaque, "value", is_opaque);
 
      auto xml_solid = elem.FirstChildElement("solid");
-     _is_solid = DataUtils::ParseXmlAttribute(*xml_solid, "value", _is_solid);
+     is_solid = DataUtils::ParseXmlAttribute(*xml_solid, "value", is_solid);
 
      if(auto xml_diag = elem.FirstChildElement("allowDiagonalMovement")) {
-         _allow_diagonal_movement = DataUtils::ParseXmlAttribute(*xml_diag, "value", _allow_diagonal_movement);
+         allow_diagonal_movement = DataUtils::ParseXmlAttribute(*xml_diag, "value", allow_diagonal_movement);
      }
 
      return true;

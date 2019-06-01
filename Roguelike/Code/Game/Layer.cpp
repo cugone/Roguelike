@@ -122,7 +122,8 @@ void Layer::SetModelViewProjectionBounds(Renderer& renderer) const {
     renderer.SetViewMatrix(Matrix4::GetIdentity());
     auto leftBottom = Vector2{ ortho_bounds.mins.x, ortho_bounds.maxs.y };
     auto rightTop = Vector2{ ortho_bounds.maxs.x, ortho_bounds.mins.y };
-    renderer.SetOrthoProjection(leftBottom, rightTop, Vector2(0.0f, 1000.0f));
+    _map->camera.SetupView(leftBottom, rightTop, Vector2(0.0f, 1000.0f));
+    renderer.SetCamera(_map->camera);
 
     Camera2D& base_camera = _map->camera;
     Camera2D shakyCam = _map->camera;
@@ -181,8 +182,10 @@ void Layer::Render(Renderer& renderer) const {
 }
 
 void Layer::DebugRender(Renderer& renderer) const {
-    renderer.SetModelMatrix(Matrix4::I);
-    renderer.DrawWorldGrid2D(tileDimensions, Rgba::Black);
+    if(g_theGame->_show_grid) {
+        renderer.SetModelMatrix(Matrix4::I);
+        renderer.DrawWorldGrid2D(tileDimensions, debug_grid_color);
+    }
 }
 
 void Layer::EndFrame() {
@@ -222,7 +225,7 @@ Tile* Layer::GetTile(std::size_t x, std::size_t y) {
 }
 
 Tile* Layer::GetTile(std::size_t index) {
-    if(index >= static_cast<std::size_t>(tileDimensions.x * tileDimensions.y)) {
+    if(index >= _tiles.size()) {
         return nullptr;
     }
     return &_tiles[index];

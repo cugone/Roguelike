@@ -4,6 +4,9 @@
 #include "Engine/Core/DataUtils.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/FileUtils.hpp"
+
+#include "Engine/Math/Vector4.hpp"
+
 #include "Engine/Renderer/Material.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 
@@ -14,6 +17,39 @@
 #include <sstream>
 
 unsigned long long Map::default_map_index = 0ull;
+
+Vector2 Map::ConvertScreenToWorldCoords(const Vector2& mouseCoords) const {
+    auto ndc = 2.0f * mouseCoords / Vector2(g_theRenderer->GetOutput()->GetDimensions()) - Vector2::ONE;
+    auto screenCoords4 = Vector4(ndc.x, -ndc.y, 1.0f, 1.0f);
+    auto sToW = camera.GetInverseViewProjectionMatrix();
+    auto worldPos4 = sToW * screenCoords4;
+    auto worldPos3 = Vector3(worldPos4);
+    auto worldPos2 = Vector2(worldPos3);
+    return worldPos2;
+}
+
+void Map::SetDebugGridColor(const Rgba& gridColor) {
+    for(auto& layer : _layers) {
+        layer->debug_grid_color = gridColor;
+    }
+}
+
+AABB2 Map::CalcWorldBounds() const {
+    return {Vector2::ZERO, CalcMaxDimensions()};
+}
+
+Tile* Map::PickTileFromWorldCoords(const Vector2& worldCoords) const {
+    auto world_bounds = CalcWorldBounds();
+    if(MathUtils::IsPointInside(world_bounds, worldCoords)) {
+        return GetTile(IntVector2{ worldCoords });
+    }
+    return nullptr;
+}
+
+Tile* Map::PickTileFromMouseCoords(const Vector2& mouseCoords) const {
+    auto world_coords = ConvertScreenToWorldCoords(mouseCoords);
+    return PickTileFromWorldCoords(world_coords);
+}
 
 Map::Map(const XMLElement& elem) {
     if(!LoadFromXML(elem)) {
@@ -43,6 +79,11 @@ void Map::DebugRender(Renderer& renderer) const {
     for(const auto& layer : _layers) {
         layer->DebugRender(renderer);
     }
+    if(g_theGame->_show_world_bounds) {
+        auto bounds = CalcWorldBounds();
+        renderer.SetModelMatrix(Matrix4::I);
+        renderer.DrawAABB2(bounds, Rgba::Cyan, Rgba::NoAlpha);
+    }
 }
 
 void Map::EndFrame() {
@@ -51,7 +92,7 @@ void Map::EndFrame() {
     }
 }
 
-Vector2 Map::GetMaxDimensions() const {
+Vector2 Map::CalcMaxDimensions() const {
     Vector2 results{ 1.0f, 1.0f };
     for(const auto& layer : _layers) {
         const auto& cur_layer_dimensions = layer->tileDimensions;
@@ -65,6 +106,14 @@ Vector2 Map::GetMaxDimensions() const {
     return results;
 }
 
+float Map::CalcMaxViewHeight() const {
+    auto max_view_height_elem = std::max_element(std::begin(_layers), std::end(_layers),
+    [](const std::unique_ptr<Layer>& a, const std::unique_ptr<Layer>& b)->bool{
+        return a->viewHeight < b->viewHeight;
+    });
+    return (*max_view_height_elem)->viewHeight;
+}
+
 Material* Map::GetTileMaterial() const {
     return _tileMaterial;
 }
@@ -73,18 +122,18 @@ std::size_t Map::GetLayerCount() const {
     return _layers.size();
 }
 
-Layer* Map::GetLayer(std::size_t index) {
+Layer* Map::GetLayer(std::size_t index) const {
     if(index >= _layers.size()) {
         return nullptr;
     }
     return _layers[index].get();
 }
 
-Tile* Map::GetTile(const IntVector2& location) {
+Tile* Map::GetTile(const IntVector2& location) const {
     return GetTile(location.x, location.y);
 }
 
-Tile* Map::GetTile(int x, int y) {
+Tile* Map::GetTile(int x, int y) const {
     return GetLayer(0)->GetTile(x, y);
 }
 

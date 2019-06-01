@@ -6,11 +6,16 @@
 #include "Engine/Core/KerningFont.hpp"
 
 #include "Engine/Math/Vector2.hpp"
+#include "Engine/Math/Vector4.hpp"
+
+#include "Engine/Renderer/SpriteSheet.hpp"
+#include "Engine/Renderer/Texture.hpp"
 
 #include "Game/GameCommon.hpp"
 #include "Game/GameConfig.hpp"
-#include "Game/Map.hpp"
 #include "Game/Layer.hpp"
+#include "Game/Map.hpp"
+#include "Game/TileDefinition.hpp"
 
 void Game::Initialize() {
     g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
@@ -25,7 +30,7 @@ void Game::Initialize() {
             }
         }
     }
-    _map->camera.position = _map->GetMaxDimensions() * 0.5f;
+    _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
 }
 
 void Game::BeginFrame() {
@@ -82,7 +87,9 @@ void Game::Update(TimeUtils::FPSeconds deltaSeconds) {
             }
         }
     }
-
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::B)) {
+        base_camera.trauma += 1.0f;
+    }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::R)) {
         const auto count = _map->GetLayerCount();
         for(std::size_t i = 0; i < count; ++i) {
@@ -93,7 +100,7 @@ void Game::Update(TimeUtils::FPSeconds deltaSeconds) {
         }
     }
 
-    _map->camera.Update(deltaSeconds);
+    base_camera.Update(deltaSeconds);
 
     _map->Update(deltaSeconds);
 
@@ -110,7 +117,7 @@ void Game::Render() const {
 
     _map->Render(*g_theRenderer);
 
-    if(_debug || _show_grid) {
+    if(_show_grid || _show_world_bounds) {
         _map->DebugRender(*g_theRenderer);
     }
 
@@ -132,11 +139,16 @@ void Game::Render() const {
         auto* f = g_theRenderer->GetFont("System32");
         std::ostringstream ss;
         ss << "Cam Pos: " << _map->camera.position;
-        auto S = Matrix4::I;
-        auto R = Matrix4::I;
-        auto T = Matrix4::CreateTranslationMatrix(Vector2(0.0f, f->GetLineHeight() * 1.0f));
-        auto M = T * R * S;
-        g_theRenderer->SetModelMatrix(M);
+        auto mouse_pos = g_theInputSystem->GetCursorWindowPosition(*g_theRenderer->GetOutput()->GetWindow());
+        ss << "\nMouse Pos: " << mouse_pos;
+        //TODO: Fix Screen-to-World
+        ss << "\nWorld Coords: " << _map->ConvertScreenToWorldCoords(mouse_pos);
+        if(auto* picked_tile = _map->PickTileFromMouseCoords(mouse_pos)) {
+            ss << "\nTile Coords: " << picked_tile->GetBounds().mins;
+        } else {
+            ss << "\nTile Coords: nullptr";
+        }
+        g_theRenderer->SetModelMatrix();
         g_theRenderer->DrawMultilineText(f, ss.str(), Rgba::White);
     }
 
@@ -150,13 +162,34 @@ void Game::ShowDebugUI() {
 #ifdef UI_DEBUG
     ImGui::Begin("Tile Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize);
     {
-        ImGui::Checkbox("Grid", &_show_grid);
-        ImGui::SliderFloat("Camera Shake Angle", &_max_shake_angle, 0.0f, 90.0f);
-        ImGui::SliderFloat("Camera Shake X Offset", &_max_shake_x, 0.0f, 0.00000025f, "%.8f");
-        ImGui::SliderFloat("Camera Shake Y Offset", &_max_shake_y, 0.0f, 0.00000025f, "%.8f");
-        GAME_OPTION_MAX_SHAKE_ANGLE = _max_shake_angle;
-        GAME_OPTION_MAX_SHAKE_OFFSET_H = _max_shake_x;
-        GAME_OPTION_MAX_SHAKE_OFFSET_V = _max_shake_y;
+        ImGui::Checkbox("World Grid", &_show_grid);
+        ImGui::SameLine();
+        if(ImGui::ColorEdit4("Grid Color##Picker", _grid_color, ImGuiColorEditFlags_None)) {
+            _map->SetDebugGridColor(_grid_color);
+        }
+        ImGui::Checkbox("World Bounds", &_show_world_bounds);
+        if(ImGui::SliderFloat("Camera Shake Angle", &_max_shake_angle, 0.0f, 90.0f)) {
+            GAME_OPTION_MAX_SHAKE_ANGLE = _max_shake_angle;
+        }
+        if(ImGui::SliderFloat("Camera Shake X Offset", &_max_shake_x, 0.0f, 0.00000025f, "%.8f")) {
+            GAME_OPTION_MAX_SHAKE_OFFSET_H = _max_shake_x;
+        }
+        if(ImGui::SliderFloat("Camera Shake Y Offset", &_max_shake_y, 0.0f, 0.00000025f, "%.8f")) {
+            GAME_OPTION_MAX_SHAKE_OFFSET_V = _max_shake_y;
+        }
+        auto mouse_pos = g_theInputSystem->GetCursorWindowPosition(*g_theRenderer->GetOutput()->GetWindow());
+        if(auto* picked_tile = _map->PickTileFromMouseCoords(mouse_pos)) {
+            ImGui::Text("Tile Inspector");
+            if(auto* def = picked_tile->GetDefinition()) {
+                if(auto* sheet = def->GetSheet()) {
+                    const auto tex_coords = sheet->GetTexCoordsFromSpriteCoords(def->index);
+                    const auto dims = Vector2::ONE * 100.0f;
+                    ImGui::Image(sheet->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                }
+            }
+        } else {
+            ImGui::Text("Tile Inspector: None");
+        }
     }
     ImGui::End();
 #endif

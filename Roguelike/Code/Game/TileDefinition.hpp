@@ -25,15 +25,15 @@ public:
     static TileDefinition* GetTileDefinitionByGlyph(char glyph);
     static void ClearTileRegistry();
 
-    bool _is_opaque = false;
-    bool _is_solid = false;
-    bool _allow_diagonal_movement = true;
-    char _glyph = ' ';
-    std::string _name{};
-    IntVector2 _index{};
+    bool is_opaque = false;
+    bool is_solid = false;
+    bool allow_diagonal_movement = true;
+    char glyph = ' ';
+    std::string name{};
+    IntVector2 index{};
 
-    const Texture* GetTexture() const;
-    const SpriteSheet* GetSheet() const;
+    Texture* GetTexture();
+    SpriteSheet* GetSheet();
 
     TileDefinition(const XMLElement& elem, SpriteSheet* sheet);
 protected:

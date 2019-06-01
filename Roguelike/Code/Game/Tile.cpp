@@ -21,7 +21,7 @@ void Tile::Render(std::vector<Vertex3D>& verts, const Rgba& layer_color, size_t 
         return;
     }
 
-    const auto& coords = _def->GetSheet()->GetTexCoordsFromSpriteCoords(_def->_index);
+    const auto& coords = _def->GetSheet()->GetTexCoordsFromSpriteCoords(_def->index);
 
     auto vert_left = _tile_coords.x + 0.0f;
     auto vert_right = _tile_coords.x + 1.0f;
@@ -54,7 +54,7 @@ void Tile::Render(std::vector<Vertex3D>& verts, const Rgba& layer_color, size_t 
 }
 
 void Tile::ChangeTypeFromName(const std::string& name) {
-    if(_def && _def->_name == name) {
+    if(_def && _def->name == name) {
         return;
     }
     if(auto new_def = TileDefinition::GetTileDefinitionByName(name)) {
@@ -63,7 +63,7 @@ void Tile::ChangeTypeFromName(const std::string& name) {
 }
 
 void Tile::ChangeTypeFromGlyph(char glyph) {
-    if(_def && _def->_glyph == glyph) {
+    if(_def && _def->glyph == glyph) {
         return;
     }
     if(auto new_def = TileDefinition::GetTileDefinitionByGlyph(glyph)) {
@@ -75,12 +75,12 @@ AABB2 Tile::GetBounds() const {
     return { Vector2(_tile_coords), Vector2(_tile_coords + IntVector2::ONE) };
 }
 
-const TileDefinition* Tile::GetDefinition() const {
+TileDefinition* Tile::GetDefinition() {
     return _def;
 }
 
 bool Tile::IsOpaque() const {
-    return _def->_is_opaque || color.a == 0;
+    return _def->is_opaque || color.a == 0;
 }
 
 bool Tile::IsTransparent() const {
@@ -88,7 +88,7 @@ bool Tile::IsTransparent() const {
 }
 
 bool Tile::IsSolid() const {
-    return _def->_is_solid;
+    return _def->is_solid;
 }
 
 bool Tile::IsPassable() const {

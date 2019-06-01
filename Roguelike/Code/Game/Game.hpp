@@ -29,11 +29,15 @@ private:
 
     std::unique_ptr<Map> _map{nullptr};
     mutable Camera2D _ui_camera{};
+    Rgba _grid_color{Rgba::Black};
     float _cam_speed = 1.0f;
     float _max_shake_angle = 0.0f;
     float _max_shake_x = 0.0f;
     float _max_shake_y = 0.0f;
-    bool _debug = false;
     bool _show_grid = false;
     bool _show_debug_window = false;
+    bool _show_world_bounds = false;
+
+    friend class Map;
+    friend class Layer;
 };
