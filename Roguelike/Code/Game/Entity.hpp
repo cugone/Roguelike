@@ -22,11 +22,11 @@ public:
 
     Map* map = nullptr;
     Layer* layer = nullptr;
+    Tile* tile = nullptr;
 
 protected:
 private:
     bool CanMoveDiagonallyToNeighbor(const IntVector2& direction);
 
     IntVector2 position{};
-    
 };

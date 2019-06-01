@@ -5,9 +5,10 @@
 void Entity::Move(const IntVector2& direction) {
     if(CanMoveDiagonallyToNeighbor(direction)) {
         const auto target_position = position + direction;
-        const auto* target_tile = map->GetTile(target_position);
+        auto* target_tile = map->GetTile(target_position);
         if(target_tile && target_tile->IsPassable()) {
             position += direction;
+            tile = target_tile;
         }
     }
 }
