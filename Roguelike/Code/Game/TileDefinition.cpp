@@ -55,7 +55,7 @@ TileDefinition::TileDefinition(const XMLElement& elem, SpriteSheet* sheet)
 
  bool TileDefinition::LoadFromXml(const XMLElement& elem) {
 
-     DataUtils::ValidateXmlElement(elem, "tileDefinition", "glyph,opaque,solid", "name,index", "allowDiagonalMovement");
+     DataUtils::ValidateXmlElement(elem, "tileDefinition", "glyph,opaque,solid", "name,index", "visible,allowDiagonalMovement");
 
      name = DataUtils::ParseXmlAttribute(elem, "name", name);
      index = DataUtils::ParseXmlAttribute(elem, "index", index);
@@ -68,6 +68,10 @@ TileDefinition::TileDefinition(const XMLElement& elem, SpriteSheet* sheet)
 
      auto xml_solid = elem.FirstChildElement("solid");
      is_solid = DataUtils::ParseXmlAttribute(*xml_solid, "value", is_solid);
+
+     if(auto xml_visible = elem.FirstChildElement("visible")) {
+         is_visible = DataUtils::ParseXmlAttribute(*xml_visible, "value", is_visible);
+     }
 
      if(auto xml_diag = elem.FirstChildElement("allowDiagonalMovement")) {
          allow_diagonal_movement = DataUtils::ParseXmlAttribute(*xml_diag, "value", allow_diagonal_movement);

@@ -26,6 +26,7 @@ public:
     static void ClearTileRegistry();
 
     bool is_opaque = false;
+    bool is_visible = true;
     bool is_solid = false;
     bool allow_diagonal_movement = true;
     char glyph = ' ';
