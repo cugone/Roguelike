@@ -14,5 +14,17 @@
             <row glyphs="#........#" />
             <row glyphs="##########" />
         </layer>
+        <layer>
+            <row glyphs="          " />
+            <row glyphs="          " />
+            <row glyphs="          " />
+            <row glyphs="          " />
+            <row glyphs="          " />
+            <row glyphs="          " />
+            <row glyphs="          " />
+            <row glyphs="          " />
+            <row glyphs="        &gt;" />
+            <row glyphs="          " />
+        </layer>
     </layers>
 </map>
