@@ -141,7 +141,6 @@ void Game::Render() const {
         ss << "Cam Pos: " << _map->camera.position;
         auto mouse_pos = g_theInputSystem->GetCursorWindowPosition(*g_theRenderer->GetOutput()->GetWindow());
         ss << "\nMouse Pos: " << mouse_pos;
-        //TODO: Fix Screen-to-World
         ss << "\nWorld Coords: " << _map->ConvertScreenToWorldCoords(mouse_pos);
         if(auto* picked_tile = _map->PickTileFromMouseCoords(mouse_pos)) {
             ss << "\nTile Coords: " << picked_tile->GetBounds().mins;
