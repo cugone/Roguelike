@@ -139,7 +139,7 @@ void Game::Render() const {
         auto* f = g_theRenderer->GetFont("System32");
         std::ostringstream ss;
         ss << "Cam Pos: " << _map->camera.position;
-        auto mouse_pos = g_theInputSystem->GetCursorWindowPosition(*g_theRenderer->GetOutput()->GetWindow());
+        auto mouse_pos = g_theInputSystem->GetMouseCoords();
         ss << "\nMouse Pos: " << mouse_pos;
         ss << "\nWorld Coords: " << _map->ConvertScreenToWorldCoords(mouse_pos);
         if(auto* picked_tile = _map->PickTileFromMouseCoords(mouse_pos)) {
