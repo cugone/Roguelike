@@ -4,14 +4,14 @@
     <layers>
         <layer>
             <row glyphs="##########" />
-            <row glyphs="##########" />
-            <row glyphs="##########" />
-            <row glyphs="##########" />
-            <row glyphs="##########" />
-            <row glyphs="##########" />
-            <row glyphs="##########" />
-            <row glyphs="##########" />
-            <row glyphs="##########" />
+            <row glyphs="#........#" />
+            <row glyphs="#........#" />
+            <row glyphs="#........#" />
+            <row glyphs="#........#" />
+            <row glyphs="#........#" />
+            <row glyphs="#........#" />
+            <row glyphs="#........#" />
+            <row glyphs="#........#" />
             <row glyphs="##########" />
         </layer>
     </layers>
