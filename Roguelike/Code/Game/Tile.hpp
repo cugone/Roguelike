@@ -27,6 +27,10 @@ public:
     AABB2 GetBounds() const;
     TileDefinition* GetDefinition();
 
+    bool IsVisible() const;
+    bool IsNotVisible() const;
+    bool IsInvisible() const;
+
     bool IsOpaque() const;
     bool IsTransparent() const;
 

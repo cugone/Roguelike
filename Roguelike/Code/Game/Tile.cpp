@@ -17,7 +17,7 @@ void Tile::Update(TimeUtils::FPSeconds deltaSeconds) {
 }
 
 void Tile::Render(std::vector<Vertex3D>& verts, const Rgba& layer_color, size_t layer_index) const {
-    if(IsTransparent()) {
+    if(IsInvisible()) {
         return;
     }
 
@@ -77,6 +77,18 @@ AABB2 Tile::GetBounds() const {
 
 TileDefinition* Tile::GetDefinition() {
     return _def;
+}
+
+bool Tile::IsVisible() const {
+    return _def->is_visible;
+}
+
+bool Tile::IsNotVisible() const {
+    return !IsVisible();
+}
+
+bool Tile::IsInvisible() const {
+    return IsNotVisible();
 }
 
 bool Tile::IsOpaque() const {
