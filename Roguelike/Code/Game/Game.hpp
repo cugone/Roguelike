@@ -27,6 +27,10 @@ protected:
 private:
     void ShowDebugUI();
 
+    void ShowBoundsColoringUI();
+
+    void ShowTileInspectorUI();
+
     std::unique_ptr<Map> _map{nullptr};
     mutable Camera2D _ui_camera{};
     Rgba _grid_color{Rgba::Black};
