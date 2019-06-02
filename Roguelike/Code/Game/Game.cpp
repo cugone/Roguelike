@@ -153,7 +153,6 @@ void Game::ShowDebugUI() {
 
 void Game::ShowBoundsColoringUI() {
     ImGui::Checkbox("World Grid", &_show_grid);
-    ImGui::SameLine();
     if(ImGui::ColorEdit4("Grid Color##Picker", _grid_color, ImGuiColorEditFlags_None)) {
         _map->SetDebugGridColor(_grid_color);
     }
@@ -168,39 +167,18 @@ void Game::ShowTileInspectorUI() {
         return;
     }
     ImGui::Text("Tile Inspector");
+    const auto max_layers = 9;
+    const auto tiles_per_row = 3;
     const auto picked_count = picked_tiles.size();
-    const auto tiles_per_row = picked_count < 3 ? picked_count : std::size_t{ 3 };
-    for(std::size_t i = 0; i < picked_count; i += tiles_per_row) {
-        if(const auto* cur_tile = picked_tiles[i]) {
-            if(const auto* cur_def = cur_tile->GetDefinition()) {
-                if(const auto* cur_sheet = cur_def->GetSheet()) {
-                    const auto tex_coords = cur_sheet->GetTexCoordsFromSpriteCoords(cur_def->index);
-                    const auto dims = Vector2::ONE * 100.0f;
-                    ImGui::Image(cur_sheet->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+    for(std::size_t i = 0; i < max_layers; ++i) {
+        const auto* cur_tile = i < picked_count ? picked_tiles[i] : nullptr;
+        if(const auto* cur_def = cur_tile ? cur_tile->GetDefinition() : TileDefinition::GetTileDefinitionByName("void")) {
+            if(const auto* cur_sheet = cur_def->GetSheet()) {
+                const auto tex_coords = cur_sheet->GetTexCoordsFromSpriteCoords(cur_def->index);
+                const auto dims = Vector2::ONE * 100.0f;
+                ImGui::Image(cur_sheet->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                if(!i || (i % tiles_per_row) < tiles_per_row - 1) {
                     ImGui::SameLine();
-                }
-            }
-        }
-        if(i + 1 < picked_count) {
-            if(const auto* cur_tile = picked_tiles[i + 1]) {
-                if(const auto* cur_def = cur_tile->GetDefinition()) {
-                    if(const auto* cur_sheet = cur_def->GetSheet()) {
-                        const auto tex_coords = cur_sheet->GetTexCoordsFromSpriteCoords(cur_def->index);
-                        const auto dims = Vector2::ONE * 100.0f;
-                        ImGui::Image(cur_sheet->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
-                        ImGui::SameLine();
-                    }
-                }
-            }
-        }
-        if(i + 2 < picked_count) {
-            if(const auto* cur_tile = picked_tiles[i + 2]) {
-                if(const auto* cur_def = cur_tile->GetDefinition()) {
-                    if(const auto* cur_sheet = cur_def->GetSheet()) {
-                        const auto tex_coords = cur_sheet->GetTexCoordsFromSpriteCoords(cur_def->index);
-                        const auto dims = Vector2::ONE * 100.0f;
-                        ImGui::Image(cur_sheet->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
-                    }
                 }
             }
         }

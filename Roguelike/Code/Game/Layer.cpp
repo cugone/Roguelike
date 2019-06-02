@@ -181,11 +181,8 @@ void Layer::Render(Renderer& renderer) const {
     RenderTiles(renderer);
 }
 
-void Layer::DebugRender(Renderer& renderer) const {
-    if(g_theGame->_show_grid) {
-        renderer.SetModelMatrix(Matrix4::I);
-        renderer.DrawWorldGrid2D(tileDimensions, debug_grid_color);
-    }
+void Layer::DebugRender(Renderer& /*renderer*/) const {
+    /* DO NOTHING */
 }
 
 void Layer::EndFrame() {

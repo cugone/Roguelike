@@ -29,9 +29,8 @@ Vector2 Map::ConvertScreenToWorldCoords(const Vector2& mouseCoords) const {
 }
 
 void Map::SetDebugGridColor(const Rgba& gridColor) {
-    for(auto& layer : _layers) {
-        layer->debug_grid_color = gridColor;
-    }
+    auto* layer = GetLayer(0);
+    layer->debug_grid_color = gridColor;
 }
 
 AABB2 Map::CalcWorldBounds() const {
@@ -99,6 +98,13 @@ void Map::Render(Renderer& renderer) const {
 void Map::DebugRender(Renderer& renderer) const {
     for(const auto& layer : _layers) {
         layer->DebugRender(renderer);
+    }
+    if(g_theGame->_show_grid) {
+        if(g_theGame->_show_grid) {
+            renderer.SetModelMatrix(Matrix4::I);
+            const auto* layer = GetLayer(0);
+            renderer.DrawWorldGrid2D(layer->tileDimensions, layer->debug_grid_color);
+        }
     }
     if(g_theGame->_show_world_bounds) {
         auto bounds = CalcWorldBounds();
@@ -221,12 +227,23 @@ bool Map::LoadFromXML(const XMLElement& elem) {
     if(auto xml_layers = elem.FirstChildElement("layers")) {
         DataUtils::ValidateXmlElement(*xml_layers, "layers", "layer", "");
         std::size_t layer_count = DataUtils::GetChildElementCount(*xml_layers, "layer");
+        if(layer_count > 9) {
+            std::ostringstream ss;
+            ss << "Layer count of map " << _name << " is greater than nine (9).";
+            ss << "\nOnly the first nine layers will be used.";
+            ss.flush();
+            g_theFileLogger->Log(ss.str());
+        }
+
         int layer_index = 0;
+        int max_layers = 9;
         _layers.reserve(layer_count);
         DataUtils::ForEachChildElement(*xml_layers, "layer",
-            [this, &layer_index](const XMLElement& xml_layer) {
-            _layers.emplace_back(std::make_unique<Layer>(this, xml_layer));
-            _layers.back()->z_index = layer_index++;            
+        [this, &layer_index, max_layers](const XMLElement& xml_layer) {
+            if(layer_index < max_layers) {
+                _layers.emplace_back(std::make_unique<Layer>(this, xml_layer));
+                _layers.back()->z_index = layer_index++;
+            }
         });
     }
 
