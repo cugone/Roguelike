@@ -37,10 +37,14 @@ public:
     Material* GetTileMaterial() const;
     std::size_t GetLayerCount() const;
     Layer* GetLayer(std::size_t index) const;
-    Tile* GetTile(const IntVector2& location) const;
-    Tile* GetTile(int x, int y) const;
-    Tile* PickTileFromWorldCoords(const Vector2& worldCoords) const;
-    Tile* PickTileFromMouseCoords(const Vector2& mouseCoords) const;
+    std::vector<Tile*> GetTiles(const IntVector2& location) const;
+    std::vector<Tile*> GetTiles(int x, int y) const;
+    std::vector<Tile*> PickTilesFromWorldCoords(const Vector2& worldCoords) const;
+    std::vector<Tile*> PickTilesFromMouseCoords(const Vector2& mouseCoords) const;
+    Tile* GetTile(const IntVector3& locationAndLayerIndex) const;
+    Tile* GetTile(int x, int y, int z) const;
+    Tile* PickTileFromWorldCoords(const Vector2& worldCoords, int layerIndex) const;
+    Tile* PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) const;
     Vector2 ConvertScreenToWorldCoords(const Vector2& mouseCoords) const;
     void SetDebugGridColor(const Rgba& gridColor);
     mutable Camera2D camera{};

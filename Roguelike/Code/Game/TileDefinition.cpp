@@ -38,12 +38,20 @@ void TileDefinition::ClearTileRegistry() {
     s_registry.clear();
 }
 
-Texture* TileDefinition::GetTexture() {
+const Texture* TileDefinition::GetTexture() const {
     return GetSheet()->GetTexture();
 }
 
-SpriteSheet* TileDefinition::GetSheet() {
+Texture* TileDefinition::GetTexture() {
+    return const_cast<Texture*>(static_cast<const TileDefinition&>(*this).GetTexture());
+}
+
+const SpriteSheet* TileDefinition::GetSheet() const {
     return _sheet;
+}
+
+SpriteSheet* TileDefinition::GetSheet() {
+    return const_cast<SpriteSheet*>(static_cast<const TileDefinition&>(*this).GetSheet());
 }
 
 TileDefinition::TileDefinition(const XMLElement& elem, SpriteSheet* sheet)

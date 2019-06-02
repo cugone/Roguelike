@@ -5,7 +5,7 @@
 void Entity::Move(const IntVector2& direction) {
     if(CanMoveDiagonallyToNeighbor(direction)) {
         const auto target_position = position + direction;
-        auto* target_tile = map->GetTile(target_position);
+        auto target_tile = map->GetTile(target_position.x, target_position.y, 0);
         if(target_tile && target_tile->IsPassable()) {
             position += direction;
             tile = target_tile;
@@ -18,14 +18,20 @@ bool Entity::CanMoveDiagonallyToNeighbor(const IntVector2& direction) {
     if(position.x == target.x || position.y == target.y) {
         return true;
     }
-    if(auto* tile = map->GetTile(position.x, target.y)) {
-        if(!tile->IsPassable()) {
-            return false;
+    {
+        const auto test_tiles = map->GetTiles(position.x, target.y);
+        for(const auto* t : test_tiles) {
+            if(t->IsSolid()) {
+                return false;
+            }
         }
     }
-    if(auto* tile = map->GetTile(target.x, position.y)) {
-        if(!tile->IsPassable()) {
-            return false;
+    {
+        const auto test_tiles = map->GetTiles(target.x, position.y);
+        for(const auto* t : test_tiles) {
+            if(t->IsSolid()) {
+                return false;
+            }
         }
     }
     return true;

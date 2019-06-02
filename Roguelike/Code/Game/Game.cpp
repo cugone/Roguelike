@@ -135,21 +135,6 @@ void Game::Render() const {
     _ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(_ui_camera);
 
-    {
-        auto* f = g_theRenderer->GetFont("System32");
-        std::ostringstream ss;
-        ss << "Cam Pos: " << _map->camera.position;
-        auto mouse_pos = g_theInputSystem->GetMouseCoords();
-        ss << "\nMouse Pos: " << mouse_pos;
-        ss << "\nWorld Coords: " << _map->ConvertScreenToWorldCoords(mouse_pos);
-        if(auto* picked_tile = _map->PickTileFromMouseCoords(mouse_pos)) {
-            ss << "\nTile Coords: " << picked_tile->GetBounds().mins;
-        } else {
-            ss << "\nTile Coords: nullptr";
-        }
-        g_theRenderer->SetModelMatrix();
-        g_theRenderer->DrawMultilineText(f, ss.str(), Rgba::White);
-    }
 
 }
 
@@ -177,17 +162,50 @@ void Game::ShowDebugUI() {
             GAME_OPTION_MAX_SHAKE_OFFSET_V = _max_shake_y;
         }
         auto mouse_pos = g_theInputSystem->GetCursorWindowPosition(*g_theRenderer->GetOutput()->GetWindow());
-        if(auto* picked_tile = _map->PickTileFromMouseCoords(mouse_pos)) {
-            ImGui::Text("Tile Inspector");
-            if(auto* def = picked_tile->GetDefinition()) {
-                if(auto* sheet = def->GetSheet()) {
-                    const auto tex_coords = sheet->GetTexCoordsFromSpriteCoords(def->index);
-                    const auto dims = Vector2::ONE * 100.0f;
-                    ImGui::Image(sheet->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+        {
+            const auto& picked_tiles = _map->PickTilesFromMouseCoords(mouse_pos);
+            if(!picked_tiles.empty()) {
+                ImGui::Text("Tile Inspector");
+                const auto picked_count = picked_tiles.size();
+                const auto tiles_per_row = picked_count < 3 ? picked_count : std::size_t{3};
+                for(std::size_t i = 0; i < picked_count; i += tiles_per_row) {
+                    if(const auto* cur_tile = picked_tiles[i]) {
+                        if(const auto* cur_def = cur_tile->GetDefinition()) {
+                            if(const auto* cur_sheet = cur_def->GetSheet()) {
+                                const auto tex_coords = cur_sheet->GetTexCoordsFromSpriteCoords(cur_def->index);
+                                const auto dims = Vector2::ONE * 100.0f;
+                                ImGui::Image(cur_sheet->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                                ImGui::SameLine();
+                            }
+                        }
+                    }
+                    if(i + 1 < picked_count) {
+                        if(const auto* cur_tile = picked_tiles[i + 1]) {
+                            if(const auto* cur_def = cur_tile->GetDefinition()) {
+                                if(const auto* cur_sheet = cur_def->GetSheet()) {
+                                    const auto tex_coords = cur_sheet->GetTexCoordsFromSpriteCoords(cur_def->index);
+                                    const auto dims = Vector2::ONE * 100.0f;
+                                    ImGui::Image(cur_sheet->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                                    ImGui::SameLine();
+                                }
+                            }
+                        }
+                    }
+                    if(i + 2 < picked_count) {
+                        if(const auto* cur_tile = picked_tiles[i + 2]) {
+                            if(const auto* cur_def = cur_tile->GetDefinition()) {
+                                if(const auto* cur_sheet = cur_def->GetSheet()) {
+                                    const auto tex_coords = cur_sheet->GetTexCoordsFromSpriteCoords(cur_def->index);
+                                    const auto dims = Vector2::ONE * 100.0f;
+                                    ImGui::Image(cur_sheet->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                                }
+                            }
+                        }
+                    }
                 }
+            } else {
+                ImGui::Text("Tile Inspector: None");
             }
-        } else {
-            ImGui::Text("Tile Inspector: None");
         }
     }
     ImGui::End();

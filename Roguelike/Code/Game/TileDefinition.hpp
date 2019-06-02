@@ -33,7 +33,9 @@ public:
     std::string name{};
     IntVector2 index{};
 
+    const Texture* GetTexture() const;
     Texture* GetTexture();
+    const SpriteSheet* GetSheet() const;
     SpriteSheet* GetSheet();
 
     TileDefinition(const XMLElement& elem, SpriteSheet* sheet);

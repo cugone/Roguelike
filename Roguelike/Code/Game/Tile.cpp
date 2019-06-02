@@ -75,8 +75,12 @@ AABB2 Tile::GetBounds() const {
     return { Vector2(_tile_coords), Vector2(_tile_coords + IntVector2::ONE) };
 }
 
-TileDefinition* Tile::GetDefinition() {
+const TileDefinition* Tile::GetDefinition() const {
     return _def;
+}
+
+TileDefinition* Tile::GetDefinition() {
+    return const_cast<TileDefinition*>(static_cast<const Tile&>(*this).GetDefinition());
 }
 
 bool Tile::IsVisible() const {

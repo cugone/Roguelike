@@ -38,17 +38,31 @@ AABB2 Map::CalcWorldBounds() const {
     return {Vector2::ZERO, CalcMaxDimensions()};
 }
 
-Tile* Map::PickTileFromWorldCoords(const Vector2& worldCoords) const {
+std::vector<Tile*> Map::PickTilesFromWorldCoords(const Vector2& worldCoords) const {
     auto world_bounds = CalcWorldBounds();
     if(MathUtils::IsPointInside(world_bounds, worldCoords)) {
-        return GetTile(IntVector2{ worldCoords });
+        std::vector<Tile*> results = GetTiles(IntVector2{ worldCoords });
+        return results;
+    }
+    return {};
+}
+
+Tile* Map::PickTileFromWorldCoords(const Vector2& worldCoords, int layerIndex) const {
+    auto world_bounds = CalcWorldBounds();
+    if(MathUtils::IsPointInside(world_bounds, worldCoords)) {
+        return GetTile(IntVector3{ worldCoords, layerIndex });
     }
     return nullptr;
 }
 
-Tile* Map::PickTileFromMouseCoords(const Vector2& mouseCoords) const {
+std::vector<Tile*> Map::PickTilesFromMouseCoords(const Vector2& mouseCoords) const {
     auto world_coords = ConvertScreenToWorldCoords(mouseCoords);
-    return PickTileFromWorldCoords(world_coords);
+    return PickTilesFromWorldCoords(world_coords);
+}
+
+Tile* Map::PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) const {
+    auto world_coords = ConvertScreenToWorldCoords(mouseCoords);
+    return PickTileFromWorldCoords(world_coords, layerIndex);
 }
 
 Map::Map(const XMLElement& elem) {
@@ -72,6 +86,13 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
 void Map::Render(Renderer& renderer) const {
     for(const auto& layer : _layers) {
         layer->Render(renderer);
+    }
+
+    if(auto* tile = PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+        auto tile_bounds = tile->GetBounds();
+        renderer.SetMaterial(renderer.GetMaterial("__2D"));
+        renderer.SetModelMatrix(Matrix4::I);
+        renderer.DrawAABB2(tile_bounds, Rgba::White, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
     }
 }
 
@@ -129,12 +150,29 @@ Layer* Map::GetLayer(std::size_t index) const {
     return _layers[index].get();
 }
 
-Tile* Map::GetTile(const IntVector2& location) const {
-    return GetTile(location.x, location.y);
+std::vector<Tile*> Map::GetTiles(const IntVector2& location) const {
+    return GetTiles(location.x, location.y);
 }
 
-Tile* Map::GetTile(int x, int y) const {
-    return GetLayer(0)->GetTile(x, y);
+Tile* Map::GetTile(const IntVector3& locationAndLayerIndex) const {
+    return GetTile(locationAndLayerIndex.x, locationAndLayerIndex.y, locationAndLayerIndex.z);
+}
+
+std::vector<Tile*> Map::GetTiles(int x, int y) const {
+    std::vector<Tile*> results{};
+    for(auto i = std::size_t{0}; i < GetLayerCount(); ++i) {
+        if(auto* cur_layer = GetLayer(i)) {
+            results.push_back(cur_layer->GetTile(x, y));
+        }
+    }
+    return results;
+}
+
+Tile* Map::GetTile(int x, int y, int z) const {
+    if(auto* layer = GetLayer(z)) {
+        return layer->GetTile(x, y);
+    }
+    return nullptr;
 }
 
 bool Map::LoadFromXML(const XMLElement& elem) {

@@ -25,6 +25,7 @@ public:
     void ChangeTypeFromGlyph(char glyph);
 
     AABB2 GetBounds() const;
+    const TileDefinition* GetDefinition() const;
     TileDefinition* GetDefinition();
 
     bool IsVisible() const;

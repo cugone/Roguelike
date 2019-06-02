@@ -4,6 +4,7 @@
 
 class Map;
 class Layer;
+class Tile;
 
 class Entity {
 public:
