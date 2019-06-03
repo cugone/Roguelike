@@ -232,7 +232,7 @@ bool Map::LoadFromXML(const XMLElement& elem) {
             ss << "Layer count of map " << _name << " is greater than nine (9).";
             ss << "\nOnly the first nine layers will be used.";
             ss.flush();
-            g_theFileLogger->Log(ss.str());
+            g_theFileLogger->LogLine(ss.str());
         }
 
         int layer_index = 0;
