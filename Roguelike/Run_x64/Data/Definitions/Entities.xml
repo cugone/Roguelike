@@ -1,25 +1,26 @@
 <entities>
-    <material name="" />
+    <material name="Entity" />
+    <spritesheet src="Data/Images/Entities.png" dimensions="[32,32]" />
     <entity name="player.base">
         <attachpoints>
-            <hair value="[0,0]" />
-            <head value="[0,0]" />
+            <hair value="[0,16]" />
+            <head value="[0,18]" />
             <body value="[0,0]" />
-            <legs value="[0,0]" />
-            <arm1 value="[0,0]" />
-            <arm2 value="[0,0]" />
-            <feet value="[0,0]" />
+            <legs value="[0,-8]" />
+            <arm1 value="[8,0]" />
+            <arm2 value="[8,4]" />
+            <feet value="[0,-16]" />
             <accessory value="[0,0]" />
         </attachpoints>
         <images>
-            <hair src="[0,0]" />
-            <head src="[0,0]" />
-            <body src="[0,0]" />
-            <legs src="[0,0]" />
-            <arm1 src="[0,0]" />
-            <arm2 src="[0,0]" />
-            <feet src="[0,0]" />
-            <accessory src="[0,0]" />
+            <hair index="[0,0]" />
+            <head index="[0,0]" />
+            <body index="[0,0]" />
+            <legs index="[0,0]" />
+            <arm1 index="[0,0]" />
+            <arm2 index="[0,0]" />
+            <feet index="[0,0]" />
+            <accessory index="[0,0]" />
         </images>
     </entity>
 </entities>

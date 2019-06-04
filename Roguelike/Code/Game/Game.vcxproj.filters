@@ -52,6 +52,9 @@
     <ClCompile Include="Entity.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="EntityDefinition.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameCommon.hpp">
@@ -81,6 +84,9 @@
     <ClInclude Include="Entity.hpp">
       <Filter>Game</Filter>
     </ClInclude>
+    <ClInclude Include="EntityDefinition.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="..\..\Run_x64\Data\Definitions\Map00.xml">
@@ -103,6 +109,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\Run_x64\Data\Images\Tiles.png">
+      <Filter>Data\Images</Filter>
+    </Image>
+    <Image Include="..\..\Run_x64\Data\Images\Entities.png">
       <Filter>Data\Images</Filter>
     </Image>
   </ItemGroup>
