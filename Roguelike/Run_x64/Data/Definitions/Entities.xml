@@ -1,0 +1,26 @@
+<entities>
+    <material name="" />
+    <entity name="player.base">
+        <attachpoints>
+            <hair value="[0,0]" />
+            <head value="[0,0]" />
+            <body value="[0,0]" />
+            <legs value="[0,0]" />
+            <arm1 value="[0,0]" />
+            <arm2 value="[0,0]" />
+            <feet value="[0,0]" />
+            <accessory value="[0,0]" />
+        </attachpoints>
+        <images>
+            <hair src="[0,0]" />
+            <head src="[0,0]" />
+            <body src="[0,0]" />
+            <legs src="[0,0]" />
+            <arm1 src="[0,0]" />
+            <arm2 src="[0,0]" />
+            <feet src="[0,0]" />
+            <accessory src="[0,0]" />
+        </images>
+    </entity>
+</entities>
+    

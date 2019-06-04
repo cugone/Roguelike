@@ -172,6 +172,7 @@
     <Xml Include="..\..\Run_x64\Data\Definitions\Tiles.xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Run_x64\Data\Materials\Entity.material" />
     <None Include="..\..\Run_x64\Data\Materials\Tile.material" />
   </ItemGroup>
   <ItemGroup>

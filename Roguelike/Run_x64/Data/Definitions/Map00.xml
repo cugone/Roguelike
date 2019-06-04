@@ -1,6 +1,7 @@
 <map name="Level 1">
     <material name="Tile" />
     <tiles src="Data/Definitions/Tiles.xml" />
+    <entities src="Data/Definitions/Entities.xml" />
     <layers>
         <layer>
             <row glyphs="##########" />
