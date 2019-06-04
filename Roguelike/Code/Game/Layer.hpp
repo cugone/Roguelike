@@ -58,7 +58,7 @@ public:
     float viewHeight{1.0f};
     IntVector2 tileDimensions{1, 1};
     Rgba color{ Rgba::White };
-    Rgba debug_grid_color{Rgba::Black};
+    Rgba debug_grid_color{Rgba::Red};
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);
