@@ -142,7 +142,15 @@ float Map::CalcMaxViewHeight() const {
 }
 
 Material* Map::GetTileMaterial() const {
-    return _tileMaterial;
+    return _current_tileMaterial;
+}
+
+void Map::SetTileMaterial(Material* material) {
+    _current_tileMaterial = material;
+}
+
+void Map::ResetTileMaterial() {
+    _current_tileMaterial = _default_tileMaterial;
 }
 
 std::size_t Map::GetLayerCount() const {
@@ -195,7 +203,8 @@ bool Map::LoadFromXML(const XMLElement& elem) {
     if(auto xml_material = elem.FirstChildElement("material")) {
         DataUtils::ValidateXmlElement(*xml_material, "material", "", "name");
         auto src = DataUtils::ParseXmlAttribute(*xml_material, "name", std::string{"__invalid"});
-        _tileMaterial = g_theRenderer->GetMaterial(src);
+        _default_tileMaterial = g_theRenderer->GetMaterial(src);
+        _current_tileMaterial = _default_tileMaterial;
     }
 
     if(auto xml_tileset = elem.FirstChildElement("tiles")) {

@@ -35,6 +35,8 @@ public:
     Vector2 CalcMaxDimensions() const;
     float CalcMaxViewHeight() const;
     Material* GetTileMaterial() const;
+    void SetTileMaterial(Material* material);
+    void ResetTileMaterial();
     std::size_t GetLayerCount() const;
     Layer* GetLayer(std::size_t index) const;
     std::vector<Tile*> GetTiles(const IntVector2& location) const;
@@ -55,7 +57,8 @@ private:
 
     std::string _name{};
     std::vector<std::unique_ptr<Layer>> _layers{};
-    Material* _tileMaterial{};
+    Material* _default_tileMaterial{};
+    Material* _current_tileMaterial{};
     float _camera_speed = 1.0f;
     static unsigned long long default_map_index;
 };
