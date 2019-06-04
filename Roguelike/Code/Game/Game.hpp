@@ -25,10 +25,11 @@ public:
 
 protected:
 private:
+    void HandleDebugInput(Camera2D &base_camera);
+    void HandlePlayerInput(Camera2D &base_camera);
+
     void ShowDebugUI();
-
     void ShowBoundsColoringUI();
-
     void ShowTileInspectorUI();
 
     std::unique_ptr<Map> _map{nullptr};
@@ -45,3 +46,4 @@ private:
     friend class Map;
     friend class Layer;
 };
+

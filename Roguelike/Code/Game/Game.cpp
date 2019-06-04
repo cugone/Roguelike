@@ -38,72 +38,15 @@ void Game::BeginFrame() {
 }
 
 void Game::Update(TimeUtils::FPSeconds deltaSeconds) {
-    if(_show_debug_window) {
-        ShowDebugUI();
-    }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::Esc)) {
         g_theApp->SetIsQuitting(true);
         return;
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F1)) {
-        _show_debug_window = !_show_debug_window;
-    }
     Camera2D& base_camera = _map->camera;
-    if(g_theInputSystem->IsKeyDown(KeyCode::D)) {
-        base_camera.Translate(Vector2{1.0f, 0.0f} * _cam_speed);
-    } else if(g_theInputSystem->IsKeyDown(KeyCode::A)) {
-        base_camera.Translate(Vector2{-1.0f, 0.0f} *_cam_speed);
-    }
-    if(g_theInputSystem->IsKeyDown(KeyCode::W)) {
-        base_camera.Translate(Vector2{0.0f, -1.0f} *_cam_speed);
-    } else if(g_theInputSystem->IsKeyDown(KeyCode::S)) {
-        base_camera.Translate(Vector2{0.0f, 1.0f} *_cam_speed);
-    }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::Right)) {
-        base_camera.Translate(Vector2{1.0f, 0.0f} * _cam_speed);
-    } else if(g_theInputSystem->WasKeyJustPressed(KeyCode::Left)) {
-        base_camera.Translate(Vector2{-1.0f, 0.0f} *_cam_speed);
-    }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::Up)) {
-        base_camera.Translate(Vector2{0.0f, -1.0f} *_cam_speed);
-    } else if(g_theInputSystem->WasKeyJustPressed(KeyCode::Down)) {
-        base_camera.Translate(Vector2{0.0f, 1.0f} *_cam_speed);
-    }
-
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::LeftBracket)) {
-        const auto count = _map->GetLayerCount();
-        for(std::size_t i = 0; i < count; ++i) {
-            auto* cur_layer = _map->GetLayer(i);
-            if(cur_layer) {
-                ++cur_layer->viewHeight;
-            }
-        }
-    } else if(g_theInputSystem->WasKeyJustPressed(KeyCode::RightBracket)) {
-        const auto count = _map->GetLayerCount();
-        for(std::size_t i = 0; i < count; ++i) {
-            auto* cur_layer = _map->GetLayer(i);
-            if(cur_layer) {
-                --cur_layer->viewHeight;
-            }
-        }
-    }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::B)) {
-        base_camera.trauma += 1.0f;
-    }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::R)) {
-        const auto count = _map->GetLayerCount();
-        for(std::size_t i = 0; i < count; ++i) {
-            auto* cur_layer = _map->GetLayer(i);
-            if(cur_layer) {
-                cur_layer->viewHeight = cur_layer->GetDefaultViewHeight();
-            }
-        }
-    }
-
+    HandleDebugInput(base_camera);
+    HandlePlayerInput(base_camera);
     base_camera.Update(deltaSeconds);
-
     _map->Update(deltaSeconds);
-
 }
 
 void Game::Render() const {
@@ -135,11 +78,71 @@ void Game::Render() const {
     _ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(_ui_camera);
 
-
 }
 
 void Game::EndFrame() {
 
+}
+
+void Game::HandlePlayerInput(Camera2D& base_camera) {
+    const bool is_right = g_theInputSystem->IsKeyDown(KeyCode::D) ||
+                          g_theInputSystem->WasKeyJustPressed(KeyCode::Right);
+    const bool is_left = g_theInputSystem->IsKeyDown(KeyCode::A) ||
+                         g_theInputSystem->WasKeyJustPressed(KeyCode::Left);
+    if(is_right) {
+        base_camera.Translate(Vector2{ 1.0f, 0.0f } * _cam_speed);
+    } else if(is_left) {
+        base_camera.Translate(Vector2{ -1.0f, 0.0f } * _cam_speed);
+    }
+
+    const bool is_up = g_theInputSystem->IsKeyDown(KeyCode::W) ||
+                       g_theInputSystem->WasKeyJustPressed(KeyCode::Up);
+    const bool is_down = g_theInputSystem->IsKeyDown(KeyCode::S) ||
+                         g_theInputSystem->WasKeyJustPressed(KeyCode::Down);
+
+    if(is_up) {
+        base_camera.Translate(Vector2{ 0.0f, -1.0f } * _cam_speed);
+    } else if(is_down) {
+        base_camera.Translate(Vector2{ 0.0f, 1.0f } * _cam_speed);
+    }
+}
+
+void Game::HandleDebugInput(Camera2D &base_camera) {
+    if(_show_debug_window) {
+        ShowDebugUI();
+    }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F1)) {
+        _show_debug_window = !_show_debug_window;
+    }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::LeftBracket)) {
+        const auto count = _map->GetLayerCount();
+        for(std::size_t i = 0; i < count; ++i) {
+            auto* cur_layer = _map->GetLayer(i);
+            if(cur_layer) {
+                ++cur_layer->viewHeight;
+            }
+        }
+    } else if(g_theInputSystem->WasKeyJustPressed(KeyCode::RightBracket)) {
+        const auto count = _map->GetLayerCount();
+        for(std::size_t i = 0; i < count; ++i) {
+            auto* cur_layer = _map->GetLayer(i);
+            if(cur_layer) {
+                --cur_layer->viewHeight;
+            }
+        }
+    }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::B)) {
+        base_camera.trauma += 1.0f;
+    }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::R)) {
+        const auto count = _map->GetLayerCount();
+        for(std::size_t i = 0; i < count; ++i) {
+            auto* cur_layer = _map->GetLayer(i);
+            if(cur_layer) {
+                cur_layer->viewHeight = cur_layer->GetDefaultViewHeight();
+            }
+        }
+    }
 }
 
 void Game::ShowDebugUI() {
