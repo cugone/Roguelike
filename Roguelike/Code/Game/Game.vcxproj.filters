@@ -89,6 +89,9 @@
     <Xml Include="..\..\Run_x64\Data\Definitions\Tiles.xml">
       <Filter>Data\Definitions</Filter>
     </Xml>
+    <Xml Include="..\..\Run_x64\Data\Definitions\Entities.xml">
+      <Filter>Data\Definitions</Filter>
+    </Xml>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Run_x64\Data\Materials\Tile.material">

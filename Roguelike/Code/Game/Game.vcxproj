@@ -167,6 +167,7 @@
     <ClInclude Include="TileDefinition.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <Xml Include="..\..\Run_x64\Data\Definitions\Entities.xml" />
     <Xml Include="..\..\Run_x64\Data\Definitions\Map00.xml" />
     <Xml Include="..\..\Run_x64\Data\Definitions\Tiles.xml" />
   </ItemGroup>
