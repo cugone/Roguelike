@@ -146,7 +146,7 @@ void Game::HandleDebugInput(Camera2D &base_camera) {
 }
 
 void Game::ShowDebugUI() {
-    ImGui::Begin("Tile Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize);
+    if(ImGui::Begin("Tile Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize))
     {
         ShowBoundsColoringUI();
         ShowTileInspectorUI();
