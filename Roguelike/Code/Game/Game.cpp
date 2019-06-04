@@ -170,8 +170,8 @@ void Game::ShowTileInspectorUI() {
         return;
     }
     ImGui::Text("Tile Inspector");
-    const auto max_layers = 9;
-    const auto tiles_per_row = 3;
+    const auto max_layers = std::size_t{9u};
+    const auto tiles_per_row = std::size_t{3u};
     const auto picked_count = picked_tiles.size();
     for(std::size_t i = 0; i < max_layers; ++i) {
         const auto* cur_tile = i < picked_count ? picked_tiles[i] : nullptr;
