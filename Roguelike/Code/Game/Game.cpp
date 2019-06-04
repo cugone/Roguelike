@@ -114,6 +114,15 @@ void Game::HandleDebugInput(Camera2D &base_camera) {
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F1)) {
         _show_debug_window = !_show_debug_window;
     }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F2)) {
+        _show_grid = !_show_grid;
+    }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F3)) {
+        _show_world_bounds = !_show_world_bounds;
+    }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F4)) {
+        g_theUISystem->ToggleImguiDemoWindow();
+    }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::LeftBracket)) {
         const auto count = _map->GetLayerCount();
         for(std::size_t i = 0; i < count; ++i) {
@@ -156,10 +165,10 @@ void Game::ShowDebugUI() {
 
 void Game::ShowBoundsColoringUI() {
     ImGui::Checkbox("World Grid", &_show_grid);
+    ImGui::Checkbox("World Bounds", &_show_world_bounds);
     if(ImGui::ColorEdit4("Grid Color##Picker", _grid_color, ImGuiColorEditFlags_None)) {
         _map->SetDebugGridColor(_grid_color);
     }
-    ImGui::Checkbox("World Bounds", &_show_world_bounds);
 }
 
 void Game::ShowTileInspectorUI() {
