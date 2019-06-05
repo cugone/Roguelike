@@ -2,6 +2,11 @@
 
 #include "Game/Map.hpp"
 
+Entity::Entity(const XMLElement& elem) noexcept
+{
+    LoadFromXml(elem);
+}
+
 void Entity::Move(const IntVector2& direction) {
     if(CanMoveDiagonallyToNeighbor(direction)) {
         const auto target_position = position + direction;
@@ -11,6 +16,10 @@ void Entity::Move(const IntVector2& direction) {
             tile = target_tile;
         }
     }
+}
+
+void Entity::LoadFromXml(const XMLElement& /*elem*/) {
+    /* DO NOTHING */
 }
 
 bool Entity::CanMoveDiagonallyToNeighbor(const IntVector2& direction) {
