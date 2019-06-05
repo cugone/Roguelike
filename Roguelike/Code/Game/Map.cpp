@@ -191,7 +191,7 @@ Tile* Map::GetTile(int x, int y, int z) const {
 
 bool Map::LoadFromXML(const XMLElement& elem) {
 
-    DataUtils::ValidateXmlElement(elem, "map", "tiles,layers,material", "name");
+    DataUtils::ValidateXmlElement(elem, "map", "tiles,layers,material", "name", "entities");
 
     {
         std::ostringstream ss;
@@ -231,6 +231,11 @@ bool Map::LoadFromXML(const XMLElement& elem) {
                 }
             }
         }
+    }
+
+    if(auto xml_entities = elem.FirstChildElement("entities")) {
+        //TODO: Load entities from source file.
+        UNUSED(xml_entities);
     }
 
     if(auto xml_layers = elem.FirstChildElement("layers")) {
