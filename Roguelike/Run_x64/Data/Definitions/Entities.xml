@@ -1,6 +1,5 @@
 <entities>
-    <material name="Entity" />
-    <spritesheet src="Data/Images/Entities.png" dimensions="[32,32]" />
+    <definitions src="Data/Definitions/EntityDefinitions.xml" />
     <entity name="player.base">
         <attachpoints>
             <hair value="[0,16]" />
