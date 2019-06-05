@@ -1,5 +1,5 @@
 <tileDefinitions>
-    <spritesheet src="Data/Images/Tiles.png" dimensions="[32,32]" />
+    <spritesheet src="Data/Images/Tiles.png" dimensions="[65,65]" />
     <tileDefinition name="void" index="[0,0]">
         <glyph value=" " />
         <opaque value="false" />
