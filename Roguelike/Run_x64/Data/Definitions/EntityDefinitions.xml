@@ -1,6 +1,6 @@
 <entityDefinitions>
     <material name="Entity" />
-    <spritesheet src="Data/Images/Entities.png" dimensions="[32,32]" />
+    <spritesheet src="Data/Images/Tiles.png" dimensions="[32,32]" />
     <entity name="player">
         
     </entity>

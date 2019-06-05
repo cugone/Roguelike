@@ -106,9 +106,6 @@
     <None Include="..\..\Run_x64\Data\Materials\Tile.material">
       <Filter>Data\Materials</Filter>
     </None>
-    <None Include="..\..\Run_x64\Data\Materials\Entity.material">
-      <Filter>Data\Materials</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\Run_x64\Data\Images\Tiles.png">

@@ -1,6 +1,0 @@
-<material name="Entity">
-    <shader src="__2D" />
-    <textures>
-        <diffuse src="Data/Images/Entities.png" />
-    </textures>
-</material>
