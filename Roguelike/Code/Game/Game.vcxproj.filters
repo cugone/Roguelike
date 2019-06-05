@@ -114,8 +114,5 @@
     <Image Include="..\..\Run_x64\Data\Images\Tiles.png">
       <Filter>Data\Images</Filter>
     </Image>
-    <Image Include="..\..\Run_x64\Data\Images\Entities.png">
-      <Filter>Data\Images</Filter>
-    </Image>
   </ItemGroup>
 </Project>
