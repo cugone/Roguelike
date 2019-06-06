@@ -19,7 +19,7 @@ public:
     ~Tile() = default;
 
     void Update(TimeUtils::FPSeconds deltaSeconds);
-    void Render(std::vector<Vertex3D>& verts, const Rgba& layer_color, size_t layer_index) const;
+    void Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
 
     void ChangeTypeFromName(const std::string& name);
     void ChangeTypeFromGlyph(char glyph);

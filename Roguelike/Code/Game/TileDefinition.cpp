@@ -2,11 +2,14 @@
 
 #include "Engine/Core/ErrorWarningAssert.hpp"
 
+#include "Engine/Renderer/AnimatedSprite.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
+
+#include "Game/GameCommon.hpp"
 
 #include <memory>
 
-std::map<std::string, std::unique_ptr<TileDefinition>> TileDefinition::s_registry;
+std::map<std::string, std::unique_ptr<TileDefinition>> TileDefinition::s_registry{};
 
 void TileDefinition::CreateTileDefinition(const XMLElement& elem, SpriteSheet* sheet) {
     auto new_def = std::make_unique<TileDefinition>(elem, sheet);
@@ -54,8 +57,25 @@ SpriteSheet* TileDefinition::GetSheet() {
     return const_cast<SpriteSheet*>(static_cast<const TileDefinition&>(*this).GetSheet());
 }
 
+const AnimatedSprite* TileDefinition::GetSprite() const {
+    return _sprite.get();
+}
+
+AnimatedSprite* TileDefinition::GetSprite() {
+    return const_cast<AnimatedSprite*>(static_cast<const TileDefinition&>(*this).GetSprite());
+}
+
+IntVector2 TileDefinition::GetIndexCoords() const {
+    return _index;
+}
+
+int TileDefinition::GetIndex() const {
+    return (_index.x + _random_index_offset) + _index.y * _sheet->GetLayout().x;
+}
+
 TileDefinition::TileDefinition(const XMLElement& elem, SpriteSheet* sheet)
-    : _sheet(sheet) {
+    : _sheet(sheet)
+{
     if(!LoadFromXml(elem)) {
         ERROR_AND_DIE("TileDefinition failed to load.\n");
     }
@@ -63,27 +83,68 @@ TileDefinition::TileDefinition(const XMLElement& elem, SpriteSheet* sheet)
 
  bool TileDefinition::LoadFromXml(const XMLElement& elem) {
 
-     DataUtils::ValidateXmlElement(elem, "tileDefinition", "glyph,opaque,solid", "name,index", "visible,allowDiagonalMovement");
+     DataUtils::ValidateXmlElement(elem, "tileDefinition", "glyph", "name,index", "opaque,solid,visible,invisible,allowDiagonalMovement,animation,offset");
 
      name = DataUtils::ParseXmlAttribute(elem, "name", name);
-     index = DataUtils::ParseXmlAttribute(elem, "index", index);
+     if(auto xml_randomOffset = elem.FirstChildElement("offset")) {
+         _random_index_offset = DataUtils::ParseXmlAttribute(*xml_randomOffset, "value", _random_index_offset);
+     }
+     _index = DataUtils::ParseXmlAttribute(elem, "index", _index);
+     AddOffsetToIndex(_random_index_offset);
 
      auto xml_glyph = elem.FirstChildElement("glyph");
      glyph = DataUtils::ParseXmlAttribute(*xml_glyph, "value", glyph);
 
-     auto xml_opaque = elem.FirstChildElement("opaque");
-     is_opaque = DataUtils::ParseXmlAttribute(*xml_opaque, "value", is_opaque);
+     if(auto xml_opaque = elem.FirstChildElement("opaque")) {
+         is_opaque = true;
+         is_opaque = DataUtils::ParseXmlAttribute(*xml_opaque, "value", is_opaque);
+     }
 
-     auto xml_solid = elem.FirstChildElement("solid");
-     is_solid = DataUtils::ParseXmlAttribute(*xml_solid, "value", is_solid);
+     if(auto xml_solid = elem.FirstChildElement("solid")) {
+         is_solid = true;
+         is_solid = DataUtils::ParseXmlAttribute(*xml_solid, "value", is_solid);
+     }
 
      if(auto xml_visible = elem.FirstChildElement("visible")) {
+         is_visible = true;
          is_visible = DataUtils::ParseXmlAttribute(*xml_visible, "value", is_visible);
+     }
+     if(auto xml_invisible = elem.FirstChildElement("invisible")) {
+         is_visible = false;
+         is_visible = DataUtils::ParseXmlAttribute(*xml_invisible, "value", is_visible);
      }
 
      if(auto xml_diag = elem.FirstChildElement("allowDiagonalMovement")) {
+         allow_diagonal_movement = true;
          allow_diagonal_movement = DataUtils::ParseXmlAttribute(*xml_diag, "value", allow_diagonal_movement);
      }
 
+     if(auto xml_animation = elem.FirstChildElement("animation")) {
+         is_animated = true;
+         _sprite = std::make_unique<AnimatedSprite>(*g_theRenderer, *xml_animation);
+     } else {
+         _sprite = std::make_unique<AnimatedSprite>(*g_theRenderer, _sheet, _index);
+     }
      return true;
+ }
+
+ void TileDefinition::SetIndex(const IntVector2& indexCoords) {
+     _index = indexCoords;
+ }
+
+ void TileDefinition::SetIndex(int index) {
+     const auto& layout = _sheet->GetLayout();
+     const auto x = index % layout.x;
+     const auto y = index / layout.x;
+     SetIndex(x, y);
+ }
+
+ void TileDefinition::SetIndex(int x, int y) {
+     SetIndex(IntVector2{ x, y });
+ }
+
+ void TileDefinition::AddOffsetToIndex(int offset) {
+     const auto x = _index.x + offset;
+     const auto y = _index.y;
+     SetIndex(x, y);
  }

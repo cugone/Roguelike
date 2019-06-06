@@ -14,6 +14,7 @@
 class Material;
 class Renderer;
 class TileDefinition;
+class SpriteSheet;
 
 class Map {
 public:
@@ -54,11 +55,17 @@ public:
 protected:
 private:
     bool LoadFromXML(const XMLElement& elem);
+    void LoadNameForMap(const XMLElement& elem);
+    void LoadMaterialsForMap(const XMLElement& elem);
+    void LoadEntitiesForMap(const XMLElement& elem);
+    void LoadLayersForMap(const XMLElement& elem);
+    void LoadTileDefinitionsForMap(const XMLElement& elem);
 
     std::string _name{};
     std::vector<std::unique_ptr<Layer>> _layers{};
     Material* _default_tileMaterial{};
     Material* _current_tileMaterial{};
+    SpriteSheet* _tileset_sheet{};
     float _camera_speed = 1.0f;
     static unsigned long long default_map_index;
 };

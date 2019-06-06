@@ -1,4 +1,4 @@
-<map name="Level 1">
+<map name="Test Level">
     <material name="Tile" />
     <tiles src="Data/Definitions/Tiles.xml" />
     <entities src="Data/Definitions/Entities.xml" />
@@ -14,18 +14,6 @@
             <row glyphs="#........#" />
             <row glyphs="#........#" />
             <row glyphs="##########" />
-        </layer>
-        <layer>
-            <row glyphs="          " />
-            <row glyphs=" =-^v/\&lt;&gt; " />
-            <row glyphs="          " />
-            <row glyphs="          " />
-            <row glyphs="          " />
-            <row glyphs="          " />
-            <row glyphs="          " />
-            <row glyphs="          " />
-            <row glyphs="          " />
-            <row glyphs="          " />
         </layer>
     </layers>
 </map>

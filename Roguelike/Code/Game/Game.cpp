@@ -8,6 +8,7 @@
 #include "Engine/Math/Vector2.hpp"
 #include "Engine/Math/Vector4.hpp"
 
+#include "Engine/Renderer/AnimatedSprite.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 #include "Engine/Renderer/Texture.hpp"
 
@@ -19,18 +20,20 @@
 
 void Game::Initialize() {
     g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
-    {
-        auto str_path = std::string{ "Data/Definitions/Map00.xml" };
-        if(FileUtils::IsSafeReadPath(str_path)) {
-            std::string str_buffer{};
-            if(FileUtils::ReadBufferFromFile(str_buffer, str_path)) {
-                tinyxml2::XMLDocument xml_doc;
-                xml_doc.Parse(str_buffer.c_str(), str_buffer.size());
-                _map = std::make_unique<Map>(*xml_doc.RootElement());
-            }
+    LoadMaps();
+    _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
+}
+
+void Game::LoadMaps() {
+    auto str_path = std::string{ "Data/Definitions/Map00.xml" };
+    if(FileUtils::IsSafeReadPath(str_path)) {
+        std::string str_buffer{};
+        if(FileUtils::ReadBufferFromFile(str_buffer, str_path)) {
+            tinyxml2::XMLDocument xml_doc;
+            xml_doc.Parse(str_buffer.c_str(), str_buffer.size());
+            _map = std::make_unique<Map>(*xml_doc.RootElement());
         }
     }
-    _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
 }
 
 void Game::BeginFrame() {
@@ -185,10 +188,10 @@ void Game::ShowTileInspectorUI() {
     for(std::size_t i = 0; i < max_layers; ++i) {
         const auto* cur_tile = i < picked_count ? picked_tiles[i] : nullptr;
         if(const auto* cur_def = cur_tile ? cur_tile->GetDefinition() : TileDefinition::GetTileDefinitionByName("void")) {
-            if(const auto* cur_sheet = cur_def->GetSheet()) {
-                const auto tex_coords = cur_sheet->GetTexCoordsFromSpriteCoords(cur_def->index);
+            if(const auto* cur_sprite = cur_def->GetSprite()) {
+                const auto tex_coords = cur_sprite->GetCurrentTexCoords();
                 const auto dims = Vector2::ONE * 100.0f;
-                ImGui::Image(cur_sheet->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
                 if(!i || (i % tiles_per_row) < tiles_per_row - 1) {
                     ImGui::SameLine();
                 }

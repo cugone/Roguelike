@@ -18,6 +18,9 @@ public:
     ~Game() = default;
 
     void Initialize();
+
+    void LoadMaps();
+
     void BeginFrame();
     void Update(TimeUtils::FPSeconds deltaSeconds);
     void Render() const;

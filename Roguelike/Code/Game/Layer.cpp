@@ -151,17 +151,15 @@ void Layer::RenderTiles(Renderer& renderer) const {
 
     static std::vector<Vertex3D> verts;
     verts.clear();
+    static std::vector<unsigned int> ibo;
+    ibo.clear();
 
     for(auto& t : _tiles) {
         AABB2 tile_bounds = t.GetBounds();
         if(MathUtils::DoAABBsOverlap(cullbounds, tile_bounds)) {
-            t.Render(verts, color, z_index);
+            t.Render(verts, ibo, color, z_index);
         }
     }
-
-    std::vector<unsigned int> ibo(verts.size());
-    std::iota(ibo.begin(), ibo.end(), 0); //Fill ibo from 0 to size - 1
-
     renderer.SetMaterial(_map->GetTileMaterial());
     renderer.DrawIndexed(PrimitiveType::Triangles, verts, ibo);
 }

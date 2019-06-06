@@ -1,60 +1,53 @@
 <tileDefinitions>
     <spritesheet src="Data/Images/Tiles.png" dimensions="[65,65]" />
-    <tileDefinition name="void" index="[0,0]">
+    <tileDefinition name="void" index="[45,64]">
         <glyph value=" " />
-        <opaque value="false" />
-        <solid value="false" />
-        <visible value="false" />
+        <invisible />
+        <allowDiagonalMovement />
     </tileDefinition>
-    <tileDefinition name="wall" index="[0,10]">
+    <tileDefinition name="wall" index="[50,13]">
         <glyph value="#" />
-        <opaque value="true" />
-        <solid value="true" />
-        <allowDiagonalMovement value="false" />
+        <opaque />
+        <solid />
+        <offset value="0~6" />
     </tileDefinition>
-    <tileDefinition name="grass" index="[1,0]">
+    <tileDefinition name="grass" index="[54,6]">
         <glyph value="." />
-        <opaque value="true" />
-        <solid value="true" />
+        <opaque />
+        <solid />
+        <allowDiagonalMovement />
     </tileDefinition>
     <tileDefinition name="stairsUp" index="[30,14]">
         <glyph value="&gt;" />
-        <opaque value="true" />
-        <solid value="false" />
+        <opaque />
+        <allowDiagonalMovement />
     </tileDefinition>
     <tileDefinition name="stairsDown" index="[30,13]">
         <glyph value="&lt;" />
-        <opaque value="false" />
-        <solid value="false" />
+        <allowDiagonalMovement />
     </tileDefinition>
-    <tileDefinition name="doorClosed" index="[31,11]">
-        <glyph value="=" />
-        <opaque value="true" />
-        <solid value="true" />
-    </tileDefinition>
-    <tileDefinition name="doorDestroyed" index="[31,12]">
+    <tileDefinition name="door.closed" index="[2,1]">
         <glyph value="-" />
-        <opaque value="false" />
-        <solid value="false" />
+        <opaque />
+        <solid />
+        <allowDiagonalMovement />
     </tileDefinition>
-    <tileDefinition name="doorOpenOut" index="[31,13]">
+    <tileDefinition name="door.locked" index="[19,1]">
+        <glyph value="=" />
+        <opaque />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="door.open" index="[17,1]">
         <glyph value="^" />
-        <opaque value="false" />
-        <solid value="false" />
-    </tileDefinition>
-    <tileDefinition name="doorOpenIn" index="[31,14]">
-        <glyph value="v" />
-        <opaque value="false" />
-        <solid value="false" />
+        <allowDiagonalMovement />
     </tileDefinition>
     <tileDefinition name="ladderUp" index="[29,14]">
         <glyph value="/" />
-        <opaque value="false" />
-        <solid value="false" />
+        <allowDiagonalMovement />
     </tileDefinition>
     <tileDefinition name="ladderDown" index="[29,13]">
         <glyph value="\" />
-        <opaque value="false" />
-        <solid value="false" />
+        <allowDiagonalMovement />
     </tileDefinition>
 </tileDefinitions>

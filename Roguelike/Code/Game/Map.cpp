@@ -9,6 +9,7 @@
 
 #include "Engine/Renderer/Material.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Renderer/SpriteSheet.hpp"
 
 #include "Game/GameCommon.hpp"
 #include "Game/TileDefinition.hpp"
@@ -193,51 +194,39 @@ bool Map::LoadFromXML(const XMLElement& elem) {
 
     DataUtils::ValidateXmlElement(elem, "map", "tiles,layers,material", "name", "entities");
 
-    {
-        std::ostringstream ss;
-        ss << "MAP " << ++default_map_index;
-        std::string default_name = ss.str();
-        _name = DataUtils::ParseXmlAttribute(elem, "name", default_name);
-    }
+    LoadNameForMap(elem);
+    LoadMaterialsForMap(elem);
+    LoadTileDefinitionsForMap(elem);
+    LoadEntitiesForMap(elem);
+    LoadLayersForMap(elem);
 
+    return true;
+}
+
+void Map::LoadNameForMap(const XMLElement& elem) {
+    std::ostringstream ss;
+    ss << "MAP " << ++default_map_index;
+    std::string default_name = ss.str();
+    _name = DataUtils::ParseXmlAttribute(elem, "name", default_name);
+}
+
+void Map::LoadMaterialsForMap(const XMLElement& elem) {
     if(auto xml_material = elem.FirstChildElement("material")) {
         DataUtils::ValidateXmlElement(*xml_material, "material", "", "name");
-        auto src = DataUtils::ParseXmlAttribute(*xml_material, "name", std::string{"__invalid"});
+        auto src = DataUtils::ParseXmlAttribute(*xml_material, "name", std::string{ "__invalid" });
         _default_tileMaterial = g_theRenderer->GetMaterial(src);
         _current_tileMaterial = _default_tileMaterial;
     }
+}
 
-    if(auto xml_tileset = elem.FirstChildElement("tiles")) {
-        DataUtils::ValidateXmlElement(*xml_tileset, "tiles", "", "src");
-        auto src = DataUtils::ParseXmlAttribute(*xml_tileset, "src", std::string{});
-        if(src.empty()) {
-            ERROR_AND_DIE("Map tiles source is empty.");
-        }
-        tinyxml2::XMLDocument doc;
-        auto xml_result = doc.LoadFile(src.c_str());
-        if(xml_result != tinyxml2::XML_SUCCESS) {
-            std::ostringstream ss;
-            ss << "Map at " << src << " failed to load.";
-            ERROR_AND_DIE(ss.str().c_str());
-        }
-        if(auto xml_root = doc.RootElement()) {
-            DataUtils::ValidateXmlElement(*xml_root, "tileDefinitions", "spritesheet,tileDefinition", "");
-            if(auto xml_spritesheet = xml_root->FirstChildElement("spritesheet")) {
-                if(auto* spritesheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet)) {
-                    DataUtils::ForEachChildElement(*xml_root, "tileDefinition",
-                        [spritesheet](const XMLElement& elem) {
-                        TileDefinition::CreateTileDefinition(elem, spritesheet);
-                    });
-                }
-            }
-        }
-    }
-
+void Map::LoadEntitiesForMap(const XMLElement& elem) {
     if(auto xml_entities = elem.FirstChildElement("entities")) {
         //TODO: Load entities from source file.
         UNUSED(xml_entities);
     }
+}
 
+void Map::LoadLayersForMap(const XMLElement &elem) {
     if(auto xml_layers = elem.FirstChildElement("layers")) {
         DataUtils::ValidateXmlElement(*xml_layers, "layers", "layer", "");
         std::size_t layer_count = DataUtils::GetChildElementCount(*xml_layers, "layer");
@@ -253,13 +242,41 @@ bool Map::LoadFromXML(const XMLElement& elem) {
         int max_layers = 9;
         _layers.reserve(layer_count);
         DataUtils::ForEachChildElement(*xml_layers, "layer",
-        [this, &layer_index, max_layers](const XMLElement& xml_layer) {
+            [this, &layer_index, max_layers](const XMLElement& xml_layer) {
             if(layer_index < max_layers) {
                 _layers.emplace_back(std::make_unique<Layer>(this, xml_layer));
                 _layers.back()->z_index = layer_index++;
             }
         });
+        _layers.shrink_to_fit();
     }
+}
 
-    return true;
+void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
+    if(auto xml_tileset = elem.FirstChildElement("tiles")) {
+        DataUtils::ValidateXmlElement(*xml_tileset, "tiles", "", "src");
+        const auto src = DataUtils::ParseXmlAttribute(*xml_tileset, "src", std::string{});
+        if(src.empty()) {
+            ERROR_AND_DIE("Map tiles source is empty.");
+        }
+        tinyxml2::XMLDocument doc;
+        auto xml_result = doc.LoadFile(src.c_str());
+        if(xml_result != tinyxml2::XML_SUCCESS) {
+            std::ostringstream ss;
+            ss << "Map at " << src << " failed to load.";
+            ERROR_AND_DIE(ss.str().c_str());
+        }
+        if(auto xml_root = doc.RootElement()) {
+            DataUtils::ValidateXmlElement(*xml_root, "tileDefinitions", "spritesheet,tileDefinition", "");
+            if(auto xml_spritesheet = xml_root->FirstChildElement("spritesheet")) {
+                if(auto* spritesheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet)) {
+                    _tileset_sheet = spritesheet;
+                    DataUtils::ForEachChildElement(*xml_root, "tileDefinition",
+                    [this](const XMLElement& elem) {
+                        TileDefinition::CreateTileDefinition(elem, this->_tileset_sheet);
+                    });
+                }
+            }
+        }
+    }
 }
