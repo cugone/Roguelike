@@ -121,7 +121,7 @@ TileDefinition::TileDefinition(const XMLElement& elem, SpriteSheet* sheet)
 
      if(auto xml_animation = elem.FirstChildElement("animation")) {
          is_animated = true;
-         _sprite = std::make_unique<AnimatedSprite>(*g_theRenderer, *xml_animation);
+         _sprite = std::make_unique<AnimatedSprite>(*g_theRenderer, _sheet, *xml_animation);
      } else {
          _sprite = std::make_unique<AnimatedSprite>(*g_theRenderer, _sheet, _index);
      }

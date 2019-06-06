@@ -9,7 +9,9 @@
         <glyph value="#" />
         <opaque />
         <solid />
-        <offset value="0~6" />
+        <animation>
+            <animationset startindex="[50,13]" framelength="6" duration="0.5" loop="true" />
+        </animation>
     </tileDefinition>
     <tileDefinition name="grass" index="[54,6]">
         <glyph value="." />
