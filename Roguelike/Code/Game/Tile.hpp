@@ -9,6 +9,7 @@
 
 class TileDefinition;
 class Entity;
+class Layer;
 
 class Tile {
 public:
@@ -41,9 +42,11 @@ public:
 
     void SetCoords(int x, int y);
     void SetCoords(const IntVector2& coords);
+    const IntVector2& GetCoords() const;
 
     Rgba color = Rgba::White;
     Entity* entity{};
+    Layer* layer = nullptr;
 protected:
 private:
     void AddVertsForTile(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;

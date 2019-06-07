@@ -13,7 +13,6 @@
     <tileDefinition name="grass" index="[54,6]">
         <glyph value="." />
         <opaque />
-        <solid />
         <allowDiagonalMovement />
     </tileDefinition>
     <tileDefinition name="stairsUp" index="[30,14]">

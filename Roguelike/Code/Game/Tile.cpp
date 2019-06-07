@@ -7,6 +7,7 @@
 
 #include "Game/TileDefinition.hpp"
 #include "Game/Entity.hpp"
+#include "Game/Layer.hpp"
 
 Tile::Tile()
     : _def(TileDefinition::GetTileDefinitionByName("void"))
@@ -134,4 +135,8 @@ void Tile::SetCoords(int x, int y) {
 
 void Tile::SetCoords(const IntVector2& coords) {
     _tile_coords = coords;
+}
+
+const IntVector2& Tile::GetCoords() const {
+    return _tile_coords;
 }

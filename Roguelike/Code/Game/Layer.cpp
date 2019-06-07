@@ -82,6 +82,7 @@ void Layer::InitializeTiles(const std::size_t layer_width, const std::size_t lay
         for(const auto& c : str) {
             tile_iter->ChangeTypeFromGlyph(c);
             tile_iter->SetCoords(tile_x, tile_y);
+            tile_iter->layer = this;
             ++tile_iter;
             ++tile_x;
         }

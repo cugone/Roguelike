@@ -6,6 +6,7 @@
 #include "Engine/Core/FileUtils.hpp"
 
 #include "Engine/Math/Vector4.hpp"
+#include "Engine/Math/IntVector3.hpp"
 
 #include "Engine/Renderer/Material.hpp"
 #include "Engine/Renderer/Renderer.hpp"
@@ -126,6 +127,39 @@ void Map::DebugRender(Renderer& renderer) const {
 void Map::EndFrame() {
     for(auto& layer : _layers) {
         layer->EndFrame();
+    }
+}
+
+bool Map::IsTileInView(const IntVector2& tileCoords) {
+    return IsTileInView(IntVector3{tileCoords, 0});
+}
+
+bool Map::IsTileInView(const IntVector3& tileCoords) {
+    return IsTileInView(GetTile(tileCoords));
+}
+
+bool Map::IsTileInView(Tile* tile) {
+    if(!tile || (tile && !tile->layer)) {
+        return false;
+    }
+    const auto tile_bounds = tile->GetBounds();
+    const auto view_bounds = tile->layer->CalcViewBounds(Vector2(tile->GetCoords()));
+    return MathUtils::DoAABBsOverlap(tile_bounds, view_bounds);
+}
+
+bool Map::IsEntityInView(Entity* entity) {
+    return entity && IsTileInView(entity->tile);
+}
+
+void Map::FocusTileAt(const IntVector3& position) {
+    if(const auto* tile = GetTile(position)) {
+        camera.SetPosition(Vector3{ position });
+    }
+}
+
+void Map::FocusEntity(Entity* entity) {
+    if(entity) {
+        FocusTileAt(IntVector3(entity->tile->GetCoords(), entity->layer->z_index));
     }
 }
 
@@ -405,6 +439,9 @@ void Map::PlaceEntitiesOnMap(const XMLElement& elem) {
             entity->layer = this->GetLayer(0);
             entity->SetPosition(start);
             _entities.push_back(std::move(entity));
+            if(name == "player") {
+                player = _entities.back().get();
+            }
         });
     }
 }

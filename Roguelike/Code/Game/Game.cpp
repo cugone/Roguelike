@@ -47,7 +47,7 @@ void Game::Update(TimeUtils::FPSeconds deltaSeconds) {
     }
     Camera2D& base_camera = _map->camera;
     HandleDebugInput(base_camera);
-    HandlePlayerInput(base_camera);
+    HandlePlayerInput();
     base_camera.Update(deltaSeconds);
     _map->Update(deltaSeconds);
 }
@@ -87,26 +87,30 @@ void Game::EndFrame() {
 
 }
 
-void Game::HandlePlayerInput(Camera2D& base_camera) {
-    const bool is_right = g_theInputSystem->IsKeyDown(KeyCode::D) ||
+void Game::HandlePlayerInput() {
+    const bool is_right = g_theInputSystem->WasKeyJustPressed(KeyCode::D) ||
                           g_theInputSystem->WasKeyJustPressed(KeyCode::Right);
-    const bool is_left = g_theInputSystem->IsKeyDown(KeyCode::A) ||
+    const bool is_left = g_theInputSystem->WasKeyJustPressed(KeyCode::A) ||
                          g_theInputSystem->WasKeyJustPressed(KeyCode::Left);
+    const bool is_shift = g_theInputSystem->IsKeyDown(KeyCode::Shift);
     if(is_right) {
-        base_camera.Translate(Vector2{ 1.0f, 0.0f } * _cam_speed);
+        _map->player->MoveEast();
     } else if(is_left) {
-        base_camera.Translate(Vector2{ -1.0f, 0.0f } * _cam_speed);
+        _map->player->MoveWest();
     }
 
-    const bool is_up = g_theInputSystem->IsKeyDown(KeyCode::W) ||
+    const bool is_up = g_theInputSystem->WasKeyJustPressed(KeyCode::W) ||
                        g_theInputSystem->WasKeyJustPressed(KeyCode::Up);
-    const bool is_down = g_theInputSystem->IsKeyDown(KeyCode::S) ||
+    const bool is_down = g_theInputSystem->WasKeyJustPressed(KeyCode::S) ||
                          g_theInputSystem->WasKeyJustPressed(KeyCode::Down);
 
     if(is_up) {
-        base_camera.Translate(Vector2{ 0.0f, -1.0f } * _cam_speed);
+        _map->player->MoveNorth();
     } else if(is_down) {
-        base_camera.Translate(Vector2{ 0.0f, 1.0f } * _cam_speed);
+        _map->player->MoveSouth();
+    }
+    if(!_map->IsEntityInView(_map->player)) {
+        _map->FocusEntity(_map->player);
     }
 }
 

@@ -36,6 +36,14 @@ public:
     void DebugRender(Renderer& renderer) const;
     void EndFrame();
 
+    bool IsTileInView(const IntVector2& tileCoords);
+    bool IsTileInView(const IntVector3& tileCoords);
+    bool IsTileInView(Tile* tile);
+    bool IsEntityInView(Entity* entity);
+
+    void FocusTileAt(const IntVector3& position);
+    void FocusEntity(Entity* entity);
+
     AABB2 CalcWorldBounds() const;
     Vector2 CalcMaxDimensions() const;
     float CalcMaxViewHeight() const;
@@ -54,7 +62,9 @@ public:
     Tile* PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) const;
     Vector2 ConvertScreenToWorldCoords(const Vector2& mouseCoords) const;
     void SetDebugGridColor(const Rgba& gridColor);
+
     mutable Camera2D camera{};
+    Entity* player = nullptr;
 
 protected:
 private:

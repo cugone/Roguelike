@@ -29,7 +29,7 @@ public:
 protected:
 private:
     void HandleDebugInput(Camera2D &base_camera);
-    void HandlePlayerInput(Camera2D &base_camera);
+    void HandlePlayerInput();
 
     void ShowDebugUI();
     void ShowBoundsColoringUI();
