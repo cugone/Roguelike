@@ -7,9 +7,13 @@
 
 #include "Engine/Renderer/Camera2D.hpp"
 
+#include "Game/Layer.hpp"
+#include "Game/Entity.hpp"
+
+#include <filesystem>
+#include <map>
 #include <memory>
 
-#include "Game/Layer.hpp"
 
 class Material;
 class Renderer;
@@ -19,7 +23,7 @@ class SpriteSheet;
 class Map {
 public:
     Map() = default;
-    explicit Map(const XMLElement& elem);
+    explicit Map(Renderer& renderer, const XMLElement& elem);
     Map(const Map& other) = default;
     Map(Map&& other) = default;
     Map& operator=(const Map& other) = default;
@@ -57,15 +61,26 @@ private:
     bool LoadFromXML(const XMLElement& elem);
     void LoadNameForMap(const XMLElement& elem);
     void LoadMaterialsForMap(const XMLElement& elem);
-    void LoadEntitiesForMap(const XMLElement& elem);
     void LoadLayersForMap(const XMLElement& elem);
     void LoadTileDefinitionsForMap(const XMLElement& elem);
+    void LoadTileDefinitionsFromFile(const std::filesystem::path& src);
+    void LoadEntitiesForMap(const XMLElement& elem);
+    void LoadEntitiesFromFile(const std::filesystem::path& src);
+    void LoadEntityDefinitionsFromFile(const std::filesystem::path& src);
+    void LoadEntityTypesForMap(const XMLElement& elem);
+    void PlaceEntitiesOnMap(const XMLElement& elem);
+    EntityType* GetEntityTypeByName(const std::string& name);
 
     std::string _name{};
     std::vector<std::unique_ptr<Layer>> _layers{};
+    Renderer& _renderer;
     Material* _default_tileMaterial{};
     Material* _current_tileMaterial{};
-    SpriteSheet* _tileset_sheet{};
+    std::vector<std::unique_ptr<Entity>> _entities{};
+    std::shared_ptr<SpriteSheet> _tileset_sheet{};
+    std::shared_ptr<SpriteSheet> _entity_sheet{};
+    std::map<std::string, std::unique_ptr<EntityType>> _entity_types{};
     float _camera_speed = 1.0f;
     static unsigned long long default_map_index;
+
 };

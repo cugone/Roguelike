@@ -6,6 +6,7 @@
 #include "Engine/Renderer/SpriteSheet.hpp"
 
 #include "Game/TileDefinition.hpp"
+#include "Game/Entity.hpp"
 
 Tile::Tile()
     : _def(TileDefinition::GetTileDefinitionByName("void"))
@@ -15,12 +16,22 @@ Tile::Tile()
 
 void Tile::Update(TimeUtils::FPSeconds deltaSeconds) {
     _def->GetSprite()->Update(deltaSeconds);
+    if(entity) {
+        entity->Update(deltaSeconds);
+    }
 }
 
 void Tile::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
     if(IsInvisible()) {
         return;
     }
+    AddVertsForTile(verts, ibo, layer_color, layer_index);
+    if(entity) {
+        entity->Render(verts, ibo, layer_color, layer_index);
+    }
+}
+
+void Tile::AddVertsForTile(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
     const auto& sprite = _def->GetSprite();
     const auto& coords = sprite->GetCurrentTexCoords();
 
@@ -57,7 +68,6 @@ void Tile::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, 
     ibo.push_back(static_cast<unsigned int>(v_s) - 4u);
     ibo.push_back(static_cast<unsigned int>(v_s) - 2u);
     ibo.push_back(static_cast<unsigned int>(v_s) - 1u);
-
 }
 
 void Tile::ChangeTypeFromName(const std::string& name) {
@@ -115,7 +125,7 @@ bool Tile::IsSolid() const {
 }
 
 bool Tile::IsPassable() const {
-    return !IsSolid();
+    return !IsSolid() && !entity;
 }
 
 void Tile::SetCoords(int x, int y) {

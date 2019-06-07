@@ -1,26 +1,7 @@
 <entities>
     <definitions src="Data/Definitions/EntityDefinitions.xml" />
-    <entity name="player.base">
-        <attachpoints>
-            <hair value="[0,16]" />
-            <head value="[0,18]" />
-            <body value="[0,0]" />
-            <legs value="[0,-8]" />
-            <arm1 value="[8,0]" />
-            <arm2 value="[8,4]" />
-            <feet value="[0,-16]" />
-            <accessory value="[0,0]" />
-        </attachpoints>
-        <images>
-            <hair index="[0,0]" />
-            <head index="[0,0]" />
-            <body index="[0,0]" />
-            <legs index="[0,0]" />
-            <arm1 index="[0,0]" />
-            <arm2 index="[0,0]" />
-            <feet index="[0,0]" />
-            <accessory index="[0,0]" />
-        </images>
+    <entity name="player">
+        <definition species="human" subspecies="" sex="male"/>
     </entity>
 </entities>
     

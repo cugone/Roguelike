@@ -11,9 +11,10 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 
+#include "Game/EntityDefinition.hpp"
 #include "Game/GameCommon.hpp"
-#include "Game/TileDefinition.hpp"
 #include "Game/Layer.hpp"
+#include "Game/TileDefinition.hpp"
 
 #include <sstream>
 
@@ -65,7 +66,9 @@ Tile* Map::PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) c
     return PickTileFromWorldCoords(world_coords, layerIndex);
 }
 
-Map::Map(const XMLElement& elem) {
+Map::Map(Renderer& renderer, const XMLElement& elem)
+    : _renderer(renderer)
+{
     if(!LoadFromXML(elem)) {
         ERROR_AND_DIE("Could not load map.");
     }
@@ -93,6 +96,12 @@ void Map::Render(Renderer& renderer) const {
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
         renderer.SetModelMatrix(Matrix4::I);
         renderer.DrawAABB2(tile_bounds, Rgba::White, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
+    }
+    for(const auto& e : _entities) {
+        auto tile_bounds = e->tile->GetBounds();
+        renderer.SetMaterial(renderer.GetMaterial("__2D"));
+        renderer.SetModelMatrix(Matrix4::I);
+        renderer.DrawAABB2(tile_bounds, Rgba::Red, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
     }
 }
 
@@ -192,14 +201,15 @@ Tile* Map::GetTile(int x, int y, int z) const {
 
 bool Map::LoadFromXML(const XMLElement& elem) {
 
-    DataUtils::ValidateXmlElement(elem, "map", "tiles,layers,material", "name", "entities");
+    DataUtils::ValidateXmlElement(elem, "map", "tiles,layers,material", "name", "entities,entityTypes,entityMap");
 
     LoadNameForMap(elem);
     LoadMaterialsForMap(elem);
     LoadTileDefinitionsForMap(elem);
-    LoadEntitiesForMap(elem);
     LoadLayersForMap(elem);
-
+    LoadEntitiesForMap(elem);
+    LoadEntityTypesForMap(elem);
+    PlaceEntitiesOnMap(elem);
     return true;
 }
 
@@ -216,13 +226,6 @@ void Map::LoadMaterialsForMap(const XMLElement& elem) {
         auto src = DataUtils::ParseXmlAttribute(*xml_material, "name", std::string{ "__invalid" });
         _default_tileMaterial = g_theRenderer->GetMaterial(src);
         _current_tileMaterial = _default_tileMaterial;
-    }
-}
-
-void Map::LoadEntitiesForMap(const XMLElement& elem) {
-    if(auto xml_entities = elem.FirstChildElement("entities")) {
-        //TODO: Load entities from source file.
-        UNUSED(xml_entities);
     }
 }
 
@@ -259,24 +262,150 @@ void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
         if(src.empty()) {
             ERROR_AND_DIE("Map tiles source is empty.");
         }
-        tinyxml2::XMLDocument doc;
-        auto xml_result = doc.LoadFile(src.c_str());
-        if(xml_result != tinyxml2::XML_SUCCESS) {
-            std::ostringstream ss;
-            ss << "Map at " << src << " failed to load.";
-            ERROR_AND_DIE(ss.str().c_str());
-        }
-        if(auto xml_root = doc.RootElement()) {
-            DataUtils::ValidateXmlElement(*xml_root, "tileDefinitions", "spritesheet,tileDefinition", "");
-            if(auto xml_spritesheet = xml_root->FirstChildElement("spritesheet")) {
-                if(auto* spritesheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet)) {
-                    _tileset_sheet = spritesheet;
-                    DataUtils::ForEachChildElement(*xml_root, "tileDefinition",
+        LoadTileDefinitionsFromFile(src);
+    }
+}
+
+void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
+    namespace FS = std::filesystem;
+    if(!FS::exists(src)) {
+        std::ostringstream ss;
+        ss << "Entities file at " << src << " could not be found.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    tinyxml2::XMLDocument doc;
+    auto xml_result = doc.LoadFile(src.string().c_str());
+    if(xml_result != tinyxml2::XML_SUCCESS) {
+        std::ostringstream ss;
+        ss << "Map " << _name << " failed to load. Tiles source file at " << src << " could not be loaded.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    if(auto xml_root = doc.RootElement()) {
+        DataUtils::ValidateXmlElement(*xml_root, "tileDefinitions", "spritesheet,tileDefinition", "");
+        if(auto xml_spritesheet = xml_root->FirstChildElement("spritesheet")) {
+            _tileset_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet);
+            if(_tileset_sheet) {
+                DataUtils::ForEachChildElement(*xml_root, "tileDefinition",
                     [this](const XMLElement& elem) {
-                        TileDefinition::CreateTileDefinition(elem, this->_tileset_sheet);
-                    });
-                }
+                    TileDefinition::CreateTileDefinition(g_theRenderer, elem, _tileset_sheet);
+                });
             }
         }
     }
 }
+
+void Map::LoadEntitiesForMap(const XMLElement& elem) {
+    if(auto* xml_map_entities_source = elem.FirstChildElement("entities")) {
+        DataUtils::ValidateXmlElement(*xml_map_entities_source, "entities", "", "src");
+        const auto src = DataUtils::ParseXmlAttribute(*xml_map_entities_source, "src", std::string{});
+        if(src.empty()) {
+            if(src.empty()) {
+                ERROR_AND_DIE("Map entities source is empty. Do not define element if map does not have entities.");
+            }
+        }
+        LoadEntitiesFromFile(src);
+    }
+}
+
+void Map::LoadEntitiesFromFile(const std::filesystem::path& src) {
+    namespace FS = std::filesystem;
+    if(!FS::exists(src)) {
+        std::ostringstream ss;
+        ss << "Entities file at " << src << " could not be found.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    tinyxml2::XMLDocument doc;
+    auto xml_result = doc.LoadFile(src.string().c_str());
+    if(xml_result != tinyxml2::XML_SUCCESS) {
+        std::ostringstream ss;
+        ss << "Map " << _name << " failed to load. Entities source file at " << src << " could not be loaded.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    if(auto* xml_entities_root = doc.RootElement()) {
+        DataUtils::ValidateXmlElement(*xml_entities_root, "entities", "definitions,entity", "");
+        if(auto* xml_definitions = xml_entities_root->FirstChildElement("definitions")) {
+            DataUtils::ValidateXmlElement(*xml_definitions, "definitions", "", "src");
+            const auto definitions_src = DataUtils::ParseXmlAttribute(*xml_definitions, "src", std::string{});
+            if(definitions_src.empty()) {
+                ERROR_AND_DIE("Entity definitions source is empty.");
+            }
+            FS::path def_src(definitions_src);
+            if(!FS::exists(def_src)) {
+                ERROR_AND_DIE("Entity definitions source not found.");
+            }
+            LoadEntityDefinitionsFromFile(def_src);
+        }
+    }
+}
+
+void Map::LoadEntityDefinitionsFromFile(const std::filesystem::path& src) {
+    namespace FS = std::filesystem;
+    if(!FS::exists(src)) {
+        std::ostringstream ss;
+        ss << "Entity Definitions file at " << src << " could not be found.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    tinyxml2::XMLDocument doc;
+    auto xml_result = doc.LoadFile(src.string().c_str());
+    if(xml_result != tinyxml2::XML_SUCCESS) {
+        std::ostringstream ss;
+        ss << "Entity Definitions at " << src << " failed to load.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    if(auto* xml_root = doc.RootElement()) {
+        DataUtils::ValidateXmlElement(*xml_root, "entityDefinitions", "spritesheet,entityDefinition", "");
+        auto* xml_spritesheet = xml_root->FirstChildElement("spritesheet");
+        _entity_sheet = _renderer.CreateSpriteSheet(*xml_spritesheet);
+        DataUtils::ForEachChildElement(*xml_root, "entityDefinition",
+        [this](const XMLElement& elem) {
+            EntityDefinition::CreateEntityDefinition(_renderer, elem, _entity_sheet);
+        });
+    }
+}
+
+void Map::LoadEntityTypesForMap(const XMLElement& elem) {
+    if(auto* xml_entity_types = elem.FirstChildElement("entityTypes")) {
+        DataUtils::ValidateXmlElement(*xml_entity_types, "entityTypes", "player", "");
+        DataUtils::ForEachChildElement(*xml_entity_types, "",
+            [this](const XMLElement& elem) {
+            auto name = DataUtils::GetElementName(elem);
+            DataUtils::ValidateXmlElement(elem, name, "", "lookAndFeel");
+            const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
+            auto* definition = EntityDefinition::GetEntityDefinitionByName(definitionName);
+            auto type = std::make_unique<EntityType>();
+            type->name = name;
+            type->definition = definition;
+            _entity_types.insert_or_assign(name, std::move(type));
+        });
+    }
+}
+
+EntityType* Map::GetEntityTypeByName(const std::string& name) {
+    auto found_iter = _entity_types.find(name);
+    if(found_iter == std::end(_entity_types)) {
+        return nullptr;
+    }
+    return (*found_iter).second.get();
+}
+
+void Map::PlaceEntitiesOnMap(const XMLElement& elem) {
+    if(auto* xml_entity_map = elem.FirstChildElement("entityMap")) {
+        const std::size_t entity_count = DataUtils::GetChildElementCount(*xml_entity_map);
+        _entities.reserve(entity_count);
+        DataUtils::ForEachChildElement(*xml_entity_map, "",
+            [this](const XMLElement& elem) {
+            auto name = DataUtils::GetElementName(elem);
+            DataUtils::ValidateXmlElement(elem, name, "", "start");
+            const auto start = DataUtils::ParseXmlAttribute(elem, "start", IntVector2{});
+            const auto typeName = DataUtils::GetElementName(elem);
+            auto* type = GetEntityTypeByName(typeName);
+            auto entity = std::make_unique<Entity>(type->definition);
+            entity->sprite = entity->def->GetSprite();
+            entity->map = this;
+            entity->layer = this->GetLayer(0);
+            entity->SetPosition(start);
+            _entities.push_back(std::move(entity));
+        });
+    }
+}
+

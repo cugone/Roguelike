@@ -2,6 +2,12 @@
     <material name="Tile" />
     <tiles src="Data/Definitions/Tiles.xml" />
     <entities src="Data/Definitions/Entities.xml" />
+    <entityTypes>
+        <player lookAndFeel="human..male" />
+    </entityTypes>
+    <entityMap>
+        <player start="[1,1]" />
+    </entityMap>
     <layers>
         <layer>
             <row glyphs="##########" />

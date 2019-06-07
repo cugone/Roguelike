@@ -11,8 +11,8 @@
 
 std::map<std::string, std::unique_ptr<TileDefinition>> TileDefinition::s_registry{};
 
-void TileDefinition::CreateTileDefinition(const XMLElement& elem, SpriteSheet* sheet) {
-    auto new_def = std::make_unique<TileDefinition>(elem, sheet);
+void TileDefinition::CreateTileDefinition(Renderer* renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
+    auto new_def = std::make_unique<TileDefinition>(renderer, elem, sheet);
     s_registry.insert_or_assign(new_def->name, std::move(new_def));
 }
 
@@ -50,7 +50,10 @@ Texture* TileDefinition::GetTexture() {
 }
 
 const SpriteSheet* TileDefinition::GetSheet() const {
-    return _sheet;
+    if(!_sheet.expired()) {
+        return _sheet.lock().get();
+    }
+    return nullptr;
 }
 
 SpriteSheet* TileDefinition::GetSheet() {
@@ -70,11 +73,15 @@ IntVector2 TileDefinition::GetIndexCoords() const {
 }
 
 int TileDefinition::GetIndex() const {
-    return (_index.x + _random_index_offset) + _index.y * _sheet->GetLayout().x;
+    if(auto* sheet = GetSheet()) {
+        return (_index.x + _random_index_offset) + _index.y * sheet->GetLayout().x;
+    }
+    return -1;
 }
 
-TileDefinition::TileDefinition(const XMLElement& elem, SpriteSheet* sheet)
-    : _sheet(sheet)
+TileDefinition::TileDefinition(Renderer* renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet)
+    : _renderer(renderer)
+    , _sheet(sheet)
 {
     if(!LoadFromXml(elem)) {
         ERROR_AND_DIE("TileDefinition failed to load.\n");
@@ -121,9 +128,9 @@ TileDefinition::TileDefinition(const XMLElement& elem, SpriteSheet* sheet)
 
      if(auto xml_animation = elem.FirstChildElement("animation")) {
          is_animated = true;
-         _sprite = std::make_unique<AnimatedSprite>(*g_theRenderer, _sheet, *xml_animation);
+         _sprite = std::move(_renderer->CreateAnimatedSprite(_sheet, elem));
      } else {
-         _sprite = std::make_unique<AnimatedSprite>(*g_theRenderer, _sheet, _index);
+         _sprite = std::move(_renderer->CreateAnimatedSprite(_sheet, _index));
      }
      return true;
  }
@@ -133,10 +140,12 @@ TileDefinition::TileDefinition(const XMLElement& elem, SpriteSheet* sheet)
  }
 
  void TileDefinition::SetIndex(int index) {
-     const auto& layout = _sheet->GetLayout();
-     const auto x = index % layout.x;
-     const auto y = index / layout.x;
-     SetIndex(x, y);
+     if(auto sheet = GetSheet()) {
+         const auto& layout = sheet->GetLayout();
+         const auto x = index % layout.x;
+         const auto y = index / layout.x;
+         SetIndex(x, y);
+     }
  }
 
  void TileDefinition::SetIndex(int x, int y) {

@@ -1,7 +1,5 @@
 <entityDefinitions>
-    <material name="Entity" />
-    <spritesheet src="Data/Images/Tiles.png" dimensions="[32,32]" />
-    <entity name="player">
-        
-    </entity>
+    <spritesheet src="Data/Images/Tiles.png" dimensions="[65,65]" />
+    <entityDefinition name="human..male" index="[7,53]" />
+    <!--</entityDefinition>-->
 </entityDefinitions>

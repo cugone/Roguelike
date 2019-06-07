@@ -8,6 +8,7 @@
 #include <vector>
 
 class TileDefinition;
+class Entity;
 
 class Tile {
 public:
@@ -42,8 +43,11 @@ public:
     void SetCoords(const IntVector2& coords);
 
     Rgba color = Rgba::White;
+    Entity* entity{};
 protected:
 private:
+    void AddVertsForTile(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
+
     TileDefinition* _def{};
     IntVector2 _tile_coords{};
 };

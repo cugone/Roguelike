@@ -31,7 +31,7 @@ void Game::LoadMaps() {
         if(FileUtils::ReadBufferFromFile(str_buffer, str_path)) {
             tinyxml2::XMLDocument xml_doc;
             xml_doc.Parse(str_buffer.c_str(), str_buffer.size());
-            _map = std::make_unique<Map>(*xml_doc.RootElement());
+            _map = std::make_unique<Map>(*g_theRenderer, *xml_doc.RootElement());
         }
     }
 }

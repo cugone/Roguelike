@@ -6,8 +6,9 @@
 #include <memory>
 #include <string>
 
-class SpriteSheet;
 class AnimatedSprite;
+class Renderer;
+class SpriteSheet;
 class Texture;
 
 class TileDefinition {
@@ -19,7 +20,7 @@ public:
     TileDefinition& operator=(TileDefinition&& other) = default;
     ~TileDefinition() = default;
 
-    static void CreateTileDefinition(const XMLElement& elem, SpriteSheet* sheet);
+    static void CreateTileDefinition(Renderer* renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
     static void DestroyTileDefinitions();
 
     static TileDefinition* GetTileDefinitionByName(const std::string& name);
@@ -44,7 +45,7 @@ public:
     IntVector2 GetIndexCoords() const;
     int GetIndex() const;
 
-    TileDefinition(const XMLElement& elem, SpriteSheet* sheet);
+    TileDefinition(Renderer* renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);
@@ -52,9 +53,12 @@ private:
     void SetIndex(int x, int y);
     void SetIndex(const IntVector2& indexCoords);
     void AddOffsetToIndex(int offset);
-    IntVector2 _index{};
-    std::unique_ptr<AnimatedSprite> _sprite{};
-    SpriteSheet* _sheet = nullptr;
-    int _random_index_offset = 0;
+
     static std::map<std::string, std::unique_ptr<TileDefinition>> s_registry;
+    Renderer* _renderer = nullptr;
+    std::weak_ptr<SpriteSheet> _sheet{};
+    std::unique_ptr<AnimatedSprite> _sprite{};
+    IntVector2 _index{};
+    int _random_index_offset = 0;
+    
 };
