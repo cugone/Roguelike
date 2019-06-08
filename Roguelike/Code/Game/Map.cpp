@@ -333,9 +333,7 @@ void Map::LoadEntitiesForMap(const XMLElement& elem) {
         DataUtils::ValidateXmlElement(*xml_map_entities_source, "entities", "", "src");
         const auto src = DataUtils::ParseXmlAttribute(*xml_map_entities_source, "src", std::string{});
         if(src.empty()) {
-            if(src.empty()) {
-                ERROR_AND_DIE("Map entities source is empty. Do not define element if map does not have entities.");
-            }
+            ERROR_AND_DIE("Map entities source is empty. Do not define element if map does not have entities.");
         }
         LoadEntitiesFromFile(src);
     }
@@ -434,6 +432,7 @@ void Map::PlaceEntitiesOnMap(const XMLElement& elem) {
             const auto typeName = DataUtils::GetElementName(elem);
             auto* type = GetEntityTypeByName(typeName);
             auto entity = std::make_unique<Entity>(type->definition);
+            entity->name = typeName;
             entity->sprite = entity->def->GetSprite();
             entity->map = this;
             entity->layer = this->GetLayer(0);
