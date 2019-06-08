@@ -32,8 +32,13 @@ private:
     void HandlePlayerInput();
 
     void ShowDebugUI();
+
+    void ShowTileDebuggerUI();
+    void ShowEntityDebuggerUI();
+
     void ShowBoundsColoringUI();
     void ShowTileInspectorUI();
+    void ShowEntityInspectorUI();
 
     std::unique_ptr<Map> _map{nullptr};
     mutable Camera2D _ui_camera{};

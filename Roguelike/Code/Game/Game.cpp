@@ -14,6 +14,8 @@
 
 #include "Game/GameCommon.hpp"
 #include "Game/GameConfig.hpp"
+#include "Game/Entity.hpp"
+#include "Game/EntityDefinition.hpp"
 #include "Game/Layer.hpp"
 #include "Game/Map.hpp"
 #include "Game/TileDefinition.hpp"
@@ -162,10 +164,21 @@ void Game::HandleDebugInput(Camera2D &base_camera) {
 }
 
 void Game::ShowDebugUI() {
-    if(ImGui::Begin("Tile Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize))
-    {
+    ShowTileDebuggerUI();
+    ShowEntityDebuggerUI();
+}
+
+void Game::ShowTileDebuggerUI() {
+    if(ImGui::Begin("Tile Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize)) {
         ShowBoundsColoringUI();
         ShowTileInspectorUI();
+    }
+    ImGui::End();
+}
+
+void Game::ShowEntityDebuggerUI() {
+    if(ImGui::Begin("Entity Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ShowEntityInspectorUI();
     }
     ImGui::End();
 }
@@ -201,5 +214,26 @@ void Game::ShowTileInspectorUI() {
                 }
             }
         }
+    }
+}
+
+void Game::ShowEntityInspectorUI() {
+    const auto mouse_pos = g_theInputSystem->GetCursorWindowPosition(*g_theRenderer->GetOutput()->GetWindow());
+    const auto& picked_tiles = _map->PickTilesFromMouseCoords(mouse_pos);
+    const auto tiles_per_row = std::size_t{ 3u };
+    const auto cur_tile = !picked_tiles.empty() ? picked_tiles[0] : nullptr;
+    const auto cur_entity = cur_tile && cur_tile->entity ? cur_tile->entity : nullptr;
+    if(picked_tiles.empty() || !cur_tile || !cur_entity) {
+        ImGui::Text("Entity Inspector: None");
+        return;
+    }
+    if(const auto* cur_sprite = cur_entity->sprite) {
+        std::ostringstream ss;
+        ss << "Name: " << cur_entity->name;
+        ss << "\nInvisible: " << (cur_entity->def->is_invisible ? "true" : "false");
+        ImGui::Text(ss.str().c_str());
+        const auto tex_coords = cur_sprite->GetCurrentTexCoords();
+        const auto dims = Vector2::ONE * 100.0f;
+        ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
     }
 }
