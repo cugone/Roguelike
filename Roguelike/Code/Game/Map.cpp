@@ -21,16 +21,6 @@
 
 unsigned long long Map::default_map_index = 0ull;
 
-Vector2 Map::ConvertScreenToWorldCoords(const Vector2& mouseCoords) const {
-    auto ndc = 2.0f * mouseCoords / Vector2(g_theRenderer->GetOutput()->GetDimensions()) - Vector2::ONE;
-    auto screenCoords4 = Vector4(ndc.x, -ndc.y, 1.0f, 1.0f);
-    auto sToW = camera.GetInverseViewProjectionMatrix();
-    auto worldPos4 = sToW * screenCoords4;
-    auto worldPos3 = Vector3(worldPos4);
-    auto worldPos2 = Vector2(worldPos3);
-    return worldPos2;
-}
-
 void Map::SetDebugGridColor(const Rgba& gridColor) {
     auto* layer = GetLayer(0);
     layer->debug_grid_color = gridColor;
@@ -58,12 +48,12 @@ Tile* Map::PickTileFromWorldCoords(const Vector2& worldCoords, int layerIndex) c
 }
 
 std::vector<Tile*> Map::PickTilesFromMouseCoords(const Vector2& mouseCoords) const {
-    auto world_coords = ConvertScreenToWorldCoords(mouseCoords);
+    auto world_coords = Vector2{ g_theRenderer->ConvertScreenToWorldCoords(camera, mouseCoords) };
     return PickTilesFromWorldCoords(world_coords);
 }
 
 Tile* Map::PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) const {
-    auto world_coords = ConvertScreenToWorldCoords(mouseCoords);
+    auto world_coords = Vector2{ g_theRenderer->ConvertScreenToWorldCoords(camera, mouseCoords) };
     return PickTileFromWorldCoords(world_coords, layerIndex);
 }
 

@@ -60,7 +60,7 @@ public:
     Tile* GetTile(int x, int y, int z) const;
     Tile* PickTileFromWorldCoords(const Vector2& worldCoords, int layerIndex) const;
     Tile* PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) const;
-    Vector2 ConvertScreenToWorldCoords(const Vector2& mouseCoords) const;
+
     void SetDebugGridColor(const Rgba& gridColor);
 
     mutable Camera2D camera{};
