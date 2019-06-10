@@ -116,9 +116,17 @@ void Game::HandlePlayerInput() {
     }
 }
 
-void Game::HandleDebugInput(Camera2D &base_camera) {
+void Game::HandleDebugInput(Camera2D& base_camera) {
     if(_show_debug_window) {
         ShowDebugUI();
+    }
+    HandleDebugKeyboardInput(base_camera);
+    HandleDebugMouseInput(base_camera);
+}
+
+void Game::HandleDebugKeyboardInput(Camera2D& base_camera) {
+    if(g_theUISystem->GetIO().WantCaptureKeyboard) {
+        return;
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F1)) {
         _show_debug_window = !_show_debug_window;
@@ -163,42 +171,69 @@ void Game::HandleDebugInput(Camera2D &base_camera) {
     }
 }
 
+void Game::HandleDebugMouseInput(Camera2D& /*base_camera*/) {
+    if(g_theUISystem->GetIO().WantCaptureMouse) {
+        return;
+    }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::LButton)) {
+        const auto& picked_tiles = DebugGetTilesFromMouse();
+        _debug_has_picked_tile_with_click = _show_tile_debugger && !picked_tiles.empty();
+        _debug_has_picked_entity_with_click = _show_entity_debugger && !picked_tiles.empty();
+        if(_debug_has_picked_tile_with_click) {
+            _debug_inspected_tile = picked_tiles[0];
+        }
+        if(_debug_has_picked_entity_with_click) {
+            _debug_inspected_entity = picked_tiles[0]->entity;
+            _debug_has_picked_entity_with_click = _debug_inspected_entity;
+        }
+    }
+}
+
 void Game::ShowDebugUI() {
-    ShowTileDebuggerUI();
-    ShowEntityDebuggerUI();
+    ImGui::SetNextWindowSize(Vector2{ 350.0f, 500.0f }, ImGuiCond_Always);
+    if(ImGui::Begin("Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ShowBoundsColoringUI();
+        ShowTileDebuggerUI();
+        ShowEntityDebuggerUI();
+    }
+    ImGui::End();
 }
 
 void Game::ShowTileDebuggerUI() {
-    if(ImGui::Begin("Tile Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ShowBoundsColoringUI();
+    _show_tile_debugger = ImGui::CollapsingHeader("Tile");
+    if(_show_tile_debugger) {
         ShowTileInspectorUI();
     }
-    ImGui::End();
 }
 
 void Game::ShowEntityDebuggerUI() {
-    if(ImGui::Begin("Entity Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize)) {
+    _show_entity_debugger = ImGui::CollapsingHeader("Entity");
+    if(_show_entity_debugger) {
         ShowEntityInspectorUI();
     }
-    ImGui::End();
 }
 
 void Game::ShowBoundsColoringUI() {
-    ImGui::Checkbox("World Grid", &_show_grid);
-    ImGui::Checkbox("World Bounds", &_show_world_bounds);
-    if(ImGui::ColorEdit4("Grid Color##Picker", _grid_color, ImGuiColorEditFlags_None)) {
-        _map->SetDebugGridColor(_grid_color);
+    if(ImGui::CollapsingHeader("World")) {
+        ImGui::Checkbox("World Grid", &_show_grid);
+        ImGui::Checkbox("World Bounds", &_show_world_bounds);
+        if(ImGui::ColorEdit4("Grid Color##Picker", _grid_color, ImGuiColorEditFlags_None)) {
+            _map->SetDebugGridColor(_grid_color);
+        }
     }
 }
 
 void Game::ShowTileInspectorUI() {
-    const auto mouse_pos = g_theInputSystem->GetCursorWindowPosition(*g_theRenderer->GetOutput()->GetWindow());
-    const auto& picked_tiles = _map->PickTilesFromMouseCoords(mouse_pos);
+    const auto& picked_tiles = DebugGetTilesFromMouse();
     if(picked_tiles.empty()) {
         ImGui::Text("Tile Inspector: None");
         return;
     }
     ImGui::Text("Tile Inspector");
+    ImGui::SameLine();
+    if(ImGui::Button("Unlock Tile")) {
+        _debug_has_picked_tile_with_click = false;
+    }
     const auto max_layers = std::size_t{9u};
     const auto tiles_per_row = std::size_t{3u};
     const auto picked_count = picked_tiles.size();
@@ -217,23 +252,65 @@ void Game::ShowTileInspectorUI() {
     }
 }
 
-void Game::ShowEntityInspectorUI() {
+std::vector<Tile*> Game::DebugGetTilesFromMouse() {
+    if(g_theUISystem->GetIO().WantCaptureMouse) {
+        return {};
+    }
     const auto mouse_pos = g_theInputSystem->GetCursorWindowPosition(*g_theRenderer->GetOutput()->GetWindow());
-    const auto& picked_tiles = _map->PickTilesFromMouseCoords(mouse_pos);
-    const auto tiles_per_row = std::size_t{ 3u };
-    const auto cur_tile = !picked_tiles.empty() ? picked_tiles[0] : nullptr;
-    const auto cur_entity = cur_tile && cur_tile->entity ? cur_tile->entity : nullptr;
-    if(picked_tiles.empty() || !cur_tile || !cur_entity) {
+    if(_debug_has_picked_tile_with_click) {
+        static std::vector<Tile*> picked_tiles{};
+        if(!_debug_has_picked_tile_with_click) {
+            picked_tiles.clear();
+        }
+        if(_debug_has_picked_tile_with_click) {
+            picked_tiles = _map->PickTilesFromMouseCoords(mouse_pos);
+        }
+        bool tile_has_entity = !picked_tiles.empty() && picked_tiles[0]->entity;
+        if(tile_has_entity && _debug_has_picked_entity_with_click) {
+            _debug_inspected_entity = picked_tiles[0]->entity;
+        }
+        return picked_tiles;
+    }
+    return _map->PickTilesFromMouseCoords(mouse_pos);
+}
+
+void Game::ShowEntityInspectorUI() {
+    const auto& picked_tiles = DebugGetTilesFromMouse();
+    if(picked_tiles.empty()) {
         ImGui::Text("Entity Inspector: None");
         return;
     }
-    if(const auto* cur_sprite = cur_entity->sprite) {
-        std::ostringstream ss;
-        ss << "Name: " << cur_entity->name;
-        ss << "\nInvisible: " << (cur_entity->def->is_invisible ? "true" : "false");
-        ImGui::Text(ss.str().c_str());
-        const auto tex_coords = cur_sprite->GetCurrentTexCoords();
-        const auto dims = Vector2::ONE * 100.0f;
-        ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+    if(const auto* cur_entity = _debug_inspected_entity ? _debug_inspected_entity : picked_tiles[0]->entity) {
+        if(const auto* cur_sprite = cur_entity->sprite) {
+            ImGui::Text("Entity Inspector");
+            ImGui::SameLine();
+            if(ImGui::Button("Unlock Entity")) {
+                _debug_has_picked_entity_with_click = false;
+            }
+            ImGui::Columns(2, "EntityInspectorColumns");
+            ShowEntityInspectorEntityColumnUI(cur_entity, cur_sprite);
+            ImGui::NextColumn();
+            ShowEntityInspectorInventoryColumnUI(cur_entity);
+        }
     }
+}
+
+void Game::ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const AnimatedSprite* cur_sprite) {
+    std::ostringstream ss;
+    ss << "Name: " << cur_entity->name;
+    ss << "\nInvisible: " << (cur_entity->def->is_invisible ? "true" : "false");
+    ImGui::Text(ss.str().c_str());
+    const auto tex_coords = cur_sprite->GetCurrentTexCoords();
+    const auto dims = Vector2::ONE * 100.0f;
+    ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+}
+
+void Game::ShowEntityInspectorInventoryColumnUI(const Entity* /*cur_entity*/) {
+    std::ostringstream ss;
+    ss << "Inventory:";
+    ss << "\nDummyText0";
+    ss << "\nDummyText1";
+    ss << "\nDummyText2";
+    ss << "\nDummyText3";
+    ImGui::Text(ss.str().c_str());
 }

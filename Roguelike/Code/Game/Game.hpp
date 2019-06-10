@@ -28,21 +28,33 @@ public:
 
 protected:
 private:
-    void HandleDebugInput(Camera2D &base_camera);
+    void HandleDebugInput(Camera2D& base_camera);
+    void HandleDebugKeyboardInput(Camera2D& base_camera);
+    void HandleDebugMouseInput(Camera2D& base_camera);
+
     void HandlePlayerInput();
 
     void ShowDebugUI();
+
+    std::vector<Tile*> DebugGetTilesFromMouse();
 
     void ShowTileDebuggerUI();
     void ShowEntityDebuggerUI();
 
     void ShowBoundsColoringUI();
     void ShowTileInspectorUI();
+
     void ShowEntityInspectorUI();
+    void ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const AnimatedSprite* cur_sprite);
+    void ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity);
 
     std::unique_ptr<Map> _map{nullptr};
     mutable Camera2D _ui_camera{};
     Rgba _grid_color{Rgba::Red};
+    bool _debug_has_picked_tile_with_click = false;
+    bool _debug_has_picked_entity_with_click = false;
+    Tile* _debug_inspected_tile = nullptr;
+    Entity* _debug_inspected_entity = nullptr;
     float _cam_speed = 1.0f;
     float _max_shake_angle = 0.0f;
     float _max_shake_x = 0.0f;
@@ -50,6 +62,8 @@ private:
     bool _show_grid = false;
     bool _show_debug_window = false;
     bool _show_world_bounds = false;
+    bool _show_tile_debugger = false;
+    bool _show_entity_debugger = false;
 
     friend class Map;
     friend class Layer;
