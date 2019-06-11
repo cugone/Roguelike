@@ -88,11 +88,13 @@ void Map::Render(Renderer& renderer) const {
         renderer.SetModelMatrix(Matrix4::I);
         renderer.DrawAABB2(tile_bounds, Rgba::White, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
     }
-    for(const auto& e : _entities) {
-        auto tile_bounds = e->tile->GetBounds();
-        renderer.SetMaterial(renderer.GetMaterial("__2D"));
-        renderer.SetModelMatrix(Matrix4::I);
-        renderer.DrawAABB2(tile_bounds, Rgba::Red, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
+    if(g_theGame->_show_all_entities) {
+        for(const auto& e : _entities) {
+            auto tile_bounds = e->tile->GetBounds();
+            renderer.SetMaterial(renderer.GetMaterial("__2D"));
+            renderer.SetModelMatrix(Matrix4::I);
+            renderer.DrawAABB2(tile_bounds, Rgba::Red, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
+        }
     }
 }
 

@@ -216,10 +216,12 @@ void Game::ShowEntityDebuggerUI() {
 void Game::ShowBoundsColoringUI() {
     if(ImGui::CollapsingHeader("World")) {
         ImGui::Checkbox("World Grid", &_show_grid);
-        ImGui::Checkbox("World Bounds", &_show_world_bounds);
-        if(ImGui::ColorEdit4("Grid Color##Picker", _grid_color, ImGuiColorEditFlags_None)) {
+        ImGui::SameLine();
+        if(ImGui::ColorEdit4("Grid Color##Picker", _grid_color, ImGuiColorEditFlags_NoLabel)) {
             _map->SetDebugGridColor(_grid_color);
         }
+        ImGui::Checkbox("World Bounds", &_show_world_bounds);
+        ImGui::Checkbox("Show All Entities", &_show_all_entities);
     }
 }
 

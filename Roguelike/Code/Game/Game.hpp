@@ -64,6 +64,7 @@ private:
     bool _show_world_bounds = false;
     bool _show_tile_debugger = false;
     bool _show_entity_debugger = false;
+    bool _show_all_entities = false;
 
     friend class Map;
     friend class Layer;
