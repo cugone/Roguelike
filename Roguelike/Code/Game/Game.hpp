@@ -18,9 +18,6 @@ public:
     ~Game() = default;
 
     void Initialize();
-
-    void LoadMaps();
-
     void BeginFrame();
     void Update(TimeUtils::FPSeconds deltaSeconds);
     void Render() const;
@@ -47,6 +44,8 @@ private:
     void ShowEntityInspectorUI();
     void ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const AnimatedSprite* cur_sprite);
     void ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity);
+
+    void LoadMaps();
 
     std::unique_ptr<Map> _map{nullptr};
     mutable Camera2D _ui_camera{};
