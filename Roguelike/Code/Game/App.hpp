@@ -37,6 +37,9 @@ public:
 
 protected:
 private:
+    void SetupEngineSystemPointers();
+    void SetupEngineSystemChainOfResponsibility();
+
     virtual void BeginFrame() override;
     virtual void Update(TimeUtils::FPSeconds deltaSeconds) override;
     virtual void Render() const override;

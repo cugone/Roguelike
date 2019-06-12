@@ -48,7 +48,16 @@ App::App(const std::string& cmdString)
     , _theAudioSystem{ std::make_unique<AudioSystem>() }
     , _theGame{std::make_unique<Game>()}
 {
+    SetupEngineSystemPointers();
+    SetupEngineSystemChainOfResponsibility();
+    LogSystemDescription();
+}
 
+App::~App() {
+    g_theSubsystemHead = g_theApp;
+}
+
+void App::SetupEngineSystemPointers() {
     g_theJobSystem = _theJobSystem.get();
     g_theFileLogger = _theFileLogger.get();
     g_theConfig = _theConfig.get();
@@ -59,21 +68,15 @@ App::App(const std::string& cmdString)
     g_theAudioSystem = _theAudioSystem.get();
     g_theGame = _theGame.get();
     g_theApp = this;
+}
 
+void App::SetupEngineSystemChainOfResponsibility() {
     g_theConsole->SetNextHandler(g_theUISystem);
     g_theUISystem->SetNextHandler(g_theInputSystem);
     g_theInputSystem->SetNextHandler(g_theApp);
     g_theApp->SetNextHandler(nullptr);
     g_theSubsystemHead = g_theConsole;
-
-    LogSystemDescription();
-
 }
-
-App::~App() {
-    g_theSubsystemHead = g_theApp;
-}
-
 void App::Initialize() {
     g_theRenderer->Initialize();
     g_theRenderer->SetVSync(GRAPHICS_OPTION_VSYNC);
@@ -129,6 +132,7 @@ bool App::ProcessSystemMessage(const EngineMessage& msg) {
     switch(msg.wmMessageCode) {
     case WindowsSystemMessage::Window_Close:
     {
+        //BUG: Clicking close will not destroy window or Quit. Confirm quit needed here.
         return false;
     }
     case WindowsSystemMessage::Window_Quit:
