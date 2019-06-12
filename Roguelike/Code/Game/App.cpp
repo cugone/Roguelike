@@ -34,13 +34,9 @@ EngineMessage GetEngineMessageFromWindowsParams(HWND hwnd, UINT uMsg, WPARAM wPa
 }
 
 bool CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-
-    EngineMessage msg = GetEngineMessageFromWindowsParams(hwnd, uMsg, wParam, lParam);
-
-    if(g_theSubsystemHead && g_theSubsystemHead->EngineSubsystem::ProcessSystemMessage(msg)) {
-        return true;
-    }
-    return false;
+    return (g_theSubsystemHead &&
+            g_theSubsystemHead->EngineSubsystem::ProcessSystemMessage(
+                GetEngineMessageFromWindowsParams(hwnd, uMsg, wParam, lParam)));
 }
 
 
