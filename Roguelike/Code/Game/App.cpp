@@ -20,14 +20,22 @@
 #include <condition_variable>
 #include <iomanip>
 
-bool CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+bool CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+EngineMessage GetEngineMessageFromWindowsParams(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+EngineMessage GetEngineMessageFromWindowsParams(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     EngineMessage msg{};
     msg.hWnd = hwnd;
     msg.nativeMessage = uMsg;
     msg.wmMessageCode = EngineSubsystem::GetWindowsSystemMessageFromUintMessage(uMsg);
     msg.wparam = wParam;
     msg.lparam = lParam;
+    return msg;
+}
+
+bool CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+
+    EngineMessage msg = GetEngineMessageFromWindowsParams(hwnd, uMsg, wParam, lParam);
 
     if(g_theSubsystemHead && g_theSubsystemHead->EngineSubsystem::ProcessSystemMessage(msg)) {
         return true;
