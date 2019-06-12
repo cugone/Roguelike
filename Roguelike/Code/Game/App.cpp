@@ -136,8 +136,8 @@ bool App::ProcessSystemMessage(const EngineMessage& msg) {
     switch(msg.wmMessageCode) {
     case WindowsSystemMessage::Window_Close:
     {
-        //BUG: Clicking close will not destroy window or Quit. Confirm quit needed here.
-        return false;
+        SetIsQuitting(true);
+        return true;
     }
     case WindowsSystemMessage::Window_Quit:
     {
