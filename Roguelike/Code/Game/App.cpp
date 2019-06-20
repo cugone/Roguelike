@@ -130,7 +130,7 @@ void App::EndFrame() {
     g_theRenderer->EndFrame();
 }
 
-bool App::ProcessSystemMessage(const EngineMessage& msg) {
+bool App::ProcessSystemMessage(const EngineMessage& msg) noexcept {
 
     WPARAM wp = msg.wparam;
     switch(msg.wmMessageCode) {

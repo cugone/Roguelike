@@ -44,7 +44,7 @@ private:
     virtual void Update(TimeUtils::FPSeconds deltaSeconds) override;
     virtual void Render() const override;
     virtual void EndFrame() override;
-    virtual bool ProcessSystemMessage(const EngineMessage& msg) override;
+    virtual bool ProcessSystemMessage(const EngineMessage& msg) noexcept override;
 
     void LogSystemDescription() const;
 
