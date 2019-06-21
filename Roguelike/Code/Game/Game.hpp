@@ -52,7 +52,7 @@ private:
     Rgba _grid_color{Rgba::Red};
     bool _debug_has_picked_tile_with_click = false;
     bool _debug_has_picked_entity_with_click = false;
-    Tile* _debug_inspected_tile = nullptr;
+    std::vector<Tile*> _debug_inspected_tiles{};
     Entity* _debug_inspected_entity = nullptr;
     float _cam_speed = 1.0f;
     float _max_shake_angle = 0.0f;
