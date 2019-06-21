@@ -79,7 +79,7 @@ private:
     void LoadEntityDefinitionsFromFile(const std::filesystem::path& src);
     void LoadEntityTypesForMap(const XMLElement& elem);
     void PlaceEntitiesOnMap(const XMLElement& elem);
-    EntityType* GetEntityTypeByName(const std::string& name);
+    std::vector<EntityType*> GetEntityTypesByName(const std::string& name);
 
     std::string _name{};
     std::vector<std::unique_ptr<Layer>> _layers{};
@@ -89,7 +89,7 @@ private:
     std::vector<std::unique_ptr<Entity>> _entities{};
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
     std::shared_ptr<SpriteSheet> _entity_sheet{};
-    std::map<std::string, std::unique_ptr<EntityType>> _entity_types{};
+    std::multimap<std::string, std::unique_ptr<EntityType>> _entity_types{};
     float _camera_speed = 1.0f;
     static unsigned long long default_map_index;
 

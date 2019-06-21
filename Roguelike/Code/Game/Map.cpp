@@ -399,17 +399,22 @@ void Map::LoadEntityTypesForMap(const XMLElement& elem) {
             auto type = std::make_unique<EntityType>();
             type->name = name;
             type->definition = definition;
-            _entity_types.insert_or_assign(name, std::move(type));
+            _entity_types.insert(std::make_pair(name, std::move(type)));
         });
     }
 }
 
-EntityType* Map::GetEntityTypeByName(const std::string& name) {
-    auto found_iter = _entity_types.find(name);
-    if(found_iter == std::end(_entity_types)) {
-        return nullptr;
+std::vector<EntityType*> Map::GetEntityTypesByName(const std::string& name) {
+    auto range = _entity_types.equal_range(name);
+    if(range.first == range.second && range.first == std::end(_entity_types)) {
+        return {};
     }
-    return (*found_iter).second.get();
+    std::vector<EntityType*> results{};
+    results.reserve(std::distance(range.first, range.second));
+    for(auto iter = range.first; iter != range.second; ++iter) {
+        results.push_back(iter->second.get());
+    }
+    return results;
 }
 
 void Map::PlaceEntitiesOnMap(const XMLElement& elem) {
@@ -422,16 +427,18 @@ void Map::PlaceEntitiesOnMap(const XMLElement& elem) {
             DataUtils::ValidateXmlElement(elem, name, "", "start");
             const auto start = DataUtils::ParseXmlAttribute(elem, "start", IntVector2{});
             const auto typeName = DataUtils::GetElementName(elem);
-            auto* type = GetEntityTypeByName(typeName);
-            auto entity = std::make_unique<Entity>(type->definition);
-            entity->name = typeName;
-            entity->sprite = entity->def->GetSprite();
-            entity->map = this;
-            entity->layer = this->GetLayer(0);
-            entity->SetPosition(start);
-            _entities.push_back(std::move(entity));
-            if(name == "player") {
-                player = _entities.back().get();
+            auto types = GetEntityTypesByName(typeName);
+            for(const auto type : types) {
+                auto entity = std::make_unique<Entity>(type->definition);
+                entity->name = typeName;
+                entity->sprite = entity->def->GetSprite();
+                entity->map = this;
+                entity->layer = this->GetLayer(0);
+                entity->SetPosition(start);
+                _entities.push_back(std::move(entity));
+                if(name == "player") {
+                    player = _entities.back().get();
+                }
             }
         });
     }

@@ -3,5 +3,8 @@
     <entity name="player">
         <definition species="human" subspecies="" sex="male"/>
     </entity>
+    <entity name="player">
+        <definition species="human" subspecies="" sex="female"/>
+    </entity>
 </entities>
     
