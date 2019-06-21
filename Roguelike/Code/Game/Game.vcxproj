@@ -172,6 +172,7 @@
     <Xml Include="..\..\Run_x64\Data\Definitions\Entities.xml" />
     <Xml Include="..\..\Run_x64\Data\Definitions\EntityDefinitions.xml" />
     <Xml Include="..\..\Run_x64\Data\Definitions\Equipment.xml" />
+    <Xml Include="..\..\Run_x64\Data\Definitions\EquipmentDefinitions.xml" />
     <Xml Include="..\..\Run_x64\Data\Definitions\Map00.xml" />
     <Xml Include="..\..\Run_x64\Data\Definitions\Tiles.xml" />
   </ItemGroup>
