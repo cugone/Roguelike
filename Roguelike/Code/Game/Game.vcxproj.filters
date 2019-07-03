@@ -64,9 +64,6 @@
     <ClCompile Include="Stats.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Item.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Inventory.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -109,9 +106,6 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Stats.hpp">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Item.hpp">
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Inventory.hpp">
