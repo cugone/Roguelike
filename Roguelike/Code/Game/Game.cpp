@@ -49,7 +49,7 @@ void Game::Update(TimeUtils::FPSeconds deltaSeconds) {
     }
     Camera2D& base_camera = _map->camera;
     HandleDebugInput(base_camera);
-    HandlePlayerInput();
+    HandlePlayerInput(base_camera);
     base_camera.Update(deltaSeconds);
     _map->Update(deltaSeconds);
 }
@@ -89,31 +89,78 @@ void Game::EndFrame() {
 
 }
 
-void Game::HandlePlayerInput() {
+void Game::HandlePlayerInput(Camera2D& base_camera) {
+    _player_requested_wait = false;
     const bool is_right = g_theInputSystem->WasKeyJustPressed(KeyCode::D) ||
-                          g_theInputSystem->WasKeyJustPressed(KeyCode::Right);
+                          g_theInputSystem->WasKeyJustPressed(KeyCode::Right) ||
+                          g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad6);
     const bool is_left = g_theInputSystem->WasKeyJustPressed(KeyCode::A) ||
-                         g_theInputSystem->WasKeyJustPressed(KeyCode::Left);
-    const bool is_shift = g_theInputSystem->IsKeyDown(KeyCode::Shift);
-    if(is_right) {
-        _map->player->MoveEast();
-    } else if(is_left) {
-        _map->player->MoveWest();
-    }
+                         g_theInputSystem->WasKeyJustPressed(KeyCode::Left) ||
+                         g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad4);
 
     const bool is_up = g_theInputSystem->WasKeyJustPressed(KeyCode::W) ||
-                       g_theInputSystem->WasKeyJustPressed(KeyCode::Up);
+                       g_theInputSystem->WasKeyJustPressed(KeyCode::Up) ||
+                       g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad8);
     const bool is_down = g_theInputSystem->WasKeyJustPressed(KeyCode::S) ||
-                         g_theInputSystem->WasKeyJustPressed(KeyCode::Down);
+                         g_theInputSystem->WasKeyJustPressed(KeyCode::Down) ||
+                         g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad2);
 
-    if(is_up) {
-        _map->player->MoveNorth();
-    } else if(is_down) {
-        _map->player->MoveSouth();
+    const bool is_upright = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad9) || (is_right && is_up);
+    const bool is_upleft = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad7) || (is_left && is_up);
+    const bool is_downright = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad3) || (is_right && is_down);
+    const bool is_downleft = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad1) || (is_left && is_down);
+
+    const bool is_shift = g_theInputSystem->IsKeyDown(KeyCode::Shift);
+    const bool is_rest = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad5)
+                         || g_theInputSystem->IsKeyDown(KeyCode::NumPad5)
+                         || g_theInputSystem->WasKeyJustPressed(KeyCode::Z)
+                         || g_theInputSystem->IsKeyDown(KeyCode::Z);
+
+    if(is_shift) {
+        if(is_right) {
+            base_camera.position += Vector2::X_AXIS;
+        } else if(is_left) {
+            base_camera.position += -Vector2::X_AXIS;
+        }
+
+        if(is_up) {
+            base_camera.position += -Vector2::Y_AXIS;
+        } else if(is_down) {
+            base_camera.position += Vector2::Y_AXIS;
+        }
+        return;
+    }
+
+    if(is_rest) {
+        _player_requested_wait = true;
+        return;
+    }
+
+    if(is_upright) {
+        _map->player->MoveNorthEast();
+    } else if(is_upleft) {
+        _map->player->MoveNorthWest();
+    } else if(is_downright) {
+        _map->player->MoveSouthEast();
+    } else if(is_downleft) {
+        _map->player->MoveSouthWest();
+    } else {
+        if(is_right) {
+            _map->player->MoveEast();
+        } else if(is_left) {
+            _map->player->MoveWest();
+        }
+
+        if(is_up) {
+            _map->player->MoveNorth();
+        } else if(is_down) {
+            _map->player->MoveSouth();
+        }
     }
     if(!_map->IsEntityInView(_map->player)) {
         _map->FocusEntity(_map->player);
     }
+
 }
 
 void Game::HandleDebugInput(Camera2D& base_camera) {
@@ -234,7 +281,7 @@ void Game::ShowTileInspectorUI() {
         ImGui::Text("Tile Inspector: None");
         return;
     }
-    ImGui::Text("Entity Inspector");
+    ImGui::Text("Tile Inspector");
     ImGui::SameLine();
     if(ImGui::Button("Unlock Tile")) {
         _debug_has_picked_tile_with_click = false;
@@ -337,18 +384,26 @@ void Game::ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const Ani
     std::ostringstream ss;
     ss << "Name: " << cur_entity->name;
     ss << "\nInvisible: " << (cur_entity->def->is_invisible ? "true" : "false");
+    ss << "\nAnimated: " << (cur_entity->def->is_animated ? "true" : "false");
     ImGui::Text(ss.str().c_str());
     const auto tex_coords = cur_sprite->GetCurrentTexCoords();
     const auto dims = Vector2::ONE * 100.0f;
     ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
 }
 
-void Game::ShowEntityInspectorInventoryColumnUI(const Entity* /*cur_entity*/) {
+void Game::ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity) {
+    if(!cur_entity) {
+        return;
+    }
     std::ostringstream ss;
+    if(cur_entity->inventory.empty()) {
+        ss << "Inventory: None";
+        ImGui::Text(ss.str().c_str());
+        return;
+    }
     ss << "Inventory:";
-    ss << "\nDummyText0";
-    ss << "\nDummyText1";
-    ss << "\nDummyText2";
-    ss << "\nDummyText3";
+    for(const auto* item : cur_entity->inventory) {
+        ss << '\n' << item->GetName();
+    }
     ImGui::Text(ss.str().c_str());
 }

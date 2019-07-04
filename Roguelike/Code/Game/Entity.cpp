@@ -5,6 +5,7 @@
 #include "Engine/Renderer/AnimatedSprite.hpp"
 
 #include "Game/EntityDefinition.hpp"
+#include "Game/Equipment.hpp"
 #include "Game/Map.hpp"
 
 Entity::Entity(const XMLElement& elem) noexcept
@@ -66,20 +67,12 @@ void Entity::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo
     ibo.push_back(static_cast<unsigned int>(v_s) - 2u);
     ibo.push_back(static_cast<unsigned int>(v_s) - 1u);
 
+    AddVertsForEquipment(verts, ibo, layer_color, layer_index);
+    
 }
 
 void Entity::EndFrame() {
     /* DO NOTHING */
-}
-
-void Entity::Move(const IntVector2& direction) {
-    if(CanMoveDiagonallyToNeighbor(direction)) {
-        const auto target_position = _position + direction;
-        auto target_tile = map->GetTile(target_position.x, target_position.y, 0);
-        if(target_tile && target_tile->IsPassable()) {
-            SetPosition(_position + direction);
-        }
-    }
 }
 
 void Entity::LoadFromXml(const XMLElement& elem) {
@@ -91,7 +84,7 @@ void Entity::LoadFromXml(const XMLElement& elem) {
     sprite = def->GetSprite();
 }
 
-std::string Entity::ParseEntityDefinitionName(const XMLElement& xml_definition) {
+std::string Entity::ParseEntityDefinitionName(const XMLElement& xml_definition) const {
     return StringUtils::Join(std::vector<std::string>{
         DataUtils::ParseXmlAttribute(xml_definition, "species", std::string{})
             , DataUtils::ParseXmlAttribute(xml_definition, "subspecies", std::string{})
@@ -99,7 +92,7 @@ std::string Entity::ParseEntityDefinitionName(const XMLElement& xml_definition) 
     }, '.', false);
 }
 
-bool Entity::CanMoveDiagonallyToNeighbor(const IntVector2& direction) {
+bool Entity::CanMoveDiagonallyToNeighbor(const IntVector2& direction) const {
     const auto target = _position + direction;
     if(_position.x == target.x || _position.y == target.y) {
         return true;
@@ -123,20 +116,91 @@ bool Entity::CanMoveDiagonallyToNeighbor(const IntVector2& direction) {
     return true;
 }
 
-void Entity::MoveWest() {
-    Move(IntVector2{-1,0});
+void Entity::AddVertsForEquipment(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
+    if(equipment) {
+        equipment->Render(verts, ibo, layer_color, layer_index);
+    }
 }
 
-void Entity::MoveEast() {
-    Move(IntVector2{1,0});
+void Entity::Fight(Entity& attacker, Entity& defender) {
+    auto aStats = attacker.GetStats();
+    auto dStats = defender.GetStats();
+}
+
+bool Entity::Acted() const {
+    return _acted;
+}
+
+void Entity::Act() {
+    Act(true);
+}
+
+void Entity::Act(bool value) {
+    _acted = value;
+}
+
+void Entity::DontAct() {
+    Act(false);
+}
+
+void Entity::Move(const IntVector2& direction) {
+    if(CanMoveDiagonallyToNeighbor(direction)) {
+        const auto target_position = _position + direction;
+        auto target_tile = map->GetTile(target_position.x, target_position.y, 0);
+        if(target_tile) {
+            if(target_tile->IsPassable()) {
+                SetPosition(_position + direction);
+            } else {
+                auto target_entity = target_tile->entity;
+                if(target_entity) {
+                    Fight(*this, *target_entity);
+                }
+            }
+        }
+    }
+    Act();
 }
 
 void Entity::MoveNorth() {
     Move(IntVector2{0,-1});
 }
 
+void Entity::MoveNorthEast() {
+    Move(IntVector2{1,-1});
+}
+
+void Entity::MoveEast() {
+    Move(IntVector2{ 1,0 });
+}
+
+void Entity::MoveSouthEast() {
+    Move(IntVector2{ 1,1 });
+}
+
 void Entity::MoveSouth() {
     Move(IntVector2{0,1});
+}
+
+void Entity::MoveSouthWest() {
+    Move(IntVector2{ -1,1 });
+}
+
+void Entity::MoveWest() {
+    Move(IntVector2{ -1,0 });
+}
+
+void Entity::MoveNorthWest() {
+    Move(IntVector2{ -1,-1 });
+}
+
+void Entity::Equip(Equipment* equipment_to_equip) {
+    equipment_to_equip->owner = this;
+    equipment_to_equip->ApplyStatModifer();
+}
+
+void Entity::UnEquip(Equipment* equipment_to_unequip) {
+    equipment_to_unequip->RemoveStatModifer();
+    equipment_to_unequip->owner = nullptr;
 }
 
 bool Entity::IsVisible() const {
@@ -158,5 +222,25 @@ void Entity::SetPosition(const IntVector2& position) {
     auto next_tile = map->GetTile(_position.x, _position.y, layer->z_index);
     next_tile->entity = this;
     tile = next_tile;
+}
+
+const IntVector2& Entity::GetPosition() const {
+    return _position;
+}
+
+Stats Entity::GetStats() const {
+    return base_stats + stat_modifiers;
+}
+
+void Entity::AdjustBaseStats(Stats adjustments) {
+    base_stats += adjustments;
+}
+
+void Entity::AdjustStatModifiers(Stats adjustments) {
+    stat_modifiers += adjustments;
+}
+
+void Entity::UpdateAI(TimeUtils::FPSeconds /*deltaSeconds*/) {
+    /* DO NOTHING */
 }
 

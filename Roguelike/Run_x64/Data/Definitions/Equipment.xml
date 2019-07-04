@@ -1,0 +1,6 @@
+<equipments>
+    <definitions src="Data/Definitions/EquipmentDefinitions.xml" />
+    <equipment name="ruby_armor">
+        <definition slot="body" type="armor" subtype="chestplate" color="red" />
+    </equipment>
+</equipments>

@@ -165,14 +165,18 @@ void Layer::RenderTiles(Renderer& renderer) const {
     renderer.DrawIndexed(PrimitiveType::Triangles, verts, ibo);
 }
 
-void Layer::BeginFrame() {
-
-}
-
-void Layer::Update(TimeUtils::FPSeconds deltaSeconds) {
+void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
     for(auto& tile : _tiles) {
         tile.Update(deltaSeconds);
     }
+}
+
+void Layer::BeginFrame() {
+    /* DO NOTHING */
+}
+
+void Layer::Update(TimeUtils::FPSeconds deltaSeconds) {
+    UpdateTiles(deltaSeconds);
 }
 
 void Layer::Render(Renderer& renderer) const {

@@ -6,11 +6,16 @@
 #include "Engine/Core/TimeUtils.hpp"
 #include "Engine/Core/Vertex3D.hpp"
 
+#include "Game/Inventory.hpp"
+#include "Game/Stats.hpp"
+
 class Map;
 class Layer;
 class Tile;
 class AnimatedSprite;
 class EntityDefinition;
+class EquipmentDefinition;
+class Equipment;
 
 struct EntityType {
     EntityDefinition* definition{};
@@ -34,31 +39,60 @@ public:
     void Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
     void EndFrame();
 
+    void UpdateAI(TimeUtils::FPSeconds deltaSeconds);
+
+    bool Acted() const;
+    void Act(bool value);
+    void Act();
+    void DontAct();
+
     void Move(const IntVector2& direction);
-    void MoveWest();
-    void MoveEast();
     void MoveNorth();
+    void MoveNorthEast();
+    void MoveEast();
+    void MoveSouthEast();
     void MoveSouth();
+    void MoveSouthWest();
+    void MoveWest();
+    void MoveNorthWest();
+
+    void Fight(Entity& attacker, Entity& defender);
+
+    void Equip(Equipment* equipment_to_equip);
+    void UnEquip(Equipment* equipment_to_unequip);
 
     bool IsVisible() const;
     bool IsNotVisible() const;
     bool IsInvisible() const;
 
     void SetPosition(const IntVector2& position);
+    const IntVector2& GetPosition() const;
+
+    Stats GetStats() const;
+    void AdjustBaseStats(Stats adjustments);
+    void AdjustStatModifiers(Stats adjustments);
 
     Map* map = nullptr;
     Layer* layer = nullptr;
     Tile* tile = nullptr;
     AnimatedSprite* sprite = nullptr;
     EntityDefinition* def = nullptr;
+    Equipment* equipment = nullptr;
     Rgba color{Rgba::White};
+    Inventory inventory{};
     std::string name{"UNKNOWN ENTITY"};
+
 protected:
 private:
     void LoadFromXml(const XMLElement& elem);
-    std::string ParseEntityDefinitionName(const XMLElement& xml_definition);
+    std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
 
-    bool CanMoveDiagonallyToNeighbor(const IntVector2& direction);
+    bool CanMoveDiagonallyToNeighbor(const IntVector2& direction) const;
+    void AddVertsForEquipment(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
 
+    Stats base_stats{};
+    Stats stat_modifiers{};
     IntVector2 _position{};
+    bool _acted = false;
+    
 };

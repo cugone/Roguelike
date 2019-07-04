@@ -4,6 +4,7 @@
 #include "Engine/Core/DataUtils.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/FileUtils.hpp"
+#include "Engine/Core/StringUtils.hpp"
 
 #include "Engine/Math/Vector4.hpp"
 #include "Engine/Math/IntVector3.hpp"
@@ -13,6 +14,8 @@
 #include "Engine/Renderer/SpriteSheet.hpp"
 
 #include "Game/EntityDefinition.hpp"
+#include "Game/Equipment.hpp"
+#include "Game/EquipmentDefinition.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Layer.hpp"
 #include "Game/TileDefinition.hpp"
@@ -72,8 +75,28 @@ void Map::BeginFrame() {
 }
 
 void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
+    UpdateLayers(deltaSeconds);
+    UpdateEntities(deltaSeconds);
+    if(player->Acted()) {
+        UpdateEntityAI(deltaSeconds);
+    }
+}
+
+void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
     for(auto& layer : _layers) {
         layer->Update(deltaSeconds);
+    }
+}
+
+void Map::UpdateEntities(TimeUtils::FPSeconds deltaSeconds) {
+    for(auto& entity : _entities) {
+        entity->Update(deltaSeconds);
+    }
+}
+
+void Map::UpdateEntityAI(TimeUtils::FPSeconds deltaSeconds) {
+    for(auto& entity : _entities) {
+        entity->UpdateAI(deltaSeconds);
     }
 }
 
@@ -227,12 +250,13 @@ Tile* Map::GetTile(int x, int y, int z) const {
 
 bool Map::LoadFromXML(const XMLElement& elem) {
 
-    DataUtils::ValidateXmlElement(elem, "map", "tiles,layers,material", "name", "entities,entityTypes,entityMap");
+    DataUtils::ValidateXmlElement(elem, "map", "tiles,layers,material", "name", "entities,entityTypes,entityMap,equipment");
 
     LoadNameForMap(elem);
     LoadMaterialsForMap(elem);
     LoadTileDefinitionsForMap(elem);
     LoadLayersForMap(elem);
+    LoadEquipmentForMap(elem);
     LoadEntitiesForMap(elem);
     LoadEntityTypesForMap(elem);
     PlaceEntitiesOnMap(elem);
@@ -404,14 +428,121 @@ void Map::LoadEntityTypesForMap(const XMLElement& elem) {
     }
 }
 
+void Map::LoadEquipmentForMap(const XMLElement& elem) {
+    if(auto* xml_map_equipment_source = elem.FirstChildElement("equipment")) {
+        DataUtils::ValidateXmlElement(*xml_map_equipment_source, "equipment", "", "src");
+        const auto src = DataUtils::ParseXmlAttribute(*xml_map_equipment_source, "src", std::string{});
+        if(src.empty()) {
+            ERROR_AND_DIE("Map equipment source is empty. Do not define element if map does not have equipment.");
+        }
+        LoadEquipmentFromFile(src);
+    }
+}
+
+void Map::LoadEquipmentFromFile(const std::filesystem::path& src) {
+    namespace FS = std::filesystem;
+    if(!FS::exists(src)) {
+        std::ostringstream ss;
+        ss << "Equipment file at " << src << " could not be found.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    tinyxml2::XMLDocument doc;
+    auto xml_result = doc.LoadFile(src.string().c_str());
+    if(xml_result != tinyxml2::XML_SUCCESS) {
+        std::ostringstream ss;
+        ss << "Map " << _name << " failed to load. Equipment source file at " << src << " could not be loaded.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    if(auto* xml_equipment_root = doc.RootElement()) {
+        DataUtils::ValidateXmlElement(*xml_equipment_root, "equipments", "definitions,equipment", "");
+        auto* xml_definitions = xml_equipment_root->FirstChildElement("definitions");
+        
+        DataUtils::ValidateXmlElement(*xml_definitions, "definitions", "", "src");
+        const auto definitions_src = DataUtils::ParseXmlAttribute(*xml_definitions, "src", std::string{});
+        if(definitions_src.empty()) {
+            ERROR_AND_DIE("Equipment definitions source is empty.");
+        }
+        FS::path def_src(definitions_src);
+        if(!FS::exists(def_src)) {
+            ERROR_AND_DIE("Equipment definitions source not found.");
+        }
+        LoadEquipmentDefinitionsFromFile(def_src);
+        LoadEquipmentTypesForMap(*xml_equipment_root);
+    }
+}
+
+void Map::LoadEquipmentTypesForMap(const XMLElement& elem) {
+    if (auto* xml_entity_types = elem.FirstChildElement("entityTypes")) {
+        DataUtils::ValidateXmlElement(*xml_entity_types, "entityTypes", "player", "");
+        DataUtils::ForEachChildElement(*xml_entity_types, "",
+            [this](const XMLElement& elem) {
+            auto name = DataUtils::GetElementName(elem);
+            DataUtils::ValidateXmlElement(elem, name, "", "lookAndFeel");
+            const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
+            auto* definition = EntityDefinition::GetEntityDefinitionByName(definitionName);
+            auto type = std::make_unique<EntityType>();
+            type->name = name;
+            type->definition = definition;
+            _entity_types.insert(std::make_pair(name, std::move(type)));
+        });
+    }
+
+    DataUtils::ForEachChildElement(elem, "equipment",
+        [](const XMLElement& elem) {
+        DataUtils::ValidateXmlElement(elem, "equipment", "definition", "name");
+        DataUtils::ForEachChildElement(elem, "definition",
+            [](const XMLElement& elem) {
+            DataUtils::ValidateXmlElement(elem, "definition", "", "slot,type,subtype,color");
+            EquipmentType etype{};
+            const auto slot = DataUtils::ParseXmlAttribute(elem, "slot", "");
+            const auto type = std::string{};//DataUtils::ParseXmlAttribute(elem, "type", "");
+            const auto subtype = DataUtils::ParseXmlAttribute(elem, "subtype", "");
+            const auto color = DataUtils::ParseXmlAttribute(elem, "color", "");
+            etype.name = StringUtils::Join('.', slot, type, subtype, color);
+        });
+    });
+}
+
+void Map::LoadEquipmentDefinitionsFromFile(const std::filesystem::path& src) {
+    namespace FS = std::filesystem;
+    if(!FS::exists(src)) {
+        std::ostringstream ss;
+        ss << "Equipment Definitions file at " << src << " could not be found.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    tinyxml2::XMLDocument doc;
+    auto xml_result = doc.LoadFile(src.string().c_str());
+    if(xml_result != tinyxml2::XML_SUCCESS) {
+        std::ostringstream ss;
+        ss << "Equipment Definitions at " << src << " failed to load.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    if(auto* xml_root = doc.RootElement()) {
+        DataUtils::ValidateXmlElement(*xml_root, "equipmentDefinitions", "spritesheet,equipmentDefinition", "");
+        auto* xml_spritesheet = xml_root->FirstChildElement("spritesheet");
+        _equipment_sheet = _renderer.CreateSpriteSheet(*xml_spritesheet);
+        DataUtils::ForEachChildElement(*xml_root, "equipmentDefinition",
+            [this](const XMLElement& elem) {
+            EquipmentDefinition::CreateEquipmentDefinition(_renderer, elem, _equipment_sheet);
+        });
+    }
+}
+
 std::vector<EntityType*> Map::GetEntityTypesByName(const std::string& name) {
     auto range = _entity_types.equal_range(name);
-    if(range.first == range.second && range.first == std::end(_entity_types)) {
-        return {};
-    }
     std::vector<EntityType*> results{};
     results.reserve(std::distance(range.first, range.second));
     for(auto iter = range.first; iter != range.second; ++iter) {
+        results.push_back(iter->second.get());
+    }
+    return results;
+}
+
+std::vector<EquipmentType*> Map::GetEquipmentTypesByName(const std::string& name) {
+    auto range = _equipment_types.equal_range(name);
+    std::vector<EquipmentType*> results{};
+    results.reserve(std::distance(range.first, range.second));
+    for (auto iter = range.first; iter != range.second; ++iter) {
         results.push_back(iter->second.get());
     }
     return results;

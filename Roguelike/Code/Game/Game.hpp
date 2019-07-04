@@ -29,7 +29,7 @@ private:
     void HandleDebugKeyboardInput(Camera2D& base_camera);
     void HandleDebugMouseInput(Camera2D& base_camera);
 
-    void HandlePlayerInput();
+    void HandlePlayerInput(Camera2D& base_camera);
 
     void ShowDebugUI();
 
@@ -58,6 +58,7 @@ private:
     float _max_shake_angle = 0.0f;
     float _max_shake_x = 0.0f;
     float _max_shake_y = 0.0f;
+    bool _player_requested_wait = false;
     bool _show_grid = false;
     bool _show_debug_window = false;
     bool _show_world_bounds = false;

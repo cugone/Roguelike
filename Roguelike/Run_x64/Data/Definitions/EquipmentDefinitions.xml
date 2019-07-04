@@ -1,0 +1,11 @@
+<equipmentDefinitions>
+    <spritesheet src="Data/Images/Tiles.png" dimensions="[65,65]" />
+    <equipmentDefinition name="body.armor.chestplate.red" index="[6,54]" />
+    <equipmentDefinition name="body.armor.chestplate.blue" index="[8,54]" />
+    <equipmentDefinition name="body.armor.chestplate.black" index="[4,54]" />
+    <equipmentDefinition name="body.armor.chestplate.green" index="[3,54]" />
+    <equipmentDefinition name="body.armor.fullplate.silver" index="[13,54]" />
+    <equipmentDefinition name="body.armor.fullplate.gold" index="[14,54]" />
+    <equipmentDefinition name="body.clothes.coat.black" index="[9,54]" />
+    <equipmentDefinition name="body.clothes.coat.red" index="[10,54]" />
+</equipmentDefinitions>

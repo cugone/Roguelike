@@ -67,7 +67,10 @@ private:
     void SetModelViewProjectionBounds(Renderer& renderer) const;
     void RenderTiles(Renderer& renderer) const;
 
+    void UpdateTiles(TimeUtils::FPSeconds deltaSeconds);
+
     std::vector<Tile> _tiles{};
     Map* _map = nullptr;
     float _defaultViewHeight = 1.0f;
+
 };

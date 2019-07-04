@@ -3,6 +3,8 @@
     <entityDefinition name="human..male" index="[7,53]" />
     <entityDefinition name="human..female" index="[6,53]">
         <attachPoints>
+            <body offset="[0,0]"/>
+            <!--
             <hair offset="[0,0]"/>
             <head offset="[0,0]"/>
             <body offset="[0,0]"/>
@@ -11,9 +13,10 @@
             <lleg offset="[0,0]"/>
             <rleg offset="[0,0]"/>
             <feet offset="[0,0]"/>
+            -->
         </attachPoints>
         <equipment>
-            <body type="chestplate.red" />
+            <body item="ruby_armor" />
         </equipment>
     </entityDefinition>
 </entityDefinitions>

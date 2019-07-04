@@ -9,6 +9,7 @@
 
 #include "Game/Layer.hpp"
 #include "Game/Entity.hpp"
+#include "Game/Equipment.hpp"
 
 #include <filesystem>
 #include <map>
@@ -32,6 +33,9 @@ public:
 
     void BeginFrame();
     void Update(TimeUtils::FPSeconds deltaSeconds);
+
+    void UpdateLayers(TimeUtils::FPSeconds deltaSeconds);
+
     void Render(Renderer& renderer) const;
     void DebugRender(Renderer& renderer) const;
     void EndFrame();
@@ -78,8 +82,16 @@ private:
     void LoadEntitiesFromFile(const std::filesystem::path& src);
     void LoadEntityDefinitionsFromFile(const std::filesystem::path& src);
     void LoadEntityTypesForMap(const XMLElement& elem);
+    void LoadEquipmentForMap(const XMLElement& elem);
+    void LoadEquipmentFromFile(const std::filesystem::path& src);
+    void LoadEquipmentTypesForMap(const XMLElement& elem);
+    void LoadEquipmentDefinitionsFromFile(const std::filesystem::path& src);
     void PlaceEntitiesOnMap(const XMLElement& elem);
     std::vector<EntityType*> GetEntityTypesByName(const std::string& name);
+    std::vector<EquipmentType*> GetEquipmentTypesByName(const std::string& name);
+
+    void UpdateEntities(TimeUtils::FPSeconds deltaSeconds);
+    void UpdateEntityAI(TimeUtils::FPSeconds deltaSeconds);
 
     std::string _name{};
     std::vector<std::unique_ptr<Layer>> _layers{};
@@ -87,10 +99,13 @@ private:
     Material* _default_tileMaterial{};
     Material* _current_tileMaterial{};
     std::vector<std::unique_ptr<Entity>> _entities{};
+    std::multimap<std::string, std::unique_ptr<EntityType>> _entity_types{};
+    std::vector<std::unique_ptr<Equipment>> _equipments{};
+    std::multimap<std::string, std::unique_ptr<EquipmentType>> _equipment_types{};
+
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
     std::shared_ptr<SpriteSheet> _entity_sheet{};
-    std::multimap<std::string, std::unique_ptr<EntityType>> _entity_types{};
+    std::shared_ptr<SpriteSheet> _equipment_sheet{};
     float _camera_speed = 1.0f;
     static unsigned long long default_map_index;
-
 };
