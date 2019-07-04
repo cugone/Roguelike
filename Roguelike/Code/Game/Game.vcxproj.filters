@@ -67,6 +67,9 @@
     <ClCompile Include="Inventory.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Actor.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameCommon.hpp">
@@ -109,6 +112,9 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Inventory.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor.hpp">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
