@@ -61,7 +61,7 @@ Stats Stats::operator-() {
 }
 
 Stats::Stats(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "stats", "health,attack,defense,experience", "");
+    DataUtils::ValidateXmlElement(elem, "stats", "health,attack,defense,speed,experience", "");
     if(auto* xml_health = elem.FirstChildElement("health")) {
         auto id = StatsID::Health;
         auto default_value = GetStat(id);
@@ -76,6 +76,11 @@ Stats::Stats(const XMLElement& elem) {
         auto id = StatsID::Defense;
         auto default_value = GetStat(id);
         SetStat(id, DataUtils::ParseXmlElementText(*xml_defense, default_value));
+    }
+    if(auto* xml_speed = elem.FirstChildElement("speed")) {
+        auto id = StatsID::Speed;
+        auto default_value = GetStat(id);
+        SetStat(id, DataUtils::ParseXmlElementText(*xml_speed, default_value));
     }
     if(auto* xml_experience = elem.FirstChildElement("experience")) {
         auto id = StatsID::Experience;
@@ -95,4 +100,9 @@ void Stats::SetStat(const StatsID& id, decltype(_stats)::value_type value) noexc
 void Stats::AdjustStat(const StatsID& id, decltype(_stats)::value_type value) noexcept {
     const auto i = static_cast<std::size_t>(id);
     _stats[i] += value;
+}
+
+void Stats::MultiplyStat(const StatsID& id, float value) noexcept {
+    const auto i = static_cast<std::size_t>(id);
+    _stats[i] *= value;
 }
