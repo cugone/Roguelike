@@ -41,21 +41,6 @@ public:
 
     void UpdateAI(TimeUtils::FPSeconds deltaSeconds);
 
-    bool Acted() const;
-    void Act(bool value);
-    void Act();
-    void DontAct();
-
-    void Move(const IntVector2& direction);
-    void MoveNorth();
-    void MoveNorthEast();
-    void MoveEast();
-    void MoveSouthEast();
-    void MoveSouth();
-    void MoveSouthWest();
-    void MoveWest();
-    void MoveNorthWest();
-
     void Fight(Entity& attacker, Entity& defender);
 
     void Equip(Equipment* equipment_to_equip);
@@ -83,16 +68,16 @@ public:
     std::string name{"UNKNOWN ENTITY"};
 
 protected:
+    const Stats& GetStatModifiers() const;
+    const Stats& GetBaseStats() const;
 private:
     void LoadFromXml(const XMLElement& elem);
     std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
 
-    bool CanMoveDiagonallyToNeighbor(const IntVector2& direction) const;
     void AddVertsForEquipment(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
 
     Stats base_stats{};
     Stats stat_modifiers{};
     IntVector2 _position{};
-    bool _acted = false;
-    
+
 };

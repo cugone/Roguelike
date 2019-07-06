@@ -75,6 +75,14 @@ void Entity::EndFrame() {
     /* DO NOTHING */
 }
 
+const Stats& Entity::GetStatModifiers() const {
+    return stat_modifiers;
+}
+
+const Stats& Entity::GetBaseStats() const {
+    return base_stats;
+}
+
 void Entity::LoadFromXml(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "entity", "definition", "name");
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
@@ -125,6 +133,7 @@ void Entity::AddVertsForEquipment(std::vector<Vertex3D>& verts, std::vector<unsi
 void Entity::Fight(Entity& attacker, Entity& defender) {
     auto aStats = attacker.GetStats();
     auto dStats = defender.GetStats();
+
 }
 
 bool Entity::Acted() const {
