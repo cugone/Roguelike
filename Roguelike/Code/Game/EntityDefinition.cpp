@@ -10,7 +10,7 @@ std::map<std::string, std::unique_ptr<EntityDefinition>> EntityDefinition::s_reg
 
 void EntityDefinition::CreateEntityDefinition(Renderer& renderer, const XMLElement& elem) {
     auto new_def = std::make_unique<EntityDefinition>(renderer, elem);
-    s_registry.insert_or_assign(new_def->name, std::move(new_def));
+    s_registry.try_emplace(new_def->name, std::move(new_def));
 }
 
 void EntityDefinition::CreateEntityDefinition(Renderer& renderer, const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet) {
