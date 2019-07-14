@@ -2,27 +2,43 @@
 
 #include "Game/Entity.hpp"
 
+#include <memory>
+
 class Actor : public Entity {
 public:
+
+    static void CreateActor(const XMLElement& elem);
+
+    Actor() = default;
+    Actor(const Actor& other) = default;
+    Actor(Actor&& other) = default;
+    Actor& operator=(const Actor& rhs) = default;
+    Actor& operator=(Actor&& rrhs) = default;
     virtual ~Actor() = default;
+
+    Actor(const XMLElement& elem) noexcept;
 
     bool Acted() const;
     void Act(bool value);
     void Act();
     void DontAct();
 
-    void Move(const IntVector2& direction);
-    void MoveNorth();
-    void MoveNorthEast();
-    void MoveEast();
-    void MoveSouthEast();
-    void MoveSouth();
-    void MoveSouthWest();
-    void MoveWest();
-    void MoveNorthWest();
+    bool MoveTo(Tile* destination);
+    bool Move(const IntVector2& direction);
+    bool MoveNorth();
+    bool MoveNorthEast();
+    bool MoveEast();
+    bool MoveSouthEast();
+    bool MoveSouth();
+    bool MoveSouthWest();
+    bool MoveWest();
+    bool MoveNorthWest();
 
 protected:
 private:
+    bool LoadFromXml(const XMLElement& elem);
     bool CanMoveDiagonallyToNeighbor(const IntVector2& direction) const;
+
+    static std::map<std::string, std::unique_ptr<Actor>> s_registry;
     bool _acted = false;
 };

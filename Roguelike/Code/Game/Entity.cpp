@@ -100,30 +100,6 @@ std::string Entity::ParseEntityDefinitionName(const XMLElement& xml_definition) 
     }, '.', false);
 }
 
-bool Entity::CanMoveDiagonallyToNeighbor(const IntVector2& direction) const {
-    const auto target = _position + direction;
-    if(_position.x == target.x || _position.y == target.y) {
-        return true;
-    }
-    {
-        const auto test_tiles = map->GetTiles(_position.x, target.y);
-        for(const auto* t : test_tiles) {
-            if(t->IsSolid()) {
-                return false;
-            }
-        }
-    }
-    {
-        const auto test_tiles = map->GetTiles(target.x, _position.y);
-        for(const auto* t : test_tiles) {
-            if(t->IsSolid()) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
 void Entity::AddVertsForEquipment(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
     if(equipment) {
         equipment->Render(verts, ibo, layer_color, layer_index);
@@ -134,72 +110,6 @@ void Entity::Fight(Entity& attacker, Entity& defender) {
     auto aStats = attacker.GetStats();
     auto dStats = defender.GetStats();
 
-}
-
-bool Entity::Acted() const {
-    return _acted;
-}
-
-void Entity::Act() {
-    Act(true);
-}
-
-void Entity::Act(bool value) {
-    _acted = value;
-}
-
-void Entity::DontAct() {
-    Act(false);
-}
-
-void Entity::Move(const IntVector2& direction) {
-    if(CanMoveDiagonallyToNeighbor(direction)) {
-        const auto target_position = _position + direction;
-        auto target_tile = map->GetTile(target_position.x, target_position.y, 0);
-        if(target_tile) {
-            if(target_tile->IsPassable()) {
-                SetPosition(_position + direction);
-            } else {
-                auto target_entity = target_tile->entity;
-                if(target_entity) {
-                    Fight(*this, *target_entity);
-                }
-            }
-        }
-    }
-    Act();
-}
-
-void Entity::MoveNorth() {
-    Move(IntVector2{0,-1});
-}
-
-void Entity::MoveNorthEast() {
-    Move(IntVector2{1,-1});
-}
-
-void Entity::MoveEast() {
-    Move(IntVector2{ 1,0 });
-}
-
-void Entity::MoveSouthEast() {
-    Move(IntVector2{ 1,1 });
-}
-
-void Entity::MoveSouth() {
-    Move(IntVector2{0,1});
-}
-
-void Entity::MoveSouthWest() {
-    Move(IntVector2{ -1,1 });
-}
-
-void Entity::MoveWest() {
-    Move(IntVector2{ -1,0 });
-}
-
-void Entity::MoveNorthWest() {
-    Move(IntVector2{ -1,-1 });
 }
 
 void Entity::Equip(Equipment* equipment_to_equip) {

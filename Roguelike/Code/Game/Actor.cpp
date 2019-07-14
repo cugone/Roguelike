@@ -1,6 +1,24 @@
 #include "Game/Actor.hpp"
 
+#include "Engine/Core/ErrorWarningAssert.hpp"
+
 #include "Game/Map.hpp"
+
+std::map<std::string, std::unique_ptr<Actor>> Actor::s_registry{};
+
+void Actor::CreateActor(const XMLElement& elem) {
+    auto new_actor = std::make_unique<Actor>(elem);
+    s_registry.try_emplace(new_actor->name, std::move(new_actor));
+}
+
+Actor::Actor(const XMLElement& elem) noexcept
+    : Entity()
+{
+    if(!LoadFromXml(elem)) {
+        ERROR_AND_DIE("Actor failed to load.");
+    }
+    s_registry.try_emplace(name, std::make_unique<Actor>(*this));
+}
 
 bool Actor::Acted() const {
     return _acted;
@@ -16,6 +34,18 @@ void Actor::Act() {
 
 void Actor::DontAct() {
     Act(false);
+}
+
+bool Actor::MoveTo(Tile* destination) {
+    if(destination) {
+        return Move(destination->GetCoords());
+    }
+    return false;
+}
+
+bool Actor::LoadFromXml(const XMLElement& /*elem*/) {
+    //TODO: Start Here
+    return false;
 }
 
 bool Actor::CanMoveDiagonallyToNeighbor(const IntVector2& direction) const {
@@ -43,7 +73,8 @@ bool Actor::CanMoveDiagonallyToNeighbor(const IntVector2& direction) const {
     return true;
 }
 
-void Actor::Move(const IntVector2& direction) {
+bool Actor::Move(const IntVector2& direction) {
+    bool moved = false;
     if(CanMoveDiagonallyToNeighbor(direction)) {
         const auto pos = GetPosition();
         const auto target_position = pos + direction;
@@ -51,45 +82,42 @@ void Actor::Move(const IntVector2& direction) {
         if(target_tile) {
             if(target_tile->IsPassable()) {
                 SetPosition(target_position);
-            } else {
-                auto target_entity = target_tile->entity;
-                if(target_entity) {
-                    Fight(*this, *target_entity);
-                }
+                moved = true;
             }
         }
     }
     Act();
+    return moved;
 }
 
-void Actor::MoveNorth() {
-    Move(IntVector2{ 0,-1 });
+bool Actor::MoveNorth() {
+    return Move(IntVector2{ 0,-1 });
 }
 
-void Actor::MoveNorthEast() {
-    Move(IntVector2{ 1,-1 });
+bool Actor::MoveNorthEast() {
+    return Move(IntVector2{ 1,-1 });
 }
 
-void Actor::MoveEast() {
-    Move(IntVector2{ 1,0 });
+bool Actor::MoveEast() {
+    return Move(IntVector2{ 1,0 });
 }
 
-void Actor::MoveSouthEast() {
-    Move(IntVector2{ 1,1 });
+bool Actor::MoveSouthEast() {
+    return Move(IntVector2{ 1,1 });
 }
 
-void Actor::MoveSouth() {
-    Move(IntVector2{ 0,1 });
+bool Actor::MoveSouth() {
+    return Move(IntVector2{ 0,1 });
 }
 
-void Actor::MoveSouthWest() {
-    Move(IntVector2{ -1,1 });
+bool Actor::MoveSouthWest() {
+    return Move(IntVector2{ -1,1 });
 }
 
-void Actor::MoveWest() {
-    Move(IntVector2{ -1,0 });
+bool Actor::MoveWest() {
+    return Move(IntVector2{ -1,0 });
 }
 
-void Actor::MoveNorthWest() {
-    Move(IntVector2{ -1,-1 });
+bool Actor::MoveNorthWest() {
+    return Move(IntVector2{ -1,-1 });
 }
