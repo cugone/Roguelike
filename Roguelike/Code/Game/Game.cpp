@@ -15,13 +15,21 @@
 #include "Game/GameCommon.hpp"
 #include "Game/GameConfig.hpp"
 #include "Game/Entity.hpp"
+#include "Game/Actor.hpp"
 #include "Game/EntityDefinition.hpp"
 #include "Game/Layer.hpp"
 #include "Game/Map.hpp"
 #include "Game/TileDefinition.hpp"
 
 void Game::Initialize() {
+    {
+        auto dims = g_theRenderer->GetOutput()->GetDimensions();
+        auto data = std::vector<Rgba>(dims.x * dims.y, Rgba::Magenta);
+        auto fs = g_theRenderer->Create2DTextureFromMemory(data, dims.x, dims.y, BufferUsage::Gpu, BufferBindUsage::Render_Target | BufferBindUsage::Shader_Resource);
+        g_theRenderer->RegisterTexture("__fullscreen", fs);
+    }
     g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
+    _fullscreen_cb = std::unique_ptr<ConstantBuffer>(g_theRenderer->CreateConstantBuffer(&_fullscreen_data, sizeof(_fullscreen_data)));
     LoadMaps();
     _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
 }
@@ -47,19 +55,62 @@ void Game::Update(TimeUtils::FPSeconds deltaSeconds) {
         g_theApp->SetIsQuitting(true);
         return;
     }
+    g_theRenderer->UpdateGameTime(deltaSeconds);
     Camera2D& base_camera = _map->camera;
     HandleDebugInput(base_camera);
     HandlePlayerInput(base_camera);
+
+    {
+        static bool value = true;
+        if(g_theInputSystem->WasKeyJustPressed(KeyCode::Enter)) {
+            value = !value;
+        }
+        if(DoFade(value)) {
+            StopFade();
+        }
+    }
+
     base_camera.Update(deltaSeconds);
     _map->Update(deltaSeconds);
 }
 
+bool Game::DoFade(bool fadeIn) {
+    static TimeUtils::FPSeconds curFadeTime{};
+    if(fadeIn && _fullscreen_data.effectIndex != 0) {
+        _fullscreen_data.effectIndex = 0;
+        curFadeTime = curFadeTime.zero();
+    } else if(!fadeIn && _fullscreen_data.effectIndex != 1) {
+        _fullscreen_data.effectIndex = 1;
+        curFadeTime = curFadeTime.zero();
+    }
+    _fullscreen_data.fadePercent = curFadeTime.count() / 5.0f;
+    _fullscreen_data.fadePercent = std::clamp(_fullscreen_data.fadePercent, 0.0f, 1.0f);
+    auto color = Rgba::Black.GetRgbaAsFloats();
+    _fullscreen_data.effectIndex = !!fadeIn;
+    _fullscreen_data.fadeColor[0] = color.x;
+    _fullscreen_data.fadeColor[1] = color.y;
+    _fullscreen_data.fadeColor[2] = color.z;
+    _fullscreen_data.fadeColor[3] = color.w;
+    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+
+    curFadeTime += g_theRenderer->GetGameFrameTime();
+    return _fullscreen_data.fadePercent == 1.0f;
+}
+
+void Game::StopFade() {
+    static TimeUtils::FPSeconds curFadeTime{};
+    _fullscreen_data.effectIndex = -1;
+    _fullscreen_data.fadePercent = 0.0f;
+    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+}
+
 void Game::Render() const {
+    g_theRenderer->SetTexture(nullptr); //Force bound texture to invalid.
     g_theRenderer->ResetModelViewProjection();
-    g_theRenderer->SetRenderTargetsToBackBuffer();
+    g_theRenderer->SetRenderTarget(g_theRenderer->GetTexture("__fullscreen"));
+    g_theRenderer->ClearColor(Rgba::Olive);
     g_theRenderer->ClearDepthStencilBuffer();
 
-    g_theRenderer->ClearColor(Rgba::Olive);
 
     g_theRenderer->SetViewportAsPercent();
 
@@ -68,6 +119,20 @@ void Game::Render() const {
     if(_show_grid || _show_world_bounds) {
         _map->DebugRender(*g_theRenderer);
     }
+
+    g_theRenderer->ResetModelViewProjection();
+    g_theRenderer->SetRenderTargetsToBackBuffer();
+    g_theRenderer->ClearColor(Rgba::NoAlpha);
+    g_theRenderer->ClearDepthStencilBuffer();
+    g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("Fullscreen"));
+    g_theRenderer->SetConstantBuffer(3, _fullscreen_cb.get());
+    std::vector<Vertex3D> vbo =
+    {
+        Vertex3D{Vector3::ZERO}
+        ,Vertex3D{Vector3{3.0f, 0.0f, 0.0f}}
+        ,Vertex3D{Vector3{0.0f, 3.0f, 0.0f}}
+    };
+    g_theRenderer->Draw(PrimitiveType::Triangles, vbo, 3);
 
     //2D View / HUD
     const float ui_view_height = GRAPHICS_OPTION_WINDOW_HEIGHT;
@@ -82,7 +147,6 @@ void Game::Render() const {
     _ui_camera.orientation_degrees = 0.0f;
     _ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(_ui_camera);
-
 }
 
 void Game::EndFrame() {
@@ -135,30 +199,30 @@ void Game::HandlePlayerInput(Camera2D& base_camera) {
         _player_requested_wait = true;
         return;
     }
-
+    auto player = dynamic_cast<Actor*>(_map->player);
     if(is_upright) {
-        _map->player->MoveNorthEast();
+        player->MoveNorthEast();
     } else if(is_upleft) {
-        _map->player->MoveNorthWest();
+        player->MoveNorthWest();
     } else if(is_downright) {
-        _map->player->MoveSouthEast();
+        player->MoveSouthEast();
     } else if(is_downleft) {
-        _map->player->MoveSouthWest();
+        player->MoveSouthWest();
     } else {
         if(is_right) {
-            _map->player->MoveEast();
+            player->MoveEast();
         } else if(is_left) {
-            _map->player->MoveWest();
+            player->MoveWest();
         }
 
         if(is_up) {
-            _map->player->MoveNorth();
+            player->MoveNorth();
         } else if(is_down) {
-            _map->player->MoveSouth();
+            player->MoveSouth();
         }
     }
-    if(!_map->IsEntityInView(_map->player)) {
-        _map->FocusEntity(_map->player);
+    if(!_map->IsEntityInView(dynamic_cast<Entity*>(player))) {
+        _map->FocusEntity(player);
     }
 
 }
@@ -204,12 +268,16 @@ void Game::HandleDebugKeyboardInput(Camera2D& base_camera) {
             }
         }
     }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::O)) {
+        _map->SetPriorityLayer(static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(static_cast<int>(_map->GetLayerCount()))));
+    }
+
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::B)) {
         base_camera.trauma += 1.0f;
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::R)) {
-        const auto count = _map->GetLayerCount();
-        for(std::size_t i = 0; i < count; ++i) {
+        const auto layer_count = _map->GetLayerCount();
+        for(std::size_t i = 0; i < layer_count; ++i) {
             auto* cur_layer = _map->GetLayer(i);
             if(cur_layer) {
                 cur_layer->viewHeight = cur_layer->GetDefaultViewHeight();

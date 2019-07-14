@@ -1,0 +1,6 @@
+<material name="Fullscreen">
+    <shader src="Data/Shaders/Fullscreen.shader" />
+    <textures>
+        <diffuse src="__fullscreen" />
+    </textures>
+</material>

@@ -7,6 +7,12 @@
 
 #include <memory>
 
+struct fullscreen_cb_t {
+    int effectIndex = -1;
+    float fadePercent = 0.0f;
+    float padding[2] = {0.0f, 0.0f};
+    float fadeColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+};
 
 class Game {
 public:
@@ -47,6 +53,9 @@ private:
 
     void LoadMaps();
 
+    bool DoFade(bool fadeIn);
+    void StopFade();
+
     std::unique_ptr<Map> _map{nullptr};
     mutable Camera2D _ui_camera{};
     Rgba _grid_color{Rgba::Red};
@@ -65,7 +74,8 @@ private:
     bool _show_tile_debugger = false;
     bool _show_entity_debugger = false;
     bool _show_all_entities = false;
-
+    std::unique_ptr<class ConstantBuffer> _fullscreen_cb = nullptr;
+    fullscreen_cb_t _fullscreen_data = fullscreen_cb_t{};
     friend class Map;
     friend class Layer;
 };

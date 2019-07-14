@@ -20,6 +20,12 @@
     <Filter Include="Data\Images">
       <UniqueIdentifier>{4ff2fdbf-8196-4aa9-a982-698d45f2e3ea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data\ShaderPrograms">
+      <UniqueIdentifier>{dbe415ab-3d9e-4701-b872-a47ba366d86e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data\Shaders">
+      <UniqueIdentifier>{38c32011-edaf-4083-bb77-be03e4e3d720}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main_Win32.cpp">
@@ -142,10 +148,21 @@
     <None Include="..\..\Run_x64\Data\Materials\Tile.material">
       <Filter>Data\Materials</Filter>
     </None>
+    <None Include="..\..\Run_x64\Data\Shaders\Fullscreen.shader">
+      <Filter>Data\Shaders</Filter>
+    </None>
+    <None Include="..\..\Run_x64\Data\Materials\Fullscreen.material">
+      <Filter>Data\Materials</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\Run_x64\Data\Images\Tiles.png">
       <Filter>Data\Images</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\Run_x64\Data\ShaderPrograms\Fullscreen.hlsl">
+      <Filter>Data\ShaderPrograms</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
