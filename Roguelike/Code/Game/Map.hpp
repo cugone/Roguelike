@@ -8,7 +8,6 @@
 #include "Engine/Renderer/Camera2D.hpp"
 
 #include "Game/Layer.hpp"
-#include "Game/Entity.hpp"
 #include "Game/Equipment.hpp"
 
 #include <filesystem>
@@ -16,6 +15,9 @@
 #include <memory>
 
 
+class Entity;
+struct EntityType;
+class Actor;
 class Material;
 class Renderer;
 class TileDefinition;
@@ -23,18 +25,20 @@ class SpriteSheet;
 
 class Map {
 public:
-    Map() = default;
-    explicit Map(Renderer& renderer, const XMLElement& elem);
+    Map() noexcept = default;
+    explicit Map(Renderer& renderer, const XMLElement& elem) noexcept;
     Map(const Map& other) = default;
     Map(Map&& other) = default;
     Map& operator=(const Map& other) = default;
     Map& operator=(Map&& other) = default;
-    ~Map() = default;
+    ~Map() noexcept;
 
     void BeginFrame();
     void Update(TimeUtils::FPSeconds deltaSeconds);
 
     void UpdateLayers(TimeUtils::FPSeconds deltaSeconds);
+
+    void SetPriorityLayer(std::size_t i);
 
     void Render(Renderer& renderer) const;
     void DebugRender(Renderer& renderer) const;
@@ -65,10 +69,12 @@ public:
     Tile* PickTileFromWorldCoords(const Vector2& worldCoords, int layerIndex) const;
     Tile* PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) const;
 
+    bool MoveOrAttack(Actor* actor, Tile* tile);
+
     void SetDebugGridColor(const Rgba& gridColor);
 
     mutable Camera2D camera{};
-    Entity* player = nullptr;
+    Actor* player = nullptr;
 
 protected:
 private:
@@ -93,12 +99,15 @@ private:
     void UpdateEntities(TimeUtils::FPSeconds deltaSeconds);
     void UpdateEntityAI(TimeUtils::FPSeconds deltaSeconds);
 
+    void BringLayerToFront(std::size_t i);
+
     std::string _name{};
     std::vector<std::unique_ptr<Layer>> _layers{};
     Renderer& _renderer;
     Material* _default_tileMaterial{};
     Material* _current_tileMaterial{};
-    std::vector<std::unique_ptr<Entity>> _entities{};
+    std::vector<Entity*> _entities{};
+    std::vector<Actor*> _actors{};
     std::multimap<std::string, std::unique_ptr<EntityType>> _entity_types{};
     std::vector<std::unique_ptr<Equipment>> _equipments{};
     std::multimap<std::string, std::unique_ptr<EquipmentType>> _equipment_types{};

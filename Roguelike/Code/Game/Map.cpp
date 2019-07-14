@@ -13,6 +13,8 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 
+#include "Game/Actor.hpp"
+#include "Game/Entity.hpp"
 #include "Game/EntityDefinition.hpp"
 #include "Game/Equipment.hpp"
 #include "Game/EquipmentDefinition.hpp"
@@ -20,6 +22,7 @@
 #include "Game/Layer.hpp"
 #include "Game/TileDefinition.hpp"
 
+#include <algorithm>
 #include <sstream>
 
 unsigned long long Map::default_map_index = 0ull;
@@ -60,12 +63,30 @@ Tile* Map::PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) c
     return PickTileFromWorldCoords(world_coords, layerIndex);
 }
 
-Map::Map(Renderer& renderer, const XMLElement& elem)
+bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
+    if(actor->MoveTo(tile)) {
+        return true;
+    } else {
+        //TODO: Start Here
+    }
+    return false;
+}
+
+Map::Map(Renderer& renderer, const XMLElement& elem) noexcept
     : _renderer(renderer)
 {
     if(!LoadFromXML(elem)) {
         ERROR_AND_DIE("Could not load map.");
     }
+}
+
+Map::~Map() noexcept {
+    for(auto& entity : _entities) {
+        delete entity;
+        entity = nullptr;
+    }
+    _entities.clear();
+    _entities.shrink_to_fit();
 }
 
 void Map::BeginFrame() {
@@ -77,14 +98,30 @@ void Map::BeginFrame() {
 void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
     UpdateLayers(deltaSeconds);
     UpdateEntities(deltaSeconds);
-    if(player->Acted()) {
-        UpdateEntityAI(deltaSeconds);
-    }
 }
 
 void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
     for(auto& layer : _layers) {
         layer->Update(deltaSeconds);
+    }
+}
+
+void Map::SetPriorityLayer(std::size_t i) {
+    if(i >= _layers.size()) {
+        return;
+    }
+    BringLayerToFront(i);
+}
+
+void Map::BringLayerToFront(std::size_t i) {
+    auto first = std::begin(_layers);
+    auto curr = first + i;
+    auto next = curr + 1;
+    auto end = std::end(_layers);
+    while(next != end) {
+        std::iter_swap(curr, next);
+        curr++;
+        next = curr + 1;
     }
 }
 
@@ -560,15 +597,15 @@ void Map::PlaceEntitiesOnMap(const XMLElement& elem) {
             const auto typeName = DataUtils::GetElementName(elem);
             auto types = GetEntityTypesByName(typeName);
             for(const auto type : types) {
-                auto entity = std::make_unique<Entity>(type->definition);
+                auto entity = new Entity(type->definition);
                 entity->name = typeName;
                 entity->sprite = entity->def->GetSprite();
                 entity->map = this;
                 entity->layer = this->GetLayer(0);
                 entity->SetPosition(start);
-                _entities.push_back(std::move(entity));
+                _entities.push_back(entity);
                 if(name == "player") {
-                    player = _entities.back().get();
+                    player = dynamic_cast<Actor*>(_entities.back());
                 }
             }
         });
