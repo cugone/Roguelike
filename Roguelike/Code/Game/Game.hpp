@@ -12,7 +12,13 @@ struct fullscreen_cb_t {
     float fadePercent = 0.0f;
     float greyscaleBrightness = 1.2f;
     float shadowmask_alpha = 0.5f;
-    float fadeColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    Vector4 fadeColor{};
+    IntVector2 resolution{};
+    Vector2 hardness{ -8.0f, -3.0f };
+    Vector2 mask{ 0.5f, 1.5f };
+    Vector2 warp{ 1.0f / 32.0f, 1.0f / 24.0f };
+    Vector2 res{};
+    Vector2 padding{};
 };
 
 enum class FullscreenEffect {

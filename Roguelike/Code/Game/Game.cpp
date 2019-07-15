@@ -22,6 +22,8 @@
 #include "Game/TileDefinition.hpp"
 
 void Game::Initialize() {
+    _fullscreen_data.resolution = g_theRenderer->GetOutput()->GetDimensions();
+    _fullscreen_data.res = Vector2{ _fullscreen_data.resolution.x / 6.0f, _fullscreen_data.resolution.y / 6.0f };
     {
         auto dims = g_theRenderer->GetOutput()->GetDimensions();
         auto data = std::vector<Rgba>(dims.x * dims.y, Rgba::Magenta);
@@ -86,11 +88,7 @@ bool Game::DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
     _fullscreen_data.fadePercent = curFadeTime / fadeTime;
     _fullscreen_data.fadePercent = std::clamp(_fullscreen_data.fadePercent, 0.0f, 1.0f);
     _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeIn);
-    auto colorAsFloats = color.GetRgbaAsFloats();
-    _fullscreen_data.fadeColor[0] = colorAsFloats.x;
-    _fullscreen_data.fadeColor[1] = colorAsFloats.y;
-    _fullscreen_data.fadeColor[2] = colorAsFloats.z;
-    _fullscreen_data.fadeColor[3] = colorAsFloats.w;
+    _fullscreen_data.fadeColor = color.GetRgbaAsFloats();
     _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 
     curFadeTime += g_theRenderer->GetGameFrameTime();
@@ -105,12 +103,8 @@ bool Game::DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
     }
     _fullscreen_data.fadePercent = curFadeTime / fadeTime;
     _fullscreen_data.fadePercent = std::clamp(_fullscreen_data.fadePercent, 0.0f, 1.0f);
-    auto colorAsFloats = color.GetRgbaAsFloats();
+    _fullscreen_data.fadeColor = color.GetRgbaAsFloats();
     _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeOut);
-    _fullscreen_data.fadeColor[0] = colorAsFloats.x;
-    _fullscreen_data.fadeColor[1] = colorAsFloats.y;
-    _fullscreen_data.fadeColor[2] = colorAsFloats.z;
-    _fullscreen_data.fadeColor[3] = colorAsFloats.w;
     _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 
     curFadeTime += g_theRenderer->GetGameFrameTime();
@@ -143,11 +137,7 @@ void Game::StopFullscreenEffect() {
     static TimeUtils::FPSeconds curFadeTime{};
     _fullscreen_data.effectIndex = -1;
     _fullscreen_data.fadePercent = 0.0f;
-    auto colorAsFloats = Rgba::Black.GetRgbaAsFloats();
-    _fullscreen_data.fadeColor[0] = colorAsFloats.x;
-    _fullscreen_data.fadeColor[1] = colorAsFloats.y;
-    _fullscreen_data.fadeColor[2] = colorAsFloats.z;
-    _fullscreen_data.fadeColor[3] = colorAsFloats.w;
+    _fullscreen_data.fadeColor = Rgba::Black.GetRgbaAsFloats();
     _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
