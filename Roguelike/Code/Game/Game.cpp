@@ -22,8 +22,6 @@
 #include "Game/TileDefinition.hpp"
 
 void Game::Initialize() {
-    _fullscreen_data.resolution = g_theRenderer->GetOutput()->GetDimensions();
-    _fullscreen_data.res = Vector2{ _fullscreen_data.resolution.x / 6.0f, _fullscreen_data.resolution.y / 6.0f };
     {
         auto dims = g_theRenderer->GetOutput()->GetDimensions();
         auto data = std::vector<Rgba>(dims.x * dims.y, Rgba::Magenta);
@@ -43,6 +41,9 @@ void Game::Initialize() {
     }
     g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
     _fullscreen_cb = std::unique_ptr<ConstantBuffer>(g_theRenderer->CreateConstantBuffer(&_fullscreen_data, sizeof(_fullscreen_data)));
+    _fullscreen_data.resolution = g_theRenderer->GetOutput()->GetDimensions();
+    _fullscreen_data.res = Vector2{ _fullscreen_data.resolution.x / 6.0f, _fullscreen_data.resolution.y / 6.0f };
+    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
     LoadMaps();
     _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
 }
@@ -117,7 +118,6 @@ void Game::DoScanlines() {
         _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Scanlines);
         curFadeTime = curFadeTime.zero();
     }
-    _fullscreen_data.shadowmask_alpha = 0.15f;
     _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Scanlines);
     _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
@@ -130,6 +130,18 @@ void Game::DoGreyscale(float brightnessPower /*= 2.4f*/) {
     }
     _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Greyscale);
     _fullscreen_data.greyscaleBrightness = brightnessPower;
+    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+}
+
+void Game::DoCircularGradient(float radius, const Rgba& color) {
+    static TimeUtils::FPSeconds curFadeTime{};
+    if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::CircularGradient)) {
+        _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::CircularGradient);
+        curFadeTime = curFadeTime.zero();
+    }
+    _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::CircularGradient);
+    _fullscreen_data.gradiantRadius = radius;
+    _fullscreen_data.gradiantColor = color.GetRgbaAsFloats();
     _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
@@ -170,6 +182,9 @@ void Game::UpdateFullscreenEffect(const FullscreenEffect& effect) {
         break;
     case FullscreenEffect::Sepia:
         DoSepia();
+        break;
+    case FullscreenEffect::CircularGradient:
+        DoCircularGradient(_debug_gradientRadius, _debug_gradientColor);
         break;
     default:
         break;
@@ -435,6 +450,9 @@ void Game::ShowEffectsUI() {
         if(ImGui::Selectable("Sepia")) {
             _current_fs_effect = FullscreenEffect::Sepia;
         }
+        if(ImGui::Selectable("CircularGradiant")) {
+            _current_fs_effect = FullscreenEffect::CircularGradient;
+        }
         ImGui::SetItemDefaultFocus();
         ImGui::EndCombo();
     }
@@ -465,6 +483,13 @@ void Game::ShowEffectsUI() {
         break;
     case FullscreenEffect::Sepia:
         ImGui::Text("Effect: Sepia");
+        break;
+    case FullscreenEffect::CircularGradient:
+        ImGui::Text("Effect: CircularGradient");
+        ImGui::ColorEdit4("Gradient Color##Picker", _debug_gradientColor, ImGuiColorEditFlags_NoLabel);
+        if(ImGui::DragFloat("Radius", &_debug_gradientRadius, 1.0f, 0.0f, 1.0f)) {
+            _fullscreen_data.gradiantRadius = _debug_gradientRadius;
+        }
         break;
     default:
         ImGui::Text("Effect Stopped");

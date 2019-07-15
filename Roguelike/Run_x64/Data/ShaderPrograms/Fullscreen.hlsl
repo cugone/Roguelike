@@ -16,7 +16,7 @@ cbuffer fullscreen_cb : register(b3) {
     int g_effectIndex;
     float g_fadePercent;
     float g_greyscaleBrightness;
-    float g_shadowmaskAlpha;
+    float g_gradRadius;
     float4 g_fadeColor;
     int2 g_resolution;
     // Hardness of scanline.
@@ -37,6 +37,7 @@ cbuffer fullscreen_cb : register(b3) {
     float2 warp;
     float2 res;
     float2 padding;
+    float4 g_gradColor;
 }
 
 struct vs_in_t {
@@ -259,7 +260,7 @@ float4 Scanlines(float4 color, float2 uv) {
         }
         fragColor.rgb = Tri(pos)*Mask(fragCoord.xy);
     }
-    fragColor.a = 1.0f;
+    fragColor.a = color.a;
     fragColor.rgb *=
         Bar(fragCoord.x, g_resolution.x*0.333f)*
         Bar(fragCoord.x, g_resolution.x*0.666f);
@@ -285,6 +286,10 @@ float4 Sepia(float4 color) {
     return final_color;
 }
 
+float4 CircularGradient(float2 uv, float4 diffuse, float radius, float4 color) {
+    float2 D = distance(float2(0.5f, 0.5f), uv);
+    return lerp(diffuse, color, saturate(D).x);
+}
 
 float4 PixelFunction(ps_in_t input) : SV_Target0
 {
@@ -306,6 +311,8 @@ float4 PixelFunction(ps_in_t input) : SV_Target0
         return Lumosity(diffuse);
     case 4:
         return Sepia(diffuse);
+    case 5:
+        return CircularGradient(input.uv, diffuse, g_gradRadius, g_gradColor);
     default:
         return diffuse;
     }

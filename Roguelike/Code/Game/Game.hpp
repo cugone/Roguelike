@@ -11,7 +11,7 @@ struct fullscreen_cb_t {
     int effectIndex = -1;
     float fadePercent = 0.0f;
     float greyscaleBrightness = 1.2f;
-    float shadowmask_alpha = 0.5f;
+    float gradiantRadius = 0.5f;
     Vector4 fadeColor{};
     IntVector2 resolution{};
     Vector2 hardness{ -8.0f, -3.0f };
@@ -19,6 +19,7 @@ struct fullscreen_cb_t {
     Vector2 warp{ 1.0f / 32.0f, 1.0f / 24.0f };
     Vector2 res{};
     Vector2 padding{};
+    Vector4 gradiantColor = Rgba::White.GetRgbaAsFloats();
 };
 
 enum class FullscreenEffect {
@@ -28,6 +29,7 @@ enum class FullscreenEffect {
     ,Scanlines
     ,Greyscale
     ,Sepia
+    ,CircularGradient
 };
 
 class Game {
@@ -76,12 +78,14 @@ private:
     bool DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime);
     void DoScanlines();
     void DoGreyscale(float brightnessPower = 2.4f);
+    void DoCircularGradient(float radius, const Rgba& color);
     void DoSepia();
     void StopFullscreenEffect();
 
     std::unique_ptr<Map> _map{nullptr};
     mutable Camera2D _ui_camera{};
     Rgba _grid_color{Rgba::Red};
+    Rgba _debug_gradientColor{Rgba::White};
     std::vector<Tile*> _debug_inspected_tiles{};
     Entity* _debug_inspected_entity = nullptr;
     float _cam_speed = 1.0f;
@@ -90,6 +94,7 @@ private:
     float _max_shake_y = 0.0f;
     float _debug_fadeInTime = 1.0f;
     float _debug_fadeOutTime = 1.0f;
+    float _debug_gradientRadius = 0.5f;
     bool _debug_has_picked_entity_with_click = false;
     bool _debug_has_picked_tile_with_click = false;
     bool _player_requested_wait = false;
