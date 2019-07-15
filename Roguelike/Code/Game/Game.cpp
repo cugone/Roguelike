@@ -28,6 +28,17 @@ void Game::Initialize() {
         auto fs = g_theRenderer->Create2DTextureFromMemory(data, dims.x, dims.y, BufferUsage::Gpu, BufferBindUsage::Render_Target | BufferBindUsage::Shader_Resource);
         g_theRenderer->RegisterTexture("__fullscreen", fs);
     }
+    {
+        auto dims = g_theRenderer->GetOutput()->GetDimensions();
+        auto data = std::vector<Rgba>(dims.x * dims.y, Rgba::White);
+        for(std::size_t i = 0; i < dims.x * dims.y; i += 2 * dims.x) {
+            for(std::size_t offset = 0; offset < dims.x; ++offset) {
+                data[i + offset] = Rgba::Black;
+            }
+        }
+        auto fs = g_theRenderer->Create2DTextureFromMemory(data, dims.x, dims.y, BufferUsage::Gpu, BufferBindUsage::Render_Target | BufferBindUsage::Shader_Resource);
+        g_theRenderer->RegisterTexture("__fs_shadowmask", fs);
+    }
     g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
     _fullscreen_cb = std::unique_ptr<ConstantBuffer>(g_theRenderer->CreateConstantBuffer(&_fullscreen_data, sizeof(_fullscreen_data)));
     LoadMaps();
@@ -60,48 +71,106 @@ void Game::Update(TimeUtils::FPSeconds deltaSeconds) {
     HandleDebugInput(base_camera);
     HandlePlayerInput(base_camera);
 
-    {
-        static bool value = true;
-        if(g_theInputSystem->WasKeyJustPressed(KeyCode::Enter)) {
-            value = !value;
-        }
-        if(DoFade(value)) {
-            StopFade();
-        }
-    }
+    UpdateFullscreenEffect(_current_fs_effect);
 
     base_camera.Update(deltaSeconds);
     _map->Update(deltaSeconds);
 }
 
-bool Game::DoFade(bool fadeIn) {
+bool Game::DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
     static TimeUtils::FPSeconds curFadeTime{};
-    if(fadeIn && _fullscreen_data.effectIndex != 0) {
-        _fullscreen_data.effectIndex = 0;
-        curFadeTime = curFadeTime.zero();
-    } else if(!fadeIn && _fullscreen_data.effectIndex != 1) {
-        _fullscreen_data.effectIndex = 1;
+    if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::FadeIn)) {
+        _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeIn);
         curFadeTime = curFadeTime.zero();
     }
-    _fullscreen_data.fadePercent = curFadeTime.count() / 5.0f;
+    _fullscreen_data.fadePercent = curFadeTime / fadeTime;
     _fullscreen_data.fadePercent = std::clamp(_fullscreen_data.fadePercent, 0.0f, 1.0f);
-    auto color = Rgba::Black.GetRgbaAsFloats();
-    _fullscreen_data.effectIndex = !!fadeIn;
-    _fullscreen_data.fadeColor[0] = color.x;
-    _fullscreen_data.fadeColor[1] = color.y;
-    _fullscreen_data.fadeColor[2] = color.z;
-    _fullscreen_data.fadeColor[3] = color.w;
+    _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeIn);
+    auto colorAsFloats = color.GetRgbaAsFloats();
+    _fullscreen_data.fadeColor[0] = colorAsFloats.x;
+    _fullscreen_data.fadeColor[1] = colorAsFloats.y;
+    _fullscreen_data.fadeColor[2] = colorAsFloats.z;
+    _fullscreen_data.fadeColor[3] = colorAsFloats.w;
     _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 
     curFadeTime += g_theRenderer->GetGameFrameTime();
     return _fullscreen_data.fadePercent == 1.0f;
 }
 
-void Game::StopFade() {
+bool Game::DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
+    static TimeUtils::FPSeconds curFadeTime{};
+    if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::FadeOut)) {
+        _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeOut);
+        curFadeTime = curFadeTime.zero();
+    }
+    _fullscreen_data.fadePercent = curFadeTime / fadeTime;
+    _fullscreen_data.fadePercent = std::clamp(_fullscreen_data.fadePercent, 0.0f, 1.0f);
+    auto colorAsFloats = color.GetRgbaAsFloats();
+    _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeOut);
+    _fullscreen_data.fadeColor[0] = colorAsFloats.x;
+    _fullscreen_data.fadeColor[1] = colorAsFloats.y;
+    _fullscreen_data.fadeColor[2] = colorAsFloats.z;
+    _fullscreen_data.fadeColor[3] = colorAsFloats.w;
+    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+
+    curFadeTime += g_theRenderer->GetGameFrameTime();
+    return _fullscreen_data.fadePercent == 1.0f;
+}
+
+void Game::DoScanlines() {
+    static TimeUtils::FPSeconds curFadeTime{};
+    if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::Scanlines)) {
+        _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Scanlines);
+        curFadeTime = curFadeTime.zero();
+    }
+    _fullscreen_data.shadowmask_alpha = 0.15f;
+    _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Scanlines);
+    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+}
+
+void Game::DoGreyscale(float brightnessPower /*= 2.4f*/) {
+    static TimeUtils::FPSeconds curFadeTime{};
+    if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::Greyscale)) {
+        _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Greyscale);
+        curFadeTime = curFadeTime.zero();
+    }
+    _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Greyscale);
+    _fullscreen_data.greyscaleBrightness = brightnessPower;
+    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+}
+
+void Game::StopFullscreenEffect() {
     static TimeUtils::FPSeconds curFadeTime{};
     _fullscreen_data.effectIndex = -1;
     _fullscreen_data.fadePercent = 0.0f;
+    auto colorAsFloats = Rgba::Black.GetRgbaAsFloats();
+    _fullscreen_data.fadeColor[0] = colorAsFloats.x;
+    _fullscreen_data.fadeColor[1] = colorAsFloats.y;
+    _fullscreen_data.fadeColor[2] = colorAsFloats.z;
+    _fullscreen_data.fadeColor[3] = colorAsFloats.w;
     _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+}
+
+void Game::UpdateFullscreenEffect(const FullscreenEffect& effect) {
+    switch(effect) {
+    case FullscreenEffect::None:
+        StopFullscreenEffect();
+        break;
+    case FullscreenEffect::FadeIn:
+        DoFadeIn(_fadeIn_color, _fadeInTime);
+        break;
+    case FullscreenEffect::FadeOut:
+        DoFadeOut(_fadeOut_color, _fadeOutTime);
+        break;
+    case FullscreenEffect::Scanlines:
+        DoScanlines();
+        break;
+    case FullscreenEffect::Greyscale:
+        DoGreyscale(_fullscreen_data.greyscaleBrightness);
+        break;
+    default:
+        break;
+    }
 }
 
 void Game::Render() const {
@@ -268,8 +337,22 @@ void Game::HandleDebugKeyboardInput(Camera2D& base_camera) {
             }
         }
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::O)) {
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::P)) {
         _map->SetPriorityLayer(static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(static_cast<int>(_map->GetLayerCount()))));
+    }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::O)) {
+        _fadeOutTime = TimeUtils::FPSeconds{ 1.0 };
+        _current_fs_effect = FullscreenEffect::FadeOut;
+    }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::I)) {
+        _fadeInTime = TimeUtils::FPSeconds{ 1.0 };
+        _current_fs_effect = FullscreenEffect::FadeIn;
+    }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::L)) {
+        _current_fs_effect = FullscreenEffect::None;
+    }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::K)) {
+        _current_fs_effect = FullscreenEffect::Scanlines;
     }
 
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::B)) {
@@ -308,6 +391,7 @@ void Game::ShowDebugUI() {
     ImGui::SetNextWindowSize(Vector2{ 350.0f, 500.0f }, ImGuiCond_Always);
     if(ImGui::Begin("Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize)) {
         ShowBoundsColoringUI();
+        ShowEffectsDebuggerUI();
         ShowTileDebuggerUI();
         ShowEntityDebuggerUI();
     }
@@ -318,6 +402,64 @@ void Game::ShowTileDebuggerUI() {
     _show_tile_debugger = ImGui::CollapsingHeader("Tile");
     if(_show_tile_debugger) {
         ShowTileInspectorUI();
+    }
+}
+
+void Game::ShowEffectsDebuggerUI() {
+    _show_effects_debugger = ImGui::CollapsingHeader("Effects");
+    if(_show_effects_debugger) {
+        ShowEffectsUI();
+    }
+}
+
+void Game::ShowEffectsUI() {
+    if(ImGui::BeginCombo("Shader Effect", "None")) {
+        if(ImGui::Selectable("None")) {
+            _current_fs_effect = FullscreenEffect::None;
+        }
+        if(ImGui::Selectable("Fade In")) {
+            _current_fs_effect = FullscreenEffect::FadeIn;
+        }
+        if(ImGui::Selectable("Fade Out")) {
+            _current_fs_effect = FullscreenEffect::FadeOut;
+        }
+        if(ImGui::Selectable("Scanlines")) {
+            _current_fs_effect = FullscreenEffect::Scanlines;
+        }
+        if(ImGui::Selectable("Greyscale")) {
+            _current_fs_effect = FullscreenEffect::Greyscale;
+        }
+        ImGui::SetItemDefaultFocus();
+        ImGui::EndCombo();
+    }
+    switch(_current_fs_effect) {
+    case FullscreenEffect::None:
+        ImGui::Text("Effect: None");
+        break;
+    case FullscreenEffect::FadeIn:
+        ImGui::Text("Effect: Fade In");
+        ImGui::ColorEdit4("Fade In Color##Picker", _fadeIn_color, ImGuiColorEditFlags_NoLabel);
+        if(ImGui::InputFloat("Fade In Time (s)", &_debug_fadeInTime)) {
+            _fadeInTime = TimeUtils::FPSeconds{ _debug_fadeInTime };
+        }
+        break;
+    case FullscreenEffect::FadeOut:
+        ImGui::Text("Effect: Fade Out");
+        ImGui::ColorEdit4("Fade Out Color##Picker", _fadeOut_color, ImGuiColorEditFlags_NoLabel);
+        if(ImGui::InputFloat("Fade Out Time (s)", &_debug_fadeOutTime)) {
+            _fadeOutTime = TimeUtils::FPSeconds{ _debug_fadeOutTime };
+        }
+        break;
+    case FullscreenEffect::Scanlines:
+        ImGui::Text("Effect: Scanlines");
+        break;
+    case FullscreenEffect::Greyscale:
+        ImGui::Text("Effect: Greyscale");
+        ImGui::DragFloat("Brightness##Greyscale", &_fullscreen_data.greyscaleBrightness, 0.25f, 0.0f, 15.0f);
+        break;
+    default:
+        ImGui::Text("Effect Stopped");
+        break;
     }
 }
 

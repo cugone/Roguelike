@@ -2,5 +2,6 @@
     <shader src="Data/Shaders/Fullscreen.shader" />
     <textures>
         <diffuse src="__fullscreen" />
+        <normal src="__fs_shadowmask" />
     </textures>
 </material>

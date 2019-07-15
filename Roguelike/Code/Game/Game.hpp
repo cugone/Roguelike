@@ -10,8 +10,17 @@
 struct fullscreen_cb_t {
     int effectIndex = -1;
     float fadePercent = 0.0f;
-    float padding[2] = {0.0f, 0.0f};
+    float greyscaleBrightness = 1.2f;
+    float shadowmask_alpha = 0.5f;
     float fadeColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+};
+
+enum class FullscreenEffect {
+    None = -1
+    ,FadeIn
+    ,FadeOut
+    ,Scanlines
+    ,Greyscale
 };
 
 class Game {
@@ -43,7 +52,9 @@ private:
 
     void ShowTileDebuggerUI();
     void ShowEntityDebuggerUI();
+    void ShowEffectsDebuggerUI();
 
+    void ShowEffectsUI();
     void ShowBoundsColoringUI();
     void ShowTileInspectorUI();
 
@@ -53,29 +64,42 @@ private:
 
     void LoadMaps();
 
-    bool DoFade(bool fadeIn);
-    void StopFade();
+    void UpdateFullscreenEffect(const FullscreenEffect& effect);
+    bool DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime);
+    bool DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime);
+    void DoScanlines();
+    void DoGreyscale(float brightnessPower = 2.4f);
+    void StopFullscreenEffect();
 
     std::unique_ptr<Map> _map{nullptr};
     mutable Camera2D _ui_camera{};
     Rgba _grid_color{Rgba::Red};
-    bool _debug_has_picked_tile_with_click = false;
-    bool _debug_has_picked_entity_with_click = false;
     std::vector<Tile*> _debug_inspected_tiles{};
     Entity* _debug_inspected_entity = nullptr;
     float _cam_speed = 1.0f;
     float _max_shake_angle = 0.0f;
     float _max_shake_x = 0.0f;
     float _max_shake_y = 0.0f;
+    float _debug_fadeInTime = 1.0f;
+    float _debug_fadeOutTime = 1.0f;
+    bool _debug_has_picked_entity_with_click = false;
+    bool _debug_has_picked_tile_with_click = false;
     bool _player_requested_wait = false;
     bool _show_grid = false;
     bool _show_debug_window = false;
     bool _show_world_bounds = false;
     bool _show_tile_debugger = false;
+    bool _show_effects_debugger = false;
     bool _show_entity_debugger = false;
     bool _show_all_entities = false;
     std::unique_ptr<class ConstantBuffer> _fullscreen_cb = nullptr;
     fullscreen_cb_t _fullscreen_data = fullscreen_cb_t{};
+    FullscreenEffect _current_fs_effect = FullscreenEffect::None;
+    Rgba _fadeIn_color = Rgba::Black;
+    Rgba _fadeOut_color = Rgba::Black;
+    TimeUtils::FPSeconds _fadeInTime{};
+    TimeUtils::FPSeconds _fadeOutTime{};
+
     friend class Map;
     friend class Layer;
 };

@@ -15,7 +15,8 @@ cbuffer time_cb : register(b1) {
 cbuffer fullscreen_cb : register(b3) {
     int g_effectIndex;
     float g_fadePercent;
-    float2 g_PADDING;
+    float g_greyscaleBrightness;
+    float g_shadowmaskAlpha;
     float4 g_fadeColor;
 }
 
@@ -56,16 +57,70 @@ ps_in_t VertexFunction(uint id : SV_VertexID) {
     return output;
 }
 
+float4 FadeIn(float4 color, float4 diffuse, float percent) {
+    return lerp(color, diffuse, percent);
+}
+
+float4 FadeOut(float4 color, float4 diffuse, float percent) {
+    return lerp(color, diffuse, 1.0f - percent);
+}
+
+float GetLinearIntensity(float color) {
+    float result;
+    float LUM_BREAKPOINT = 0.04045f;
+    color = saturate(color);
+    if(color > LUM_BREAKPOINT) {
+        result = pow((color + 0.055f) / 1.055f, g_greyscaleBrightness);
+    } else {
+        result = color / 12.92f;
+    }
+    return result;
+}
+
+float4 Lumosity(float4 color) {
+    float lin_r = GetLinearIntensity(color.r);
+    float lin_g = GetLinearIntensity(color.g);
+    float lin_b = GetLinearIntensity(color.b);
+
+    float3 a = float3(0.2126f, 0.7152f, 0.0722f);
+    float3 b = float3(lin_r, lin_g, lin_b);
+    float l = dot(a, b);
+    return float4(l, l, l, 1.0f);
+}
+
 float4 PixelFunction(ps_in_t input) : SV_Target0
 {
     float4 albedo = tDiffuse.Sample(sSampler, input.uv);
     float4 diffuse = albedo * input.color;
-    float4 fadeColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
+    float4 fadeColor = g_fadeColor;
+    float percent = g_fadePercent;
+    float w = 0.0f;
+    float h = 0.0f;
+    tDiffuse.GetDimensions(w, h);
     switch(g_effectIndex) {
     case 0:
-        return lerp(g_fadeColor, diffuse, g_fadePercent);
+        return FadeIn(fadeColor, diffuse, percent);
     case 1:
-        return lerp(g_fadeColor, diffuse, 1.0f - g_fadePercent);
+        return FadeOut(fadeColor, diffuse, percent);
+    case 2:
+    {
+        float width = 1.0f;
+        float height = 1.0f;
+        tDiffuse.GetDimensions(width, height);
+        float t = frac(g_GAME_TIME);
+        float f = 1.0f / height;
+        float4 black = float4(0.0, 0.0, 0.0, 1.0);
+        float4 white = float4(1.0f, 1.0f, 1.0f, 1.0f);
+        //float s = 1.0f + sin((t * 0.001f + input.uv.y) * 0.5f * height) * 0.50f * height;
+        float s = 1.0f + sin(f + input.uv.y * height);
+        if(s < 1.0f) { //Even pixels
+            return float4(diffuse.rgb * 0.2f, 1.0f);
+        } else {
+            return diffuse;
+        }
+    }
+    case 3:
+        return Lumosity(diffuse);
     default:
         return diffuse;
     }
