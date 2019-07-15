@@ -273,6 +273,19 @@ float4 Scanlines(float4 color, float2 uv) {
 //
 //----------------------------------------------------------------------------------
 
+float4 Sepia(float4 color) {
+    float3x3 sepia_transform = float3x3(
+        float3(0.393f, 0.349f, 0.272f),
+        float3(0.769f, 0.686f, 0.534f),
+        float3(0.189f, 0.168f, 0.131f)
+        );
+    float3 sepia = mul(color.xyz, sepia_transform);
+
+    float4 final_color = float4(sepia, color.a);
+    return final_color;
+}
+
+
 float4 PixelFunction(ps_in_t input) : SV_Target0
 {
     float4 albedo = tDiffuse.Sample(sSampler, input.uv);
@@ -291,6 +304,8 @@ float4 PixelFunction(ps_in_t input) : SV_Target0
         return Scanlines(diffuse, input.uv);
     case 3:
         return Lumosity(diffuse);
+    case 4:
+        return Sepia(diffuse);
     default:
         return diffuse;
     }

@@ -133,6 +133,16 @@ void Game::DoGreyscale(float brightnessPower /*= 2.4f*/) {
     _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
+void Game::DoSepia() {
+    static TimeUtils::FPSeconds curFadeTime{};
+    if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::Sepia)) {
+        _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Sepia);
+        curFadeTime = curFadeTime.zero();
+    }
+    _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Sepia);
+    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+}
+
 void Game::StopFullscreenEffect() {
     static TimeUtils::FPSeconds curFadeTime{};
     _fullscreen_data.effectIndex = -1;
@@ -157,6 +167,9 @@ void Game::UpdateFullscreenEffect(const FullscreenEffect& effect) {
         break;
     case FullscreenEffect::Greyscale:
         DoGreyscale(_fullscreen_data.greyscaleBrightness);
+        break;
+    case FullscreenEffect::Sepia:
+        DoSepia();
         break;
     default:
         break;
@@ -419,6 +432,9 @@ void Game::ShowEffectsUI() {
         if(ImGui::Selectable("Greyscale")) {
             _current_fs_effect = FullscreenEffect::Greyscale;
         }
+        if(ImGui::Selectable("Sepia")) {
+            _current_fs_effect = FullscreenEffect::Sepia;
+        }
         ImGui::SetItemDefaultFocus();
         ImGui::EndCombo();
     }
@@ -446,6 +462,9 @@ void Game::ShowEffectsUI() {
     case FullscreenEffect::Greyscale:
         ImGui::Text("Effect: Greyscale");
         ImGui::DragFloat("Brightness##Greyscale", &_fullscreen_data.greyscaleBrightness, 0.25f, 0.0f, 15.0f);
+        break;
+    case FullscreenEffect::Sepia:
+        ImGui::Text("Effect: Sepia");
         break;
     default:
         ImGui::Text("Effect Stopped");

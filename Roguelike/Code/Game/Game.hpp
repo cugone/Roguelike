@@ -27,6 +27,7 @@ enum class FullscreenEffect {
     ,FadeOut
     ,Scanlines
     ,Greyscale
+    ,Sepia
 };
 
 class Game {
@@ -75,6 +76,7 @@ private:
     bool DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime);
     void DoScanlines();
     void DoGreyscale(float brightnessPower = 2.4f);
+    void DoSepia();
     void StopFullscreenEffect();
 
     std::unique_ptr<Map> _map{nullptr};
