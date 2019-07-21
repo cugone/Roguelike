@@ -597,14 +597,20 @@ void Map::PlaceEntitiesOnMap(const XMLElement& elem) {
             const auto typeName = DataUtils::GetElementName(elem);
             auto types = GetEntityTypesByName(typeName);
             for(const auto type : types) {
-                auto entity = new Entity(type->definition);
+                Entity* entity = nullptr;
+                bool is_player = name == "player";
+                if(is_player) {
+                    entity = new Actor(type->definition);
+                } else {
+                    entity = new Entity(type->definition);
+                }
                 entity->name = typeName;
                 entity->sprite = entity->def->GetSprite();
                 entity->map = this;
                 entity->layer = this->GetLayer(0);
                 entity->SetPosition(start);
                 _entities.push_back(entity);
-                if(name == "player") {
+                if(is_player) {
                     player = dynamic_cast<Actor*>(_entities.back());
                 }
             }

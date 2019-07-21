@@ -22,30 +22,25 @@
 #include "Game/TileDefinition.hpp"
 
 void Game::Initialize() {
-    {
-        auto dims = g_theRenderer->GetOutput()->GetDimensions();
-        auto data = std::vector<Rgba>(dims.x * dims.y, Rgba::Magenta);
-        auto fs = g_theRenderer->Create2DTextureFromMemory(data, dims.x, dims.y, BufferUsage::Gpu, BufferBindUsage::Render_Target | BufferBindUsage::Shader_Resource);
-        g_theRenderer->RegisterTexture("__fullscreen", fs);
-    }
-    {
-        auto dims = g_theRenderer->GetOutput()->GetDimensions();
-        auto data = std::vector<Rgba>(dims.x * dims.y, Rgba::White);
-        for(std::size_t i = 0; i < dims.x * dims.y; i += 2 * dims.x) {
-            for(std::size_t offset = 0; offset < dims.x; ++offset) {
-                data[i + offset] = Rgba::Black;
-            }
-        }
-        auto fs = g_theRenderer->Create2DTextureFromMemory(data, dims.x, dims.y, BufferUsage::Gpu, BufferBindUsage::Render_Target | BufferBindUsage::Shader_Resource);
-        g_theRenderer->RegisterTexture("__fs_shadowmask", fs);
-    }
+    CreateFullscreenTexture();
+    CreateFullscreenConstantBuffer();
     g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
+    LoadMaps();
+    _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
+}
+
+void Game::CreateFullscreenConstantBuffer() {
     _fullscreen_cb = std::unique_ptr<ConstantBuffer>(g_theRenderer->CreateConstantBuffer(&_fullscreen_data, sizeof(_fullscreen_data)));
     _fullscreen_data.resolution = g_theRenderer->GetOutput()->GetDimensions();
     _fullscreen_data.res = Vector2{ _fullscreen_data.resolution.x / 6.0f, _fullscreen_data.resolution.y / 6.0f };
     _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
-    LoadMaps();
-    _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
+}
+
+void Game::CreateFullscreenTexture() {
+    auto dims = g_theRenderer->GetOutput()->GetDimensions();
+    auto data = std::vector<Rgba>(dims.x * dims.y, Rgba::Magenta);
+    auto fs = g_theRenderer->Create2DTextureFromMemory(data, dims.x, dims.y, BufferUsage::Gpu, BufferBindUsage::Render_Target | BufferBindUsage::Shader_Resource);
+    g_theRenderer->RegisterTexture("__fullscreen", fs);
 }
 
 void Game::LoadMaps() {

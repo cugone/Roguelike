@@ -12,11 +12,17 @@ void Actor::CreateActor(const XMLElement& elem) {
 }
 
 Actor::Actor(const XMLElement& elem) noexcept
-    : Entity()
+    : Entity(elem)
 {
     if(!LoadFromXml(elem)) {
         ERROR_AND_DIE("Actor failed to load.");
     }
+    s_registry.try_emplace(name, std::make_unique<Actor>(*this));
+}
+
+Actor::Actor(EntityDefinition* definition) noexcept
+    : Entity(definition)
+{
     s_registry.try_emplace(name, std::make_unique<Actor>(*this));
 }
 
@@ -45,7 +51,7 @@ bool Actor::MoveTo(Tile* destination) {
 
 bool Actor::LoadFromXml(const XMLElement& /*elem*/) {
     //TODO: Start Here
-    return false;
+    return true;
 }
 
 bool Actor::CanMoveDiagonallyToNeighbor(const IntVector2& direction) const {

@@ -49,6 +49,9 @@ public:
 
 protected:
 private:
+    void CreateFullscreenTexture();
+    void CreateFullscreenConstantBuffer();
+
     void HandleDebugInput(Camera2D& base_camera);
     void HandleDebugKeyboardInput(Camera2D& base_camera);
     void HandleDebugMouseInput(Camera2D& base_camera);

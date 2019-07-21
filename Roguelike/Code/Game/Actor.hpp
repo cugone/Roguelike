@@ -16,6 +16,8 @@ public:
     Actor& operator=(Actor&& rrhs) = default;
     virtual ~Actor() = default;
 
+
+    Actor(EntityDefinition* definition) noexcept;
     Actor(const XMLElement& elem) noexcept;
 
     bool Acted() const;
