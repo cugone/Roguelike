@@ -426,29 +426,47 @@ void Game::ShowEffectsDebuggerUI() {
 }
 
 void Game::ShowEffectsUI() {
-    if(ImGui::BeginCombo("Shader Effect", "None")) {
+    static std::string current_item = "None";
+    bool is_selected = false;
+    if(ImGui::BeginCombo("Shader Effect", current_item.c_str())) {
         if(ImGui::Selectable("None")) {
+            is_selected = true;
+            current_item = "None";
             _current_fs_effect = FullscreenEffect::None;
         }
         if(ImGui::Selectable("Fade In")) {
+            is_selected = true;
+            current_item = "Fade In";
             _current_fs_effect = FullscreenEffect::FadeIn;
         }
         if(ImGui::Selectable("Fade Out")) {
+            is_selected = true;
+            current_item = "Fade Out";
             _current_fs_effect = FullscreenEffect::FadeOut;
         }
         if(ImGui::Selectable("Scanlines")) {
+            is_selected = true;
+            current_item = "Scanlines";
             _current_fs_effect = FullscreenEffect::Scanlines;
         }
         if(ImGui::Selectable("Greyscale")) {
+            is_selected = true;
+            current_item = "Greyscale";
             _current_fs_effect = FullscreenEffect::Greyscale;
         }
         if(ImGui::Selectable("Sepia")) {
+            is_selected = true;
+            current_item = "Sepia";
             _current_fs_effect = FullscreenEffect::Sepia;
         }
         if(ImGui::Selectable("CircularGradiant")) {
+            is_selected = true;
+            current_item = "CircularGradiant";
             _current_fs_effect = FullscreenEffect::CircularGradient;
         }
-        ImGui::SetItemDefaultFocus();
+        if(is_selected) {
+            ImGui::SetItemDefaultFocus();
+        }
         ImGui::EndCombo();
     }
     switch(_current_fs_effect) {
@@ -482,7 +500,7 @@ void Game::ShowEffectsUI() {
     case FullscreenEffect::CircularGradient:
         ImGui::Text("Effect: CircularGradient");
         ImGui::ColorEdit4("Gradient Color##Picker", _debug_gradientColor, ImGuiColorEditFlags_NoLabel);
-        if(ImGui::DragFloat("Radius", &_debug_gradientRadius, 1.0f, 0.0f, 1.0f)) {
+        if(ImGui::DragFloat("Radius", &_fullscreen_data.gradiantRadius, 1.0f, 0.0f, 1.0f)) {
             _fullscreen_data.gradiantRadius = _debug_gradientRadius;
         }
         break;
