@@ -139,12 +139,12 @@ float3 ToSrgb(float3 c);
 
 // sRGB to Linear.
 // Assuing using sRGB typed textures this should not be needed.
-float ToLinear1(float c) { return(c <= 0.04045f) ? c / 12.92f : pow((c + 0.055f) / 1.055f, 2.4f); }
+float ToLinear1(float c) { return(c <= 0.04045f) ? c / 12.92f : pow(abs((c + 0.055f) / 1.055f), 2.4f); }
 float3 ToLinear(float3 c) { return float3(ToLinear1(c.r), ToLinear1(c.g), ToLinear1(c.b)); }
 
 // Linear to sRGB.
 // Assuming using sRGB typed textures this should not be needed.
-float ToSrgb1(float c) { return(c < 0.0031308f ? c * 12.92f : 1.055f*pow(c, 0.41666f) - 0.055f); }
+float ToSrgb1(float c) { return(c < 0.0031308f ? c * 12.92f : 1.055f*pow(abs(c), 0.41666f) - 0.055f); }
 float3 ToSrgb(float3 c) { return float3(ToSrgb1(c.r), ToSrgb1(c.g), ToSrgb1(c.b)); }
 
 // Nearest emulated sample given floating point position and texel offset.
@@ -156,7 +156,7 @@ float3 Fetch(float2 pos, float2 off) {
     float abs_y = abs(pos_center.y);
     float larger_coord = max(abs_x, abs_y);
     float3 black = float3(0.0f, 0.0f, 0.0f);
-    float3 albedo = tDiffuse.SampleBias(sSampler, pos.xy, -16.0f).rgb;
+    float3 albedo = tDiffuse.Sample(sSampler, pos.xy).rgb;
     float3 color = albedo;
     if(larger_coord > 0.5f) {
         color = black;
