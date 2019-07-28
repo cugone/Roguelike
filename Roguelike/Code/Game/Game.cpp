@@ -40,7 +40,7 @@ void Game::CreateFullscreenTexture() {
     auto dims = g_theRenderer->GetOutput()->GetDimensions();
     auto data = std::vector<Rgba>(dims.x * dims.y, Rgba::Magenta);
     auto fs = g_theRenderer->Create2DTextureFromMemory(data, dims.x, dims.y, BufferUsage::Gpu, BufferBindUsage::Render_Target | BufferBindUsage::Shader_Resource);
-    g_theRenderer->RegisterTexture("__fullscreen", fs);
+    g_theRenderer->RegisterTexture("__fullscreen", std::move(fs));
 }
 
 void Game::LoadMaps() {
