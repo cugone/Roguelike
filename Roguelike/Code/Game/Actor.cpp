@@ -44,7 +44,7 @@ void Actor::DontAct() {
 
 bool Actor::MoveTo(Tile* destination) {
     if(destination) {
-        return Move(destination->GetCoords());
+        return Move(destination->GetCoords() - this->GetPosition());
     }
     return false;
 }
