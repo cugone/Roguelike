@@ -6,6 +6,8 @@
 #include "Engine/Core/KeyValueParser.hpp"
 #include "Engine/Core/StringUtils.hpp"
 
+#include "Engine/Profiling/Memory.hpp"
+
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/Window.hpp"
 
@@ -210,6 +212,7 @@ void App::RunFrame() {
     Update(deltaSeconds);
     Render();
     EndFrame();
+    Memory::tick();
 }
 
 void App::LogSystemDescription() const {
