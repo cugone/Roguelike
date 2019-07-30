@@ -44,6 +44,27 @@ public:
     void SetCoords(const IntVector2& coords);
     const IntVector2& GetCoords() const;
 
+    Tile* GetNeighbor(const IntVector3& directionAndLayerOffset);
+    Tile* GetNorthNeighbor();
+    Tile* GetNorthEastNeighbor();
+    Tile* GetEastNeighbor();
+    Tile* GetSouthEastNeighbor();
+    Tile* GetSouthNeighbor();
+    Tile* GetSouthWestNeighbor();
+    Tile* GetWestNeighbor();
+    Tile* GetNorthWestNeighbor();
+
+
+    std::vector<Tile*> GetNeighbors(const IntVector2& direction);
+    std::vector<Tile*> GetNorthNeighbors();
+    std::vector<Tile*> GetNorthEastNeighbors();
+    std::vector<Tile*> GetEastNeighbors();
+    std::vector<Tile*> GetSouthEastNeighbors();
+    std::vector<Tile*> GetSouthNeighbors();
+    std::vector<Tile*> GetSouthWestNeighbors();
+    std::vector<Tile*> GetWestNeighbors();
+    std::vector<Tile*> GetNorthWestNeighbors();
+
     Rgba color = Rgba::White;
     Entity* entity{};
     Layer* layer = nullptr;

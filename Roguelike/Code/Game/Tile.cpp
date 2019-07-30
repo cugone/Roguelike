@@ -5,9 +5,10 @@
 #include "Engine/Renderer/AnimatedSprite.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 
-#include "Game/TileDefinition.hpp"
 #include "Game/Entity.hpp"
 #include "Game/Layer.hpp"
+#include "Game/Map.hpp"
+#include "Game/TileDefinition.hpp"
 
 Tile::Tile()
     : _def(TileDefinition::GetTileDefinitionByName("void"))
@@ -139,4 +140,146 @@ void Tile::SetCoords(const IntVector2& coords) {
 
 const IntVector2& Tile::GetCoords() const {
     return _tile_coords;
+}
+
+Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) {
+    auto my_index = GetCoords();
+    Map* my_map = nullptr;
+    if(layer) {
+        if(layer->z_index <= 0) {
+            if(directionAndLayerOffset.z < 0) {
+                return nullptr;
+            }
+        }
+        if(layer->z_index >= 8) {
+            if(directionAndLayerOffset.z > 0) {
+                return nullptr;
+            }
+        }
+        my_map = layer->GetMap();
+    }
+    if(my_map) {
+        auto target_location = IntVector3{ my_index, layer->z_index };
+        auto map_dims = my_map->CalcMaxDimensions();
+        if(my_index.x && my_index.x < map_dims.x) {
+            target_location.x += directionAndLayerOffset.x;
+        } else { //x is either 0 or max
+            if((my_index.x == 0 && directionAndLayerOffset.x < 0) || (my_index.x == map_dims.x && directionAndLayerOffset.x > 0)) {
+                return nullptr;
+            }
+            target_location.x += directionAndLayerOffset.x;
+        }
+        if(my_index.y && my_index.y < map_dims.y) {
+            target_location.y += directionAndLayerOffset.y;
+        } else { //y is either 0 or max
+            if((my_index.y == 0 && directionAndLayerOffset.y < 0) || (my_index.y == map_dims.y && directionAndLayerOffset.y > 0)) {
+                return nullptr;
+            }
+            target_location.y += directionAndLayerOffset.y;
+        }
+        if(layer->z_index && layer->z_index < 8) {
+            target_location.z += directionAndLayerOffset.z;
+        } else { //z is either 0 or max
+            if((layer->z_index == 0 && directionAndLayerOffset.z < 0) || (layer->z_index == 8 && directionAndLayerOffset.z > 0)) {
+                return nullptr;
+            }
+            target_location.z += directionAndLayerOffset.z;
+        }
+        return my_map->GetTile(target_location);
+    }
+    return nullptr;
+}
+
+Tile* Tile::GetNorthNeighbor() {
+    return GetNeighbor(IntVector3{0,-1,0});
+}
+
+Tile* Tile::GetNorthEastNeighbor() {
+    return GetNeighbor(IntVector3{ 1,-1,0 });
+}
+
+Tile* Tile::GetEastNeighbor() {
+    return GetNeighbor(IntVector3{ 1,0,0 });
+}
+
+Tile* Tile::GetSouthEastNeighbor() {
+    return GetNeighbor(IntVector3{ 1,1,0 });
+}
+
+Tile* Tile::GetSouthNeighbor() {
+    return GetNeighbor(IntVector3{ 0,1,0 });
+}
+
+Tile* Tile::GetSouthWestNeighbor() {
+    return GetNeighbor(IntVector3{ -1,1,0 });
+}
+
+Tile* Tile::GetWestNeighbor() {
+    return GetNeighbor(IntVector3{ -1,0,0 });
+}
+
+Tile* Tile::GetNorthWestNeighbor() {
+    return GetNeighbor(IntVector3{ -1,-1,0 });
+}
+
+std::vector<Tile*> Tile::GetNeighbors(const IntVector2& direction) {
+    auto my_index = GetCoords();
+    Map* my_map = nullptr;
+    if(layer) {
+        my_map = layer->GetMap();
+    }
+    if(my_map) {
+        auto target_location = my_index;
+        auto map_dims = my_map->CalcMaxDimensions();
+        if(my_index.x && my_index.x < map_dims.x) {
+            target_location.x += direction.x;
+        } else { //x is either 0 or max
+            if((my_index.x == 0 && direction.x < 0) || (my_index.x == map_dims.x && direction.x > 0)) {
+                return{};
+            }
+            target_location.x += direction.x;
+        }
+        if(my_index.y && my_index.y < map_dims.y) {
+            target_location.y += direction.y;
+        } else { //y is either 0 or max
+            if((my_index.y == 0 && direction.y < 0) || (my_index.y == map_dims.y && direction.y > 0)) {
+                return{};
+            }
+            target_location.y += direction.y;
+        }
+        return my_map->GetTiles(target_location);
+    }
+    return {};
+}
+
+std::vector<Tile*> Tile::GetNorthNeighbors() {
+    return GetNeighbors(IntVector2{ 0,-1 });
+}
+
+std::vector<Tile*> Tile::GetNorthEastNeighbors() {
+    return GetNeighbors(IntVector2{ 1,-1 });
+}
+
+std::vector<Tile*> Tile::GetEastNeighbors() {
+    return GetNeighbors(IntVector2{ 1,0 });
+}
+
+std::vector<Tile*> Tile::GetSouthEastNeighbors() {
+    return GetNeighbors(IntVector2{ 1,1 });
+}
+
+std::vector<Tile*> Tile::GetSouthNeighbors() {
+    return GetNeighbors(IntVector2{ 0,1 });
+}
+
+std::vector<Tile*> Tile::GetSouthWestNeighbors() {
+    return GetNeighbors(IntVector2{ -1,1 });
+}
+
+std::vector<Tile*> Tile::GetWestNeighbors() {
+    return GetNeighbors(IntVector2{ -1,0 });
+}
+
+std::vector<Tile*> Tile::GetNorthWestNeighbors() {
+    return GetNeighbors(IntVector2{ -1,-1 });
 }
