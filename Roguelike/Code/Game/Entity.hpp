@@ -41,7 +41,7 @@ public:
 
     void UpdateAI(TimeUtils::FPSeconds deltaSeconds);
 
-    void Fight(Entity& attacker, Entity& defender);
+    static long long Fight(Entity& attacker, Entity& defender);
 
     void Equip(Equipment* equipment_to_equip);
     void UnEquip(Equipment* equipment_to_unequip);

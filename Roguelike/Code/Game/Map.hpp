@@ -117,4 +117,5 @@ private:
     std::shared_ptr<SpriteSheet> _equipment_sheet{};
     float _camera_speed = 1.0f;
     static unsigned long long default_map_index;
+    static const std::size_t _max_layers = 9u;
 };

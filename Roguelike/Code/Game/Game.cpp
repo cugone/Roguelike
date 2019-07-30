@@ -283,24 +283,24 @@ void Game::HandlePlayerInput(Camera2D& base_camera) {
     }
     auto player = dynamic_cast<Actor*>(_map->player);
     if(is_upright) {
-        player->MoveNorthEast();
+        _map->MoveOrAttack(player, player->tile->GetNorthEastNeighbor());
     } else if(is_upleft) {
-        player->MoveNorthWest();
+        _map->MoveOrAttack(player, player->tile->GetNorthWestNeighbor());
     } else if(is_downright) {
-        player->MoveSouthEast();
+        _map->MoveOrAttack(player, player->tile->GetSouthEastNeighbor());
     } else if(is_downleft) {
-        player->MoveSouthWest();
+        _map->MoveOrAttack(player, player->tile->GetSouthWestNeighbor());
     } else {
         if(is_right) {
-            player->MoveEast();
+            _map->MoveOrAttack(player, player->tile->GetEastNeighbor());
         } else if(is_left) {
-            player->MoveWest();
+            _map->MoveOrAttack(player, player->tile->GetWestNeighbor());
         }
 
         if(is_up) {
-            player->MoveNorth();
+            _map->MoveOrAttack(player, player->tile->GetNorthNeighbor());
         } else if(is_down) {
-            player->MoveSouth();
+            _map->MoveOrAttack(player, player->tile->GetSouthNeighbor());
         }
     }
     if(!_map->IsEntityInView(dynamic_cast<Entity*>(player))) {

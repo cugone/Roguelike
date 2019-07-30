@@ -4,6 +4,7 @@
 
 #include "Engine/Renderer/AnimatedSprite.hpp"
 
+#include "Game/Actor.hpp"
 #include "Game/EntityDefinition.hpp"
 #include "Game/Equipment.hpp"
 #include "Game/Map.hpp"
@@ -106,10 +107,22 @@ void Entity::AddVertsForEquipment(std::vector<Vertex3D>& verts, std::vector<unsi
     }
 }
 
-void Entity::Fight(Entity& attacker, Entity& defender) {
+long long Entity::Fight(Entity& attacker, Entity& defender) {
     auto aStats = attacker.GetStats();
     auto dStats = defender.GetStats();
-
+    const auto aAtt = aStats.GetStat(StatsID::Attack);
+    const auto aSpd = aStats.GetStat(StatsID::Speed);
+    const auto dDef = dStats.GetStat(StatsID::Defense);
+    const auto dEva = dStats.GetStat(StatsID::Evasion);
+    if(aSpd < dEva) {
+        return -1; //Miss
+    }
+    if(aAtt < dDef) {
+        return 0; //0 Dmg
+    }
+    auto result = aAtt - dDef;
+    dStats.AdjustStat(StatsID::Health, result);
+    return result;
 }
 
 void Entity::Equip(Equipment* equipment_to_equip) {
