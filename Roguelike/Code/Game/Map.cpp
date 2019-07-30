@@ -32,6 +32,11 @@ void Map::SetDebugGridColor(const Rgba& gridColor) {
     layer->debug_grid_color = gridColor;
 }
 
+void Map::KillEntity(Entity& e) {
+    e.tile->entity = nullptr;
+    //TODO: Add score
+}
+
 AABB2 Map::CalcWorldBounds() const {
     return {Vector2::ZERO, CalcMaxDimensions()};
 }
@@ -183,6 +188,13 @@ void Map::EndFrame() {
     for(auto& layer : _layers) {
         layer->EndFrame();
     }
+    for(auto& e : _entities) {
+        if(e->GetStats().GetStat(StatsID::Health) <= 0) {
+            delete e;
+            e = nullptr;
+        }
+    }
+    _entities.erase(std::remove_if(std::begin(_entities), std::end(_entities), [](const auto* e) { return e == nullptr; }), std::end(_entities));
 }
 
 bool Map::IsTileInView(const IntVector2& tileCoords) {

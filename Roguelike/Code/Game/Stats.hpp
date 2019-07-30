@@ -9,6 +9,7 @@ enum class StatsID {
     First_
     ,Level = First_
     ,Health
+    ,Health_Max
     ,Attack
     ,Defense
     ,Speed
@@ -38,8 +39,8 @@ public:
 
     auto GetStat(const StatsID& id) const noexcept -> decltype(_stats)::value_type;
     void SetStat(const StatsID& id, decltype(_stats)::value_type value) noexcept;
-    void AdjustStat(const StatsID& id, decltype(_stats)::value_type value) noexcept;
-    void MultiplyStat(const StatsID& id, long double value) noexcept;
+    decltype(_stats)::value_type AdjustStat(const StatsID& id, decltype(_stats)::value_type value) noexcept;
+    decltype(_stats)::value_type MultiplyStat(const StatsID& id, long double value) noexcept;
 
     Stats operator+(const Stats& b) const;
     Stats& operator+=(const Stats& b);

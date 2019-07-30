@@ -81,7 +81,11 @@ const Stats& Entity::GetStatModifiers() const {
 }
 
 const Stats& Entity::GetBaseStats() const {
-    return base_stats;
+    return def->GetBaseStats();
+}
+
+Stats& Entity::GetBaseStats() {
+    return def->GetBaseStats();
 }
 
 void Entity::LoadFromXml(const XMLElement& elem) {
@@ -121,7 +125,11 @@ long long Entity::Fight(Entity& attacker, Entity& defender) {
         return 0; //0 Dmg
     }
     auto result = aAtt - dDef;
-    dStats.AdjustStat(StatsID::Health, result);
+    auto new_health = dStats.AdjustStat(StatsID::Health, -result);
+    if(!new_health) {
+        auto& map = defender.map;
+        map->KillEntity(defender);
+    }
     return result;
 }
 
@@ -161,11 +169,11 @@ const IntVector2& Entity::GetPosition() const {
 }
 
 Stats Entity::GetStats() const {
-    return base_stats + stat_modifiers;
+    return GetBaseStats() + stat_modifiers;
 }
 
 void Entity::AdjustBaseStats(Stats adjustments) {
-    base_stats += adjustments;
+    GetBaseStats() += adjustments;
 }
 
 void Entity::AdjustStatModifiers(Stats adjustments) {

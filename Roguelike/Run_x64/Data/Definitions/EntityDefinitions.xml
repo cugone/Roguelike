@@ -1,7 +1,24 @@
 <entityDefinitions>
     <spritesheet src="Data/Images/Tiles.png" dimensions="[65,65]" />
-    <entityDefinition name="human..male" index="[7,53]" />
+    <entityDefinition name="human..male" index="[7,53]">
+        <stats>
+            <health>100</health>
+            <attack>1</attack>
+            <defense>0</defense>
+            <evasion>1</evasion>
+            <speed>1</speed>
+            <experience>0</experience>
+        </stats>
+    </entityDefinition>
     <entityDefinition name="human..female" index="[6,53]">
+        <stats>
+            <health>100</health>
+            <attack>1</attack>
+            <defense>0</defense>
+            <evasion>1</evasion>
+            <speed>1</speed>
+            <experience>0</experience>
+        </stats>
         <attachPoints>
             <body offset="[0,0]"/>
             <!--

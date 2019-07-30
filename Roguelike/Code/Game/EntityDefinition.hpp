@@ -3,6 +3,8 @@
 #include "Engine/Core/DataUtils.hpp"
 #include "Engine/Renderer/AnimatedSprite.hpp"
 
+#include "Game/Stats.hpp"
+
 #include <bitset>
 #include <map>
 #include <memory>
@@ -48,6 +50,9 @@ public:
     bool is_invisible = false;
     bool is_animated = false;
 
+    const Stats& GetBaseStats() const noexcept;
+    Stats& GetBaseStats() noexcept;
+
     const AnimatedSprite* GetSprite() const;
     AnimatedSprite* GetSprite();
 
@@ -59,6 +64,8 @@ private:
     bool LoadFromXml(const XMLElement& elem);
     void LoadAnimation(const XMLElement &elem);
     void LoadAttachPoints(const XMLElement &elem);
+    void LoadEquipment(const XMLElement& elem);
+    void LoadStats(const XMLElement& elem);
 
     static std::map<std::string, std::unique_ptr<EntityDefinition>> s_registry;
     Renderer& _renderer;
@@ -66,8 +73,8 @@ private:
     std::unique_ptr<AnimatedSprite> _sprite{};
     std::vector<Vector2> attach_point_offsets{};
     IntVector2 _index{};
+    Stats _base_stats{};
     std::bitset<static_cast<std::size_t>(AttachPoint::Max)> _valid_offsets{};
-    void LoadEquipment(const XMLElement& elem);
 };
 
 using EquipSlot = EntityDefinition::AttachPoint;

@@ -70,13 +70,13 @@ public:
 protected:
     const Stats& GetStatModifiers() const;
     const Stats& GetBaseStats() const;
+    Stats& GetBaseStats();
 private:
     void LoadFromXml(const XMLElement& elem);
     std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
 
     void AddVertsForEquipment(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
 
-    Stats base_stats{};
     Stats stat_modifiers{};
     IntVector2 _position{};
 

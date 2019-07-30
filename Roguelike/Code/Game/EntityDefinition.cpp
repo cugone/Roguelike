@@ -10,12 +10,14 @@ std::map<std::string, std::unique_ptr<EntityDefinition>> EntityDefinition::s_reg
 
 void EntityDefinition::CreateEntityDefinition(Renderer& renderer, const XMLElement& elem) {
     auto new_def = std::make_unique<EntityDefinition>(renderer, elem);
-    s_registry.try_emplace(new_def->name, std::move(new_def));
+    auto new_def_name = new_def->name;
+    s_registry.try_emplace(new_def_name, std::move(new_def));
 }
 
 void EntityDefinition::CreateEntityDefinition(Renderer& renderer, const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet) {
     auto new_def = std::make_unique<EntityDefinition>(renderer, elem, sheet);
-    s_registry.insert_or_assign(new_def->name, std::move(new_def));
+    auto new_def_name = new_def->name;
+    s_registry.try_emplace(new_def_name, std::move(new_def));
 }
 
 void EntityDefinition::DestroyEntityDefinitions() {
@@ -60,6 +62,14 @@ EntityDefinition::EntityDefinition(Renderer& renderer, const XMLElement& elem, s
     }
 }
 
+const Stats& EntityDefinition::GetBaseStats() const noexcept {
+    return _base_stats;
+}
+
+Stats& EntityDefinition::GetBaseStats() noexcept {
+    return const_cast<Stats&>(static_cast<const EntityDefinition&>(*this).GetBaseStats());
+}
+
 const AnimatedSprite* EntityDefinition::GetSprite() const {
     return _sprite.get();
 }
@@ -73,14 +83,21 @@ bool EntityDefinition::HasAttachPoint(const AttachPoint& attachpoint) {
 }
 
 bool EntityDefinition::LoadFromXml(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "entityDefinition", "", "name,index", "animation,attachPoints,equipment");
+    DataUtils::ValidateXmlElement(elem, "entityDefinition", "", "name,index", "animation,attachPoints,equipment,stats");
 
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     _index = DataUtils::ParseXmlAttribute(elem, "index", IntVector2::ZERO);
+    LoadStats(elem);
     LoadAnimation(elem);
     LoadAttachPoints(elem);
     LoadEquipment(elem);
     return true;
+}
+
+void EntityDefinition::LoadStats(const XMLElement& elem) {
+    if(auto* xml_stats = elem.FirstChildElement("stats")) {
+        _base_stats = Stats(*xml_stats);
+    }
 }
 
 void EntityDefinition::LoadEquipment(const XMLElement& elem) {

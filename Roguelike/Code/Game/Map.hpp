@@ -76,6 +76,8 @@ public:
     mutable Camera2D camera{};
     Actor* player = nullptr;
 
+    void KillEntity(Entity& e);
+
 protected:
 private:
     bool LoadFromXML(const XMLElement& elem);
