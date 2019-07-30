@@ -10,12 +10,14 @@ std::map<std::string, std::unique_ptr<EquipmentDefinition>> EquipmentDefinition:
 
 void EquipmentDefinition::CreateEquipmentDefinition(Renderer& renderer, const XMLElement& elem) {
     auto new_def = std::make_unique<EquipmentDefinition>(renderer, elem);
-    s_registry.insert_or_assign(new_def->name, std::move(new_def));
+    auto new_def_name = new_def->name;
+    s_registry.try_emplace(new_def_name, std::move(new_def));
 }
 
 void EquipmentDefinition::CreateEquipmentDefinition(Renderer& renderer, const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet) {
     auto new_def = std::make_unique<EquipmentDefinition>(renderer, elem, sheet);
-    s_registry.insert_or_assign(new_def->name, std::move(new_def));
+    auto new_def_name = new_def->name;
+    s_registry.try_emplace(new_def_name, std::move(new_def));
 }
 
 void EquipmentDefinition::DestroyEquipmentDefinitions() {
