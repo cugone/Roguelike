@@ -21,6 +21,12 @@ class Entity;
 struct EquipmentType {
     EquipmentDefinition* definition{};
     std::string name{};
+    EquipmentType(std::string name = std::string{}, EquipmentDefinition* definition = nullptr)
+        : definition(definition)
+        , name(name)
+    {
+        /* DO NOTHING */
+    }
 };
 
 class Equipment {

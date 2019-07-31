@@ -62,19 +62,18 @@ AnimatedSprite* EquipmentDefinition::GetSprite() {
 }
 
 bool EquipmentDefinition::LoadFromXml(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "equipmentDefinition", "", "name,index");
+    DataUtils::ValidateXmlElement(elem, "equipmentDefinition", "", "name,index", "animation");
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     _index = DataUtils::ParseXmlAttribute(elem, "index", _index);
-
+    LoadAnimation(elem);
     return true;
 }
 
 void EquipmentDefinition::LoadAnimation(const XMLElement &elem) {
-    if (auto* xml_animation = elem.FirstChildElement("animation")) {
+    if(auto* xml_animation = elem.FirstChildElement("animation")) {
         is_animated = true;
         _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, elem));
-    }
-    else {
+    } else {
         _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, _index));
     }
 }

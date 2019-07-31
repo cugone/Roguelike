@@ -78,6 +78,9 @@ public:
 
     void KillEntity(Entity& e);
 
+    static std::vector<EntityType*> GetEntityTypesByName(const std::string& name);
+    static std::vector<EquipmentType*> GetEquipmentTypesByName(const std::string& name);
+
 protected:
 private:
     bool LoadFromXML(const XMLElement& elem);
@@ -95,8 +98,6 @@ private:
     void LoadEquipmentTypesForMap(const XMLElement& elem);
     void LoadEquipmentDefinitionsFromFile(const std::filesystem::path& src);
     void PlaceEntitiesOnMap(const XMLElement& elem);
-    std::vector<EntityType*> GetEntityTypesByName(const std::string& name);
-    std::vector<EquipmentType*> GetEquipmentTypesByName(const std::string& name);
 
     void UpdateEntities(TimeUtils::FPSeconds deltaSeconds);
     void UpdateEntityAI(TimeUtils::FPSeconds deltaSeconds);
@@ -110,9 +111,9 @@ private:
     Material* _current_tileMaterial{};
     std::vector<Entity*> _entities{};
     std::vector<Actor*> _actors{};
-    std::multimap<std::string, std::unique_ptr<EntityType>> _entity_types{};
+    static std::multimap<std::string, std::unique_ptr<EntityType>> _entity_types;
     std::vector<std::unique_ptr<Equipment>> _equipments{};
-    std::multimap<std::string, std::unique_ptr<EquipmentType>> _equipment_types{};
+    static std::multimap<std::string, std::unique_ptr<EquipmentType>> _equipment_types;
 
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
     std::shared_ptr<SpriteSheet> _entity_sheet{};

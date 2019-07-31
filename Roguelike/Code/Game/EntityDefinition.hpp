@@ -12,6 +12,7 @@
 class AnimatedSprite;
 class SpriteSheet;
 class Renderer;
+class EquipmentDefinition;
 
 class EntityDefinition {
 public:
@@ -50,6 +51,7 @@ public:
     bool is_invisible = false;
     bool is_animated = false;
 
+    void SetBaseStats(const Stats& newBaseStats) noexcept;
     const Stats& GetBaseStats() const noexcept;
     Stats& GetBaseStats() noexcept;
 
@@ -72,6 +74,7 @@ private:
     std::shared_ptr<SpriteSheet> _sheet{};
     std::unique_ptr<AnimatedSprite> _sprite{};
     std::vector<Vector2> attach_point_offsets{};
+    std::vector<EquipmentDefinition*> equipments{};
     IntVector2 _index{};
     Stats _base_stats{};
     std::bitset<static_cast<std::size_t>(AttachPoint::Max)> _valid_offsets{};

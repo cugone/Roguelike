@@ -129,6 +129,8 @@ long long Entity::Fight(Entity& attacker, Entity& defender) {
     if(!new_health) {
         auto& map = defender.map;
         map->KillEntity(defender);
+    } else {
+        defender.def->SetBaseStats(dStats);
     }
     return result;
 }
@@ -136,11 +138,13 @@ long long Entity::Fight(Entity& attacker, Entity& defender) {
 void Entity::Equip(Equipment* equipment_to_equip) {
     equipment_to_equip->owner = this;
     equipment_to_equip->ApplyStatModifer();
+    equipment = equipment_to_equip;
 }
 
 void Entity::UnEquip(Equipment* equipment_to_unequip) {
     equipment_to_unequip->RemoveStatModifer();
     equipment_to_unequip->owner = nullptr;
+    equipment = nullptr;
 }
 
 bool Entity::IsVisible() const {

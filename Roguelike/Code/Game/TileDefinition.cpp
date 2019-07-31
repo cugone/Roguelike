@@ -13,7 +13,8 @@ std::map<std::string, std::unique_ptr<TileDefinition>> TileDefinition::s_registr
 
 void TileDefinition::CreateTileDefinition(Renderer* renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
     auto new_def = std::make_unique<TileDefinition>(renderer, elem, sheet);
-    s_registry.insert_or_assign(new_def->name, std::move(new_def));
+    auto new_def_name = new_def->name;
+    s_registry.try_emplace(new_def_name, std::move(new_def));
 }
 
 void TileDefinition::DestroyTileDefinitions() {

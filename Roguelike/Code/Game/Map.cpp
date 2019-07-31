@@ -27,6 +27,10 @@
 
 unsigned long long Map::default_map_index = 0ull;
 
+std::multimap<std::string, std::unique_ptr<EntityType>> Map::_entity_types{};
+std::multimap<std::string, std::unique_ptr<EquipmentType>> Map::_equipment_types{};
+
+
 void Map::SetDebugGridColor(const Rgba& gridColor) {
     auto* layer = GetLayer(0);
     layer->debug_grid_color = gridColor;
@@ -34,7 +38,6 @@ void Map::SetDebugGridColor(const Rgba& gridColor) {
 
 void Map::KillEntity(Entity& e) {
     e.tile->entity = nullptr;
-    //TODO: Add score
 }
 
 AABB2 Map::CalcWorldBounds() const {
@@ -475,7 +478,7 @@ void Map::LoadEntityTypesForMap(const XMLElement& elem) {
             auto type = std::make_unique<EntityType>();
             type->name = name;
             type->definition = definition;
-            _entity_types.insert(std::make_pair(name, std::move(type)));
+            _entity_types.emplace(std::make_pair(name, std::move(type)));
         });
     }
 }
@@ -524,34 +527,15 @@ void Map::LoadEquipmentFromFile(const std::filesystem::path& src) {
 }
 
 void Map::LoadEquipmentTypesForMap(const XMLElement& elem) {
-    if (auto* xml_entity_types = elem.FirstChildElement("entityTypes")) {
-        DataUtils::ValidateXmlElement(*xml_entity_types, "entityTypes", "player", "");
-        DataUtils::ForEachChildElement(*xml_entity_types, "",
-            [this](const XMLElement& elem) {
-            auto name = DataUtils::GetElementName(elem);
-            DataUtils::ValidateXmlElement(elem, name, "", "lookAndFeel");
-            const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
-            auto* definition = EntityDefinition::GetEntityDefinitionByName(definitionName);
-            auto type = std::make_unique<EntityType>();
-            type->name = name;
-            type->definition = definition;
-            _entity_types.insert(std::make_pair(name, std::move(type)));
-        });
-    }
-
     DataUtils::ForEachChildElement(elem, "equipment",
-        [](const XMLElement& elem) {
-        DataUtils::ValidateXmlElement(elem, "equipment", "definition", "name");
-        DataUtils::ForEachChildElement(elem, "definition",
-            [](const XMLElement& elem) {
-            DataUtils::ValidateXmlElement(elem, "definition", "", "slot,type,subtype,color");
-            EquipmentType etype{};
-            const auto slot = DataUtils::ParseXmlAttribute(elem, "slot", "");
-            const auto type = std::string{};//DataUtils::ParseXmlAttribute(elem, "type", "");
-            const auto subtype = DataUtils::ParseXmlAttribute(elem, "subtype", "");
-            const auto color = DataUtils::ParseXmlAttribute(elem, "color", "");
-            etype.name = StringUtils::Join('.', slot, type, subtype, color);
-        });
+    [this](const XMLElement& elem) {
+        _equipments.emplace_back(std::move(std::make_unique<Equipment>(*g_theRenderer, elem)));
+        auto etype = std::make_unique<EquipmentType>();
+        const auto& last = _equipments.back().get();
+        etype->name = last->name;
+        etype->definition = last->def;
+        auto etype_name = etype->name;
+        _equipment_types.emplace(std::make_pair(etype_name, std::move(etype)));
     });
 }
 
@@ -624,6 +608,7 @@ void Map::PlaceEntitiesOnMap(const XMLElement& elem) {
                 entity->map = this;
                 entity->layer = this->GetLayer(0);
                 entity->SetPosition(start);
+                entity->Equip(_equipments[0].get());
                 _entities.push_back(entity);
                 if(is_player) {
                     player = dynamic_cast<Actor*>(_entities.back());

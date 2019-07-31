@@ -6,6 +6,9 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 
+#include "Game/EquipmentDefinition.hpp"
+#include "Game/Map.hpp"
+
 std::map<std::string, std::unique_ptr<EntityDefinition>> EntityDefinition::s_registry;
 
 void EntityDefinition::CreateEntityDefinition(Renderer& renderer, const XMLElement& elem) {
@@ -70,6 +73,10 @@ Stats& EntityDefinition::GetBaseStats() noexcept {
     return const_cast<Stats&>(static_cast<const EntityDefinition&>(*this).GetBaseStats());
 }
 
+void EntityDefinition::SetBaseStats(const Stats& newBaseStats) noexcept {
+    _base_stats = newBaseStats;
+}
+
 const AnimatedSprite* EntityDefinition::GetSprite() const {
     return _sprite.get();
 }
@@ -80,6 +87,13 @@ AnimatedSprite* EntityDefinition::GetSprite() {
 
 bool EntityDefinition::HasAttachPoint(const AttachPoint& attachpoint) {
     return _valid_offsets[static_cast<std::size_t>(attachpoint)];
+}
+
+Vector2 EntityDefinition::GetAttachPoint(const AttachPoint& attachpoint) {
+    if(HasAttachPoint(attachpoint)) {
+        return attach_point_offsets[static_cast<std::size_t>(attachpoint)];
+    }
+    return {};
 }
 
 bool EntityDefinition::LoadFromXml(const XMLElement& elem) {
@@ -103,45 +117,102 @@ void EntityDefinition::LoadStats(const XMLElement& elem) {
 void EntityDefinition::LoadEquipment(const XMLElement& elem) {
     if(auto* xml_equipment = elem.FirstChildElement("equipment")) {
         DataUtils::ValidateXmlElement(*xml_equipment, "equipment", "", "", "hair,head,body,larm,rarm,lleg,rleg,feet");
+        equipments.resize(static_cast<std::size_t>(EquipSlot::Max));
         if(auto* xml_equipment_hair = xml_equipment->FirstChildElement("hair")) {
             DataUtils::ValidateXmlElement(*xml_equipment_hair, "hair", "", "item");
             std::string equipment_name{};
             equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_hair, "item", equipment_name);
+            auto idx = static_cast<std::size_t>(EquipSlot::Hair);
+            auto def = Map::GetEquipmentTypesByName(equipment_name);
+            if(!def.empty()) {
+                _valid_offsets.set(idx);
+                auto f = std::begin(def);
+                equipments[idx] = (*f)->definition;
+            }
         }
         if(auto* xml_equipment_head = xml_equipment->FirstChildElement("head")) {
             DataUtils::ValidateXmlElement(*xml_equipment_head, "head", "", "item");
             std::string equipment_name{};
             equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_head, "item", equipment_name);
+            auto idx = static_cast<std::size_t>(EquipSlot::Head);
+            auto def = Map::GetEquipmentTypesByName(equipment_name);
+            if(!def.empty()) {
+                _valid_offsets.set(idx);
+                auto f = std::begin(def);
+                equipments[idx] = (*f)->definition;
+            }
         }
         if(auto* xml_equipment_body = xml_equipment->FirstChildElement("body")) {
             DataUtils::ValidateXmlElement(*xml_equipment_body, "body", "", "item");
             std::string equipment_name{};
             equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_body, "item", equipment_name);
+            auto idx = static_cast<std::size_t>(EquipSlot::Body);
+            auto def = Map::GetEquipmentTypesByName(equipment_name);
+            if(!def.empty()) {
+                _valid_offsets.set(idx);
+                auto f = std::begin(def);
+                equipments[idx] = (*f)->definition;
+            }
         }
         if(auto* xml_equipment_larm = xml_equipment->FirstChildElement("larm")) {
             DataUtils::ValidateXmlElement(*xml_equipment_larm, "larm", "", "item");
             std::string equipment_name{};
             equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_larm, "item", equipment_name);
+            auto idx = static_cast<std::size_t>(EquipSlot::LeftArm);
+            auto def = Map::GetEquipmentTypesByName(equipment_name);
+            if(!def.empty()) {
+                _valid_offsets.set(idx);
+                auto f = std::begin(def);
+                equipments[idx] = (*f)->definition;
+            }
         }
         if(auto* xml_equipment_rarm = xml_equipment->FirstChildElement("rarm")) {
             DataUtils::ValidateXmlElement(*xml_equipment_rarm, "rarm", "", "item");
             std::string equipment_name{};
             equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_rarm, "item", equipment_name);
+            auto idx = static_cast<std::size_t>(EquipSlot::RightArm);
+            auto def = Map::GetEquipmentTypesByName(equipment_name);
+            if(!def.empty()) {
+                _valid_offsets.set(idx);
+                auto f = std::begin(def);
+                equipments[idx] = (*f)->definition;
+            }
         }
         if(auto* xml_equipment_lleg = xml_equipment->FirstChildElement("lleg")) {
             DataUtils::ValidateXmlElement(*xml_equipment_lleg, "lleg", "", "item");
             std::string equipment_name{};
             equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_lleg, "item", equipment_name);
+            auto idx = static_cast<std::size_t>(EquipSlot::LeftLeg);
+            auto def = Map::GetEquipmentTypesByName(equipment_name);
+            if(!def.empty()) {
+                _valid_offsets.set(idx);
+                auto f = std::begin(def);
+                equipments[idx] = (*f)->definition;
+            }
         }
         if(auto* xml_equipment_rleg = xml_equipment->FirstChildElement("rleg")) {
             DataUtils::ValidateXmlElement(*xml_equipment_rleg, "rleg", "", "item");
             std::string equipment_name{};
             equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_rleg, "item", equipment_name);
+            auto idx = static_cast<std::size_t>(EquipSlot::RightLeg);
+            auto def = Map::GetEquipmentTypesByName(equipment_name);
+            if(!def.empty()) {
+                _valid_offsets.set(idx);
+                auto f = std::begin(def);
+                equipments[idx] = (*f)->definition;
+            }
         }
         if(auto* xml_equipment_feet = xml_equipment->FirstChildElement("feet")) {
             DataUtils::ValidateXmlElement(*xml_equipment_feet, "feet", "", "item");
             std::string equipment_name{};
             equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_feet, "item", equipment_name);
+            auto idx = static_cast<std::size_t>(EquipSlot::Feet);
+            auto def = Map::GetEquipmentTypesByName(equipment_name);
+            if(!def.empty()) {
+                _valid_offsets.set(idx);
+                auto f = std::begin(def);
+                equipments[idx] = (*f)->definition;
+            }
         }
     }
 }
