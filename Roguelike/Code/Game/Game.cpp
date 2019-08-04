@@ -25,8 +25,6 @@ void Game::Initialize() {
     CreateFullscreenTexture();
     CreateFullscreenConstantBuffer();
     g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
-    LoadMaps();
-    _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
 }
 
 void Game::CreateFullscreenConstantBuffer() {
@@ -36,19 +34,15 @@ void Game::CreateFullscreenConstantBuffer() {
     _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
-void Game::OnEnter_Loading() {
-    /* DO NOTHING */
-}
-
 void Game::OnEnter_Title() {
     /* DO NOTHING */
 }
 
-void Game::OnEnter_Main() {
-    /* DO NOTHING */
+void Game::OnEnter_Loading() {
+    _done_loading = false;
 }
 
-void Game::OnExit_Loading() {
+void Game::OnEnter_Main() {
     /* DO NOTHING */
 }
 
@@ -56,11 +50,11 @@ void Game::OnExit_Title() {
     /* DO NOTHING */
 }
 
-void Game::OnExit_Main() {
+void Game::OnExit_Loading() {
     /* DO NOTHING */
 }
 
-void Game::BeginFrame_Loading() {
+void Game::OnExit_Main() {
     /* DO NOTHING */
 }
 
@@ -68,18 +62,29 @@ void Game::BeginFrame_Title() {
     /* DO NOTHING */
 }
 
+void Game::BeginFrame_Loading() {
+    /* DO NOTHING */
+}
+
 void Game::BeginFrame_Main() {
     _map->BeginFrame();
 }
 
-void Game::Update_Loading(TimeUtils::FPSeconds /*deltaSeconds*/) {
+void Game::Update_Title(TimeUtils::FPSeconds /*deltaSeconds*/) {
     if(g_theInputSystem->WasAnyKeyPressed()) {
-        ChangeGameState(GameState::Title);
+        ChangeGameState(GameState::Loading);
     }
 }
 
-void Game::Update_Title(TimeUtils::FPSeconds /*deltaSeconds*/) {
-    if(g_theInputSystem->WasAnyKeyPressed()) {
+void Game::Update_Loading(TimeUtils::FPSeconds deltaSeconds) {
+    static float t = 0.0f;
+    t += deltaSeconds.count();
+    if(0.33f < t) {
+        t = 0.0f;
+        _text_alpha = 1.0f - _text_alpha;
+        _text_alpha = std::clamp(_text_alpha, 0.0f, 1.0f);
+    }
+    if(_done_loading && g_theInputSystem->WasAnyKeyPressed()) {
         ChangeGameState(GameState::Main);
     }
 }
@@ -98,34 +103,6 @@ void Game::Update_Main(TimeUtils::FPSeconds deltaSeconds) {
 
     base_camera.Update(deltaSeconds);
     _map->Update(deltaSeconds);
-}
-
-void Game::Render_Loading() const {
-
-    g_theRenderer->ResetModelViewProjection();
-    g_theRenderer->SetRenderTarget();
-    g_theRenderer->ClearColor(Rgba::Black);
-    g_theRenderer->ClearDepthStencilBuffer();
-
-    g_theRenderer->SetViewportAsPercent();
-
-    //2D View / HUD
-    const float ui_view_height = GRAPHICS_OPTION_WINDOW_HEIGHT;
-    const float ui_view_width = ui_view_height * _ui_camera.GetAspectRatio();
-    const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
-    const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
-    auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
-    auto ui_nearFar = Vector2{ 0.0f, 1.0f };
-    auto ui_cam_pos = ui_view_half_extents;
-    _ui_camera.position = ui_cam_pos;
-    _ui_camera.orientation_degrees = 0.0f;
-    _ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
-    g_theRenderer->SetCamera(_ui_camera);
-
-    g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents));
-    g_theRenderer->DrawTextLine(g_theRenderer->GetFont("System32"), "LOADING");
-
 }
 
 void Game::Render_Title() const {
@@ -153,6 +130,41 @@ void Game::Render_Title() const {
 
     g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents));
     g_theRenderer->DrawTextLine(g_theRenderer->GetFont("System32"), "RogueLike");
+
+}
+
+void Game::Render_Loading() const {
+
+    g_theRenderer->ResetModelViewProjection();
+    g_theRenderer->SetRenderTarget();
+    g_theRenderer->ClearColor(Rgba::Black);
+    g_theRenderer->ClearDepthStencilBuffer();
+
+    g_theRenderer->SetViewportAsPercent();
+
+    //2D View / HUD
+    const float ui_view_height = GRAPHICS_OPTION_WINDOW_HEIGHT;
+    const float ui_view_width = ui_view_height * _ui_camera.GetAspectRatio();
+    const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
+    const auto ui_view_half_extents = ui_view_extents * 0.5f;
+    auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
+    auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
+    auto ui_nearFar = Vector2{ 0.0f, 1.0f };
+    auto ui_cam_pos = ui_view_half_extents;
+    _ui_camera.position = ui_cam_pos;
+    _ui_camera.orientation_degrees = 0.0f;
+    _ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
+    g_theRenderer->SetCamera(_ui_camera);
+
+    const auto* font = g_theRenderer->GetFont("System32");
+    g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents));
+    g_theRenderer->DrawTextLine(font, "LOADING");
+    if(_done_loading) {
+        const std::string text = "Press Any Key";
+        static const auto text_length = font->CalculateTextWidth(text);
+        g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents + Vector2{ text_length * -0.25f, font->GetLineHeight() }));
+        g_theRenderer->DrawTextLine(font, text, Rgba{255, 255, 255, static_cast<unsigned char>(255.0f * _text_alpha)});
+    }
 
 }
 
@@ -202,12 +214,16 @@ void Game::Render_Main() const {
     g_theRenderer->SetCamera(_ui_camera);
 }
 
-void Game::EndFrame_Loading() {
+void Game::EndFrame_Title() {
     /* DO NOTHING */
 }
 
-void Game::EndFrame_Title() {
-    /* DO NOTHING */
+void Game::EndFrame_Loading() {
+    if(!_done_loading) {
+        LoadMaps();
+        _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
+        _done_loading = true;
+    }
 }
 
 void Game::EndFrame_Main() {
@@ -220,8 +236,8 @@ void Game::ChangeGameState(const GameState& newState) {
 
 void Game::OnEnterState(const GameState& state) {
     switch(state) {
-    case GameState::Loading:  OnEnter_Loading(); break;
     case GameState::Title:    OnEnter_Title();   break;
+    case GameState::Loading:  OnEnter_Loading(); break;
     case GameState::Main:     OnEnter_Main();    break;
     default: ERROR_AND_DIE("ON ENTER UNDEFINED GAME STATE") break;
     }
@@ -229,8 +245,8 @@ void Game::OnEnterState(const GameState& state) {
 
 void Game::OnExitState(const GameState& state) {
     switch(state) {
-    case GameState::Loading:  OnExit_Loading(); break;
     case GameState::Title:    OnExit_Title();   break;
+    case GameState::Loading:  OnExit_Loading(); break;
     case GameState::Main:     OnExit_Main();    break;
     default: ERROR_AND_DIE("ON ENTER UNDEFINED GAME STATE") break;
     }
@@ -262,8 +278,8 @@ void Game::BeginFrame() {
         OnEnterState(_currentGameState);
     }
     switch(_currentGameState) {
-    case GameState::Loading: BeginFrame_Loading(); break;
     case GameState::Title:   BeginFrame_Title(); break;
+    case GameState::Loading: BeginFrame_Loading(); break;
     case GameState::Main:    BeginFrame_Main(); break;
     default:                 ERROR_AND_DIE("BEGIN FRAME UNDEFINED GAME STATE"); break;
     }
@@ -271,8 +287,8 @@ void Game::BeginFrame() {
 
 void Game::Update(TimeUtils::FPSeconds deltaSeconds) {
     switch(_currentGameState) {
-    case GameState::Loading: Update_Loading(deltaSeconds); break;
     case GameState::Title:   Update_Title(deltaSeconds); break;
+    case GameState::Loading: Update_Loading(deltaSeconds); break;
     case GameState::Main:    Update_Main(deltaSeconds); break;
     default:                 ERROR_AND_DIE("UPDATE UNDEFINED GAME STATE"); break;
     }
@@ -391,8 +407,8 @@ void Game::UpdateFullscreenEffect(const FullscreenEffect& effect) {
 
 void Game::Render() const {
     switch(_currentGameState) {
-    case GameState::Loading: Render_Loading(); break;
     case GameState::Title:   Render_Title(); break;
+    case GameState::Loading: Render_Loading(); break;
     case GameState::Main:    Render_Main(); break;
     default:                 ERROR_AND_DIE("RENDER UNDEFINED GAME STATE"); break;
     }
@@ -400,8 +416,8 @@ void Game::Render() const {
 
 void Game::EndFrame() {
     switch(_currentGameState) {
-    case GameState::Loading: EndFrame_Loading(); break;
     case GameState::Title:   EndFrame_Title(); break;
+    case GameState::Loading: EndFrame_Loading(); break;
     case GameState::Main:    EndFrame_Main(); break;
     default:                 ERROR_AND_DIE("END FRAME UNDEFINED GAME STATE"); break;
     }

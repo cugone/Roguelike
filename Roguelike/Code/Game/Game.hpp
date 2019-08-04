@@ -33,8 +33,8 @@ enum class FullscreenEffect {
 };
 
 enum class GameState {
-    Loading
-    ,Title
+    Title
+    ,Loading
     ,Main
 };
 
@@ -56,28 +56,28 @@ public:
 protected:
 private:
 
-    void OnEnter_Loading();
     void OnEnter_Title();
+    void OnEnter_Loading();
     void OnEnter_Main();
 
-    void OnExit_Loading();
     void OnExit_Title();
+    void OnExit_Loading();
     void OnExit_Main();
 
-    void BeginFrame_Loading();
     void BeginFrame_Title();
+    void BeginFrame_Loading();
     void BeginFrame_Main();
 
-    void Update_Loading(TimeUtils::FPSeconds deltaSeconds);
     void Update_Title(TimeUtils::FPSeconds deltaSeconds);
+    void Update_Loading(TimeUtils::FPSeconds deltaSeconds);
     void Update_Main(TimeUtils::FPSeconds deltaSeconds);
 
-    void Render_Loading() const;
     void Render_Title() const;
+    void Render_Loading() const;
     void Render_Main() const;
     
-    void EndFrame_Loading();
     void EndFrame_Title();
+    void EndFrame_Loading();
     void EndFrame_Main();
 
     void ChangeGameState(const GameState& newState);
@@ -135,6 +135,7 @@ private:
     float _debug_fadeInTime = 1.0f;
     float _debug_fadeOutTime = 1.0f;
     float _debug_gradientRadius = 0.5f;
+    float _text_alpha = 1.0f;
     bool _debug_has_picked_entity_with_click = false;
     bool _debug_has_picked_tile_with_click = false;
     bool _player_requested_wait = false;
@@ -145,6 +146,7 @@ private:
     bool _show_effects_debugger = false;
     bool _show_entity_debugger = false;
     bool _show_all_entities = false;
+    bool _done_loading = false;
     std::unique_ptr<class ConstantBuffer> _fullscreen_cb = nullptr;
     fullscreen_cb_t _fullscreen_data = fullscreen_cb_t{};
     FullscreenEffect _current_fs_effect = FullscreenEffect::None;
@@ -153,8 +155,8 @@ private:
     TimeUtils::FPSeconds _fadeInTime{};
     TimeUtils::FPSeconds _fadeOutTime{};
 
-    GameState _currentGameState = GameState::Loading;
-    GameState _nextGameState = GameState::Loading;
+    GameState _currentGameState = GameState::Title;
+    GameState _nextGameState = GameState::Title;
 
     friend class Map;
     friend class Layer;
