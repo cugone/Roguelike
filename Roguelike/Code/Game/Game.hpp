@@ -32,6 +32,12 @@ enum class FullscreenEffect {
     ,CircularGradient
 };
 
+enum class GameState {
+    Loading
+    ,Title
+    ,Main
+};
+
 class Game {
 public:
     Game() = default;
@@ -49,6 +55,35 @@ public:
 
 protected:
 private:
+
+    void OnEnter_Loading();
+    void OnEnter_Title();
+    void OnEnter_Main();
+
+    void OnExit_Loading();
+    void OnExit_Title();
+    void OnExit_Main();
+
+    void BeginFrame_Loading();
+    void BeginFrame_Title();
+    void BeginFrame_Main();
+
+    void Update_Loading(TimeUtils::FPSeconds deltaSeconds);
+    void Update_Title(TimeUtils::FPSeconds deltaSeconds);
+    void Update_Main(TimeUtils::FPSeconds deltaSeconds);
+
+    void Render_Loading() const;
+    void Render_Title() const;
+    void Render_Main() const;
+    
+    void EndFrame_Loading();
+    void EndFrame_Title();
+    void EndFrame_Main();
+
+    void ChangeGameState(const GameState& newState);
+    void OnEnterState(const GameState& state);
+    void OnExitState(const GameState& state);
+
     void CreateFullscreenTexture();
     void CreateFullscreenConstantBuffer();
 
@@ -85,6 +120,8 @@ private:
     void DoSepia();
     void StopFullscreenEffect();
 
+
+
     std::unique_ptr<Map> _map{nullptr};
     mutable Camera2D _ui_camera{};
     Rgba _grid_color{Rgba::Red};
@@ -115,6 +152,9 @@ private:
     Rgba _fadeOut_color = Rgba::Black;
     TimeUtils::FPSeconds _fadeInTime{};
     TimeUtils::FPSeconds _fadeOutTime{};
+
+    GameState _currentGameState = GameState::Loading;
+    GameState _nextGameState = GameState::Loading;
 
     friend class Map;
     friend class Layer;
