@@ -24,8 +24,7 @@ public:
         ,Body
         ,LeftArm
         ,RightArm
-        ,LeftLeg
-        ,RightLeg
+        ,Legs
         ,Feet
         ,Max
     };

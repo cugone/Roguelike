@@ -27,13 +27,14 @@
             <body offset="[0,0]"/>
             <larm offset="[0,0]"/>
             <rarm offset="[0,0]"/>
-            <lleg offset="[0,0]"/>
-            <rleg offset="[0,0]"/>
+            <legs offset="[0,0]"/>
             <feet offset="[0,0]"/>
             -->
         </attachPoints>
         <equipment>
             <body item="ruby_robe" />
+            <legs item="" />
+            <feet item="" />
         </equipment>
     </entityDefinition>
 </entityDefinitions>

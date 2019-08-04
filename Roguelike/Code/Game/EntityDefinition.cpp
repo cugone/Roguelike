@@ -116,7 +116,7 @@ void EntityDefinition::LoadStats(const XMLElement& elem) {
 
 void EntityDefinition::LoadEquipment(const XMLElement& elem) {
     if(auto* xml_equipment = elem.FirstChildElement("equipment")) {
-        DataUtils::ValidateXmlElement(*xml_equipment, "equipment", "", "", "hair,head,body,larm,rarm,lleg,rleg,feet");
+        DataUtils::ValidateXmlElement(*xml_equipment, "equipment", "", "", "hair,head,body,larm,rarm,legs,feet");
         equipments.resize(static_cast<std::size_t>(EquipSlot::Max));
         if(auto* xml_equipment_hair = xml_equipment->FirstChildElement("hair")) {
             DataUtils::ValidateXmlElement(*xml_equipment_hair, "hair", "", "item");
@@ -178,23 +178,11 @@ void EntityDefinition::LoadEquipment(const XMLElement& elem) {
                 equipments[idx] = (*f)->definition;
             }
         }
-        if(auto* xml_equipment_lleg = xml_equipment->FirstChildElement("lleg")) {
-            DataUtils::ValidateXmlElement(*xml_equipment_lleg, "lleg", "", "item");
+        if(auto* xml_equipment_legs = xml_equipment->FirstChildElement("legs")) {
+            DataUtils::ValidateXmlElement(*xml_equipment_legs, "legs", "", "item");
             std::string equipment_name{};
-            equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_lleg, "item", equipment_name);
-            auto idx = static_cast<std::size_t>(EquipSlot::LeftLeg);
-            auto def = Map::GetEquipmentTypesByName(equipment_name);
-            if(!def.empty()) {
-                _valid_offsets.set(idx);
-                auto f = std::begin(def);
-                equipments[idx] = (*f)->definition;
-            }
-        }
-        if(auto* xml_equipment_rleg = xml_equipment->FirstChildElement("rleg")) {
-            DataUtils::ValidateXmlElement(*xml_equipment_rleg, "rleg", "", "item");
-            std::string equipment_name{};
-            equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_rleg, "item", equipment_name);
-            auto idx = static_cast<std::size_t>(EquipSlot::RightLeg);
+            equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_legs, "item", equipment_name);
+            auto idx = static_cast<std::size_t>(EquipSlot::Legs);
             auto def = Map::GetEquipmentTypesByName(equipment_name);
             if(!def.empty()) {
                 _valid_offsets.set(idx);
@@ -219,7 +207,7 @@ void EntityDefinition::LoadEquipment(const XMLElement& elem) {
 
 void EntityDefinition::LoadAttachPoints(const XMLElement &elem) {
     if(auto* xml_attachPoints = elem.FirstChildElement("attachPoints")) {
-        DataUtils::ValidateXmlElement(*xml_attachPoints, "attachPoints", "", "", "hair,head,body,larm,rarm,lleg,rleg,feet");
+        DataUtils::ValidateXmlElement(*xml_attachPoints, "attachPoints", "", "", "hair,head,body,larm,rarm,legs,feet");
         attach_point_offsets.resize(static_cast<std::size_t>(AttachPoint::Max));
         if(auto* xml_attachPoint_hair = xml_attachPoints->FirstChildElement("hair")) {
             DataUtils::ValidateXmlElement(*xml_attachPoint_hair, "hair", "", "offset");
@@ -241,13 +229,9 @@ void EntityDefinition::LoadAttachPoints(const XMLElement &elem) {
             DataUtils::ValidateXmlElement(*xml_attachPoint_rarm, "rarm", "", "offset");
             attach_point_offsets[4] = DataUtils::ParseXmlAttribute(*xml_attachPoint_rarm, "offset", attach_point_offsets[4]);
         }
-        if(auto* xml_attachPoint_lleg = xml_attachPoints->FirstChildElement("lleg")) {
-            DataUtils::ValidateXmlElement(*xml_attachPoint_lleg, "lleg", "", "offset");
-            attach_point_offsets[5] = DataUtils::ParseXmlAttribute(*xml_attachPoint_lleg, "offset", attach_point_offsets[5]);
-        }
-        if(auto* xml_attachPoint_rleg = xml_attachPoints->FirstChildElement("rleg")) {
-            DataUtils::ValidateXmlElement(*xml_attachPoint_rleg, "rleg", "", "offset");
-            attach_point_offsets[6] = DataUtils::ParseXmlAttribute(*xml_attachPoint_rleg, "offset", attach_point_offsets[6]);
+        if(auto* xml_attachPoint_legs = xml_attachPoints->FirstChildElement("legs")) {
+            DataUtils::ValidateXmlElement(*xml_attachPoint_legs, "legs", "", "offset");
+            attach_point_offsets[5] = DataUtils::ParseXmlAttribute(*xml_attachPoint_legs, "offset", attach_point_offsets[5]);
         }
         if(auto* xml_attachPoint_feet = xml_attachPoints->FirstChildElement("feet")) {
             DataUtils::ValidateXmlElement(*xml_attachPoint_feet, "feet", "", "offset");
@@ -277,10 +261,8 @@ EquipSlot EquipSlotFromString(std::string str) {
         return EquipSlot::LeftArm;
     } else if(str == "rarm") {
         return EquipSlot::RightArm;
-    } else if(str == "lleg") {
-        return EquipSlot::LeftLeg;
-    } else if(str == "rleg") {
-        return EquipSlot::RightLeg;
+    } else if(str == "legs") {
+        return EquipSlot::Legs;
     } else if(str == "feet") {
         return EquipSlot::Feet;
     } else {
@@ -295,8 +277,7 @@ std::string EquipSlotToString(const EquipSlot& slot) {
     case EquipSlot::Body: return "body";
     case EquipSlot::LeftArm: return "larm";
     case EquipSlot::RightArm: return "rarm";
-    case EquipSlot::LeftLeg: return "lleg";
-    case EquipSlot::RightLeg: return "rleg";
+    case EquipSlot::Legs: return "legs";
     case EquipSlot::Feet: return "feet";
     default: return "none";
     }
