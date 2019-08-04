@@ -8,4 +8,5 @@
     <equipmentDefinition name="body.armor.fullplate.gold" index="[14,54]" />
     <equipmentDefinition name="body.clothes.coat.black" index="[9,54]" />
     <equipmentDefinition name="body.clothes.coat.red" index="[10,54]" />
+    <equipmentDefinition name="body.clothes.robe.red" index="[27,55]" />
 </equipmentDefinitions>

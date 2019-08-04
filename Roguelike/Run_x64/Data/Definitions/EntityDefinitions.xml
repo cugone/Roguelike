@@ -33,7 +33,7 @@
             -->
         </attachPoints>
         <equipment>
-            <body item="ruby_armor" />
+            <body item="ruby_robe" />
         </equipment>
     </entityDefinition>
 </entityDefinitions>
