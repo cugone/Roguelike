@@ -131,10 +131,7 @@
     <Xml Include="..\..\Run_x64\Data\Definitions\EntityDefinitions.xml">
       <Filter>Data\Definitions</Filter>
     </Xml>
-    <Xml Include="..\..\Run_x64\Data\Definitions\Equipment.xml">
-      <Filter>Data\Definitions</Filter>
-    </Xml>
-    <Xml Include="..\..\Run_x64\Data\Definitions\EquipmentDefinitions.xml">
+    <Xml Include="..\..\Run_x64\Data\Definitions\Items.xml">
       <Filter>Data\Definitions</Filter>
     </Xml>
   </ItemGroup>
