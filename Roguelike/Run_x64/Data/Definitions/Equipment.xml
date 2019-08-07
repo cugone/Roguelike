@@ -2,7 +2,6 @@
     <definitions src="Data/Definitions/EquipmentDefinitions.xml" />
     <equipment name="ruby_armor">
         <definition slot="body" type="armor" subtype="chestplate" color="red" />
-        <definition slot="legs" type="clothes" subtype="shorts" color="red" />
     </equipment>
     <equipment name="ruby_robe">
         <definition slot="body" type="clothes" subtype="robe" color="red" />
