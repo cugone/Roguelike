@@ -143,7 +143,6 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EntityDefinition.cpp" />
-    <ClCompile Include="EquipmentDefinition.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameCommon.cpp" />
     <ClCompile Include="GameConfig.cpp" />
@@ -165,7 +164,6 @@
     <ClInclude Include="App.hpp" />
     <ClInclude Include="Entity.hpp" />
     <ClInclude Include="EntityDefinition.hpp" />
-    <ClInclude Include="EquipmentDefinition.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="GameCommon.hpp" />
     <ClInclude Include="GameConfig.hpp" />
