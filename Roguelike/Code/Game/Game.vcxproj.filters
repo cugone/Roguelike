@@ -61,9 +61,6 @@
     <ClCompile Include="EntityDefinition.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Equipment.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="EquipmentDefinition.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -106,9 +103,6 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="EntityDefinition.hpp">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Equipment.hpp">
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="EquipmentDefinition.hpp">
