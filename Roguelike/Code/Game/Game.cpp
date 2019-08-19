@@ -368,12 +368,11 @@ void Game::LoadItemsFromFile(const std::filesystem::path& src) {
         auto* xml_item_sheet = xml_item_root->FirstChildElement("spritesheet");
         _item_sheet = g_theRenderer->CreateSpriteSheet(*xml_item_sheet);
         DataUtils::ForEachChildElement(*xml_item_root, "item", [this](const XMLElement& elem) {
-            DataUtils::ValidateXmlElement(elem, "item", "stats,equipslot,animation", "name");
+            DataUtils::ValidateXmlElement(elem, "item", "stats,equipslot", "name", "animation", "index");
             ItemBuilder builder{};
-            builder.Name(DataUtils::ParseXmlAttribute(elem, "name", "UNKNOWN ITEM"));
-            if(auto* xml_equipslot = elem.FirstChildElement("equipslot")) {
-                builder.Slot(EquipSlotFromString(DataUtils::ParseXmlElementText(*xml_equipslot, "body")));
-            }
+            const auto name = DataUtils::ParseXmlAttribute(elem, "name", "UNKNOWN ITEM");
+            builder.Name(name);
+            builder.Slot(EquipSlotFromString(DataUtils::ParseXmlElementText(*elem.FirstChildElement("equipslot"), "body")));
             if(auto* xml_minstats = elem.FirstChildElement("stats")) {
                 builder.MinimumStats(Stats(*xml_minstats));
                 builder.MaximumStats(Stats(*xml_minstats));
@@ -381,8 +380,16 @@ void Game::LoadItemsFromFile(const std::filesystem::path& src) {
                     builder.MaximumStats(Stats(*xml_minstats));
                 }
             }
+            auto startIndex = DataUtils::ParseXmlAttribute(elem, "index", IntVector2::ONE * -1);
             if(auto* xml_animsprite = elem.FirstChildElement("animation")) {
                 builder.AnimateSprite(g_theRenderer->CreateAnimatedSprite(this->_item_sheet, *xml_animsprite));
+            } else {
+                if(startIndex == IntVector2::ONE * -1) {
+                    std::ostringstream ss;
+                    ss << "Item \"" << name << "\" missing index attribute or animation child element.";
+                    ERROR_AND_DIE(ss.str().c_str());
+                }
+                builder.AnimateSprite(g_theRenderer->CreateAnimatedSprite(this->_item_sheet, startIndex));
             }
             builder.Build();
         });
