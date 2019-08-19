@@ -6,6 +6,8 @@
 #include "Game/Inventory.hpp"
 #include "Game/Item.hpp"
 
+#include <algorithm>
+
 std::multimap<std::string, std::unique_ptr<Actor>> Actor::s_registry{};
 
 Actor* Actor::CreateActor(Map* map, const XMLElement& elem) {
@@ -97,6 +99,44 @@ bool Actor::CanMoveDiagonallyToNeighbor(const IntVector2& direction) const {
     return true;
 }
 
+std::vector<Item*> Actor::GetAllEquipmentOfType(const EquipSlot& slot) const {
+    decltype(_equipment) result{};
+    auto pred = [slot](const Item* a) { return a->GetEquipSlot() == slot; };
+    auto count = static_cast<std::size_t>(std::count_if(std::begin(inventory), std::end(inventory), pred));
+    result.reserve(count);
+    std::copy_if(std::begin(inventory), std::end(inventory), std::back_inserter(result), pred);
+    result.shrink_to_fit();
+    return result;
+}
+
+std::vector<Item*> Actor::GetAllHairEquipment() const {
+    return GetAllEquipmentOfType(EquipSlot::Hair);
+}
+
+std::vector<Item*> Actor::GetAllHeadEquipment() const {
+    return GetAllEquipmentOfType(EquipSlot::Head);
+}
+
+std::vector<Item*> Actor::GetAllBodyEquipment() const {
+    return GetAllEquipmentOfType(EquipSlot::Body);
+}
+
+std::vector<Item*> Actor::GetAllLeftArmEquipment() const {
+    return GetAllEquipmentOfType(EquipSlot::LeftArm);
+}
+
+std::vector<Item*> Actor::GetAllRightArmEquipment() const {
+    return GetAllEquipmentOfType(EquipSlot::RightArm);
+}
+
+std::vector<Item*> Actor::GetAllLegsEquipment() const {
+    return GetAllEquipmentOfType(EquipSlot::Legs);
+}
+
+std::vector<Item*> Actor::GetAllFeetEquipment() const {
+    return GetAllEquipmentOfType(EquipSlot::Feet);
+}
+
 bool Actor::Move(const IntVector2& direction) {
     bool moved = false;
     if(CanMoveDiagonallyToNeighbor(direction)) {
@@ -144,4 +184,16 @@ bool Actor::MoveWest() {
 
 bool Actor::MoveNorthWest() {
     return Move(IntVector2{ -1,-1 });
+}
+
+void Actor::Equip(const EquipSlot& slot, Item* item) {
+    _equipment[static_cast<std::size_t>(slot)] = item;
+}
+
+void Actor::Unequip(const EquipSlot& slot) {
+    Equip(slot, nullptr);
+}
+
+const std::vector<Item*>& Actor::GetEquipment() const noexcept {
+    return _equipment;
 }

@@ -62,7 +62,7 @@ Item::Item(ItemBuilder& builder) noexcept
     , _max_stack_size(builder._max_stack_size)
 {
     for(auto stat_id = StatsID::First_; stat_id < StatsID::Last_; ++stat_id) {
-        _stat_modifiers.SetStat(stat_id, MathUtils::GetRandomLongLongInRange(builder._min_stats.GetStat(stat_id), builder._max_stats.GetStat(stat_id)));
+        _stat_modifiers.SetStat(stat_id, MathUtils::GetRandomLongDoubleInRange(builder._min_stats.GetStat(stat_id), builder._max_stats.GetStat(stat_id)));
     }
 }
 
@@ -72,13 +72,13 @@ void Item::Update(TimeUtils::FPSeconds deltaSeconds) {
     }
 }
 
-void Item::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
+void Item::Render(const IntVector2& entity_position, std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
 
     if(!_sprite) {
         return;
     }
 
-    const auto position = IntVector2{};
+    const auto position = entity_position;
     const auto color = Rgba::White;
 
     const auto& coords = _sprite->GetCurrentTexCoords();
@@ -192,6 +192,10 @@ void Item::SetCount(std::size_t newCount) noexcept {
     _stack_size = newCount;
 }
 
+
+const EquipSlot& Item::GetEquipSlot() const {
+    return _slot;
+}
 
 ItemBuilder::ItemBuilder(const XMLElement& elem) noexcept
 {

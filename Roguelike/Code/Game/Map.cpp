@@ -411,6 +411,7 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
             if(is_player) {
                 player = actor;
             }
+            actor->Equip(EquipSlot::Body, actor->inventory.GetItem("red_robe"));
             _entities.push_back(actor);
         });
     }

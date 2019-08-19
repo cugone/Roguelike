@@ -26,7 +26,7 @@ StatsID operator--(StatsID& a, int);
 
 class Stats {
 private:
-    std::array<long long, static_cast<std::size_t>(StatsID::Max)> _stats{};
+    std::array<long double, static_cast<std::size_t>(StatsID::Max)> _stats{};
 public:
     Stats() = default;
     Stats(const Stats& other) = default;

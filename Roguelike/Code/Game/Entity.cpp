@@ -74,7 +74,7 @@ void Entity::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo
     ibo.push_back(static_cast<unsigned int>(v_s) - 2u);
     ibo.push_back(static_cast<unsigned int>(v_s) - 1u);
 
-    AddVertsForItems(verts, ibo, layer_color, layer_index);
+    AddVertsForEquipment(_position, verts, ibo, layer_color, layer_index);
     
 }
 
@@ -111,13 +111,17 @@ std::string Entity::ParseEntityDefinitionName(const XMLElement& xml_definition) 
     }, '.', false);
 }
 
-void Entity::AddVertsForItems(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
-    for(const auto& item : inventory) {
-        item->Render(verts, ibo, layer_color, layer_index);
+void Entity::AddVertsForEquipment(const IntVector2& entity_position, std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
+    if(auto actor = dynamic_cast<const Actor*>(this)) {
+        for(const auto& e : actor->GetEquipment()) {
+            if(e) {
+                e->Render(entity_position, verts, ibo, layer_color, layer_index);
+            }
+        }
     }
 }
 
-long long Entity::Fight(Entity& attacker, Entity& defender) {
+long double Entity::Fight(Entity& attacker, Entity& defender) {
     auto aStats = attacker.GetStats();
     auto dStats = defender.GetStats();
     const auto aAtt = aStats.GetStat(StatsID::Attack);
@@ -125,10 +129,10 @@ long long Entity::Fight(Entity& attacker, Entity& defender) {
     const auto dDef = dStats.GetStat(StatsID::Defense);
     const auto dEva = dStats.GetStat(StatsID::Evasion);
     if(aSpd < dEva) {
-        return -1; //Miss
+        return -1.0L; //Miss
     }
     if(aAtt < dDef) {
-        return 0; //0 Dmg
+        return 0.0L; //0 Dmg
     }
     auto result = aAtt - dDef;
     auto new_health = dStats.AdjustStat(StatsID::Health, -result);

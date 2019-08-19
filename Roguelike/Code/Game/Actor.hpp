@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Game/Entity.hpp"
+#include "Game/Item.hpp"
 
 #include <map>
 #include <memory>
@@ -37,11 +38,26 @@ public:
     bool MoveWest();
     bool MoveNorthWest();
 
+    void Equip(const EquipSlot& slot, Item* item);
+    void Unequip(const EquipSlot& slot);
+
+    const std::vector<Item*>& GetEquipment() const noexcept;
+
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);
     bool CanMoveDiagonallyToNeighbor(const IntVector2& direction) const;
 
+    std::vector<Item*> GetAllEquipmentOfType(const EquipSlot& slot) const;
+    std::vector<Item*> GetAllHairEquipment() const;
+    std::vector<Item*> GetAllHeadEquipment() const;
+    std::vector<Item*> GetAllBodyEquipment() const;
+    std::vector<Item*> GetAllLeftArmEquipment() const;
+    std::vector<Item*> GetAllRightArmEquipment() const;
+    std::vector<Item*> GetAllLegsEquipment() const;
+    std::vector<Item*> GetAllFeetEquipment() const;    
+
     static std::multimap<std::string, std::unique_ptr<Actor>> s_registry;
+    std::vector<Item*> _equipment = std::vector<Item*>(static_cast<std::size_t>(EquipSlot::Max));
     bool _acted = false;
 };

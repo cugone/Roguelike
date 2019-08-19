@@ -34,7 +34,7 @@ public:
 
     void UpdateAI(TimeUtils::FPSeconds deltaSeconds);
 
-    static long long Fight(Entity& attacker, Entity& defender);
+    static long double Fight(Entity& attacker, Entity& defender);
 
     bool IsVisible() const;
     bool IsNotVisible() const;
@@ -64,7 +64,7 @@ private:
     void LoadFromXml(const XMLElement& elem);
     std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
 
-    void AddVertsForItems(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
+    void AddVertsForEquipment(const IntVector2& entity_position, std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
 
     Stats stat_modifiers{};
     IntVector2 _position{};

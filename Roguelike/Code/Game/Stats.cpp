@@ -61,12 +61,25 @@ Stats Stats::operator-() {
 }
 
 Stats::Stats(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "stats", "health,attack,defense,speed,accuracy,evasion,experience", "");
+    DataUtils::ValidateXmlElement(elem, "stats", "", "", "level,health,attack,defense,speed,accuracy,evasion,experience");
+    if(auto* xml_level = elem.FirstChildElement("level")) {
+        auto id = StatsID::Level;
+        auto default_value = GetStat(id);
+        auto value = DataUtils::ParseXmlElementText(*xml_level, default_value);
+        SetStat(id, value);
+    } else {
+        auto value = 1.0L;
+        SetStat(StatsID::Level, value);
+    }
     if(auto* xml_health = elem.FirstChildElement("health")) {
         auto id = StatsID::Health;
         auto default_value = GetStat(id);
         auto value = DataUtils::ParseXmlElementText(*xml_health, default_value);
         SetStat(id, value);
+        SetStat(StatsID::Health_Max, value);
+    } else {
+        auto value = 1.0L;
+        SetStat(StatsID::Health, value);
         SetStat(StatsID::Health_Max, value);
     }
     if(auto* xml_attack = elem.FirstChildElement("attack")) {
