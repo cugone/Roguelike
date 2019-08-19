@@ -3,27 +3,39 @@
 #include "Engine/Core/ErrorWarningAssert.hpp"
 
 #include "Game/Map.hpp"
+#include "Game/Inventory.hpp"
+#include "Game/Item.hpp"
 
-std::map<std::string, std::unique_ptr<Actor>> Actor::s_registry{};
+std::multimap<std::string, std::unique_ptr<Actor>> Actor::s_registry{};
 
-void Actor::CreateActor(const XMLElement& elem) {
-    auto new_actor = std::make_unique<Actor>(elem);
-    s_registry.try_emplace(new_actor->name, std::move(new_actor));
+Actor* Actor::CreateActor(Map* map, const XMLElement& elem) {
+    auto new_actor = std::make_unique<Actor>(map, elem);
+    auto new_actor_name = new_actor->name;
+    auto ptr = new_actor.get();
+    s_registry.emplace(new_actor_name, std::move(new_actor));
+    return ptr;
 }
 
-Actor::Actor(const XMLElement& elem) noexcept
-    : Entity(elem)
+void Actor::ClearActorRegistry() noexcept {
+    s_registry.clear();
+}
+
+Actor::Actor(Map* map, const XMLElement& elem) noexcept
+    : Entity()
 {
+    this->map = map;
+    this->layer = this->map->GetLayer(0);
     if(!LoadFromXml(elem)) {
         ERROR_AND_DIE("Actor failed to load.");
     }
-    s_registry.try_emplace(name, std::make_unique<Actor>(*this));
 }
 
-Actor::Actor(EntityDefinition* definition) noexcept
+Actor::Actor(Map* map, EntityDefinition* definition) noexcept
     : Entity(definition)
 {
-    s_registry.try_emplace(name, std::make_unique<Actor>(*this));
+    this->map = map;
+    this->layer = this->map->GetLayer(0);
+    sprite = def->GetSprite();
 }
 
 bool Actor::Acted() const {
@@ -49,8 +61,14 @@ bool Actor::MoveTo(Tile* destination) {
     return false;
 }
 
-bool Actor::LoadFromXml(const XMLElement& /*elem*/) {
-    //TODO: Start Here
+bool Actor::LoadFromXml(const XMLElement& elem) {
+    DataUtils::ValidateXmlElement(elem, "actor", "", "name,lookAndFeel,position");
+    name = DataUtils::ParseXmlAttribute(elem, "name", name);
+    const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
+    def = EntityDefinition::GetEntityDefinitionByName(definitionName);
+    sprite = def->GetSprite();
+    inventory = def->inventory;
+    SetPosition(DataUtils::ParseXmlAttribute(elem, "position", IntVector2::ZERO));
     return true;
 }
 

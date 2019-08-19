@@ -7,8 +7,9 @@
 
 #include "Engine/Renderer/Camera2D.hpp"
 
+#include "Game/EntityDefinition.hpp"
+#include "Game/Inventory.hpp"
 #include "Game/Layer.hpp"
-#include "Game/Equipment.hpp"
 
 #include <filesystem>
 #include <map>
@@ -16,12 +17,18 @@
 
 
 class Entity;
-struct EntityType;
 class Actor;
 class Material;
 class Renderer;
 class TileDefinition;
 class SpriteSheet;
+
+struct TextEntityDesc {
+    std::string text = "DAMAGE";
+    Rgba color = Rgba::White;
+    Vector2 position{0.0f, 0.0f};
+    TimeUtils::FPSeconds fadeTime{ 1.0f };
+};
 
 class Map {
 public:
@@ -35,11 +42,8 @@ public:
 
     void BeginFrame();
     void Update(TimeUtils::FPSeconds deltaSeconds);
-
     void UpdateLayers(TimeUtils::FPSeconds deltaSeconds);
-
     void SetPriorityLayer(std::size_t i);
-
     void Render(Renderer& renderer) const;
     void DebugRender(Renderer& renderer) const;
     void EndFrame();
@@ -77,9 +81,7 @@ public:
     Actor* player = nullptr;
 
     void KillEntity(Entity& e);
-
-    static std::vector<EntityType*> GetEntityTypesByName(const std::string& name);
-    static std::vector<EquipmentType*> GetEquipmentTypesByName(const std::string& name);
+    void CreateTextEntityAt(const TextEntityDesc& desc);
 
 protected:
 private:
@@ -89,15 +91,9 @@ private:
     void LoadLayersForMap(const XMLElement& elem);
     void LoadTileDefinitionsForMap(const XMLElement& elem);
     void LoadTileDefinitionsFromFile(const std::filesystem::path& src);
-    void LoadEntitiesForMap(const XMLElement& elem);
-    void LoadEntitiesFromFile(const std::filesystem::path& src);
-    void LoadEntityDefinitionsFromFile(const std::filesystem::path& src);
-    void LoadEntityTypesForMap(const XMLElement& elem);
-    void LoadEquipmentForMap(const XMLElement& elem);
-    void LoadEquipmentFromFile(const std::filesystem::path& src);
-    void LoadEquipmentTypesForMap(const XMLElement& elem);
-    void LoadEquipmentDefinitionsFromFile(const std::filesystem::path& src);
-    void PlaceEntitiesOnMap(const XMLElement& elem);
+    void LoadActorsForMap(const XMLElement& elem);
+    void LoadFeaturesForMap(const XMLElement& elem);
+    void LoadItemsForMap(const XMLElement& elem);
 
     void UpdateEntities(TimeUtils::FPSeconds deltaSeconds);
     void UpdateEntityAI(TimeUtils::FPSeconds deltaSeconds);
@@ -110,14 +106,7 @@ private:
     Material* _default_tileMaterial{};
     Material* _current_tileMaterial{};
     std::vector<Entity*> _entities{};
-    std::vector<Actor*> _actors{};
-    static std::multimap<std::string, std::unique_ptr<EntityType>> _entity_types;
-    std::vector<std::unique_ptr<Equipment>> _equipments{};
-    static std::multimap<std::string, std::unique_ptr<EquipmentType>> _equipment_types;
-
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
-    std::shared_ptr<SpriteSheet> _entity_sheet{};
-    std::shared_ptr<SpriteSheet> _equipment_sheet{};
     float _camera_speed = 1.0f;
     static unsigned long long default_map_index;
     static const std::size_t _max_layers = 9u;

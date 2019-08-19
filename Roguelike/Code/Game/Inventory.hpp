@@ -2,21 +2,10 @@
 
 #include "Engine/Core/DataUtils.hpp"
 
-#include "Engine/Renderer/AnimatedSprite.hpp"
-
-#include "Game/EntityDefinition.hpp"
-#include "Game/Equipment.hpp"
-#include "Game/Stats.hpp"
-
-#include <map>
-#include <memory>
 #include <string>
 #include <vector>
 
-class AnimatedSprite;
-class ItemBuilder;
 class Item;
-class Inventory;
 
 class Inventory {
 private:
@@ -89,87 +78,3 @@ private:
     void LoadFromXml(const XMLElement& elem);
     
 }; //End Inventory
-
-class Item {
-public:
-
-    static std::map<std::string, Item*> s_registry;
-
-    Item(const Item& other) = default;
-    Item(Item&& other) = default;
-    Item& operator=(const Item& other)= default;
-    Item& operator=(Item&& other) = default;
-    ~Item() = default;
-
-    explicit Item(ItemBuilder& builder) noexcept;
-
-    bool HasInventory() const noexcept;
-    const Inventory* GetInventory() const noexcept;
-    Inventory* GetInventory() noexcept;
-
-    const Stats GetStatModifiers() const;
-    Stats GetStatModifiers();
-
-    Item* GetItem(const std::string& name);
-
-    const AnimatedSprite* GetSprite() const;
-    AnimatedSprite* GetSprite();
-
-    std::string GetName() const noexcept;
-
-    const Inventory& OwningInventory() const noexcept;
-    Inventory& OwningInventory() noexcept;
-
-    std::size_t GetCount() const noexcept;
-    void IncrementCount() noexcept;
-    void DecrementCount() noexcept;
-    void SetCount(std::size_t newCount) noexcept;
-
-protected:
-private:
-    std::string _name{};
-    std::unique_ptr<AnimatedSprite> _sprite{};
-    Inventory _parent_inventory{};
-    Inventory* _my_inventory{};
-    Stats _stat_modifiers{};
-    std::size_t _stack_size = 0;
-    std::size_t _max_stack_size = 1;
-}; //End Item
-
-
-class ItemBuilder {
-public:
-    Item* Build() noexcept;
-
-    ItemBuilder() = default;
-    ItemBuilder(const ItemBuilder& other) noexcept = default;
-    ItemBuilder(ItemBuilder&& other) noexcept = default;
-    ItemBuilder& operator=(const ItemBuilder& other) noexcept = default;
-    ItemBuilder& operator=(ItemBuilder&& other) noexcept = default;
-    ~ItemBuilder() = default;
-
-    explicit ItemBuilder(const XMLElement& elem) noexcept;
-    ItemBuilder& Name(const std::string& name) noexcept;
-    ItemBuilder& Slot(const EquipSlot& slot) noexcept;
-    ItemBuilder& MinimumStats(const Stats& stats) noexcept;
-    ItemBuilder& MaximumStats(const Stats& stats) noexcept;
-    ItemBuilder& ParentInventory(const Inventory& parentInventory) noexcept;
-    ItemBuilder& AnimateSprite(std::unique_ptr<AnimatedSprite> sprite) noexcept;
-    ItemBuilder& MaxStackSize(std::size_t maximumStackSize) noexcept;
-
-protected:
-private:
-
-    void LoadFromXml(const XMLElement& elem) noexcept;
-
-    Inventory _parent_inventory{};
-    EquipSlot _slot{};
-    Stats _min_stats{};
-    Stats _max_stats{};
-    std::unique_ptr<AnimatedSprite> _sprite{};
-    std::string _name{};
-    std::size_t _max_stack_size{1};
-
-    friend class Item;
-
-}; //End ItemBuilder

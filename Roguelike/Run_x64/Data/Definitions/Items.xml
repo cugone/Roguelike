@@ -1,9 +1,180 @@
-<equipments>
-    <definitions src="Data/Definitions/EquipmentDefinitions.xml" />
-    <equipment name="ruby_armor">
-        <definition slot="body" type="armor" subtype="chestplate" color="red" />
-    </equipment>
-    <equipment name="ruby_robe">
-        <definition slot="body" type="clothes" subtype="robe" color="red" />
-    </equipment>
-</equipments>
+<items>
+    <spritesheet src="Data/Images/Tiles.png" dimensions="[65,65]" />
+    <item name="red_armor">
+        <animation>
+            <animationset startindex="[6,54]" framelength="0" duration="0.0"/>
+        </animation>
+        <equipslot>body</equipslot>
+        <stats>
+            <health>0</health>
+            <attack>0</attack>
+            <defense>1</defense>
+            <speed>0</speed>
+            <accuracy>0</accuracy>
+            <evasion>0</evasion>
+            <experience>0</experience>
+        </stats>
+    </item>
+    <item name="red_robe">
+        <animation>
+            <animationset startindex="[27,55]" framelength="0" duration="0.0"/>
+        </animation>
+        <equipslot>body</equipslot>
+        <stats>
+            <health>0</health>
+            <attack>0</attack>
+            <defense>1</defense>
+            <speed>0</speed>
+            <accuracy>0</accuracy>
+            <evasion>0</evasion>
+            <experience>0</experience>
+        </stats>
+    </item>
+    <item name="blue_armor">
+        <animation>
+            <animationset startindex="[8,54]" framelength="0" duration="0.0"/>
+        </animation>
+        <equipslot>body</equipslot>
+        <stats>
+            <health>0</health>
+            <attack>0</attack>
+            <defense>1</defense>
+            <speed>0</speed>
+            <accuracy>0</accuracy>
+            <evasion>0</evasion>
+            <experience>0</experience>
+        </stats>
+    </item>
+    <item name="black_armor">
+        <animation>
+            <animationset startindex="[4,54]" framelength="0" duration="0.0"/>
+        </animation>
+        <equipslot>body</equipslot>
+        <stats>
+            <health>0</health>
+            <attack>0</attack>
+            <defense>1</defense>
+            <speed>0</speed>
+            <accuracy>0</accuracy>
+            <evasion>0</evasion>
+            <experience>0</experience>
+        </stats>
+    </item>
+    <item name="green_armor">
+        <animation>
+            <animationset startindex="[3,54]" framelength="0" duration="0.0"/>
+        </animation>
+        <equipslot>body</equipslot>
+        <stats>
+            <health>0</health>
+            <attack>0</attack>
+            <defense>1</defense>
+            <speed>0</speed>
+            <accuracy>0</accuracy>
+            <evasion>0</evasion>
+            <experience>0</experience>
+        </stats>
+    </item>
+<!--    
+    <item>
+        <definition slot="body" type="armor" subtype="fullplate" color="silver" index="[13,54]" />
+        <Health>0</Health>
+        <Attack>0</Attack>
+        <Defense>1</Defense>
+        <Speed>0</Speed>
+        <Accuracy>0</Accuracy>
+        <Evasion>0</Evasion>
+        <Experience>0</Experience>
+    </item>        
+    <item>
+        <definition slot="body" type="armor" subtype="fullplate" color="gold" index="[14,54]" />
+        <Health>0</Health>
+        <Attack>0</Attack>
+        <Defense>1</Defense>
+        <Speed>0</Speed>
+        <Accuracy>0</Accuracy>
+        <Evasion>0</Evasion>
+        <Experience>0</Experience>
+    </item>
+    <item>
+        <definition slot="legs" type="clothes" subtype="shorts" color="grey" index="[1,64]" />
+        <Health>0</Health>
+        <Attack>0</Attack>
+        <Defense>1</Defense>
+        <Speed>0</Speed>
+        <Accuracy>0</Accuracy>
+        <Evasion>0</Evasion>
+        <Experience>0</Experience>
+    </item>
+    <item>
+        <definition slot="legs" type="clothes" subtype="shorts" color="blue" index="[2,64]" />
+        <Health>0</Health>
+        <Attack>0</Attack>
+        <Defense>1</Defense>
+        <Speed>0</Speed>
+        <Accuracy>0</Accuracy>
+        <Evasion>0</Evasion>
+        <Experience>0</Experience>
+    </item>
+    <item>
+        <definition slot="legs" type="clothes" subtype="shorts" color="brown" index="[3,64]" />
+        <Health>0</Health>
+        <Attack>0</Attack>
+        <Defense>1</Defense>
+        <Speed>0</Speed>
+        <Accuracy>0</Accuracy>
+        <Evasion>0</Evasion>
+        <Experience>0</Experience>
+    </item>
+    <item>
+        <definition slot="legs" type="clothes" subtype="shorts" color="green" index="[4,64]" />
+        <Health>0</Health>
+        <Attack>0</Attack>
+        <Defense>1</Defense>
+        <Speed>0</Speed>
+        <Accuracy>0</Accuracy>
+        <Evasion>0</Evasion>
+        <Experience>0</Experience>
+    </item>
+    <item>
+        <definition slot="legs" type="clothes" subtype="pants" color="white" index="[5,64]" />
+        <Health>0</Health>
+        <Attack>0</Attack>
+        <Defense>1</Defense>
+        <Speed>0</Speed>
+        <Accuracy>0</Accuracy>
+        <Evasion>0</Evasion>
+        <Experience>0</Experience>
+    </item>
+    <item>
+        <definition slot="legs" type="clothes" subtype="shorts" color="tan" index="[6,64]" />
+        <Health>0</Health>
+        <Attack>0</Attack>
+        <Defense>1</Defense>
+        <Speed>0</Speed>
+        <Accuracy>0</Accuracy>
+        <Evasion>0</Evasion>
+        <Experience>0</Experience>
+    </item>
+    <item>
+        <definition slot="body" type="clothes" subtype="coat" color="black" index="[9,54]" />
+        <Health>0</Health>
+        <Attack>0</Attack>
+        <Defense>1</Defense>
+        <Speed>0</Speed>
+        <Accuracy>0</Accuracy>
+        <Evasion>0</Evasion>
+        <Experience>0</Experience>
+    </item>
+    <item>
+        <definition slot="body" type="clothes" subtype="coat" color="red" index="[10,54]" />
+        <Health>0</Health>
+        <Attack>0</Attack>
+        <Defense>1</Defense>
+        <Speed>0</Speed>
+        <Accuracy>0</Accuracy>
+        <Evasion>0</Evasion>
+        <Experience>0</Experience>
+    </item>
+-->
+</items>

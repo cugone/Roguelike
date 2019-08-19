@@ -1,17 +1,11 @@
 <map name="Test Level">
     <material name="Tile" />
     <tiles src="Data/Definitions/Tiles.xml" />
-    <entities src="Data/Definitions/Entities.xml" />
-    <equipment src="Data/Definitions/Equipment.xml" />
-    <entityTypes>
-        <player lookAndFeel="human..male" />
-        <aerith lookAndFeel="human..female" />
-    </entityTypes>
-    <entityMap>
-        <player start="[1,1]" />
-        <aerith start="[5,5]" />
-        <aerith start="[7,5]" />
-    </entityMap>
+    <actors>
+        <actor name="player" lookAndFeel="human..male" position="[1,1]" />
+        <actor name="aerith" lookAndFeel="human..female" position="[5,5]" />
+        <actor name="aerith" lookAndFeel="human..female" position="[7,5]" />
+    </actors>
     <layers>
         <layer>
             <row glyphs="##########" />

@@ -45,7 +45,7 @@ public:
     Game(Game&& other) = default;
     Game& operator=(const Game& other) = default;
     Game& operator=(Game&& other) = default;
-    ~Game() = default;
+    ~Game() noexcept;
 
     void Initialize();
     void BeginFrame();
@@ -110,6 +110,11 @@ private:
     void ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity);
 
     void LoadMaps();
+    void LoadEntities();
+    void LoadItems();
+    void LoadEntitiesFromFile(const std::filesystem::path& src);
+    void LoadEntityDefinitionsFromFile(const std::filesystem::path& src);
+    void LoadItemsFromFile(const std::filesystem::path& src);
 
     void UpdateFullscreenEffect(const FullscreenEffect& effect);
     bool DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime);
@@ -128,6 +133,9 @@ private:
     Rgba _debug_gradientColor{Rgba::White};
     std::vector<Tile*> _debug_inspected_tiles{};
     Entity* _debug_inspected_entity = nullptr;
+    std::shared_ptr<SpriteSheet> _entity_sheet{};
+    std::shared_ptr<SpriteSheet> _item_sheet{};
+
     float _cam_speed = 1.0f;
     float _max_shake_angle = 0.0f;
     float _max_shake_x = 0.0f;

@@ -8,6 +8,8 @@
 #include "Engine/Math/Vector2.hpp"
 #include "Engine/Math/Vector4.hpp"
 
+#include "Engine/Profiling/Memory.hpp"
+
 #include "Engine/Renderer/AnimatedSprite.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 #include "Engine/Renderer/Texture.hpp"
@@ -20,8 +22,18 @@
 #include "Game/Layer.hpp"
 #include "Game/Map.hpp"
 #include "Game/TileDefinition.hpp"
+#include "Game/Item.hpp"
+#include "Game/Inventory.hpp"
+
+Game::~Game() noexcept {
+    Item::ClearItemRegistry();
+    Actor::ClearActorRegistry();
+    EntityDefinition::ClearEntityRegistry();
+    Memory::enable(false);
+}
 
 void Game::Initialize() {
+    Memory::enable(true);
     CreateFullscreenTexture();
     CreateFullscreenConstantBuffer();
     g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
@@ -220,6 +232,8 @@ void Game::EndFrame_Title() {
 
 void Game::EndFrame_Loading() {
     if(!_done_loading) {
+        LoadItems();
+        LoadEntities();
         LoadMaps();
         _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
         _done_loading = true;
@@ -268,6 +282,110 @@ void Game::LoadMaps() {
             xml_doc.Parse(str_buffer.c_str(), str_buffer.size());
             _map = std::make_unique<Map>(*g_theRenderer, *xml_doc.RootElement());
         }
+    }
+}
+
+void Game::LoadEntities() {
+    LoadEntitiesFromFile("Data/Definitions/Entities.xml");
+}
+
+void Game::LoadItems() {
+    LoadItemsFromFile("Data/Definitions/Items.xml");
+}
+
+void Game::LoadEntitiesFromFile(const std::filesystem::path& src) {
+    namespace FS = std::filesystem;
+    if(!FS::exists(src)) {
+        std::ostringstream ss;
+        ss << "Entities file at " << src << " could not be found.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    tinyxml2::XMLDocument doc;
+    auto xml_result = doc.LoadFile(src.string().c_str());
+    if(xml_result != tinyxml2::XML_SUCCESS) {
+        std::ostringstream ss;
+        ss << "Entities source file at " << src << " could not be loaded.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    if(auto* xml_entities_root = doc.RootElement()) {
+        DataUtils::ValidateXmlElement(*xml_entities_root, "entities", "definitions,entity", "");
+        if(auto* xml_definitions = xml_entities_root->FirstChildElement("definitions")) {
+            DataUtils::ValidateXmlElement(*xml_definitions, "definitions", "", "src");
+            const auto definitions_src = DataUtils::ParseXmlAttribute(*xml_definitions, "src", std::string{});
+            if(definitions_src.empty()) {
+                ERROR_AND_DIE("Entity definitions source is empty.");
+            }
+            FS::path def_src(definitions_src);
+            if(!FS::exists(def_src)) {
+                ERROR_AND_DIE("Entity definitions source not found.");
+            }
+            LoadEntityDefinitionsFromFile(def_src);
+        }
+    }
+}
+
+void Game::LoadEntityDefinitionsFromFile(const std::filesystem::path& src) {
+    namespace FS = std::filesystem;
+    if(!FS::exists(src)) {
+        std::ostringstream ss;
+        ss << "Entity Definitions file at " << src << " could not be found.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    tinyxml2::XMLDocument doc;
+    auto xml_result = doc.LoadFile(src.string().c_str());
+    if(xml_result != tinyxml2::XML_SUCCESS) {
+        std::ostringstream ss;
+        ss << "Entity Definitions at " << src << " failed to load.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    if(auto* xml_root = doc.RootElement()) {
+        DataUtils::ValidateXmlElement(*xml_root, "entityDefinitions", "spritesheet,entityDefinition", "");
+        auto* xml_spritesheet = xml_root->FirstChildElement("spritesheet");
+        _entity_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet);
+        DataUtils::ForEachChildElement(*xml_root, "entityDefinition",
+            [this](const XMLElement& elem) {
+            EntityDefinition::CreateEntityDefinition(*g_theRenderer, elem, _entity_sheet);
+        });
+    }
+}
+
+void Game::LoadItemsFromFile(const std::filesystem::path& src) {
+    namespace FS = std::filesystem;
+    if(!FS::exists(src)) {
+        std::ostringstream ss;
+        ss << "Item file at " << src << " could not be found.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    tinyxml2::XMLDocument doc;
+    auto xml_result = doc.LoadFile(src.string().c_str());
+    if(xml_result != tinyxml2::XML_SUCCESS) {
+        std::ostringstream ss;
+        ss << "Item source file at " << src << " could not be loaded.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    if(auto* xml_item_root = doc.RootElement()) {
+        DataUtils::ValidateXmlElement(*xml_item_root, "items", "spritesheet,item", "");
+        auto* xml_item_sheet = xml_item_root->FirstChildElement("spritesheet");
+        _item_sheet = g_theRenderer->CreateSpriteSheet(*xml_item_sheet);
+        DataUtils::ForEachChildElement(*xml_item_root, "item", [this](const XMLElement& elem) {
+            DataUtils::ValidateXmlElement(elem, "item", "stats,equipslot,animation", "name");
+            ItemBuilder builder{};
+            builder.Name(DataUtils::ParseXmlAttribute(elem, "name", "UNKNOWN ITEM"));
+            if(auto* xml_equipslot = elem.FirstChildElement("equipslot")) {
+                builder.Slot(EquipSlotFromString(DataUtils::ParseXmlElementText(*xml_equipslot, "body")));
+            }
+            if(auto* xml_minstats = elem.FirstChildElement("stats")) {
+                builder.MinimumStats(Stats(*xml_minstats));
+                builder.MaximumStats(Stats(*xml_minstats));
+                if(auto* xml_maxstats = xml_minstats->NextSiblingElement("stats")) {
+                    builder.MaximumStats(Stats(*xml_minstats));
+                }
+            }
+            if(auto* xml_animsprite = elem.FirstChildElement("animation")) {
+                builder.AnimateSprite(g_theRenderer->CreateAnimatedSprite(this->_item_sheet, *xml_animsprite));
+            }
+            builder.Build();
+        });
     }
 }
 
@@ -469,7 +587,7 @@ void Game::HandlePlayerInput(Camera2D& base_camera) {
         _player_requested_wait = true;
         return;
     }
-    auto player = dynamic_cast<Actor*>(_map->player);
+    auto player = _map->player;
     if(is_upright) {
         _map->MoveOrAttack(player, player->tile->GetNorthEastNeighbor());
     } else if(is_upleft) {

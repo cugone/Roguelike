@@ -61,7 +61,7 @@ Stats Stats::operator-() {
 }
 
 Stats::Stats(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "stats", "health,attack,defense,speed,evasion,experience", "");
+    DataUtils::ValidateXmlElement(elem, "stats", "health,attack,defense,speed,accuracy,evasion,experience", "");
     if(auto* xml_health = elem.FirstChildElement("health")) {
         auto id = StatsID::Health;
         auto default_value = GetStat(id);

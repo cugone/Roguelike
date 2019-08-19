@@ -2,12 +2,14 @@
 
 #include "Game/Entity.hpp"
 
+#include <map>
 #include <memory>
 
 class Actor : public Entity {
 public:
 
-    static void CreateActor(const XMLElement& elem);
+    static Actor* CreateActor(Map* map, const XMLElement& elem);
+    static void ClearActorRegistry() noexcept;
 
     Actor() = default;
     Actor(const Actor& other) = default;
@@ -16,9 +18,8 @@ public:
     Actor& operator=(Actor&& rrhs) = default;
     virtual ~Actor() = default;
 
-
-    Actor(EntityDefinition* definition) noexcept;
-    Actor(const XMLElement& elem) noexcept;
+    Actor(Map* map, EntityDefinition* definition) noexcept;
+    Actor(Map* map, const XMLElement& elem) noexcept;
 
     bool Acted() const;
     void Act(bool value);
@@ -41,6 +42,6 @@ private:
     bool LoadFromXml(const XMLElement& elem);
     bool CanMoveDiagonallyToNeighbor(const IntVector2& direction) const;
 
-    static std::map<std::string, std::unique_ptr<Actor>> s_registry;
+    static std::multimap<std::string, std::unique_ptr<Actor>> s_registry;
     bool _acted = false;
 };

@@ -16,8 +16,6 @@
 #include "Game/Actor.hpp"
 #include "Game/Entity.hpp"
 #include "Game/EntityDefinition.hpp"
-#include "Game/Equipment.hpp"
-#include "Game/EquipmentDefinition.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Layer.hpp"
 #include "Game/TileDefinition.hpp"
@@ -27,9 +25,9 @@
 
 unsigned long long Map::default_map_index = 0ull;
 
-std::multimap<std::string, std::unique_ptr<EntityType>> Map::_entity_types{};
-std::multimap<std::string, std::unique_ptr<EquipmentType>> Map::_equipment_types{};
-
+void Map::CreateTextEntityAt(const TextEntityDesc& /*desc*/) {
+    /* DO NOTHING */
+}
 
 void Map::SetDebugGridColor(const Rgba& gridColor) {
     auto* layer = GetLayer(0);
@@ -78,8 +76,17 @@ bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
     if(actor->MoveTo(tile)) {
         return true;
     } else {
-        Entity::Fight(*actor, *tile->entity);
-        return actor->MoveTo(tile);
+        const auto dmg_result = Entity::Fight(*actor, *tile->entity);
+        TextEntityDesc desc{};
+        desc.position = Vector2(tile->GetCoords()) + Vector2{ 0.5f, 0.5f };
+        if(dmg_result >= 0) {
+            desc.text = std::to_string(dmg_result);
+            CreateTextEntityAt(desc);
+        } else {
+            desc.text = "MISS";
+            CreateTextEntityAt(desc);
+        }
+        return true;
     }
 }
 
@@ -92,10 +99,6 @@ Map::Map(Renderer& renderer, const XMLElement& elem) noexcept
 }
 
 Map::~Map() noexcept {
-    for(auto& entity : _entities) {
-        delete entity;
-        entity = nullptr;
-    }
     _entities.clear();
     _entities.shrink_to_fit();
 }
@@ -191,13 +194,7 @@ void Map::EndFrame() {
     for(auto& layer : _layers) {
         layer->EndFrame();
     }
-    for(auto& e : _entities) {
-        if(e->GetStats().GetStat(StatsID::Health) <= 0) {
-            delete e;
-            e = nullptr;
-        }
-    }
-    _entities.erase(std::remove_if(std::begin(_entities), std::end(_entities), [](const auto* e) { return e == nullptr; }), std::end(_entities));
+    _entities.erase(std::remove_if(std::begin(_entities), std::end(_entities), [](const auto& e)->bool { return !e || (e && e->GetStats().GetStat(StatsID::Health) <= 0); }), std::end(_entities));
 }
 
 bool Map::IsTileInView(const IntVector2& tileCoords) {
@@ -305,16 +302,15 @@ Tile* Map::GetTile(int x, int y, int z) const {
 
 bool Map::LoadFromXML(const XMLElement& elem) {
 
-    DataUtils::ValidateXmlElement(elem, "map", "tiles,layers,material", "name", "entities,entityTypes,entityMap,equipment");
+    DataUtils::ValidateXmlElement(elem, "map", "tiles,layers,material", "name", "actors,features");
 
     LoadNameForMap(elem);
     LoadMaterialsForMap(elem);
     LoadTileDefinitionsForMap(elem);
     LoadLayersForMap(elem);
-    LoadEquipmentForMap(elem);
-    LoadEntitiesForMap(elem);
-    LoadEntityTypesForMap(elem);
-    PlaceEntitiesOnMap(elem);
+    LoadItemsForMap(elem);
+    LoadActorsForMap(elem);
+    LoadFeaturesForMap(elem);
     return true;
 }
 
@@ -399,222 +395,54 @@ void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
     }
 }
 
-void Map::LoadEntitiesForMap(const XMLElement& elem) {
-    if(auto* xml_map_entities_source = elem.FirstChildElement("entities")) {
-        DataUtils::ValidateXmlElement(*xml_map_entities_source, "entities", "", "src");
-        const auto src = DataUtils::ParseXmlAttribute(*xml_map_entities_source, "src", std::string{});
-        if(src.empty()) {
-            ERROR_AND_DIE("Map entities source is empty. Do not define element if map does not have entities.");
-        }
-        LoadEntitiesFromFile(src);
-    }
-}
-
-void Map::LoadEntitiesFromFile(const std::filesystem::path& src) {
-    namespace FS = std::filesystem;
-    if(!FS::exists(src)) {
-        std::ostringstream ss;
-        ss << "Entities file at " << src << " could not be found.";
-        ERROR_AND_DIE(ss.str().c_str());
-    }
-    tinyxml2::XMLDocument doc;
-    auto xml_result = doc.LoadFile(src.string().c_str());
-    if(xml_result != tinyxml2::XML_SUCCESS) {
-        std::ostringstream ss;
-        ss << "Map " << _name << " failed to load. Entities source file at " << src << " could not be loaded.";
-        ERROR_AND_DIE(ss.str().c_str());
-    }
-    if(auto* xml_entities_root = doc.RootElement()) {
-        DataUtils::ValidateXmlElement(*xml_entities_root, "entities", "definitions,entity", "");
-        if(auto* xml_definitions = xml_entities_root->FirstChildElement("definitions")) {
-            DataUtils::ValidateXmlElement(*xml_definitions, "definitions", "", "src");
-            const auto definitions_src = DataUtils::ParseXmlAttribute(*xml_definitions, "src", std::string{});
-            if(definitions_src.empty()) {
-                ERROR_AND_DIE("Entity definitions source is empty.");
-            }
-            FS::path def_src(definitions_src);
-            if(!FS::exists(def_src)) {
-                ERROR_AND_DIE("Entity definitions source not found.");
-            }
-            LoadEntityDefinitionsFromFile(def_src);
-        }
-    }
-}
-
-void Map::LoadEntityDefinitionsFromFile(const std::filesystem::path& src) {
-    namespace FS = std::filesystem;
-    if(!FS::exists(src)) {
-        std::ostringstream ss;
-        ss << "Entity Definitions file at " << src << " could not be found.";
-        ERROR_AND_DIE(ss.str().c_str());
-    }
-    tinyxml2::XMLDocument doc;
-    auto xml_result = doc.LoadFile(src.string().c_str());
-    if(xml_result != tinyxml2::XML_SUCCESS) {
-        std::ostringstream ss;
-        ss << "Entity Definitions at " << src << " failed to load.";
-        ERROR_AND_DIE(ss.str().c_str());
-    }
-    if(auto* xml_root = doc.RootElement()) {
-        DataUtils::ValidateXmlElement(*xml_root, "entityDefinitions", "spritesheet,entityDefinition", "");
-        auto* xml_spritesheet = xml_root->FirstChildElement("spritesheet");
-        _entity_sheet = _renderer.CreateSpriteSheet(*xml_spritesheet);
-        DataUtils::ForEachChildElement(*xml_root, "entityDefinition",
-        [this](const XMLElement& elem) {
-            EntityDefinition::CreateEntityDefinition(_renderer, elem, _entity_sheet);
-        });
-    }
-}
-
-void Map::LoadEntityTypesForMap(const XMLElement& elem) {
-    if(auto* xml_entity_types = elem.FirstChildElement("entityTypes")) {
-        DataUtils::ValidateXmlElement(*xml_entity_types, "entityTypes", "player", "");
-        DataUtils::ForEachChildElement(*xml_entity_types, "",
+void Map::LoadActorsForMap(const XMLElement& elem) {
+    if(auto* xml_actors = elem.FirstChildElement("actors")) {
+        DataUtils::ValidateXmlElement(*xml_actors, "actors", "actor", "");
+        const auto actor_count = DataUtils::GetChildElementCount(*xml_actors, "actor");
+        _entities.reserve(actor_count);
+        DataUtils::ForEachChildElement(*xml_actors, "actor",
             [this](const XMLElement& elem) {
-            auto name = DataUtils::GetElementName(elem);
-            DataUtils::ValidateXmlElement(elem, name, "", "lookAndFeel");
-            const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
-            auto* definition = EntityDefinition::GetEntityDefinitionByName(definitionName);
-            auto type = std::make_unique<EntityType>();
-            type->name = name;
-            type->definition = definition;
-            _entity_types.emplace(std::make_pair(name, std::move(type)));
+            auto* actor = Actor::CreateActor(this, elem);
+            auto actor_name = StringUtils::ToLowerCase(actor->name);
+            bool is_player = actor_name == "player";
+            if(player && is_player) {
+                ERROR_AND_DIE("Map failed to load. Multiplayer not yet supported.");
+            }
+            if(is_player) {
+                player = actor;
+            }
+            _entities.push_back(actor);
         });
     }
 }
 
-void Map::LoadEquipmentForMap(const XMLElement& elem) {
-    if(auto* xml_map_equipment_source = elem.FirstChildElement("equipment")) {
-        DataUtils::ValidateXmlElement(*xml_map_equipment_source, "equipment", "", "src");
+void Map::LoadFeaturesForMap(const XMLElement& elem) {
+    if(auto* xml_actors = elem.FirstChildElement("features")) {
+        DataUtils::ValidateXmlElement(*xml_actors, "features", "feature", "");
+        const auto actor_count = DataUtils::GetChildElementCount(*xml_actors, "feature");
+        _entities.reserve(actor_count);
+        DataUtils::ForEachChildElement(*xml_actors, "feature",
+            [this](const XMLElement& elem) {
+            auto* actor = Actor::CreateActor(this, elem);
+            auto actor_name = StringUtils::ToLowerCase(actor->name);
+            bool is_player = actor_name == "player";
+            if(player && is_player) {
+                ERROR_AND_DIE("Map failed to load. Multiplayer not yet supported.");
+            }
+            if(is_player) {
+                player = actor;
+            }
+            _entities.push_back(actor);
+        });
+    }
+}
+
+void Map::LoadItemsForMap(const XMLElement& elem) {
+    if(auto* xml_map_equipment_source = elem.FirstChildElement("items")) {
+        DataUtils::ValidateXmlElement(*xml_map_equipment_source, "items", "", "src");
         const auto src = DataUtils::ParseXmlAttribute(*xml_map_equipment_source, "src", std::string{});
         if(src.empty()) {
-            ERROR_AND_DIE("Map equipment source is empty. Do not define element if map does not have equipment.");
+            ERROR_AND_DIE("Map item source is empty. Do not define element if map does not have items.");
         }
-        LoadEquipmentFromFile(src);
     }
 }
-
-void Map::LoadEquipmentFromFile(const std::filesystem::path& src) {
-    namespace FS = std::filesystem;
-    if(!FS::exists(src)) {
-        std::ostringstream ss;
-        ss << "Equipment file at " << src << " could not be found.";
-        ERROR_AND_DIE(ss.str().c_str());
-    }
-    tinyxml2::XMLDocument doc;
-    auto xml_result = doc.LoadFile(src.string().c_str());
-    if(xml_result != tinyxml2::XML_SUCCESS) {
-        std::ostringstream ss;
-        ss << "Map " << _name << " failed to load. Equipment source file at " << src << " could not be loaded.";
-        ERROR_AND_DIE(ss.str().c_str());
-    }
-    if(auto* xml_equipment_root = doc.RootElement()) {
-        DataUtils::ValidateXmlElement(*xml_equipment_root, "equipments", "definitions,equipment", "");
-        auto* xml_definitions = xml_equipment_root->FirstChildElement("definitions");
-        
-        DataUtils::ValidateXmlElement(*xml_definitions, "definitions", "", "src");
-        const auto definitions_src = DataUtils::ParseXmlAttribute(*xml_definitions, "src", std::string{});
-        if(definitions_src.empty()) {
-            ERROR_AND_DIE("Equipment definitions source is empty.");
-        }
-        FS::path def_src(definitions_src);
-        if(!FS::exists(def_src)) {
-            ERROR_AND_DIE("Equipment definitions source not found.");
-        }
-        LoadEquipmentDefinitionsFromFile(def_src);
-        LoadEquipmentTypesForMap(*xml_equipment_root);
-    }
-}
-
-void Map::LoadEquipmentTypesForMap(const XMLElement& elem) {
-    DataUtils::ForEachChildElement(elem, "equipment",
-    [this](const XMLElement& elem) {
-        _equipments.emplace_back(std::move(std::make_unique<Equipment>(*g_theRenderer, elem)));
-        auto etype = std::make_unique<EquipmentType>();
-        const auto& last = _equipments.back().get();
-        etype->name = last->name;
-        etype->definition = last->def;
-        auto etype_name = etype->name;
-        _equipment_types.emplace(std::make_pair(etype_name, std::move(etype)));
-    });
-}
-
-void Map::LoadEquipmentDefinitionsFromFile(const std::filesystem::path& src) {
-    namespace FS = std::filesystem;
-    if(!FS::exists(src)) {
-        std::ostringstream ss;
-        ss << "Equipment Definitions file at " << src << " could not be found.";
-        ERROR_AND_DIE(ss.str().c_str());
-    }
-    tinyxml2::XMLDocument doc;
-    auto xml_result = doc.LoadFile(src.string().c_str());
-    if(xml_result != tinyxml2::XML_SUCCESS) {
-        std::ostringstream ss;
-        ss << "Equipment Definitions at " << src << " failed to load.";
-        ERROR_AND_DIE(ss.str().c_str());
-    }
-    if(auto* xml_root = doc.RootElement()) {
-        DataUtils::ValidateXmlElement(*xml_root, "equipmentDefinitions", "spritesheet,equipmentDefinition", "");
-        auto* xml_spritesheet = xml_root->FirstChildElement("spritesheet");
-        _equipment_sheet = _renderer.CreateSpriteSheet(*xml_spritesheet);
-        DataUtils::ForEachChildElement(*xml_root, "equipmentDefinition",
-            [this](const XMLElement& elem) {
-            EquipmentDefinition::CreateEquipmentDefinition(_renderer, elem, _equipment_sheet);
-        });
-    }
-}
-
-std::vector<EntityType*> Map::GetEntityTypesByName(const std::string& name) {
-    auto range = _entity_types.equal_range(name);
-    std::vector<EntityType*> results{};
-    results.reserve(std::distance(range.first, range.second));
-    for(auto iter = range.first; iter != range.second; ++iter) {
-        results.push_back(iter->second.get());
-    }
-    return results;
-}
-
-std::vector<EquipmentType*> Map::GetEquipmentTypesByName(const std::string& name) {
-    auto range = _equipment_types.equal_range(name);
-    std::vector<EquipmentType*> results{};
-    results.reserve(std::distance(range.first, range.second));
-    for (auto iter = range.first; iter != range.second; ++iter) {
-        results.push_back(iter->second.get());
-    }
-    return results;
-}
-
-void Map::PlaceEntitiesOnMap(const XMLElement& elem) {
-    if(auto* xml_entity_map = elem.FirstChildElement("entityMap")) {
-        const std::size_t entity_count = DataUtils::GetChildElementCount(*xml_entity_map);
-        _entities.reserve(entity_count);
-        DataUtils::ForEachChildElement(*xml_entity_map, "",
-            [this](const XMLElement& elem) {
-            auto name = DataUtils::GetElementName(elem);
-            DataUtils::ValidateXmlElement(elem, name, "", "start");
-            const auto start = DataUtils::ParseXmlAttribute(elem, "start", IntVector2{});
-            const auto typeName = DataUtils::GetElementName(elem);
-            auto types = GetEntityTypesByName(typeName);
-            for(const auto type : types) {
-                Entity* entity = nullptr;
-                bool is_player = name == "player";
-                if(is_player) {
-                    entity = new Actor(type->definition);
-                } else {
-                    entity = new Entity(type->definition);
-                }
-                entity->name = typeName;
-                entity->sprite = entity->def->GetSprite();
-                entity->map = this;
-                entity->layer = this->GetLayer(0);
-                entity->SetPosition(start);
-                entity->Equip(_equipments[0].get());
-                _entities.push_back(entity);
-                if(is_player) {
-                    player = dynamic_cast<Actor*>(_entities.back());
-                }
-            }
-        });
-    }
-}
-

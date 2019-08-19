@@ -6,8 +6,12 @@
 
 #include "Game/Actor.hpp"
 #include "Game/EntityDefinition.hpp"
-#include "Game/Equipment.hpp"
 #include "Game/Map.hpp"
+#include "Game/Item.hpp"
+
+Entity::~Entity() {
+    /* DO NOTHING */
+}
 
 Entity::Entity(const XMLElement& elem) noexcept
 {
@@ -16,6 +20,8 @@ Entity::Entity(const XMLElement& elem) noexcept
 
 Entity::Entity(EntityDefinition* definition) noexcept
     : def(definition)
+    , sprite(def->GetSprite())
+    , inventory(def->inventory)
 {
     /* DO NOTHING */
 }
@@ -68,7 +74,7 @@ void Entity::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo
     ibo.push_back(static_cast<unsigned int>(v_s) - 2u);
     ibo.push_back(static_cast<unsigned int>(v_s) - 1u);
 
-    AddVertsForEquipment(verts, ibo, layer_color, layer_index);
+    AddVertsForItems(verts, ibo, layer_color, layer_index);
     
 }
 
@@ -105,9 +111,9 @@ std::string Entity::ParseEntityDefinitionName(const XMLElement& xml_definition) 
     }, '.', false);
 }
 
-void Entity::AddVertsForEquipment(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
-    if(equipment) {
-        equipment->Render(verts, ibo, layer_color, layer_index);
+void Entity::AddVertsForItems(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
+    for(const auto& item : inventory) {
+        item->Render(verts, ibo, layer_color, layer_index);
     }
 }
 
@@ -133,18 +139,6 @@ long long Entity::Fight(Entity& attacker, Entity& defender) {
         defender.def->SetBaseStats(dStats);
     }
     return result;
-}
-
-void Entity::Equip(Equipment* equipment_to_equip) {
-    equipment_to_equip->owner = this;
-    equipment_to_equip->ApplyStatModifer();
-    equipment = equipment_to_equip;
-}
-
-void Entity::UnEquip(Equipment* equipment_to_unequip) {
-    equipment_to_unequip->RemoveStatModifer();
-    equipment_to_unequip->owner = nullptr;
-    equipment = nullptr;
 }
 
 bool Entity::IsVisible() const {

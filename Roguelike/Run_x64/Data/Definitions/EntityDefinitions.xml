@@ -7,16 +7,18 @@
             <defense>0</defense>
             <evasion>1</evasion>
             <speed>1</speed>
+            <accuracy>0</accuracy>
             <experience>0</experience>
         </stats>
     </entityDefinition>
     <entityDefinition name="human..female" index="[6,53]">
         <stats>
-            <health>100</health>
+            <health>1</health>
             <attack>1</attack>
             <defense>0</defense>
             <evasion>1</evasion>
             <speed>1</speed>
+            <accuracy>0</accuracy>
             <experience>0</experience>
         </stats>
         <attachPoints>
@@ -31,10 +33,8 @@
             <feet offset="[0,0]"/>
             -->
         </attachPoints>
-        <equipment>
-            <body item="ruby_robe" />
-            <legs item="" />
-            <feet item="" />
-        </equipment>
+        <inventory>
+            <item name="red_robe" />
+        </inventory>
     </entityDefinition>
 </entityDefinitions>

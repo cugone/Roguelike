@@ -6,9 +6,6 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 
-#include "Game/EquipmentDefinition.hpp"
-#include "Game/Map.hpp"
-
 std::map<std::string, std::unique_ptr<EntityDefinition>> EntityDefinition::s_registry;
 
 void EntityDefinition::CreateEntityDefinition(Renderer& renderer, const XMLElement& elem) {
@@ -97,14 +94,14 @@ Vector2 EntityDefinition::GetAttachPoint(const AttachPoint& attachpoint) {
 }
 
 bool EntityDefinition::LoadFromXml(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "entityDefinition", "", "name,index", "animation,attachPoints,equipment,stats");
+    DataUtils::ValidateXmlElement(elem, "entityDefinition", "", "name,index", "animation,attachPoints,inventory,stats");
 
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     _index = DataUtils::ParseXmlAttribute(elem, "index", IntVector2::ZERO);
     LoadStats(elem);
     LoadAnimation(elem);
     LoadAttachPoints(elem);
-    LoadEquipment(elem);
+    LoadInventory(elem);
     return true;
 }
 
@@ -114,94 +111,9 @@ void EntityDefinition::LoadStats(const XMLElement& elem) {
     }
 }
 
-void EntityDefinition::LoadEquipment(const XMLElement& elem) {
-    if(auto* xml_equipment = elem.FirstChildElement("equipment")) {
-        DataUtils::ValidateXmlElement(*xml_equipment, "equipment", "", "", "hair,head,body,larm,rarm,legs,feet");
-        equipments.resize(static_cast<std::size_t>(EquipSlot::Max));
-        if(auto* xml_equipment_hair = xml_equipment->FirstChildElement("hair")) {
-            DataUtils::ValidateXmlElement(*xml_equipment_hair, "hair", "", "item");
-            std::string equipment_name{};
-            equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_hair, "item", equipment_name);
-            auto idx = static_cast<std::size_t>(EquipSlot::Hair);
-            auto def = Map::GetEquipmentTypesByName(equipment_name);
-            if(!def.empty()) {
-                _valid_offsets.set(idx);
-                auto f = std::begin(def);
-                equipments[idx] = (*f)->definition;
-            }
-        }
-        if(auto* xml_equipment_head = xml_equipment->FirstChildElement("head")) {
-            DataUtils::ValidateXmlElement(*xml_equipment_head, "head", "", "item");
-            std::string equipment_name{};
-            equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_head, "item", equipment_name);
-            auto idx = static_cast<std::size_t>(EquipSlot::Head);
-            auto def = Map::GetEquipmentTypesByName(equipment_name);
-            if(!def.empty()) {
-                _valid_offsets.set(idx);
-                auto f = std::begin(def);
-                equipments[idx] = (*f)->definition;
-            }
-        }
-        if(auto* xml_equipment_body = xml_equipment->FirstChildElement("body")) {
-            DataUtils::ValidateXmlElement(*xml_equipment_body, "body", "", "item");
-            std::string equipment_name{};
-            equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_body, "item", equipment_name);
-            auto idx = static_cast<std::size_t>(EquipSlot::Body);
-            auto def = Map::GetEquipmentTypesByName(equipment_name);
-            if(!def.empty()) {
-                _valid_offsets.set(idx);
-                auto f = std::begin(def);
-                equipments[idx] = (*f)->definition;
-            }
-        }
-        if(auto* xml_equipment_larm = xml_equipment->FirstChildElement("larm")) {
-            DataUtils::ValidateXmlElement(*xml_equipment_larm, "larm", "", "item");
-            std::string equipment_name{};
-            equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_larm, "item", equipment_name);
-            auto idx = static_cast<std::size_t>(EquipSlot::LeftArm);
-            auto def = Map::GetEquipmentTypesByName(equipment_name);
-            if(!def.empty()) {
-                _valid_offsets.set(idx);
-                auto f = std::begin(def);
-                equipments[idx] = (*f)->definition;
-            }
-        }
-        if(auto* xml_equipment_rarm = xml_equipment->FirstChildElement("rarm")) {
-            DataUtils::ValidateXmlElement(*xml_equipment_rarm, "rarm", "", "item");
-            std::string equipment_name{};
-            equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_rarm, "item", equipment_name);
-            auto idx = static_cast<std::size_t>(EquipSlot::RightArm);
-            auto def = Map::GetEquipmentTypesByName(equipment_name);
-            if(!def.empty()) {
-                _valid_offsets.set(idx);
-                auto f = std::begin(def);
-                equipments[idx] = (*f)->definition;
-            }
-        }
-        if(auto* xml_equipment_legs = xml_equipment->FirstChildElement("legs")) {
-            DataUtils::ValidateXmlElement(*xml_equipment_legs, "legs", "", "item");
-            std::string equipment_name{};
-            equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_legs, "item", equipment_name);
-            auto idx = static_cast<std::size_t>(EquipSlot::Legs);
-            auto def = Map::GetEquipmentTypesByName(equipment_name);
-            if(!def.empty()) {
-                _valid_offsets.set(idx);
-                auto f = std::begin(def);
-                equipments[idx] = (*f)->definition;
-            }
-        }
-        if(auto* xml_equipment_feet = xml_equipment->FirstChildElement("feet")) {
-            DataUtils::ValidateXmlElement(*xml_equipment_feet, "feet", "", "item");
-            std::string equipment_name{};
-            equipment_name = DataUtils::ParseXmlAttribute(*xml_equipment_feet, "item", equipment_name);
-            auto idx = static_cast<std::size_t>(EquipSlot::Feet);
-            auto def = Map::GetEquipmentTypesByName(equipment_name);
-            if(!def.empty()) {
-                _valid_offsets.set(idx);
-                auto f = std::begin(def);
-                equipments[idx] = (*f)->definition;
-            }
-        }
+void EntityDefinition::LoadInventory(const XMLElement& elem) {
+    if(auto* xml_inventory = elem.FirstChildElement("inventory")) {
+        Inventory(*xml_inventory).TransferAll(inventory);
     }
 }
 
@@ -246,39 +158,5 @@ void EntityDefinition::LoadAnimation(const XMLElement &elem) {
         _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, elem));
     } else {
         _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, _index));
-    }
-}
-
-EquipSlot EquipSlotFromString(std::string str) {
-    str = StringUtils::ToLowerCase(str);
-    if(str == "hair") {
-        return EquipSlot::Hair;
-    } else if(str == "head") {
-        return EquipSlot::Head;
-    } else if(str == "body") {
-        return EquipSlot::Body;
-    } else if(str == "larm") {
-        return EquipSlot::LeftArm;
-    } else if(str == "rarm") {
-        return EquipSlot::RightArm;
-    } else if(str == "legs") {
-        return EquipSlot::Legs;
-    } else if(str == "feet") {
-        return EquipSlot::Feet;
-    } else {
-        return EquipSlot::None;
-    }
-}
-
-std::string EquipSlotToString(const EquipSlot& slot) {
-    switch(slot) {
-    case EquipSlot::Hair: return "hair";
-    case EquipSlot::Head: return "head";
-    case EquipSlot::Body: return "body";
-    case EquipSlot::LeftArm: return "larm";
-    case EquipSlot::RightArm: return "rarm";
-    case EquipSlot::Legs: return "legs";
-    case EquipSlot::Feet: return "feet";
-    default: return "none";
     }
 }

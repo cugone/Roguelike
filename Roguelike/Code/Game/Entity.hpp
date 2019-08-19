@@ -14,13 +14,6 @@ class Layer;
 class Tile;
 class AnimatedSprite;
 class EntityDefinition;
-class EquipmentDefinition;
-class Equipment;
-
-struct EntityType {
-    EntityDefinition* definition{};
-    std::string name{};
-};
 
 class Entity {
 public:
@@ -29,7 +22,7 @@ public:
     Entity(Entity&& other) = default;
     Entity& operator=(const Entity& other) = default;
     Entity& operator=(Entity&& other) = default;
-    virtual ~Entity() = default;
+    virtual ~Entity() = 0;
 
     Entity(EntityDefinition* definition) noexcept;
     Entity(const XMLElement& elem) noexcept;
@@ -42,9 +35,6 @@ public:
     void UpdateAI(TimeUtils::FPSeconds deltaSeconds);
 
     static long long Fight(Entity& attacker, Entity& defender);
-
-    void Equip(Equipment* equipment_to_equip);
-    void UnEquip(Equipment* equipment_to_unequip);
 
     bool IsVisible() const;
     bool IsNotVisible() const;
@@ -62,9 +52,8 @@ public:
     Tile* tile = nullptr;
     EntityDefinition* def = nullptr;
     AnimatedSprite* sprite = nullptr;
-    Equipment* equipment = nullptr;
-    Rgba color{Rgba::White};
     Inventory inventory{};
+    Rgba color{Rgba::White};
     std::string name{"UNKNOWN ENTITY"};
 
 protected:
@@ -75,7 +64,7 @@ private:
     void LoadFromXml(const XMLElement& elem);
     std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
 
-    void AddVertsForEquipment(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
+    void AddVertsForItems(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
 
     Stats stat_modifiers{};
     IntVector2 _position{};
