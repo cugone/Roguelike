@@ -110,7 +110,7 @@ const TileDefinition* Tile::GetDefinition() const {
 }
 
 TileDefinition* Tile::GetDefinition() {
-    return const_cast<TileDefinition*>(static_cast<const Tile&>(*this).GetDefinition());
+    return _def;
 }
 
 bool Tile::IsVisible() const {

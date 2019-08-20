@@ -66,7 +66,7 @@ const AnimatedSprite* TileDefinition::GetSprite() const {
 }
 
 AnimatedSprite* TileDefinition::GetSprite() {
-    return const_cast<AnimatedSprite*>(static_cast<const TileDefinition&>(*this).GetSprite());
+    return _sprite.get();
 }
 
 IntVector2 TileDefinition::GetIndexCoords() const {

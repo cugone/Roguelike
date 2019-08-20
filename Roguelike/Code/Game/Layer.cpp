@@ -237,7 +237,7 @@ const Map* Layer::GetMap() const {
 }
 
 Map* Layer::GetMap() {
-    return const_cast<Map*>(static_cast<const Layer&>(*this).GetMap());
+    return _map;
 }
 
 Tile* Layer::GetTile(std::size_t x, std::size_t y) {

@@ -67,7 +67,7 @@ const Stats& EntityDefinition::GetBaseStats() const noexcept {
 }
 
 Stats& EntityDefinition::GetBaseStats() noexcept {
-    return const_cast<Stats&>(static_cast<const EntityDefinition&>(*this).GetBaseStats());
+    return _base_stats;
 }
 
 void EntityDefinition::SetBaseStats(const Stats& newBaseStats) noexcept {
@@ -79,7 +79,7 @@ const AnimatedSprite* EntityDefinition::GetSprite() const {
 }
 
 AnimatedSprite* EntityDefinition::GetSprite() {
-    return const_cast<AnimatedSprite*>(static_cast<const EntityDefinition&>(*this).GetSprite());
+    return _sprite.get();
 }
 
 bool EntityDefinition::HasAttachPoint(const AttachPoint& attachpoint) {

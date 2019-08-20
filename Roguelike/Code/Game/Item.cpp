@@ -132,7 +132,7 @@ const Inventory& Item::GetInventory() const noexcept {
 }
 
 Inventory& Item::GetInventory() noexcept {
-    return const_cast<Inventory&>(static_cast<const Item&>(*this).GetInventory());
+    return _my_inventory;
 }
 
 
@@ -157,7 +157,7 @@ const AnimatedSprite* Item::GetSprite() const {
 }
 
 AnimatedSprite* Item::GetSprite() {
-    return const_cast<AnimatedSprite*>(static_cast<const Item&>(*this).GetSprite());
+    return _sprite.get();
 }
 
 std::string Item::GetName() const noexcept {
@@ -169,7 +169,7 @@ const Inventory* Item::OwningInventory() const noexcept {
 }
 
 Inventory* Item::OwningInventory() noexcept {
-    return const_cast<Inventory*>(static_cast<const Item&>(*this).OwningInventory());
+    return _parent_inventory;
 }
 
 std::size_t Item::GetCount() const noexcept {
