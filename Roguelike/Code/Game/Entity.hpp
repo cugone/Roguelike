@@ -57,15 +57,16 @@ public:
     std::string name{"UNKNOWN ENTITY"};
 
 protected:
-    const Stats& GetStatModifiers() const;
-    const Stats& GetBaseStats() const;
-    Stats& GetBaseStats();
+    Stats GetStatModifiers() const noexcept;
+    const Stats& GetBaseStats() const noexcept;
+    Stats& GetBaseStats() noexcept;
 private:
     void LoadFromXml(const XMLElement& elem);
     std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
 
     void AddVertsForEquipment(const IntVector2& entity_position, std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
 
+    Stats stats{};
     Stats stat_modifiers{};
     IntVector2 _position{};
 

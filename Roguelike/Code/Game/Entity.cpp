@@ -22,6 +22,7 @@ Entity::Entity(EntityDefinition* definition) noexcept
     : def(definition)
     , sprite(def->GetSprite())
     , inventory(def->inventory)
+    , stats(definition->GetBaseStats())
 {
     /* DO NOTHING */
 }
@@ -82,16 +83,16 @@ void Entity::EndFrame() {
     /* DO NOTHING */
 }
 
-const Stats& Entity::GetStatModifiers() const {
+Stats Entity::GetStatModifiers() const noexcept {
     return stat_modifiers;
 }
 
-const Stats& Entity::GetBaseStats() const {
-    return def->GetBaseStats();
+const Stats& Entity::GetBaseStats() const noexcept {
+    return stats;
 }
 
-Stats& Entity::GetBaseStats() {
-    return def->GetBaseStats();
+Stats& Entity::GetBaseStats() noexcept {
+    return stats;
 }
 
 void Entity::LoadFromXml(const XMLElement& elem) {
@@ -101,6 +102,7 @@ void Entity::LoadFromXml(const XMLElement& elem) {
     auto definition_name = ParseEntityDefinitionName(*xml_definition);
     def = EntityDefinition::GetEntityDefinitionByName(definition_name);
     sprite = def->GetSprite();
+    stats = def->GetBaseStats();
 }
 
 std::string Entity::ParseEntityDefinitionName(const XMLElement& xml_definition) const {
@@ -137,10 +139,11 @@ long double Entity::Fight(Entity& attacker, Entity& defender) {
     auto result = aAtt - dDef;
     auto new_health = dStats.AdjustStat(StatsID::Health, -result);
     if(!new_health) {
+        defender.AdjustBaseStats(dStats);
         auto& map = defender.map;
         map->KillEntity(defender);
     } else {
-        defender.def->SetBaseStats(dStats);
+        defender.AdjustBaseStats(dStats);
     }
     return result;
 }

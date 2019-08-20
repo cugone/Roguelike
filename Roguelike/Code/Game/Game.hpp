@@ -147,6 +147,7 @@ private:
     bool _debug_has_picked_entity_with_click = false;
     bool _debug_has_picked_tile_with_click = false;
     bool _player_requested_wait = false;
+    bool _debug_render = false;
     bool _show_grid = false;
     bool _show_debug_window = false;
     bool _show_world_bounds = false;
@@ -168,5 +169,6 @@ private:
 
     friend class Map;
     friend class Layer;
+    friend class Tile;
 };
 

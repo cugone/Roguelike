@@ -165,6 +165,26 @@ void Layer::RenderTiles(Renderer& renderer) const {
     renderer.DrawIndexed(PrimitiveType::Triangles, verts, ibo);
 }
 
+void Layer::DebugRenderTiles(Renderer& renderer) const {
+    renderer.SetModelMatrix(Matrix4::GetIdentity());
+
+    AABB2 cullbounds = CalcCullBounds(_map->camera.position);
+
+    static std::vector<Vertex3D> verts;
+    verts.clear();
+    static std::vector<unsigned int> ibo;
+    ibo.clear();
+
+    for(auto& t : _tiles) {
+        AABB2 tile_bounds = t.GetBounds();
+        if(MathUtils::DoAABBsOverlap(cullbounds, tile_bounds)) {
+            t.DebugRender(renderer);
+        }
+    }
+    renderer.SetMaterial(_map->GetTileMaterial());
+    renderer.DrawIndexed(PrimitiveType::Triangles, verts, ibo);
+}
+
 void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
     for(auto& tile : _tiles) {
         tile.Update(deltaSeconds);
@@ -184,8 +204,8 @@ void Layer::Render(Renderer& renderer) const {
     RenderTiles(renderer);
 }
 
-void Layer::DebugRender(Renderer& /*renderer*/) const {
-    /* DO NOTHING */
+void Layer::DebugRender(Renderer& renderer) const {
+    DebugRenderTiles(renderer);
 }
 
 void Layer::EndFrame() {

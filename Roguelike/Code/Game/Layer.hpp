@@ -66,6 +66,7 @@ private:
     std::size_t NormalizeLayerRows(std::vector<std::string>& glyph_strings);
     void SetModelViewProjectionBounds(Renderer& renderer) const;
     void RenderTiles(Renderer& renderer) const;
+    void DebugRenderTiles(Renderer& renderer) const;
 
     void UpdateTiles(TimeUtils::FPSeconds deltaSeconds);
 

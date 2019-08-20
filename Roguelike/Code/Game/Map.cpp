@@ -76,6 +76,9 @@ bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
     if(actor->MoveTo(tile)) {
         return true;
     } else {
+        if(!tile->entity) {
+            return false;
+        }
         const auto dmg_result = Entity::Fight(*actor, *tile->entity);
         TextEntityDesc desc{};
         desc.position = Vector2(tile->GetCoords()) + Vector2{ 0.5f, 0.5f };
@@ -162,14 +165,6 @@ void Map::Render(Renderer& renderer) const {
         renderer.SetModelMatrix(Matrix4::I);
         renderer.DrawAABB2(tile_bounds, Rgba::White, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
     }
-    if(g_theGame->_show_all_entities) {
-        for(const auto& e : _entities) {
-            auto tile_bounds = e->tile->GetBounds();
-            renderer.SetMaterial(renderer.GetMaterial("__2D"));
-            renderer.SetModelMatrix(Matrix4::I);
-            renderer.DrawAABB2(tile_bounds, Rgba::Red, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
-        }
-    }
 }
 
 void Map::DebugRender(Renderer& renderer) const {
@@ -177,11 +172,9 @@ void Map::DebugRender(Renderer& renderer) const {
         layer->DebugRender(renderer);
     }
     if(g_theGame->_show_grid) {
-        if(g_theGame->_show_grid) {
-            renderer.SetModelMatrix(Matrix4::I);
-            const auto* layer = GetLayer(0);
-            renderer.DrawWorldGrid2D(layer->tileDimensions, layer->debug_grid_color);
-        }
+        renderer.SetModelMatrix(Matrix4::I);
+        const auto* layer = GetLayer(0);
+        renderer.DrawWorldGrid2D(layer->tileDimensions, layer->debug_grid_color);
     }
     if(g_theGame->_show_world_bounds) {
         auto bounds = CalcWorldBounds();
@@ -399,7 +392,6 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
     if(auto* xml_actors = elem.FirstChildElement("actors")) {
         DataUtils::ValidateXmlElement(*xml_actors, "actors", "actor", "");
         const auto actor_count = DataUtils::GetChildElementCount(*xml_actors, "actor");
-        _entities.reserve(actor_count);
         DataUtils::ForEachChildElement(*xml_actors, "actor",
             [this](const XMLElement& elem) {
             auto* actor = Actor::CreateActor(this, elem);
@@ -421,7 +413,6 @@ void Map::LoadFeaturesForMap(const XMLElement& elem) {
     if(auto* xml_actors = elem.FirstChildElement("features")) {
         DataUtils::ValidateXmlElement(*xml_actors, "features", "feature", "");
         const auto actor_count = DataUtils::GetChildElementCount(*xml_actors, "feature");
-        _entities.reserve(actor_count);
         DataUtils::ForEachChildElement(*xml_actors, "feature",
             [this](const XMLElement& elem) {
             auto* actor = Actor::CreateActor(this, elem);

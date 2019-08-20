@@ -193,7 +193,7 @@ void Game::Render_Main() const {
 
     _map->Render(*g_theRenderer);
 
-    if(_show_grid || _show_world_bounds) {
+    if(_debug_render) {
         _map->DebugRender(*g_theRenderer);
     }
 
@@ -616,7 +616,7 @@ void Game::HandlePlayerInput(Camera2D& base_camera) {
             _map->MoveOrAttack(player, player->tile->GetSouthNeighbor());
         }
     }
-    if(!_map->IsEntityInView(dynamic_cast<Entity*>(player))) {
+    if(!_map->IsEntityInView(player)) {
         _map->FocusEntity(player);
     }
 
@@ -839,6 +839,7 @@ void Game::ShowBoundsColoringUI() {
         }
         ImGui::Checkbox("World Bounds", &_show_world_bounds);
         ImGui::Checkbox("Show All Entities", &_show_all_entities);
+        _debug_render = _show_grid || _show_world_bounds || _show_all_entities;
     }
 }
 

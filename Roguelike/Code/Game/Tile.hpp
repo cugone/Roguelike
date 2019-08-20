@@ -10,6 +10,7 @@
 class TileDefinition;
 class Entity;
 class Layer;
+class Renderer;
 
 class Tile {
 public:
@@ -22,6 +23,7 @@ public:
 
     void Update(TimeUtils::FPSeconds deltaSeconds);
     void Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
+    void DebugRender(Renderer& renderer) const;
 
     void ChangeTypeFromName(const std::string& name);
     void ChangeTypeFromGlyph(char glyph);

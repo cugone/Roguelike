@@ -10,6 +10,8 @@
 #include "Game/Map.hpp"
 #include "Game/TileDefinition.hpp"
 
+#include "Game/GameCommon.hpp"
+
 Tile::Tile()
     : _def(TileDefinition::GetTileDefinitionByName("void"))
 {
@@ -30,6 +32,15 @@ void Tile::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, 
     AddVertsForTile(verts, ibo, layer_color, layer_index);
     if(entity) {
         entity->Render(verts, ibo, layer_color, layer_index);
+    }
+}
+
+void Tile::DebugRender(Renderer& renderer) const {
+    if(g_theGame->_show_all_entities && entity) {
+        auto tile_bounds = GetBounds();
+        renderer.SetMaterial(renderer.GetMaterial("__2D"));
+        renderer.SetModelMatrix(Matrix4::I);
+        renderer.DrawAABB2(tile_bounds, Rgba::Red, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
     }
 }
 
