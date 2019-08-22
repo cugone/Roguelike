@@ -84,7 +84,6 @@ private:
     void OnEnterState(const GameState& state);
     void OnExitState(const GameState& state);
 
-    void CreateFullscreenTexture();
     void CreateFullscreenConstantBuffer();
 
     void HandleDebugInput(Camera2D& base_camera);

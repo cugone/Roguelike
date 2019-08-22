@@ -35,7 +35,6 @@ Game::~Game() noexcept {
 
 void Game::Initialize() {
     Memory::enable(true);
-    CreateFullscreenTexture();
     CreateFullscreenConstantBuffer();
     g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
 }
@@ -324,13 +323,6 @@ void Game::OnExitState(const GameState& state) {
     case GameState::Main:     OnExit_Main();    break;
     default: ERROR_AND_DIE("ON ENTER UNDEFINED GAME STATE") break;
     }
-}
-
-void Game::CreateFullscreenTexture() {
-    auto dims = g_theRenderer->GetOutput()->GetDimensions();
-    auto data = std::vector<Rgba>(dims.x * dims.y, Rgba::Magenta);
-    auto fs = g_theRenderer->Create2DTextureFromMemory(data, dims.x, dims.y, BufferUsage::Gpu, BufferBindUsage::Render_Target | BufferBindUsage::Shader_Resource);
-    g_theRenderer->RegisterTexture("__fullscreen", std::move(fs));
 }
 
 void Game::LoadMaps() {
