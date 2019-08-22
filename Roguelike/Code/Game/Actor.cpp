@@ -186,6 +186,10 @@ bool Actor::MoveNorthWest() {
     return Move(IntVector2{ -1,-1 });
 }
 
+Item* Actor::IsEquipped(const EquipSlot& slot) {
+    return _equipment[static_cast<std::size_t>(slot)];
+}
+
 void Actor::Equip(const EquipSlot& slot, Item* item) {
     _equipment[static_cast<std::size_t>(slot)] = item;
 }

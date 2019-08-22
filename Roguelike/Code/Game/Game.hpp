@@ -10,7 +10,7 @@
 struct fullscreen_cb_t {
     int effectIndex = -1;
     float fadePercent = 0.0f;
-    float greyscaleBrightness = 1.2f;
+    float lumosityBrightness = 1.2f;
     float gradiantRadius = 0.5f;
     Vector4 fadeColor{};
     IntVector2 resolution{};
@@ -27,7 +27,7 @@ enum class FullscreenEffect {
     ,FadeIn
     ,FadeOut
     ,Scanlines
-    ,Greyscale
+    ,Lumosity
     ,Sepia
     ,CircularGradient
 };
@@ -120,12 +120,13 @@ private:
     bool DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime);
     bool DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime);
     void DoScanlines();
-    void DoGreyscale(float brightnessPower = 2.4f);
+    void DoLumosity(float brightnessPower = 2.4f);
     void DoCircularGradient(float radius, const Rgba& color);
     void DoSepia();
     void StopFullscreenEffect();
 
-
+    void RegisterCommands();
+    void UnRegisterCommands();
 
     std::unique_ptr<Map> _map{nullptr};
     mutable Camera2D _ui_camera{};

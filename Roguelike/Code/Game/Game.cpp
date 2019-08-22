@@ -1,5 +1,6 @@
 #include "Game/Game.hpp"
 
+#include "Engine/Core/ArgumentParser.hpp"
 #include "Engine/Core/BuildConfig.hpp"
 #include "Engine/Core/DataUtils.hpp"
 #include "Engine/Core/FileUtils.hpp"
@@ -237,7 +238,66 @@ void Game::EndFrame_Loading() {
         LoadMaps();
         _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
         _done_loading = true;
+        RegisterCommands();
+
     }
+}
+
+void Game::RegisterCommands() {
+    Console::Command give{};
+    give.command_name = "give";
+    give.help_text_short = "Gives object to entity.";
+    give.help_text_long = "give item [count]: adds 1 or [count] item(s) to selected entity's inventory.";
+    give.command_function = [this](const std::string& args) {
+        ArgumentParser p{ args };
+        std::string item_name{};
+        if (!p.GetNext(item_name)) {
+            return;
+        }
+        if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+            if(auto* e = tile->entity) {
+                int item_count = 1;
+                p.GetNext(item_count);
+                e->inventory.AddStack(item_name, item_count);
+            }
+        }
+    };
+    g_theConsole->RegisterCommand(give);
+
+    Console::Command equip{};
+    equip.command_name = "equip";
+    equip.help_text_short = "Equips/Unequips an item entity's inventory.";
+    equip.help_text_long = "equip item: Equips or Unequips an item from/to selected entity.";
+    equip.command_function = [this](const std::string& args) {
+        ArgumentParser p{ args };
+        std::string item_name{};
+        if (!p.GetNext(item_name)) {
+            return;
+        }
+        if (auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+            if (auto* e = tile->entity) {
+                if(auto* i = e->inventory.HasItem(item_name)) {
+                    if(auto* asActor = dynamic_cast<Actor*>(e)) {
+                        if(auto* q = asActor->IsEquipped(i->GetEquipSlot())) {
+                            asActor->Unequip(q->GetEquipSlot());
+                        } else {
+                            asActor->Equip(i->GetEquipSlot(), i);
+                        }
+                    }
+                } else {
+                    std::ostringstream ss;
+                    ss << "No " << item_name << " to equip.";
+                    g_theConsole->ErrorMsg(ss.str());
+                }
+            }
+        }
+    };
+    g_theConsole->RegisterCommand(equip);
+
+}
+
+void Game::UnRegisterCommands() {
+    g_theConsole->UnregisterCommand("give");
 }
 
 void Game::EndFrame_Main() {
@@ -372,7 +432,7 @@ void Game::LoadItemsFromFile(const std::filesystem::path& src) {
             ItemBuilder builder{};
             const auto name = DataUtils::ParseXmlAttribute(elem, "name", "UNKNOWN ITEM");
             builder.Name(name);
-            builder.Slot(EquipSlotFromString(DataUtils::ParseXmlElementText(*elem.FirstChildElement("equipslot"), "body")));
+            builder.Slot(EquipSlotFromString(DataUtils::ParseXmlElementText(*elem.FirstChildElement("equipslot"), "none")));
             if(auto* xml_minstats = elem.FirstChildElement("stats")) {
                 builder.MinimumStats(Stats(*xml_minstats));
                 builder.MaximumStats(Stats(*xml_minstats));
@@ -461,14 +521,14 @@ void Game::DoScanlines() {
     _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
-void Game::DoGreyscale(float brightnessPower /*= 2.4f*/) {
+void Game::DoLumosity(float brightnessPower /*= 2.4f*/) {
     static TimeUtils::FPSeconds curFadeTime{};
-    if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::Greyscale)) {
-        _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Greyscale);
+    if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::Lumosity)) {
+        _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Lumosity);
         curFadeTime = curFadeTime.zero();
     }
-    _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Greyscale);
-    _fullscreen_data.greyscaleBrightness = brightnessPower;
+    _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Lumosity);
+    _fullscreen_data.lumosityBrightness = brightnessPower;
     _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
@@ -516,8 +576,8 @@ void Game::UpdateFullscreenEffect(const FullscreenEffect& effect) {
     case FullscreenEffect::Scanlines:
         DoScanlines();
         break;
-    case FullscreenEffect::Greyscale:
-        DoGreyscale(_fullscreen_data.greyscaleBrightness);
+    case FullscreenEffect::Lumosity:
+        DoLumosity(_fullscreen_data.lumosityBrightness);
         break;
     case FullscreenEffect::Sepia:
         DoSepia();
@@ -762,10 +822,10 @@ void Game::ShowEffectsUI() {
             current_item = "Scanlines";
             _current_fs_effect = FullscreenEffect::Scanlines;
         }
-        if(ImGui::Selectable("Greyscale")) {
+        if(ImGui::Selectable("Lumosity")) {
             is_selected = true;
-            current_item = "Greyscale";
-            _current_fs_effect = FullscreenEffect::Greyscale;
+            current_item = "Lumosity";
+            _current_fs_effect = FullscreenEffect::Lumosity;
         }
         if(ImGui::Selectable("Sepia")) {
             is_selected = true;
@@ -803,9 +863,9 @@ void Game::ShowEffectsUI() {
     case FullscreenEffect::Scanlines:
         ImGui::Text("Effect: Scanlines");
         break;
-    case FullscreenEffect::Greyscale:
-        ImGui::Text("Effect: Greyscale");
-        ImGui::DragFloat("Brightness##Greyscale", &_fullscreen_data.greyscaleBrightness, 0.25f, 0.0f, 15.0f);
+    case FullscreenEffect::Lumosity:
+        ImGui::Text("Effect: Lumosity");
+        ImGui::DragFloat("Brightness##Lumosity", &_fullscreen_data.lumosityBrightness, 0.25f, 0.0f, 15.0f);
         break;
     case FullscreenEffect::Sepia:
         ImGui::Text("Effect: Sepia");

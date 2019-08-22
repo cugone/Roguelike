@@ -37,7 +37,11 @@ public:
     Item* HasItem(Item* item) const noexcept;
     Item* HasItem(const std::string& name) const noexcept;
 
+    void AddStack(Item* item, std::size_t count) noexcept;
+    void AddStack(const std::string& name, std::size_t count) noexcept;
     Item* AddItem(Item* item) noexcept;
+    Item* AddItem(const std::string& name) noexcept;
+
     void RemoveItem(Item* item) noexcept;
     void RemoveItem(const std::string& name) noexcept;
 

@@ -60,6 +60,30 @@
             <experience>0</experience>
         </stats>
     </item>
+    <item name="white_pants" index="[5,64]">
+        <equipslot>legs</equipslot>
+        <stats>
+            <health>0</health>
+            <attack>0</attack>
+            <defense>1</defense>
+            <speed>0</speed>
+            <accuracy>0</accuracy>
+            <evasion>0</evasion>
+            <experience>0</experience>
+        </stats>
+    </item>
+    <item name="cutlass" index="[0,59]">
+        <equipslot>larm</equipslot>
+        <stats>
+            <health>0</health>
+            <attack>10</attack>
+            <defense>0</defense>
+            <speed>0</speed>
+            <accuracy>0</accuracy>
+            <evasion>0</evasion>
+            <experience>0</experience>
+        </stats>
+    </item>
 <!--    
     <item>
         <definition slot="body" type="armor" subtype="fullplate" color="silver" index="[13,54]" />
@@ -113,16 +137,6 @@
     </item>
     <item>
         <definition slot="legs" type="clothes" subtype="shorts" color="green" index="[4,64]" />
-        <Health>0</Health>
-        <Attack>0</Attack>
-        <Defense>1</Defense>
-        <Speed>0</Speed>
-        <Accuracy>0</Accuracy>
-        <Evasion>0</Evasion>
-        <Experience>0</Experience>
-    </item>
-    <item>
-        <definition slot="legs" type="clothes" subtype="pants" color="white" index="[5,64]" />
         <Health>0</Health>
         <Attack>0</Attack>
         <Defense>1</Defense>

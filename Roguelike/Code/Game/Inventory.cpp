@@ -31,6 +31,24 @@ Item* Inventory::HasItem(const std::string& name) const noexcept {
     return nullptr;
 }
 
+void Inventory::AddStack(Item* item, std::size_t count) noexcept {
+    if(auto* i = HasItem(item)) {
+        i->AdjustCount(count);
+    } else {
+        i = AddItem(item);
+        i->SetCount(count);
+    }
+}
+
+void Inventory::AddStack(const std::string& name, std::size_t count) noexcept {
+    if(auto* item = HasItem(name)) {
+        item->AdjustCount(count);
+    } else {
+        item = AddItem(name);
+        item->SetCount(count);
+    }
+}
+
 Item* Inventory::AddItem(Item* item) noexcept {
     if(item) {
         if(auto i = HasItem(item)) {
@@ -38,6 +56,21 @@ Item* Inventory::AddItem(Item* item) noexcept {
             return i;
         } else {
             _items.push_back(item);
+            _items.back()->IncrementCount();
+            return _items.back();
+        }
+    }
+    return nullptr;
+}
+
+Item* Inventory::AddItem(const std::string& name) noexcept {
+    if(auto* item_in_inventory = HasItem(name)) {
+        item_in_inventory->IncrementCount();
+        return item_in_inventory;
+    } else {
+        if (auto* item_in_registry = Item::GetItem(name)) {
+            _items.push_back(item_in_registry);
+            _items.back()->IncrementCount();
             return _items.back();
         }
     }
@@ -47,19 +80,25 @@ Item* Inventory::AddItem(Item* item) noexcept {
 void Inventory::RemoveItem(Item* item) noexcept {
     if(item) {
         if(auto i = HasItem(item)) {
-            i->DecrementCount();
-            return;
-        }
-        auto found_iter = std::find(std::begin(_items), std::end(_items), item);
-        if(found_iter != std::end(_items)) {
-            _items.erase(found_iter);
+            if(!i->DecrementCount()) {
+                auto found_iter = std::find(std::begin(_items), std::end(_items), i);
+                if(found_iter != std::end(_items)) {
+                    _items.erase(found_iter);
+                }
+            }
         }
     }
 }
 
 void Inventory::RemoveItem(const std::string& name) noexcept {
-    auto found_iter = std::find_if(std::begin(_items), std::end(_items), [&name](Item* item) { return item->GetName() == name;  });
-    RemoveItem(found_iter != std::end(_items) ? *found_iter : nullptr);
+    if(auto i = HasItem(name)) {
+        if(!i->DecrementCount()) {
+            auto found_iter = std::find(std::begin(_items), std::end(_items), i);
+            if(found_iter != std::end(_items)) {
+                _items.erase(found_iter);
+            }
+        }
+    }
 }
 
 const Item* Inventory::GetItem(const std::string& name) const noexcept {

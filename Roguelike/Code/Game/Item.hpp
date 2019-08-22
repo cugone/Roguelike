@@ -69,8 +69,9 @@ public:
     Inventory* OwningInventory() noexcept;
 
     std::size_t GetCount() const noexcept;
-    void IncrementCount() noexcept;
-    void DecrementCount() noexcept;
+    std::size_t IncrementCount() noexcept;
+    std::size_t DecrementCount() noexcept;
+    void AdjustCount(long long amount) noexcept;
     void SetCount(std::size_t newCount) noexcept;
 
     const EquipSlot& GetEquipSlot() const;

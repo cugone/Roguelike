@@ -59,6 +59,7 @@ void Item::ClearItemRegistry() {
 Item::Item(ItemBuilder& builder) noexcept
     : _name(builder._name)
     , _sprite(std::move(builder._sprite))
+    , _slot(builder._slot)
     , _max_stack_size(builder._max_stack_size)
 {
     for(auto stat_id = StatsID::First_; stat_id < StatsID::Last_; ++stat_id) {
@@ -176,20 +177,31 @@ std::size_t Item::GetCount() const noexcept {
     return _stack_size;
 }
 
-void Item::IncrementCount() noexcept {
+std::size_t Item::IncrementCount() noexcept {
     ++_stack_size;
     _stack_size = std::clamp(_stack_size, std::size_t{ 0 }, _max_stack_size);
+    return _stack_size;
 }
 
-void Item::DecrementCount() noexcept {
-    if(_stack_size == 0) {
-        return;
+std::size_t Item::DecrementCount() noexcept {
+    if(_stack_size) {
+        --_stack_size;
     }
-    --_stack_size;
+    return _stack_size;
+}
+
+void Item::AdjustCount(long long amount) noexcept {
+    if (amount < 0 && _stack_size < static_cast<std::size_t>(std::abs(amount))) {
+        _stack_size = 0u;
+    } else {
+        _stack_size += static_cast<std::size_t>(amount);
+        _stack_size = std::clamp(_stack_size, std::size_t{ 0 }, _max_stack_size);
+    }
 }
 
 void Item::SetCount(std::size_t newCount) noexcept {
     _stack_size = newCount;
+    _stack_size = std::clamp(_stack_size, std::size_t{ 0 }, _max_stack_size);
 }
 
 
