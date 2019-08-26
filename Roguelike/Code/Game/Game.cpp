@@ -9,8 +9,6 @@
 #include "Engine/Math/Vector2.hpp"
 #include "Engine/Math/Vector4.hpp"
 
-#include "Engine/Profiling/Memory.hpp"
-
 #include "Engine/Renderer/AnimatedSprite.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 #include "Engine/Renderer/Texture.hpp"
@@ -30,11 +28,9 @@ Game::~Game() noexcept {
     Item::ClearItemRegistry();
     Actor::ClearActorRegistry();
     EntityDefinition::ClearEntityRegistry();
-    Memory::enable(false);
 }
 
 void Game::Initialize() {
-    Memory::enable(true);
     CreateFullscreenConstantBuffer();
     g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
 }
@@ -238,7 +234,6 @@ void Game::EndFrame_Loading() {
         _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
         _done_loading = true;
         RegisterCommands();
-
     }
 }
 
@@ -250,16 +245,24 @@ void Game::RegisterCommands() {
     give.command_function = [this](const std::string& args) {
         ArgumentParser p{ args };
         std::string item_name{};
-        if (!p.GetNext(item_name)) {
+        if(!p.GetNext(item_name)) {
+            g_theConsole->ErrorMsg("No item name provided.");
             return;
         }
-        if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-            if(auto* e = tile->entity) {
-                int item_count = 1;
-                p.GetNext(item_count);
-                e->inventory.AddStack(item_name, item_count);
+        Entity* entity = nullptr;
+        int item_count = 1;
+        if(_debug_inspected_entity) {
+            if(!p.GetNext(item_count)) {
+                g_theConsole->WarnMsg("No item count provided. Defaulting to 1.");
             }
+            entity = _debug_inspected_entity;
+        } else if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+            if(!p.GetNext(item_count)) {
+                g_theConsole->ErrorMsg("No item count provided. Defaulting to 1.");
+            }
+            entity = tile->entity;
         }
+        entity->inventory.AddStack(item_name, item_count);
     };
     g_theConsole->RegisterCommand(give);
 
