@@ -44,8 +44,9 @@ void Inventory::AddStack(const std::string& name, std::size_t count) noexcept {
     if(auto* item = HasItem(name)) {
         item->AdjustCount(count);
     } else {
-        item = AddItem(name);
-        item->SetCount(count);
+        if((item = AddItem(name)) != nullptr) {
+            item->SetCount(count);
+        }
     }
 }
 
