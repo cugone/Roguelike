@@ -1038,7 +1038,7 @@ void Game::ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity) {
     }
     ss << "Inventory:";
     for(const auto* item : cur_entity->inventory) {
-        ss << '\n' << item->GetName();
+        ss << '\n' << item->GetFriendlyName();
     }
     ImGui::Text(ss.str().c_str());
 }

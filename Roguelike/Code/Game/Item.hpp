@@ -62,6 +62,7 @@ public:
     AnimatedSprite* GetSprite();
 
     std::string GetName() const noexcept;
+    std::string GetFriendlyName() const noexcept;
 
     bool HasOwningInventory() const noexcept;
     bool IsChildInventory() const noexcept;
@@ -79,6 +80,7 @@ public:
 protected:
 private:
     std::string _name{};
+    std::string _friendly_name{};
     std::unique_ptr<AnimatedSprite> _sprite{};
     Inventory* _parent_inventory{};
     Inventory _my_inventory{};
@@ -101,6 +103,7 @@ public:
 
     explicit ItemBuilder(const XMLElement& elem) noexcept;
     ItemBuilder& Name(const std::string& name) noexcept;
+    ItemBuilder& FriendlyName(const std::string& friendlyName) noexcept;
     ItemBuilder& Slot(const EquipSlot& slot) noexcept;
     ItemBuilder& MinimumStats(const Stats& stats) noexcept;
     ItemBuilder& MaximumStats(const Stats& stats) noexcept;
@@ -119,6 +122,7 @@ private:
     Stats _max_stats{};
     std::unique_ptr<AnimatedSprite> _sprite{};
     std::string _name{};
+    std::string _friendly_name{};
     std::size_t _max_stack_size{ 1 };
 
     friend class Item;

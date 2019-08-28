@@ -58,10 +58,15 @@ void Item::ClearItemRegistry() {
 
 Item::Item(ItemBuilder& builder) noexcept
     : _name(builder._name)
+    , _friendly_name(builder._friendly_name)
     , _sprite(std::move(builder._sprite))
     , _slot(builder._slot)
     , _max_stack_size(builder._max_stack_size)
 {
+    if (_friendly_name.empty()) {
+        _friendly_name = _name;
+        _friendly_name = StringUtils::ReplaceAll(_friendly_name, "_", " ");
+    }
     for(auto stat_id = StatsID::First_; stat_id < StatsID::Last_; ++stat_id) {
         _stat_modifiers.SetStat(stat_id, MathUtils::GetRandomLongDoubleInRange(builder._min_stats.GetStat(stat_id), builder._max_stats.GetStat(stat_id)));
     }
@@ -165,6 +170,10 @@ std::string Item::GetName() const noexcept {
     return _name;
 }
 
+std::string Item::GetFriendlyName() const noexcept {
+    return _friendly_name;
+}
+
 const Inventory* Item::OwningInventory() const noexcept {
     return _parent_inventory;
 }
@@ -216,6 +225,11 @@ ItemBuilder::ItemBuilder(const XMLElement& elem) noexcept
 
 ItemBuilder& ItemBuilder::Name(const std::string& name) noexcept {
     _name = name;
+    return *this;
+}
+
+ItemBuilder& ItemBuilder::FriendlyName(const std::string& friendlyName) noexcept {
+    _friendly_name = friendlyName;
     return *this;
 }
 
