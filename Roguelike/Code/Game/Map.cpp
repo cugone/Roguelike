@@ -15,6 +15,7 @@
 
 #include "Game/Actor.hpp"
 #include "Game/Entity.hpp"
+#include "Game/EntityText.hpp"
 #include "Game/EntityDefinition.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Layer.hpp"
@@ -24,10 +25,6 @@
 #include <sstream>
 
 unsigned long long Map::default_map_index = 0ull;
-
-void Map::CreateTextEntityAt(const TextEntityDesc& /*desc*/) {
-    /* DO NOTHING */
-}
 
 void Map::SetDebugGridColor(const Rgba& gridColor) {
     auto* layer = GetLayer(0);
@@ -82,12 +79,14 @@ bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
         const auto dmg_result = Entity::Fight(*actor, *tile->entity);
         TextEntityDesc desc{};
         desc.position = Vector2(tile->GetCoords()) + Vector2{ 0.5f, 0.5f };
+        desc.font = g_theGame->ingamefont;
+        desc.color = Rgba::White;
         if(dmg_result >= 0) {
             desc.text = std::to_string(dmg_result);
-            CreateTextEntityAt(desc);
+            //TODO: CreateTextEntityAt(tile->GetCoords(), desc);
         } else {
             desc.text = "MISS";
-            CreateTextEntityAt(desc);
+            //TODO: CreateTextEntityAt(tile->GetCoords(), desc);
         }
         return true;
     }
@@ -403,7 +402,6 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
             if(is_player) {
                 player = actor;
             }
-            actor->Equip(EquipSlot::Body, actor->inventory.GetItem("red_robe"));
             _entities.push_back(actor);
         });
     }

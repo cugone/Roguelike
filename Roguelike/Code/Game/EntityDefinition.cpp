@@ -94,7 +94,7 @@ Vector2 EntityDefinition::GetAttachPoint(const AttachPoint& attachpoint) {
 }
 
 bool EntityDefinition::LoadFromXml(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "entityDefinition", "", "name,index", "animation,attachPoints,inventory,stats");
+    DataUtils::ValidateXmlElement(elem, "entityDefinition", "", "name,index", "animation,attachPoints,inventory,stats,equipment");
 
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     _index = DataUtils::ParseXmlAttribute(elem, "index", IntVector2::ZERO);
@@ -102,6 +102,7 @@ bool EntityDefinition::LoadFromXml(const XMLElement& elem) {
     LoadAnimation(elem);
     LoadAttachPoints(elem);
     LoadInventory(elem);
+    LoadEquipment(elem);
     return true;
 }
 
@@ -114,6 +115,21 @@ void EntityDefinition::LoadStats(const XMLElement& elem) {
 void EntityDefinition::LoadInventory(const XMLElement& elem) {
     if(auto* xml_inventory = elem.FirstChildElement("inventory")) {
         Inventory(*xml_inventory).TransferAll(inventory);
+    }
+}
+
+void EntityDefinition::LoadEquipment(const XMLElement& elem) {
+    if (auto* xml_equipment = elem.FirstChildElement("equipment")) {
+        DataUtils::ValidateXmlElement(*xml_equipment, "equipment", "", "", "hair,head,body,larm,rarm,legs,feet");
+        DataUtils::ForEachChildElement(*xml_equipment, "",
+        [this](const XMLElement& elem) {
+                auto slotname = std::string{elem.Name() ? elem.Name() : ""};
+                auto itemname = DataUtils::ParseXmlAttribute(elem, "name", "");
+                auto slot_id = EquipSlotFromString(slotname);
+                auto slot = static_cast<std::size_t>(slot_id);
+                auto item = inventory.GetItem(itemname);
+                equipment[slot] = item;
+        });
     }
 }
 

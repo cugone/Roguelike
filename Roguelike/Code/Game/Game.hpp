@@ -7,6 +7,8 @@
 
 #include <memory>
 
+class KerningFont;
+
 struct fullscreen_cb_t {
     int effectIndex = -1;
     float fadePercent = 0.0f;
@@ -53,6 +55,7 @@ public:
     void Render() const;
     void EndFrame();
 
+    KerningFont* ingamefont{};
 protected:
 private:
 

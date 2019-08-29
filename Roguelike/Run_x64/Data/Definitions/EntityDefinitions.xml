@@ -36,5 +36,8 @@
         <inventory>
             <item name="red_robe" />
         </inventory>
+        <equipment>
+            <body name="red_robe" />
+        </equipment>
     </entityDefinition>
 </entityDefinitions>

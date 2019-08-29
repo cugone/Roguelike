@@ -8,6 +8,7 @@
 #include "Engine/Renderer/Camera2D.hpp"
 
 #include "Game/EntityDefinition.hpp"
+#include "Game/EntityText.hpp"
 #include "Game/Inventory.hpp"
 #include "Game/Layer.hpp"
 
@@ -15,20 +16,12 @@
 #include <map>
 #include <memory>
 
-
 class Entity;
 class Actor;
 class Material;
 class Renderer;
 class TileDefinition;
 class SpriteSheet;
-
-struct TextEntityDesc {
-    std::string text = "DAMAGE";
-    Rgba color = Rgba::White;
-    Vector2 position{0.0f, 0.0f};
-    TimeUtils::FPSeconds fadeTime{ 1.0f };
-};
 
 class Map {
 public:
@@ -81,7 +74,6 @@ public:
     Actor* player = nullptr;
 
     void KillEntity(Entity& e);
-    void CreateTextEntityAt(const TextEntityDesc& desc);
 
 protected:
 private:

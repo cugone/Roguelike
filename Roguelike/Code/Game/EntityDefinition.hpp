@@ -5,6 +5,7 @@
 
 #include "Game/Inventory.hpp"
 #include "Game/Stats.hpp"
+#include "Game/Item.hpp"
 
 #include <bitset>
 #include <map>
@@ -50,6 +51,7 @@ public:
     bool is_invisible = false;
     bool is_animated = false;
     Inventory inventory{};
+    std::vector<Item*> equipment = std::vector<Item*>(static_cast<std::size_t>(EquipSlot::Max));
 
     void SetBaseStats(const Stats& newBaseStats) noexcept;
     const Stats& GetBaseStats() const noexcept;
@@ -68,6 +70,7 @@ private:
     void LoadAttachPoints(const XMLElement &elem);
     void LoadStats(const XMLElement& elem);
     void LoadInventory(const XMLElement& elem);
+    void LoadEquipment(const XMLElement& elem);
 
     static std::map<std::string, std::unique_ptr<EntityDefinition>> s_registry;
     Renderer& _renderer;

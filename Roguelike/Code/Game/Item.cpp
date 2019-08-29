@@ -265,8 +265,7 @@ ItemBuilder& ItemBuilder::MaxStackSize(std::size_t maximumStackSize) noexcept {
 
 Item* ItemBuilder::Build() noexcept {
     auto item = Item::CreateItem(*this);
-    auto name = item->GetName();
-    return Item::GetItem(name);
+    return item;
 }
 
 void ItemBuilder::LoadFromXml(const XMLElement& elem) noexcept {

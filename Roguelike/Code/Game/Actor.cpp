@@ -70,6 +70,12 @@ bool Actor::LoadFromXml(const XMLElement& elem) {
     def = EntityDefinition::GetEntityDefinitionByName(definitionName);
     sprite = def->GetSprite();
     inventory = def->inventory;
+    _equipment = def->equipment;
+    for(const auto& e : _equipment) {
+        if (e) {
+            AdjustStatModifiers(e->GetStatModifiers());
+        }
+    }
     SetPosition(DataUtils::ParseXmlAttribute(elem, "position", IntVector2::ZERO));
     return true;
 }
@@ -191,7 +197,14 @@ Item* Actor::IsEquipped(const EquipSlot& slot) {
 }
 
 void Actor::Equip(const EquipSlot& slot, Item* item) {
-    _equipment[static_cast<std::size_t>(slot)] = item;
+    auto& current_equipment = _equipment[static_cast<std::size_t>(slot)];
+    if(current_equipment) {
+        this->AdjustStatModifiers(-current_equipment->GetStatModifiers());
+    }
+    current_equipment = item;
+    if(current_equipment) {
+        this->AdjustStatModifiers(current_equipment->GetStatModifiers());
+    }
 }
 
 void Actor::Unequip(const EquipSlot& slot) {

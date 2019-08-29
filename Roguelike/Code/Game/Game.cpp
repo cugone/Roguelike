@@ -33,6 +33,8 @@ Game::~Game() noexcept {
 void Game::Initialize() {
     CreateFullscreenConstantBuffer();
     g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
+    g_theRenderer->RegisterFontsFromFolder(std::string{"Data/Fonts"});
+    ingamefont = g_theRenderer->GetFont("TrebuchetMS32");
 }
 
 void Game::CreateFullscreenConstantBuffer() {
@@ -137,7 +139,7 @@ void Game::Render_Title() const {
     g_theRenderer->SetCamera(_ui_camera);
 
     g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents));
-    g_theRenderer->DrawTextLine(g_theRenderer->GetFont("System32"), "RogueLike");
+    g_theRenderer->DrawTextLine(ingamefont, "RogueLike");
 
 }
 
@@ -164,14 +166,13 @@ void Game::Render_Loading() const {
     _ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(_ui_camera);
 
-    const auto* font = g_theRenderer->GetFont("System32");
     g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents));
-    g_theRenderer->DrawTextLine(font, "LOADING");
+    g_theRenderer->DrawTextLine(ingamefont, "LOADING");
     if(_done_loading) {
         const std::string text = "Press Any Key";
-        static const auto text_length = font->CalculateTextWidth(text);
-        g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents + Vector2{ text_length * -0.25f, font->GetLineHeight() }));
-        g_theRenderer->DrawTextLine(font, text, Rgba{255, 255, 255, static_cast<unsigned char>(255.0f * _text_alpha)});
+        static const auto text_length = ingamefont->CalculateTextWidth(text);
+        g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents + Vector2{ text_length * -0.25f, ingamefont->GetLineHeight() }));
+        g_theRenderer->DrawTextLine(ingamefont, text, Rgba{255, 255, 255, static_cast<unsigned char>(255.0f * _text_alpha)});
     }
 
 }
