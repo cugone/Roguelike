@@ -246,22 +246,28 @@ void Game::RegisterCommands() {
     give.command_function = [this](const std::string& args) {
         ArgumentParser p{ args };
         std::string item_name{};
-        if(!p.GetNext(item_name)) {
+        if(!(p >> item_name)) {
             g_theConsole->ErrorMsg("No item name provided.");
             return;
         }
-        Entity* entity = nullptr;
         int item_count = 1;
+        p >> item_count;
+        Entity* entity = nullptr;
         if(_debug_inspected_entity) {
-            if(!p.GetNext(item_count)) {
-                g_theConsole->WarnMsg("No item count provided. Defaulting to 1.");
-            }
             entity = _debug_inspected_entity;
-        } else if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-            if(!p.GetNext(item_count)) {
-                g_theConsole->ErrorMsg("No item count provided. Defaulting to 1.");
-            }
+        }
+        if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
             entity = tile->entity;
+        }
+        if(!entity) {
+            g_theConsole->ErrorMsg("Select an actor to give the item to.");
+            return;
+        }
+        auto* item = Item::GetItem(item_name);
+        if(!item) {
+            std::ostringstream ss;
+            ss << "Item " << item_name << " not found.";
+            g_theConsole->ErrorMsg(ss.str());
         }
         entity->inventory.AddStack(item_name, item_count);
     };
@@ -269,29 +275,41 @@ void Game::RegisterCommands() {
 
     Console::Command equip{};
     equip.command_name = "equip";
-    equip.help_text_short = "Equips/Unequips an item entity's inventory.";
-    equip.help_text_long = "equip item: Equips or Unequips an item from/to selected entity.";
+    equip.help_text_short = "Equips/Unequips an item to  an actor's inventory.";
+    equip.help_text_long = "equip item: Equips or Unequips an item from/to selected actor.";
     equip.command_function = [this](const std::string& args) {
         ArgumentParser p{ args };
         std::string item_name{};
-        if (!p.GetNext(item_name)) {
+        if (!(p >> item_name)) {
             return;
         }
-        if (auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-            if (auto* e = tile->entity) {
-                if(auto* i = e->inventory.HasItem(item_name)) {
-                    if(auto* asActor = dynamic_cast<Actor*>(e)) {
-                        if(auto* q = asActor->IsEquipped(i->GetEquipSlot())) {
-                            asActor->Unequip(q->GetEquipSlot());
-                        } else {
-                            asActor->Equip(i->GetEquipSlot(), i);
-                        }
-                    }
-                } else {
-                    std::ostringstream ss;
-                    ss << "No " << item_name << " to equip.";
-                    g_theConsole->ErrorMsg(ss.str());
-                }
+        Entity* entity = nullptr;
+        if(_debug_inspected_entity) {
+            entity = _debug_inspected_entity;
+        }
+        if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+            if(tile->entity) {
+                entity = tile->entity;
+            }
+        }
+        if(!entity) {
+            std::ostringstream ss;
+            ss << "Select an actor to equip.";
+            g_theConsole->ErrorMsg(ss.str());
+            return;
+        }
+        if(auto* item = entity->inventory.HasItem(item_name)) {
+            auto asActor = dynamic_cast<Actor*>(entity);
+            if(!asActor) {
+                std::ostringstream ss;
+                ss << "Entity is not an actor.";
+                g_theConsole->ErrorMsg(ss.str());
+                return;
+            }
+            if(auto* equippedItem = asActor->IsEquipped(item->GetEquipSlot())) {
+                asActor->Unequip(equippedItem->GetEquipSlot());
+            } else {
+                asActor->Equip(item->GetEquipSlot(), item);
             }
         }
     };
