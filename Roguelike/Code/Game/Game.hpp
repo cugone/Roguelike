@@ -166,7 +166,7 @@ private:
     Rgba _fadeOut_color = Rgba::Black;
     TimeUtils::FPSeconds _fadeInTime{};
     TimeUtils::FPSeconds _fadeOutTime{};
-
+    Console::CommandList _consoleCommands = Console::CommandList(*g_theConsole);
     GameState _currentGameState = GameState::Title;
     GameState _nextGameState = GameState::Title;
 

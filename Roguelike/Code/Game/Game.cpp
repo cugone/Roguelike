@@ -53,7 +53,7 @@ void Game::OnEnter_Loading() {
 }
 
 void Game::OnEnter_Main() {
-    /* DO NOTHING */
+    RegisterCommands();
 }
 
 void Game::OnExit_Title() {
@@ -65,7 +65,7 @@ void Game::OnExit_Loading() {
 }
 
 void Game::OnExit_Main() {
-    /* DO NOTHING */
+    UnRegisterCommands();
 }
 
 void Game::BeginFrame_Title() {
@@ -234,7 +234,6 @@ void Game::EndFrame_Loading() {
         LoadMaps();
         _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
         _done_loading = true;
-        RegisterCommands();
     }
 }
 
@@ -271,7 +270,7 @@ void Game::RegisterCommands() {
         }
         entity->inventory.AddStack(item_name, item_count);
     };
-    g_theConsole->RegisterCommand(give);
+    _consoleCommands.AddCommand(give);
 
     Console::Command equip{};
     equip.command_name = "equip";
@@ -313,13 +312,13 @@ void Game::RegisterCommands() {
             }
         }
     };
-    g_theConsole->RegisterCommand(equip);
+    _consoleCommands.AddCommand(equip);
 
+    g_theConsole->PushCommandList(_consoleCommands);
 }
 
 void Game::UnRegisterCommands() {
-    g_theConsole->UnregisterCommand("give");
-    g_theConsole->UnregisterCommand("equip");
+    g_theConsole->PopCommandList(_consoleCommands);
 }
 
 void Game::EndFrame_Main() {
