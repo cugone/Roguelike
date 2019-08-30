@@ -319,6 +319,7 @@ void Game::RegisterCommands() {
 
 void Game::UnRegisterCommands() {
     g_theConsole->UnregisterCommand("give");
+    g_theConsole->UnregisterCommand("equip");
 }
 
 void Game::EndFrame_Main() {
