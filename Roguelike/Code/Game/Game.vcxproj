@@ -22,34 +22,34 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{E09F64D5-1A33-48FC-A80D-3007162B804C}</ProjectGuid>
     <RootNamespace>Roguelike</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>Roguelike</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugProfile|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FinalBuild|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -60,27 +60,27 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\Abrams2018\Engine\Code\Engine\Abrams2018.Default.props" />
-    <Import Project="..\..\..\..\Abrams2018\Engine\Code\Engine\Abrams2018.Debug.Default.props" />
-    <Import Project="..\..\..\..\Abrams2018\Engine\Code\Engine\Game.Abrams2018.Default.props" />
+    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.Default.props" />
+    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.Debug.Default.props" />
+    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Game.Abrams2019.Default.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\Abrams2018\Engine\Code\Engine\Abrams2018.Default.props" />
-    <Import Project="..\..\..\..\Abrams2018\Engine\Code\Engine\Abrams2018.Release.Default.props" />
-    <Import Project="..\..\..\..\Abrams2018\Engine\Code\Engine\Game.Abrams2018.Default.props" />
+    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.Default.props" />
+    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.Release.Default.props" />
+    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Game.Abrams2019.Default.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugProfile|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\Abrams2018\Engine\Code\Engine\Abrams2018.Default.props" />
-    <Import Project="..\..\..\..\Abrams2018\Engine\Code\Engine\Abrams2018.DebugProfile.Default.props" />
-    <Import Project="..\..\..\..\Abrams2018\Engine\Code\Engine\Game.Abrams2018.Default.props" />
+    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.Default.props" />
+    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.DebugProfile.Default.props" />
+    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Game.Abrams2019.Default.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='FinalBuild|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\Abrams2018\Engine\Code\Engine\Abrams2018.Default.props" />
-    <Import Project="..\..\..\..\Abrams2018\Engine\Code\Engine\Abrams2018.FinalBuild.Default.props" />
-    <Import Project="..\..\..\..\Abrams2018\Engine\Code\Engine\Game.Abrams2018.Default.props" />
+    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.Default.props" />
+    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.FinalBuild.Default.props" />
+    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Game.Abrams2019.Default.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
@@ -157,11 +157,6 @@
     <ClCompile Include="TileDefinition.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Abrams2018\Engine\Code\Engine\Engine.vcxproj">
-      <Project>{acbda225-83de-4fba-a746-0135429fb391}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="Actor.hpp" />
     <ClInclude Include="App.hpp" />
     <ClInclude Include="Entity.hpp" />
@@ -208,6 +203,11 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='FinalBuild|x64'">5.0</ShaderModel>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Abrams2019\Engine\Code\Engine\Engine.vcxproj">
+      <Project>{acbda225-83de-4fba-a746-0135429fb391}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
