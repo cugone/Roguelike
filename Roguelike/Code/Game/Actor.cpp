@@ -148,13 +148,17 @@ bool Actor::Move(const IntVector2& direction) {
     if(CanMoveDiagonallyToNeighbor(direction)) {
         const auto pos = GetPosition();
         const auto target_position = pos + direction;
-        auto target_tile = map->GetTile(target_position.x, target_position.y, 0);
-        if(target_tile) {
-            if(target_tile->IsPassable()) {
-                SetPosition(target_position);
-                moved = true;
+        const auto test_tiles = map->GetTiles(target_position);
+        if(test_tiles.empty()) {
+            return false;
+        }
+        for(const auto* t : test_tiles) {
+            if(!t->IsPassable()) {
+                return false;
             }
         }
+        SetPosition(target_position);
+        moved = true;
     }
     Act();
     return moved;
