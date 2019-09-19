@@ -48,4 +48,12 @@
         <glyph value="\" />
         <allowDiagonalMovement />
     </tileDefinition>
+    <tileDefinition name="flamePedestal" index="[33,0]">
+        <glyph value="*" />
+        <solid />
+        <allowDiagonalMovement />
+        <animation name="flame">
+            <animationset startindex="[33,0]" framelength="8" duration="0.33" loop="true" />
+        </animation>
+    </tileDefinition>
 </tileDefinitions>
