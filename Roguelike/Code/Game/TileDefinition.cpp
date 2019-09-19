@@ -129,7 +129,7 @@ TileDefinition::TileDefinition(Renderer* renderer, const XMLElement& elem, std::
 
      if(auto xml_animation = elem.FirstChildElement("animation")) {
          is_animated = true;
-         _sprite = std::move(_renderer->CreateAnimatedSprite(_sheet, elem));
+         _sprite = std::move(_renderer->CreateAnimatedSprite(_sheet, *xml_animation));
      } else {
          _sprite = std::move(_renderer->CreateAnimatedSprite(_sheet, _index));
      }
