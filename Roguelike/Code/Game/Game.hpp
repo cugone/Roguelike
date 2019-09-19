@@ -1,9 +1,12 @@
 #pragma once
 
+#include "Engine/Core/Console.hpp"
 #include "Engine/Core/TimeUtils.hpp"
+
 #include "Engine/Renderer/Camera2D.hpp"
 
 #include "Game/Map.hpp"
+#include "Game/GameCommon.hpp"
 
 #include <memory>
 
@@ -166,7 +169,7 @@ private:
     Rgba _fadeOut_color = Rgba::Black;
     TimeUtils::FPSeconds _fadeInTime{};
     TimeUtils::FPSeconds _fadeOutTime{};
-    Console::CommandList _consoleCommands = Console::CommandList(*g_theConsole);
+    Console::CommandList _consoleCommands;
     GameState _currentGameState = GameState::Title;
     GameState _nextGameState = GameState::Title;
 

@@ -31,6 +31,7 @@ Game::~Game() noexcept {
 }
 
 void Game::Initialize() {
+    _consoleCommands = Console::CommandList(g_theConsole);
     CreateFullscreenConstantBuffer();
     g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
     g_theRenderer->RegisterFontsFromFolder(std::string{"Data/Fonts"});
@@ -81,6 +82,10 @@ void Game::BeginFrame_Main() {
 }
 
 void Game::Update_Title(TimeUtils::FPSeconds /*deltaSeconds*/) {
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::Esc)) {
+        g_theApp->SetIsQuitting(true);
+        return;
+    }
     if(g_theInputSystem->WasAnyKeyPressed()) {
         ChangeGameState(GameState::Loading);
     }
@@ -101,7 +106,7 @@ void Game::Update_Loading(TimeUtils::FPSeconds deltaSeconds) {
 
 void Game::Update_Main(TimeUtils::FPSeconds deltaSeconds) {
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::Esc)) {
-        g_theApp->SetIsQuitting(true);
+        ChangeGameState(GameState::Title);
         return;
     }
     g_theRenderer->UpdateGameTime(deltaSeconds);
