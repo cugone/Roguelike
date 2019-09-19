@@ -190,7 +190,7 @@ void Map::EndFrame() {
 }
 
 bool Map::IsTileInView(const IntVector2& tileCoords) {
-    return IsTileInView(IntVector3{tileCoords, 0});
+    return IsTileInView(IntVector3{ tileCoords, 0 });
 }
 
 bool Map::IsTileInView(const IntVector3& tileCoords) {
@@ -238,7 +238,7 @@ Vector2 Map::CalcMaxDimensions() const {
 
 float Map::CalcMaxViewHeight() const {
     auto max_view_height_elem = std::max_element(std::begin(_layers), std::end(_layers),
-    [](const std::unique_ptr<Layer>& a, const std::unique_ptr<Layer>& b)->bool{
+        [](const std::unique_ptr<Layer>& a, const std::unique_ptr<Layer>& b)->bool {
         return a->viewHeight < b->viewHeight;
     });
     return (*max_view_height_elem)->viewHeight;
@@ -275,12 +275,17 @@ Tile* Map::GetTile(const IntVector3& locationAndLayerIndex) const {
     return GetTile(locationAndLayerIndex.x, locationAndLayerIndex.y, locationAndLayerIndex.z);
 }
 
+//TODO: std::optional return
 std::vector<Tile*> Map::GetTiles(int x, int y) const {
     std::vector<Tile*> results{};
-    for(auto i = std::size_t{0}; i < GetLayerCount(); ++i) {
+    for(auto i = std::size_t{ 0 }; i < GetLayerCount(); ++i) {
         if(auto* cur_layer = GetLayer(i)) {
             results.push_back(cur_layer->GetTile(x, y));
         }
+    }
+    if(std::all_of(std::begin(results), std::end(results), [](const Tile* t) { return t == nullptr; })) {
+        results.clear();
+        results.shrink_to_fit();
     }
     return results;
 }
