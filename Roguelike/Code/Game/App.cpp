@@ -1,5 +1,7 @@
 #include "Game/App.hpp"
 
+#include "Engine/Audio/AudioSystem.hpp"
+
 #include "Engine/Core/Config.hpp"
 #include "Engine/Core/FileLogger.hpp"
 #include "Engine/Core/JobSystem.hpp"
@@ -11,7 +13,8 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/Window.hpp"
 
-#include "Engine/Ui/UISystem.hpp"
+#include "Engine/UI/UI.hpp"
+#include "Engine/UI/UISystem.hpp"
 
 #include "Engine/System/System.hpp"
 
