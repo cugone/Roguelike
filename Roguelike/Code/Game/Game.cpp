@@ -91,11 +91,9 @@ void Game::Update_Title(TimeUtils::FPSeconds /*deltaSeconds*/) {
     }
 }
 
-void Game::Update_Loading(TimeUtils::FPSeconds deltaSeconds) {
-    static float t = 0.0f;
-    t += deltaSeconds.count();
-    if(0.33f < t) {
-        t = 0.0f;
+void Game::Update_Loading(TimeUtils::FPSeconds /*deltaSeconds*/) {
+    static Stopwatch text_blinker{ TimeUtils::FPSeconds{0.33f} };
+    if(text_blinker.CheckAndReset()) {
         _text_alpha = 1.0f - _text_alpha;
         _text_alpha = std::clamp(_text_alpha, 0.0f, 1.0f);
     }
