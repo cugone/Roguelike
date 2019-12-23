@@ -19,10 +19,6 @@ struct fullscreen_cb_t {
     float gradiantRadius = 0.5f;
     Vector4 fadeColor{};
     IntVector2 resolution{};
-    Vector2 hardness{ -8.0f, -3.0f };
-    Vector2 mask{ 0.5f, 1.5f };
-    Vector2 warp{ 1.0f / 32.0f, 1.0f / 24.0f };
-    Vector2 res{};
     Vector2 padding{};
     Vector4 gradiantColor = Rgba::White.GetRgbaAsFloats();
 };
