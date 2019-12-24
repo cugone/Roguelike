@@ -907,13 +907,19 @@ void Game::ShowEntityDebuggerUI() {
 
 void Game::ShowBoundsColoringUI() {
     if(ImGui::CollapsingHeader("World")) {
-        ImGui::Checkbox("World Grid", &_show_grid);
+        static bool show_grid = false;
+        ImGui::Checkbox("World Grid", &show_grid);
+        _show_grid = show_grid;
         ImGui::SameLine();
         if(ImGui::ColorEdit4("Grid Color##Picker", _grid_color, ImGuiColorEditFlags_NoLabel)) {
             _map->SetDebugGridColor(_grid_color);
         }
-        ImGui::Checkbox("World Bounds", &_show_world_bounds);
-        ImGui::Checkbox("Show All Entities", &_show_all_entities);
+        static bool show_world_bounds = false;
+        ImGui::Checkbox("World Bounds", &show_world_bounds);
+        _show_world_bounds = show_world_bounds;
+        static bool show_all_entities = false;
+        ImGui::Checkbox("Show All Entities", &show_all_entities);
+        _show_all_entities = show_all_entities;
         _debug_render = _show_grid || _show_world_bounds || _show_all_entities;
     }
 }
