@@ -711,6 +711,18 @@ void Game::HandleDebugKeyboardInput(Camera2D& base_camera) {
     if(g_theUISystem->GetIO().WantCaptureKeyboard) {
         return;
     }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::J)) {
+        if(!g_theInputSystem->IsMouseLockedToViewport()) {
+            g_theInputSystem->LockMouseToViewport(*g_theRenderer->GetOutput()->GetWindow());
+        } else {
+            g_theInputSystem->UnlockMouseFromViewport();
+        }
+    }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F5)) {
+        static bool is_fullscreen = false;
+        is_fullscreen = !is_fullscreen;
+        g_theRenderer->SetFullscreen(is_fullscreen);
+    }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F1)) {
         _show_debug_window = !_show_debug_window;
     }
@@ -742,20 +754,6 @@ void Game::HandleDebugKeyboardInput(Camera2D& base_camera) {
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::P)) {
         _map->SetPriorityLayer(static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(static_cast<int>(_map->GetLayerCount()))));
-    }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::O)) {
-        _fadeOutTime = TimeUtils::FPSeconds{ 1.0 };
-        _current_fs_effect = FullscreenEffect::FadeOut;
-    }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::I)) {
-        _fadeInTime = TimeUtils::FPSeconds{ 1.0 };
-        _current_fs_effect = FullscreenEffect::FadeIn;
-    }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::L)) {
-        _current_fs_effect = FullscreenEffect::None;
-    }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::K)) {
-        _current_fs_effect = FullscreenEffect::Scanlines;
     }
 
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::B)) {
