@@ -16,14 +16,23 @@ struct TextEntityDesc {
     Vector2 position{ 0.0f, 0.0f };
     TimeUtils::FPSeconds timeToLive{ 1.0f };
     KerningFont* font{};
+    float speed{1.0f};
 };
 
 class EntityText : public Entity {
 public:
     std::string text{};
-    Vector2 worldPosition{};
+    Vector2 screenPosition{};
     TimeUtils::FPSeconds ttl{1.0f};
     KerningFont* font{};
+    float speed{1.0f};
+    
+
+    static EntityText* CreateTextEntity(const TextEntityDesc& desc);
+    static void ClearTextRegistry() noexcept;
+
+    EntityText() = default;
+    explicit EntityText(const TextEntityDesc & desc) noexcept;
     virtual ~EntityText() = default;
 
     virtual void Update(TimeUtils::FPSeconds deltaSeconds) override;
@@ -31,5 +40,7 @@ public:
 
 protected:
 private:
+
+    static inline std::vector<std::unique_ptr<EntityText>> s_registry{};
     TimeUtils::FPSeconds _currentLiveTime{};
 };

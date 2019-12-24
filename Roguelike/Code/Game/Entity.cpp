@@ -138,7 +138,7 @@ long double Entity::Fight(Entity& attacker, Entity& defender) {
     }
     auto result = aAtt - dDef;
     auto new_health = dStats.AdjustStat(StatsID::Health, -result);
-    if(!new_health) {
+    if(MathUtils::IsEquivalentOrLessThan(new_health, 0.0L)) {
         defender.AdjustBaseStats(dStats);
         auto& map = defender.map;
         map->KillEntity(defender);

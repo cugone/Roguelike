@@ -20,10 +20,6 @@ void EntityDefinition::CreateEntityDefinition(Renderer& renderer, const XMLEleme
     s_registry.try_emplace(new_def_name, std::move(new_def));
 }
 
-void EntityDefinition::DestroyEntityDefinitions() {
-    s_registry.clear();
-}
-
 EntityDefinition* EntityDefinition::GetEntityDefinitionByName(const std::string& name) {
     auto found_iter = s_registry.find(name);
     if(found_iter == std::end(s_registry)) {

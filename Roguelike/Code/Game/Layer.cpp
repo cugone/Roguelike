@@ -117,36 +117,36 @@ std::size_t Layer::NormalizeLayerRows(std::vector<std::string>& glyph_strings) {
 
 void Layer::SetModelViewProjectionBounds(Renderer& renderer) const {
 
-    auto ortho_bounds = CalcOrthoBounds();
+    const auto ortho_bounds = CalcOrthoBounds();
 
-    renderer.SetModelMatrix(Matrix4::GetIdentity());
-    renderer.SetViewMatrix(Matrix4::GetIdentity());
-    auto leftBottom = Vector2{ ortho_bounds.mins.x, ortho_bounds.maxs.y };
-    auto rightTop = Vector2{ ortho_bounds.maxs.x, ortho_bounds.mins.y };
+    renderer.SetModelMatrix(Matrix4::I);
+    renderer.SetViewMatrix(Matrix4::I);
+    const auto leftBottom = Vector2{ ortho_bounds.mins.x, ortho_bounds.maxs.y };
+    const auto rightTop = Vector2{ ortho_bounds.maxs.x, ortho_bounds.mins.y };
     _map->camera.SetupView(leftBottom, rightTop, Vector2(0.0f, 1000.0f));
     renderer.SetCamera(_map->camera);
 
     Camera2D& base_camera = _map->camera;
     Camera2D shakyCam = _map->camera;
-    float shake = shakyCam.GetShake();
-    float shaky_angle = GAME_OPTION_MAX_SHAKE_ANGLE * shake * MathUtils::GetRandomFloatNegOneToOne();
-    float shaky_offsetX = GAME_OPTION_MAX_SHAKE_OFFSET_H * shake * MathUtils::GetRandomFloatNegOneToOne();
-    float shaky_offsetY = GAME_OPTION_MAX_SHAKE_OFFSET_V * shake * MathUtils::GetRandomFloatNegOneToOne();
+    const float shake = shakyCam.GetShake();
+    const float shaky_angle = GAME_OPTION_MAX_SHAKE_ANGLE * shake * MathUtils::GetRandomFloatNegOneToOne();
+    const float shaky_offsetX = GAME_OPTION_MAX_SHAKE_OFFSET_H * shake * MathUtils::GetRandomFloatNegOneToOne();
+    const float shaky_offsetY = GAME_OPTION_MAX_SHAKE_OFFSET_V * shake * MathUtils::GetRandomFloatNegOneToOne();
     shakyCam.orientation_degrees = base_camera.orientation_degrees + shaky_angle;
     shakyCam.position = base_camera.position + Vector2{ shaky_offsetX, shaky_offsetY };
 
-    float cam_rotation_z = shakyCam.GetOrientation();
-    auto VRz = Matrix4::Create2DRotationDegreesMatrix(-cam_rotation_z);
+    const float cam_rotation_z = shakyCam.GetOrientation();
+    const auto VRz = Matrix4::Create2DRotationDegreesMatrix(-cam_rotation_z);
 
-    auto cam_pos = shakyCam.GetPosition();
-    auto Vt = Matrix4::CreateTranslationMatrix(-cam_pos);
-    auto v = VRz * Vt;
+    const auto cam_pos = shakyCam.GetPosition();
+    const auto Vt = Matrix4::CreateTranslationMatrix(-cam_pos);
+    const auto v = Matrix4::MakeRT(Vt, VRz);
     renderer.SetViewMatrix(v);
 
 }
 
 void Layer::RenderTiles(Renderer& renderer) const {
-    renderer.SetModelMatrix(Matrix4::GetIdentity());
+    renderer.SetModelMatrix(Matrix4::I);
 
     AABB2 cullbounds = CalcCullBounds(_map->camera.position);
 
@@ -166,7 +166,7 @@ void Layer::RenderTiles(Renderer& renderer) const {
 }
 
 void Layer::DebugRenderTiles(Renderer& renderer) const {
-    renderer.SetModelMatrix(Matrix4::GetIdentity());
+    renderer.SetModelMatrix(Matrix4::I);
 
     AABB2 cullbounds = CalcCullBounds(_map->camera.position);
 
@@ -209,7 +209,7 @@ void Layer::DebugRender(Renderer& renderer) const {
 }
 
 void Layer::EndFrame() {
-
+    /* DO NOTHING */
 }
 
 AABB2 Layer::CalcOrthoBounds() const {

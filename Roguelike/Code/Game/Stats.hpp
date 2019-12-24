@@ -25,7 +25,7 @@ StatsID& operator--(StatsID& a);
 StatsID operator--(StatsID& a, int);
 
 class Stats {
-private:
+private: //Intentional declaration order for decltype(_stats) to work.
     std::array<long double, static_cast<std::size_t>(StatsID::Max)> _stats{};
 public:
     Stats() = default;

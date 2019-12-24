@@ -200,7 +200,7 @@ std::size_t Item::DecrementCount() noexcept {
 }
 
 void Item::AdjustCount(long long amount) noexcept {
-    if (amount < 0 && _stack_size < static_cast<std::size_t>(std::abs(amount))) {
+    if (amount < 0 && _stack_size <= static_cast<std::size_t>(-amount)) {
         _stack_size = 0u;
     } else {
         _stack_size += static_cast<std::size_t>(amount);

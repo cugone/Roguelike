@@ -32,7 +32,6 @@ public:
 
     static void CreateEntityDefinition(Renderer& renderer, const XMLElement& elem);
     static void CreateEntityDefinition(Renderer& renderer, const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet);
-    static void DestroyEntityDefinitions();
     static EntityDefinition* GetEntityDefinitionByName(const std::string& name);
     static void ClearEntityRegistry();
     static std::vector<std::string> GetAllEntityDefinitionNames();

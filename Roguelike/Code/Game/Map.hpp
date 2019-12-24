@@ -61,6 +61,9 @@ public:
     std::vector<Tile*> GetTiles(int x, int y) const;
     std::vector<Tile*> PickTilesFromWorldCoords(const Vector2& worldCoords) const;
     std::vector<Tile*> PickTilesFromMouseCoords(const Vector2& mouseCoords) const;
+    Vector2 WorldCoordsToScreenCoords(const Vector2& worldCoords) const;
+    Vector2 ScreenCoordsToWorldCoords(const Vector2& screenCoords) const;
+
     Tile* GetTile(const IntVector3& locationAndLayerIndex) const;
     Tile* GetTile(int x, int y, int z) const;
     Tile* PickTileFromWorldCoords(const Vector2& worldCoords, int layerIndex) const;
@@ -91,6 +94,8 @@ private:
     void UpdateEntityAI(TimeUtils::FPSeconds deltaSeconds);
 
     void BringLayerToFront(std::size_t i);
+    void CreateTextEntity(const TextEntityDesc& desc) noexcept;
+    void CreateTextEntityAt(const IntVector2& tileCoords, const TextEntityDesc& desc) noexcept;
 
     std::string _name{};
     std::vector<std::unique_ptr<Layer>> _layers{};

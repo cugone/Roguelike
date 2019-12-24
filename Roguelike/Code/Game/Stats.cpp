@@ -125,6 +125,6 @@ decltype(Stats::_stats)::value_type Stats::AdjustStat(const StatsID& id, decltyp
 
 decltype(Stats::_stats)::value_type Stats::MultiplyStat(const StatsID& id, long double value) noexcept {
     const auto i = static_cast<std::size_t>(id);
-    _stats[i] *= static_cast<long long>(value);
+    _stats[i] *= value;
     return _stats[i];
 }
