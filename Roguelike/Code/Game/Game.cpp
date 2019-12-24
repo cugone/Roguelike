@@ -48,7 +48,7 @@ void Game::CreateFullscreenConstantBuffer() {
 }
 
 void Game::OnEnter_Title() {
-    /* DO NOTHING */
+    _map.reset(nullptr);
 }
 
 void Game::OnEnter_Loading() {
@@ -189,7 +189,6 @@ void Game::Render_Main() const {
     g_theRenderer->ClearColor(Rgba::Olive);
     g_theRenderer->ClearDepthStencilBuffer();
 
-
     g_theRenderer->SetViewportAsPercent();
 
     _map->Render(*g_theRenderer);
@@ -225,6 +224,7 @@ void Game::Render_Main() const {
     _ui_camera.orientation_degrees = 0.0f;
     _ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(_ui_camera);
+
 }
 
 void Game::EndFrame_Title() {
@@ -354,10 +354,9 @@ void Game::OnExitState(const GameState& state) {
 void Game::LoadMaps() {
     auto str_path = std::string{ "Data/Definitions/Map00.xml" };
     if(FileUtils::IsSafeReadPath(str_path)) {
-        std::string str_buffer{};
-        if(FileUtils::ReadBufferFromFile(str_buffer, str_path)) {
+        if(auto str_buffer = FileUtils::ReadStringBufferFromFile(str_path)) {
             tinyxml2::XMLDocument xml_doc;
-            xml_doc.Parse(str_buffer.c_str(), str_buffer.size());
+            xml_doc.Parse(str_buffer->c_str(), str_buffer->size());
             _map = std::make_unique<Map>(*g_theRenderer, *xml_doc.RootElement());
         }
     }
