@@ -100,6 +100,7 @@ void App::Initialize() {
     output->SetDimensions(IntVector2(Vector2(GRAPHICS_OPTION_WINDOW_WIDTH, GRAPHICS_OPTION_WINDOW_HEIGHT)));
     output->SetDisplayMode(RHIOutputMode::Windowed);
     output->GetWindow()->custom_message_handler = WindowProc;
+    g_theRenderer->ResizeBuffers();
 
     g_theUISystem->Initialize();
     g_theInputSystem->Initialize();
@@ -194,6 +195,14 @@ bool App::ProcessSystemMessage(const EngineMessage& msg) noexcept {
         default:
             return false;
         }
+    }
+    case WindowsSystemMessage::Window_Size:
+    {
+        LPARAM lp = msg.lparam;
+        const auto w = HIWORD(lp);
+        const auto h = LOWORD(lp);
+        g_theRenderer->ResizeBuffers();
+        return true;
     }
     default:
         return false;

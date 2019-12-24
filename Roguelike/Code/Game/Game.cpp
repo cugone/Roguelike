@@ -44,8 +44,7 @@ void Game::Initialize() {
 void Game::CreateFullscreenConstantBuffer() {
     _fullscreen_cb = std::unique_ptr<ConstantBuffer>(g_theRenderer->CreateConstantBuffer(&_fullscreen_data, sizeof(_fullscreen_data)));
     _fullscreen_data.resolution = g_theRenderer->GetOutput()->GetDimensions();
-    _fullscreen_data.res = Vector2{ _fullscreen_data.resolution.x / 6.0f, _fullscreen_data.resolution.y / 6.0f };
-    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+    _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
 void Game::OnEnter_Title() {
@@ -185,9 +184,8 @@ void Game::Render_Loading() const {
 
 void Game::Render_Main() const {
 
-    g_theRenderer->SetTexture(nullptr); //Force bound texture to invalid.
     g_theRenderer->ResetModelViewProjection();
-    g_theRenderer->SetRenderTarget(g_theRenderer->GetTexture("__fullscreen"));
+    g_theRenderer->SetRenderTarget(g_theRenderer->GetFullscreenTexture());
     g_theRenderer->ClearColor(Rgba::Olive);
     g_theRenderer->ClearDepthStencilBuffer();
 
