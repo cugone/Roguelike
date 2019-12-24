@@ -87,9 +87,19 @@ void App::SetupEngineSystemChainOfResponsibility() {
     g_theSubsystemHead = g_theConsole;
 }
 void App::Initialize() {
+
+    g_theConfig->AppendFromFile("Engine/Config/options.dat");
+    g_theConfig->GetValue("vsync", GRAPHICS_OPTION_VSYNC);
+    g_theConfig->GetValue("window_width", GRAPHICS_OPTION_WINDOW_WIDTH);
+    g_theConfig->GetValue("window_height", GRAPHICS_OPTION_WINDOW_HEIGHT);
+
     g_theRenderer->Initialize();
     g_theRenderer->SetVSync(GRAPHICS_OPTION_VSYNC);
-    g_theRenderer->GetOutput()->GetWindow()->custom_message_handler = WindowProc;
+    auto* output = g_theRenderer->GetOutput();
+    output->SetTitle("RogueLike");
+    output->SetDimensions(IntVector2(Vector2(GRAPHICS_OPTION_WINDOW_WIDTH, GRAPHICS_OPTION_WINDOW_HEIGHT)));
+    output->SetDisplayMode(RHIOutputMode::Windowed);
+    output->GetWindow()->custom_message_handler = WindowProc;
 
     g_theUISystem->Initialize();
     g_theInputSystem->Initialize();

@@ -31,6 +31,9 @@ Game::~Game() noexcept {
 }
 
 void Game::Initialize() {
+    if(!g_theConfig->AppendFromFile("Data/Config/options.dat")) {
+        g_theFileLogger->LogWarnLine("options file not found at Data/Config/options.dat");
+    }
     _consoleCommands = Console::CommandList(g_theConsole);
     CreateFullscreenConstantBuffer();
     g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
