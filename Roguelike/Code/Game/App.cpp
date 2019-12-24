@@ -148,7 +148,6 @@ void App::EndFrame() {
 
 bool App::ProcessSystemMessage(const EngineMessage& msg) noexcept {
 
-    WPARAM wp = msg.wparam;
     switch(msg.wmMessageCode) {
     case WindowsSystemMessage::Window_Close:
     {
@@ -167,6 +166,7 @@ bool App::ProcessSystemMessage(const EngineMessage& msg) noexcept {
     }
     case WindowsSystemMessage::Window_ActivateApp:
     {
+        WPARAM wp = msg.wparam;
         bool losing_focus = wp == FALSE;
         bool gaining_focus = wp == TRUE;
         if(losing_focus) {
@@ -181,6 +181,7 @@ bool App::ProcessSystemMessage(const EngineMessage& msg) noexcept {
     }
     case WindowsSystemMessage::Keyboard_Activate:
     {
+        WPARAM wp = msg.wparam;
         auto active_type = LOWORD(wp);
         switch(active_type) {
         case WA_ACTIVE: /* FALLTHROUGH */
