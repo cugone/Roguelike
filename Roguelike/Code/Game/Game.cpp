@@ -506,7 +506,7 @@ bool Game::DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
     _fullscreen_data.fadePercent = std::clamp(_fullscreen_data.fadePercent, 0.0f, 1.0f);
     _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeIn);
     _fullscreen_data.fadeColor = color.GetRgbaAsFloats();
-    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+    _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 
     curFadeTime += g_theRenderer->GetGameFrameTime();
     return _fullscreen_data.fadePercent == 1.0f;
@@ -522,7 +522,7 @@ bool Game::DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
     _fullscreen_data.fadePercent = std::clamp(_fullscreen_data.fadePercent, 0.0f, 1.0f);
     _fullscreen_data.fadeColor = color.GetRgbaAsFloats();
     _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeOut);
-    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+    _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 
     curFadeTime += g_theRenderer->GetGameFrameTime();
     return _fullscreen_data.fadePercent == 1.0f;
@@ -535,7 +535,7 @@ void Game::DoScanlines() {
         curFadeTime = curFadeTime.zero();
     }
     _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Scanlines);
-    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+    _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
 void Game::DoLumosity(float brightnessPower /*= 2.4f*/) {
@@ -546,7 +546,7 @@ void Game::DoLumosity(float brightnessPower /*= 2.4f*/) {
     }
     _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Lumosity);
     _fullscreen_data.lumosityBrightness = brightnessPower;
-    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+    _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
 void Game::DoCircularGradient(float radius, const Rgba& color) {
@@ -558,7 +558,7 @@ void Game::DoCircularGradient(float radius, const Rgba& color) {
     _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::CircularGradient);
     _fullscreen_data.gradiantRadius = radius;
     _fullscreen_data.gradiantColor = color.GetRgbaAsFloats();
-    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+    _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
 void Game::DoSepia() {
@@ -568,7 +568,7 @@ void Game::DoSepia() {
         curFadeTime = curFadeTime.zero();
     }
     _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Sepia);
-    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+    _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
 void Game::StopFullscreenEffect() {
@@ -576,7 +576,7 @@ void Game::StopFullscreenEffect() {
     _fullscreen_data.effectIndex = -1;
     _fullscreen_data.fadePercent = 0.0f;
     _fullscreen_data.fadeColor = Rgba::Black.GetRgbaAsFloats();
-    _fullscreen_cb->Update(g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+    _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
 void Game::UpdateFullscreenEffect(const FullscreenEffect& effect) {
