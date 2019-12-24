@@ -26,6 +26,19 @@
 
 unsigned long long Map::default_map_index = 0ull;
 
+
+void Map::CreateTextEntity(const TextEntityDesc& desc) noexcept {
+    const auto text = EntityText::CreateTextEntity(desc);
+    _entities.push_back(text);
+}
+
+void Map::CreateTextEntityAt(const IntVector2& tileCoords, const TextEntityDesc& desc) noexcept {
+    auto desc_copy = desc;
+    desc_copy.position = _renderer.ConvertWorldToScreenCoords(Vector2(tileCoords) + Vector2(0.5f, 0.5f));
+    const auto text = EntityText::CreateTextEntity(desc_copy);
+    _entities.push_back(text);
+}
+
 void Map::SetDebugGridColor(const Rgba& gridColor) {
     auto* layer = GetLayer(0);
     layer->debug_grid_color = gridColor;
@@ -57,12 +70,20 @@ Tile* Map::PickTileFromWorldCoords(const Vector2& worldCoords, int layerIndex) c
 }
 
 std::vector<Tile*> Map::PickTilesFromMouseCoords(const Vector2& mouseCoords) const {
-    auto world_coords = Vector2{ g_theRenderer->ConvertScreenToWorldCoords(camera, mouseCoords) };
+    const auto& world_coords = _renderer.ConvertScreenToWorldCoords(camera, mouseCoords);
     return PickTilesFromWorldCoords(world_coords);
 }
 
+Vector2 Map::WorldCoordsToScreenCoords(const Vector2& worldCoords) const {
+    return _renderer.ConvertWorldToScreenCoords(worldCoords);
+}
+
+Vector2 Map::ScreenCoordsToWorldCoords(const Vector2& screenCoords) const {
+    return _renderer.ConvertScreenToWorldCoords(camera, screenCoords);
+}
+
 Tile* Map::PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) const {
-    auto world_coords = Vector2{ g_theRenderer->ConvertScreenToWorldCoords(camera, mouseCoords) };
+    const auto& world_coords = _renderer.ConvertScreenToWorldCoords(camera, mouseCoords);
     return PickTileFromWorldCoords(world_coords, layerIndex);
 }
 
@@ -83,10 +104,10 @@ bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
         desc.color = Rgba::White;
         if(dmg_result >= 0) {
             desc.text = std::to_string(dmg_result);
-            //TODO: CreateTextEntityAt(tile->GetCoords(), desc);
+            CreateTextEntityAt(tile->GetCoords(), desc);
         } else {
             desc.text = "MISS";
-            //TODO: CreateTextEntityAt(tile->GetCoords(), desc);
+            CreateTextEntityAt(tile->GetCoords(), desc);
         }
         return true;
     }
@@ -164,11 +185,27 @@ void Map::Render(Renderer& renderer) const {
         renderer.SetModelMatrix(Matrix4::I);
         renderer.DrawAABB2(tile_bounds, Rgba::White, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
     }
+
+    static std::vector<Vertex3D> vbo{};
+    vbo.clear();
+    static std::vector<unsigned int> ibo{};
+    ibo.clear();
+
+    for(const auto* e : _entities) {
+        const auto* eAsText = dynamic_cast<const EntityText*>(e);
+        if(eAsText) {
+            eAsText->Render(vbo, ibo, Rgba::White, 0);
+        }
+    }
+
 }
 
 void Map::DebugRender(Renderer& renderer) const {
     for(const auto& layer : _layers) {
         layer->DebugRender(renderer);
+    }
+    if(!g_theGame->_debug_render) {
+        return;
     }
     if(g_theGame->_show_grid) {
         renderer.SetModelMatrix(Matrix4::I);
