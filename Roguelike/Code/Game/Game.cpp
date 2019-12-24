@@ -242,81 +242,117 @@ void Game::EndFrame_Loading() {
 }
 
 void Game::RegisterCommands() {
-    Console::Command give{};
-    give.command_name = "give";
-    give.help_text_short = "Gives object to entity.";
-    give.help_text_long = "give item [count]: adds 1 or [count] item(s) to selected entity's inventory.";
-    give.command_function = [this](const std::string& args) {
-        ArgumentParser p{ args };
-        std::string item_name{};
-        if(!(p >> item_name)) {
-            g_theConsole->ErrorMsg("No item name provided.");
-            return;
-        }
-        int item_count = 1;
-        p >> item_count;
-        Entity* entity = nullptr;
-        if(_debug_inspected_entity) {
-            entity = _debug_inspected_entity;
-        }
-        if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-            entity = tile->entity;
-        }
-        if(!entity) {
-            g_theConsole->ErrorMsg("Select an actor to give the item to.");
-            return;
-        }
-        auto* item = Item::GetItem(item_name);
-        if(!item) {
-            std::ostringstream ss;
-            ss << "Item " << item_name << " not found.";
-            g_theConsole->ErrorMsg(ss.str());
-        }
-        entity->inventory.AddStack(item_name, item_count);
-    };
-    _consoleCommands.AddCommand(give);
-
-    Console::Command equip{};
-    equip.command_name = "equip";
-    equip.help_text_short = "Equips/Unequips an item to  an actor's inventory.";
-    equip.help_text_long = "equip item: Equips or Unequips an item from/to selected actor.";
-    equip.command_function = [this](const std::string& args) {
-        ArgumentParser p{ args };
-        std::string item_name{};
-        if (!(p >> item_name)) {
-            return;
-        }
-        Entity* entity = nullptr;
-        if(_debug_inspected_entity) {
-            entity = _debug_inspected_entity;
-        }
-        if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-            if(tile->entity) {
+    {
+        Console::Command give{};
+        give.command_name = "give";
+        give.help_text_short = "Gives object to entity.";
+        give.help_text_long = "give item [count]: adds 1 or [count] item(s) to selected entity's inventory.";
+        give.command_function = [this](const std::string& args) {
+            ArgumentParser p{args};
+            std::string item_name{};
+            if(!(p >> item_name)) {
+                g_theConsole->ErrorMsg("No item name provided.");
+                return;
+            }
+            int item_count = 1;
+            p >> item_count;
+            Entity* entity = nullptr;
+            if(_debug_inspected_entity) {
+                entity = _debug_inspected_entity;
+            }
+            if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
                 entity = tile->entity;
             }
-        }
-        if(!entity) {
-            std::ostringstream ss;
-            ss << "Select an actor to equip.";
-            g_theConsole->ErrorMsg(ss.str());
-            return;
-        }
-        if(auto* item = entity->inventory.HasItem(item_name)) {
-            auto asActor = dynamic_cast<Actor*>(entity);
-            if(!asActor) {
+            if(!entity) {
+                g_theConsole->ErrorMsg("Select an actor to give the item to.");
+                return;
+            }
+            auto* item = Item::GetItem(item_name);
+            if(!item) {
                 std::ostringstream ss;
-                ss << "Entity is not an actor.";
+                ss << "Item " << item_name << " not found.";
+                g_theConsole->ErrorMsg(ss.str());
+            }
+            entity->inventory.AddStack(item_name, item_count);
+        };
+        _consoleCommands.AddCommand(give);
+    }
+
+    {
+        Console::Command equip{};
+        equip.command_name = "equip";
+        equip.help_text_short = "Equips/Unequips an item to  an actor's inventory.";
+        equip.help_text_long = "equip item: Equips or Unequips an item from/to selected actor.";
+        equip.command_function = [this](const std::string& args) {
+            ArgumentParser p{args};
+            std::string item_name{};
+            if(!(p >> item_name)) {
+                return;
+            }
+            Entity* entity = nullptr;
+            if(_debug_inspected_entity) {
+                entity = _debug_inspected_entity;
+            }
+            if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+                if(tile->entity) {
+                    entity = tile->entity;
+                }
+            }
+            if(!entity) {
+                std::ostringstream ss;
+                ss << "Select an actor to equip.";
                 g_theConsole->ErrorMsg(ss.str());
                 return;
             }
-            if(auto* equippedItem = asActor->IsEquipped(item->GetEquipSlot())) {
-                asActor->Unequip(equippedItem->GetEquipSlot());
-            } else {
-                asActor->Equip(item->GetEquipSlot(), item);
+            if(auto* item = entity->inventory.HasItem(item_name)) {
+                auto asActor = dynamic_cast<Actor*>(entity);
+                if(!asActor) {
+                    std::ostringstream ss;
+                    ss << "Entity is not an actor.";
+                    g_theConsole->ErrorMsg(ss.str());
+                    return;
+                }
+                if(auto* equippedItem = asActor->IsEquipped(item->GetEquipSlot())) {
+                    asActor->Unequip(equippedItem->GetEquipSlot());
+                } else {
+                    asActor->Equip(item->GetEquipSlot(), item);
+                }
             }
-        }
-    };
-    _consoleCommands.AddCommand(equip);
+        };
+        _consoleCommands.AddCommand(equip);
+    }
+
+    {
+        Console::Command list{};
+        list.command_name = "list";
+        list.help_text_short = "list [items|actors|features|all]";
+        list.help_text_long = "lists all entities of specified type or all.";
+        list.command_function = [this, &list](const std::string& args) {
+            ArgumentParser p{args};
+            std::string subcommand{};
+            if(!(p >> subcommand)) {
+                return;
+            }
+            subcommand = StringUtils::ToLowerCase(StringUtils::TrimWhitespace(subcommand));
+            if(subcommand == "items") {
+                g_theConsole->WarnMsg("Not yet implemented.");
+            } else if(subcommand == "actors") {
+                g_theConsole->WarnMsg("Not yet implemented.");
+            } else if(subcommand == "features") {
+                g_theConsole->WarnMsg("Not yet implemented.");
+            } else if(subcommand == "all") {
+                const auto& all_entity_names = EntityDefinition::GetAllEntityDefinitionNames();
+                    for(const auto& name : all_entity_names) {
+                    g_theConsole->PrintMsg(name);
+                }
+            } else {
+                g_theConsole->WarnMsg("Invalid argument.");
+                g_theConsole->WarnMsg(list.help_text_short);
+            }
+        };
+        _consoleCommands.AddCommand(list);
+    }
+
 
     g_theConsole->PushCommandList(_consoleCommands);
 }
