@@ -109,6 +109,9 @@ void Game::Update_Main(TimeUtils::FPSeconds deltaSeconds) {
         ChangeGameState(GameState::Title);
         return;
     }
+    if(g_theApp->LostFocus()) {
+        deltaSeconds = TimeUtils::FPSeconds{};
+    }
     g_theRenderer->UpdateGameTime(deltaSeconds);
     Camera2D& base_camera = _map->camera;
     HandleDebugInput(base_camera);
@@ -211,6 +214,11 @@ void Game::Render_Main() const {
     };
     g_theRenderer->Draw(PrimitiveType::Triangles, vbo, 3);
 
+    if(g_theApp->LostFocus()) {
+        g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+        g_theRenderer->DrawQuad2D(Vector2::ZERO, Vector2::ONE, Rgba{ 0, 0, 0, 128 });
+    }
+
     //2D View / HUD
     const float ui_view_height = GRAPHICS_OPTION_WINDOW_HEIGHT;
     const float ui_view_width = ui_view_height * _ui_camera.GetAspectRatio();
@@ -225,6 +233,10 @@ void Game::Render_Main() const {
     _ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(_ui_camera);
 
+    if(g_theApp->LostFocus()) {
+        g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents));
+        g_theRenderer->DrawTextLine(ingamefont, "PAUSED");
+    }
 }
 
 void Game::EndFrame_Title() {
