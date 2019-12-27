@@ -50,7 +50,7 @@ App::App(const std::string& cmdString)
     , _theJobSystem{std::make_unique<JobSystem>(-1, static_cast<std::size_t>(JobType::Max), new std::condition_variable)}
     , _theFileLogger{std::make_unique<FileLogger>(*_theJobSystem.get(), "game")}
     , _theConfig{ std::make_unique<Config>(KeyValueParser{cmdString}) }
-    , _theRenderer{std::make_unique<Renderer>(*_theFileLogger.get(), static_cast<unsigned int>(GRAPHICS_OPTION_WINDOW_WIDTH), static_cast<unsigned int>(GRAPHICS_OPTION_WINDOW_HEIGHT)) }
+    , _theRenderer{std::make_unique<Renderer>(*_theFileLogger.get(), static_cast<unsigned int>(defaultGraphicsOptions.WindowWidth), static_cast<unsigned int>(defaultGraphicsOptions.WindowHeight)) }
     , _theUI{std::make_unique<UISystem>(*_theFileLogger.get(), _theRenderer.get())}
     , _theConsole{ std::make_unique<Console>(*_theFileLogger.get(), *_theRenderer.get()) }
     , _theInputSystem{ std::make_unique<InputSystem>(*_theFileLogger.get()) }
@@ -86,18 +86,18 @@ void App::SetupEngineSystemChainOfResponsibility() {
     g_theApp->SetNextHandler(nullptr);
     g_theSubsystemHead = g_theConsole;
 }
-void App::Initialize() {
 
+void App::Initialize() {
     g_theConfig->AppendFromFile("Engine/Config/options.dat");
-    g_theConfig->GetValue("vsync", GRAPHICS_OPTION_VSYNC);
-    g_theConfig->GetValue("window_width", GRAPHICS_OPTION_WINDOW_WIDTH);
-    g_theConfig->GetValue("window_height", GRAPHICS_OPTION_WINDOW_HEIGHT);
+    g_theConfig->GetValue("vsync", currentGraphicsOptions.vsync);
+    g_theConfig->GetValue("window_width", currentGraphicsOptions.WindowWidth);
+    g_theConfig->GetValue("window_height", currentGraphicsOptions.WindowHeight);
 
     g_theRenderer->Initialize();
-    g_theRenderer->SetVSync(GRAPHICS_OPTION_VSYNC);
+    g_theRenderer->SetVSync(currentGraphicsOptions.vsync);
     auto* output = g_theRenderer->GetOutput();
     output->SetTitle("RogueLike");
-    output->SetDimensions(IntVector2(Vector2(GRAPHICS_OPTION_WINDOW_WIDTH, GRAPHICS_OPTION_WINDOW_HEIGHT)));
+    output->SetDimensions(IntVector2(Vector2(currentGraphicsOptions.WindowWidth, currentGraphicsOptions.WindowHeight)));
     output->SetDisplayMode(RHIOutputMode::Windowed);
     output->GetWindow()->custom_message_handler = WindowProc;
     g_theRenderer->ResizeBuffers();

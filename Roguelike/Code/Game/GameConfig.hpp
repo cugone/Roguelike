@@ -1,17 +1,18 @@
-extern float WINDOW_WIDTH;
-extern float WINDOW_HEIGHT;
 
-extern float WINDOW_ASPECT_RATIO;
+struct GraphicsOptions {
+    float WindowWidth = 1600.0f;
+    float WindowHeight = 900.0f;
+    float WindowAspectRatio = WindowWidth / WindowHeight;
+    float Fov = 70.0f;
+    float MaxShakeAngle = 0.0f;
+    float MaxShakeOffsetHorizontal = 0.0f;
+    float MaxShakeOffsetVertical = 0.0f;
+    float MaxMouseSensitivityX = 0.1f;
+    float MaxShakeSensitivityY = 0.1f;
+    bool InvertMouseY = false;
+    bool InvertMouseX = false;
+    bool vsync = true;
+};
 
-extern bool GRAPHICS_OPTION_VSYNC;
-extern float GRAPHICS_OPTION_WINDOW_WIDTH;
-extern float GRAPHICS_OPTION_WINDOW_HEIGHT;
-extern float GRAPHICS_OPTION_FOV_DEGREES;
-
-extern float GAME_OPTION_MAX_SHAKE_ANGLE;
-extern float GAME_OPTION_MAX_SHAKE_OFFSET_H;
-extern float GAME_OPTION_MAX_SHAKE_OFFSET_V;
-
-extern float GAME_OPTION_MOUSE_SENSITIVITY_X;
-extern float GAME_OPTION_MOUSE_SENSITIVITY_Y;
-extern bool GAME_OPTION_INVERT_MOUSE_Y;
+static GraphicsOptions defaultGraphicsOptions{};
+static GraphicsOptions currentGraphicsOptions{};

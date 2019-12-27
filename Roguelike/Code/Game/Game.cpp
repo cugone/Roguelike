@@ -133,7 +133,7 @@ void Game::Render_Title() const {
     g_theRenderer->SetViewportAsPercent();
 
     //2D View / HUD
-    const float ui_view_height = GRAPHICS_OPTION_WINDOW_HEIGHT;
+    const float ui_view_height = currentGraphicsOptions.WindowHeight;
     const float ui_view_width = ui_view_height * _ui_camera.GetAspectRatio();
     const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
@@ -161,7 +161,7 @@ void Game::Render_Loading() const {
     g_theRenderer->SetViewportAsPercent();
 
     //2D View / HUD
-    const float ui_view_height = GRAPHICS_OPTION_WINDOW_HEIGHT;
+    const float ui_view_height = currentGraphicsOptions.WindowHeight;
     const float ui_view_width = ui_view_height * _ui_camera.GetAspectRatio();
     const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
@@ -220,7 +220,7 @@ void Game::Render_Main() const {
     }
 
     //2D View / HUD
-    const float ui_view_height = GRAPHICS_OPTION_WINDOW_HEIGHT;
+    const float ui_view_height = currentGraphicsOptions.WindowHeight;
     const float ui_view_width = ui_view_height * _ui_camera.GetAspectRatio();
     const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
