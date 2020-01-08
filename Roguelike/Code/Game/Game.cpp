@@ -293,7 +293,7 @@ void Game::RegisterCommands() {
     {
         Console::Command equip{};
         equip.command_name = "equip";
-        equip.help_text_short = "Equips/Unequips an item to  an actor's inventory.";
+        equip.help_text_short = "Equips/Unequips an item in an actor's inventory.";
         equip.help_text_long = "equip item: Equips or Unequips an item from/to selected actor.";
         equip.command_function = [this](const std::string& args) {
             ArgumentParser p{args};
@@ -311,17 +311,13 @@ void Game::RegisterCommands() {
                 }
             }
             if(!entity) {
-                std::ostringstream ss;
-                ss << "Select an actor to equip.";
-                g_theConsole->ErrorMsg(ss.str());
+                g_theConsole->ErrorMsg("Select an actor to equip.");
                 return;
             }
             if(auto* item = entity->inventory.HasItem(item_name)) {
                 auto asActor = dynamic_cast<Actor*>(entity);
                 if(!asActor) {
-                    std::ostringstream ss;
-                    ss << "Entity is not an actor.";
-                    g_theConsole->ErrorMsg(ss.str());
+                    g_theConsole->ErrorMsg("Entity is not an actor.");
                     return;
                 }
                 if(auto* equippedItem = asActor->IsEquipped(item->GetEquipSlot())) {
@@ -329,6 +325,10 @@ void Game::RegisterCommands() {
                 } else {
                     asActor->Equip(item->GetEquipSlot(), item);
                 }
+            } else {
+                std::ostringstream ss;
+                ss << "Actor does not have " << item_name;
+                g_theConsole->ErrorMsg(ss.str());
             }
         };
         _consoleCommands.AddCommand(equip);
@@ -339,22 +339,56 @@ void Game::RegisterCommands() {
         list.command_name = "list";
         list.help_text_short = "list [items|actors|features|all]";
         list.help_text_long = "lists all entities of specified type or all.";
-        list.command_function = [this, &list](const std::string& args) {
+        list.command_function = [this, list](const std::string& args) {
             ArgumentParser p{args};
             std::string subcommand{};
             if(!(p >> subcommand)) {
+                g_theConsole->PrintMsg(list.help_text_short);
                 return;
             }
             subcommand = StringUtils::ToLowerCase(StringUtils::TrimWhitespace(subcommand));
+            const auto all_item_names = [=]()->std::vector<std::string> {
+                std::vector<std::string> names{};
+                names.reserve(Item::s_registry.size());
+                std::for_each(std::cbegin(Item::s_registry), std::cend(Item::s_registry), [&](const auto& iter) { names.push_back(iter.first); });
+                return names;
+            }();
+            const auto all_actor_names = [=]()->std::vector<std::string> {
+                const auto& entities = this->_map->GetEntities();
+                std::vector<std::string> names{};
+                names.reserve(entities.size());
+                std::for_each(std::cbegin(entities), std::cend(entities), [&](const Entity* e) { if(const Actor* a = dynamic_cast<const Actor*>(e)) names.push_back(a->name); });
+                return names;
+            }();
+            //const auto all_feature_names = [=]()->std::vector<std::string> {
+            //    const auto& entities = this->_map->GetEntities();
+            //    std::vector<std::string> names{};
+            //    names.reserve(entities.size());
+            //    std::for_each(std::cbegin(entities), std::cend(entities), [&](const Entity* e) { if(const Feature* f = dynamic_cast<const Feature*>(e)) names.push_back(f->name); });
+            //    return names;
+            //}();
+            const auto all_feature_names = std::vector<std::string>{};
             if(subcommand == "items") {
-                g_theConsole->WarnMsg("Not yet implemented.");
+                for(const auto& name : all_item_names) {
+                    g_theConsole->PrintMsg(name);
+                }
             } else if(subcommand == "actors") {
-                g_theConsole->WarnMsg("Not yet implemented.");
+                for(const auto& name : all_actor_names) {
+                    g_theConsole->PrintMsg(name);
+                }
             } else if(subcommand == "features") {
                 g_theConsole->WarnMsg("Not yet implemented.");
+                for(const auto& name : all_feature_names) {
+                    g_theConsole->PrintMsg(name);
+                }
             } else if(subcommand == "all") {
-                const auto& all_entity_names = EntityDefinition::GetAllEntityDefinitionNames();
-                    for(const auto& name : all_entity_names) {
+                for(const auto& name : all_item_names) {
+                    g_theConsole->PrintMsg(name);
+                }
+                for(const auto& name : all_actor_names) {
+                    g_theConsole->PrintMsg(name);
+                }
+                for(const auto& name : all_feature_names) {
                     g_theConsole->PrintMsg(name);
                 }
             } else {
