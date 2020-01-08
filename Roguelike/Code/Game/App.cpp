@@ -88,19 +88,11 @@ void App::SetupEngineSystemChainOfResponsibility() {
 }
 
 void App::Initialize() {
-    g_theConfig->AppendFromFile("Engine/Config/options.dat");
-    g_theConfig->GetValue("vsync", currentGraphicsOptions.vsync);
-    g_theConfig->GetValue("window_width", currentGraphicsOptions.WindowWidth);
-    g_theConfig->GetValue("window_height", currentGraphicsOptions.WindowHeight);
-
     g_theRenderer->Initialize();
     g_theRenderer->SetVSync(currentGraphicsOptions.vsync);
     auto* output = g_theRenderer->GetOutput();
     output->SetTitle("RogueLike");
-    output->SetDimensions(IntVector2(Vector2(currentGraphicsOptions.WindowWidth, currentGraphicsOptions.WindowHeight)));
-    output->SetDisplayMode(RHIOutputMode::Windowed);
     output->GetWindow()->custom_message_handler = WindowProc;
-    g_theRenderer->ResizeBuffers();
 
     g_theUISystem->Initialize();
     g_theInputSystem->Initialize();
