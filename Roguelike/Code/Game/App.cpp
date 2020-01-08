@@ -189,14 +189,14 @@ bool App::ProcessSystemMessage(const EngineMessage& msg) noexcept {
             return false;
         }
     }
-    case WindowsSystemMessage::Window_Size:
-    {
-        LPARAM lp = msg.lparam;
-        const auto w = HIWORD(lp);
-        const auto h = LOWORD(lp);
-        g_theRenderer->ResizeBuffers();
-        return true;
-    }
+    //case WindowsSystemMessage::Window_Size:
+    //{
+    //    LPARAM lp = msg.lparam;
+    //    const auto w = HIWORD(lp);
+    //    const auto h = LOWORD(lp);
+    //    g_theRenderer->ResizeBuffers();
+    //    return true;
+    //}
     default:
         return false;
     }
