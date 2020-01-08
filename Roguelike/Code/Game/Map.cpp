@@ -48,6 +48,11 @@ void Map::KillEntity(Entity& e) {
     e.tile->entity = nullptr;
 }
 
+
+std::vector<Entity*> Map::GetEntities() const noexcept {
+    return _entities;
+}
+
 AABB2 Map::CalcWorldBounds() const {
     return {Vector2::ZERO, CalcMaxDimensions()};
 }

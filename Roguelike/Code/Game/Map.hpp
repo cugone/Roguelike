@@ -77,6 +77,7 @@ public:
     Actor* player = nullptr;
 
     void KillEntity(Entity& e);
+    std::vector<Entity*> GetEntities() const noexcept;
 
 protected:
 private:
