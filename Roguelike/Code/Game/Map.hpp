@@ -79,6 +79,7 @@ public:
     void KillEntity(Entity& e);
     std::vector<Entity*> GetEntities() const noexcept;
 
+    static inline constexpr std::size_t max_layers = 9u;
 protected:
 private:
     bool LoadFromXML(const XMLElement& elem);
@@ -107,5 +108,4 @@ private:
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
     float _camera_speed = 1.0f;
     static inline unsigned long long default_map_index = 0ull;
-    static inline constexpr std::size_t _max_layers = 9u;
 };

@@ -370,19 +370,18 @@ void Map::LoadLayersForMap(const XMLElement &elem) {
     if(auto xml_layers = elem.FirstChildElement("layers")) {
         DataUtils::ValidateXmlElement(*xml_layers, "layers", "layer", "");
         std::size_t layer_count = DataUtils::GetChildElementCount(*xml_layers, "layer");
-        if(layer_count > _max_layers) {
+        if(layer_count > max_layers) {
             std::ostringstream ss;
-            ss << "Layer count of map " << _name << " is greater than the maximum allowed (" << _max_layers << ").";
-            ss << "\nOnly the first " << _max_layers << " layers will be used.";
+            ss << "Layer count of map " << _name << " is greater than the maximum allowed (" << max_layers << ").";
+            ss << "\nOnly the first " << max_layers << " layers will be used.";
             ss.flush();
             g_theFileLogger->LogLine(ss.str());
         }
 
         auto layer_index = 0;
-        auto max_layers = _max_layers;
         _layers.reserve(layer_count);
         DataUtils::ForEachChildElement(*xml_layers, "layer",
-            [this, &layer_index, max_layers](const XMLElement& xml_layer) {
+            [this, &layer_index](const XMLElement& xml_layer) {
             if(static_cast<std::size_t>(layer_index) < max_layers) {
                 _layers.emplace_back(std::make_unique<Layer>(this, xml_layer));
                 _layers.back()->z_index = layer_index++;
