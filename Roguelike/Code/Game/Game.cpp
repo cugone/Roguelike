@@ -255,6 +255,36 @@ void Game::EndFrame_Loading() {
 
 void Game::RegisterCommands() {
     {
+        Console::Command color{};
+        color.command_name = "set_color";
+        color.help_text_short = "Sets entity's color value.";
+        color.help_text_long = "set_color [color_value]: Sets an entity's color value. No value returns it to White.";
+        color.command_function = [this](const std::string& args) {
+            ArgumentParser p{args};
+            Entity* entity = nullptr;
+            if(_debug_inspected_entity) {
+                entity = _debug_inspected_entity;
+            }
+            if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+                if(tile->entity) {
+                    entity = tile->entity;
+                }
+            }
+            if(!entity) {
+                g_theConsole->ErrorMsg("Select an entity to color.");
+                return;
+            }
+            std::string color_str{};
+            if(!(p >> color_str)) {
+                entity->color = Rgba::White;
+                return;
+            }
+            entity->color = Rgba(color_str);
+        };
+        _consoleCommands.AddCommand(color);
+    }
+
+    {
         Console::Command give{};
         give.command_name = "give";
         give.help_text_short = "Gives object to entity.";
