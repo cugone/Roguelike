@@ -154,48 +154,33 @@ const IntVector2& Tile::GetCoords() const {
 }
 
 Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) {
-    auto my_index = GetCoords();
-    Map* my_map = nullptr;
-    if(layer) {
-        if(layer->z_index <= 0) {
-            if(directionAndLayerOffset.z < 0) {
+    const auto* my_map = [=]()->const Map* {
+        if(layer) {
+            //layer is valid but the requested index is out of bounds.
+            if((layer->z_index <= 0 && directionAndLayerOffset.z < 0) || (layer->z_index >= 8 && directionAndLayerOffset.z > 0)) {
                 return nullptr;
             }
+            return layer->GetMap();
         }
-        if(layer->z_index >= 8) {
-            if(directionAndLayerOffset.z > 0) {
-                return nullptr;
-            }
-        }
-        my_map = layer->GetMap();
-    }
+        return nullptr;
+    }(); //IIIL;
     if(my_map) {
-        auto target_location = IntVector3{ my_index, layer->z_index };
-        auto map_dims = my_map->CalcMaxDimensions();
-        if(my_index.x && my_index.x < map_dims.x) {
-            target_location.x += directionAndLayerOffset.x;
-        } else { //x is either 0 or max
-            if((my_index.x == 0 && directionAndLayerOffset.x < 0) || (my_index.x == map_dims.x && directionAndLayerOffset.x > 0)) {
-                return nullptr;
-            }
-            target_location.x += directionAndLayerOffset.x;
+        const auto my_index = IntVector3(GetCoords(), layer->z_index);
+        const auto map_dims = IntVector3(my_map->CalcMaxDimensions(), 8);
+        const bool is_x_not_valid = (my_index.x == 0 && directionAndLayerOffset.x < 0) || (my_index.x == map_dims.x && directionAndLayerOffset.x > 0);
+        const bool is_y_not_valid = (my_index.y == 0 && directionAndLayerOffset.y < 0) || (my_index.y == map_dims.y && directionAndLayerOffset.y > 0);
+        const bool is_z_not_valid = (my_index.z == 0 && directionAndLayerOffset.z < 0) || (my_index.z == map_dims.z && directionAndLayerOffset.z > 0);
+        const bool is_not_valid = is_x_not_valid && is_y_not_valid && is_z_not_valid;
+        if(is_not_valid) {
+            return nullptr;
         }
-        if(my_index.y && my_index.y < map_dims.y) {
-            target_location.y += directionAndLayerOffset.y;
-        } else { //y is either 0 or max
-            if((my_index.y == 0 && directionAndLayerOffset.y < 0) || (my_index.y == map_dims.y && directionAndLayerOffset.y > 0)) {
-                return nullptr;
-            }
-            target_location.y += directionAndLayerOffset.y;
-        }
-        if(layer->z_index && layer->z_index < 8) {
-            target_location.z += directionAndLayerOffset.z;
-        } else { //z is either 0 or max
-            if((layer->z_index == 0 && directionAndLayerOffset.z < 0) || (layer->z_index == 8 && directionAndLayerOffset.z > 0)) {
-                return nullptr;
-            }
-            target_location.z += directionAndLayerOffset.z;
-        }
+        const auto target_location = [=]()->IntVector3 {
+            auto result = my_index;
+            result.x += directionAndLayerOffset.x;
+            result.y += directionAndLayerOffset.y;
+            result.z += directionAndLayerOffset.z;
+            return result;
+        }(); //IIIL
         return my_map->GetTile(target_location);
     }
     return nullptr;
