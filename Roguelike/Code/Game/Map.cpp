@@ -24,9 +24,6 @@
 #include <algorithm>
 #include <sstream>
 
-unsigned long long Map::default_map_index = 0ull;
-
-
 void Map::CreateTextEntity(const TextEntityDesc& desc) noexcept {
     const auto text = EntityText::CreateTextEntity(desc);
     _entities.push_back(text);

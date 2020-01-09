@@ -106,6 +106,6 @@ private:
     std::vector<Entity*> _entities{};
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
     float _camera_speed = 1.0f;
-    static unsigned long long default_map_index;
-    static const std::size_t _max_layers = 9u;
+    static inline unsigned long long default_map_index = 0ull;
+    static inline constexpr std::size_t _max_layers = 9u;
 };
