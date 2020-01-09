@@ -18,8 +18,6 @@ struct fullscreen_cb_t {
     float lumosityBrightness = 1.2f;
     float gradiantRadius = 0.5f;
     Vector4 fadeColor{};
-    IntVector2 resolution{};
-    Vector2 padding{};
     Vector4 gradiantColor = Rgba::White.GetRgbaAsFloats();
 };
 
@@ -27,7 +25,6 @@ enum class FullscreenEffect {
     None = -1
     ,FadeIn
     ,FadeOut
-    ,Scanlines
     ,Lumosity
     ,Sepia
     ,CircularGradient
@@ -120,7 +117,6 @@ private:
     void UpdateFullscreenEffect(const FullscreenEffect& effect);
     bool DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime);
     bool DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime);
-    void DoScanlines();
     void DoLumosity(float brightnessPower = 2.4f);
     void DoCircularGradient(float radius, const Rgba& color);
     void DoSepia();

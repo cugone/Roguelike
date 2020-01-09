@@ -43,7 +43,6 @@ void Game::Initialize() {
 
 void Game::CreateFullscreenConstantBuffer() {
     _fullscreen_cb = std::unique_ptr<ConstantBuffer>(g_theRenderer->CreateConstantBuffer(&_fullscreen_data, sizeof(_fullscreen_data)));
-    _fullscreen_data.resolution = g_theRenderer->GetOutput()->GetDimensions();
     _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
@@ -644,16 +643,6 @@ bool Game::DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
     return _fullscreen_data.fadePercent == 1.0f;
 }
 
-void Game::DoScanlines() {
-    static TimeUtils::FPSeconds curFadeTime{};
-    if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::Scanlines)) {
-        _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Scanlines);
-        curFadeTime = curFadeTime.zero();
-    }
-    _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Scanlines);
-    _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
-}
-
 void Game::DoLumosity(float brightnessPower /*= 2.4f*/) {
     static TimeUtils::FPSeconds curFadeTime{};
     if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::Lumosity)) {
@@ -705,9 +694,6 @@ void Game::UpdateFullscreenEffect(const FullscreenEffect& effect) {
         break;
     case FullscreenEffect::FadeOut:
         DoFadeOut(_fadeOut_color, _fadeOutTime);
-        break;
-    case FullscreenEffect::Scanlines:
-        DoScanlines();
         break;
     case FullscreenEffect::Lumosity:
         DoLumosity(_fullscreen_data.lumosityBrightness);
@@ -948,11 +934,6 @@ void Game::ShowEffectsUI() {
             current_item = "Fade Out";
             _current_fs_effect = FullscreenEffect::FadeOut;
         }
-        if(ImGui::Selectable("Scanlines")) {
-            is_selected = true;
-            current_item = "Scanlines";
-            _current_fs_effect = FullscreenEffect::Scanlines;
-        }
         if(ImGui::Selectable("Lumosity")) {
             is_selected = true;
             current_item = "Lumosity";
@@ -990,9 +971,6 @@ void Game::ShowEffectsUI() {
         if(ImGui::InputFloat("Fade Out Time (s)", &_debug_fadeOutTime)) {
             _fadeOutTime = TimeUtils::FPSeconds{ _debug_fadeOutTime };
         }
-        break;
-    case FullscreenEffect::Scanlines:
-        ImGui::Text("Effect: Scanlines");
         break;
     case FullscreenEffect::Lumosity:
         ImGui::Text("Effect: Lumosity");

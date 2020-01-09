@@ -18,8 +18,6 @@ cbuffer fullscreen_cb : register(b3) {
     float g_greyscaleBrightness;
     float g_gradRadius;
     float4 g_fadeColor;
-    int2 g_resolution;
-    float2 padding;
     float4 g_gradColor;
 }
 
