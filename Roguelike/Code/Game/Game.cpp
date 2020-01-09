@@ -69,6 +69,10 @@ void Game::OnExit_Loading() {
 
 void Game::OnExit_Main() {
     UnRegisterCommands();
+    Item::ClearItemRegistry();
+    Actor::ClearActorRegistry();
+    EntityDefinition::ClearEntityRegistry();
+    TileDefinition::DestroyTileDefinitions();
 }
 
 void Game::BeginFrame_Title() {
