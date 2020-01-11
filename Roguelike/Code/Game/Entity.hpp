@@ -3,6 +3,7 @@
 #include "Engine/Math/IntVector2.hpp"
 
 #include "Engine/Core/DataUtils.hpp"
+#include "Engine/Core/Event.hpp"
 #include "Engine/Core/TimeUtils.hpp"
 #include "Engine/Core/Vertex3D.hpp"
 
@@ -56,6 +57,9 @@ public:
     Rgba color{Rgba::White};
     std::string name{"UNKNOWN ENTITY"};
 
+    static Event<const IntVector2&, const IntVector2&> OnMove;
+    static Event<Entity&, Entity&, long double> OnFight;
+    static Event<> OnDestroy;
 protected:
     Stats GetStatModifiers() const noexcept;
     const Stats& GetBaseStats() const noexcept;

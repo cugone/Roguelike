@@ -9,6 +9,10 @@
 #include "Game/Map.hpp"
 #include "Game/Item.hpp"
 
+Event<const IntVector2&, const IntVector2&> Entity::OnMove;
+Event<Entity&, Entity&, long double> Entity::OnFight;
+Event<> Entity::OnDestroy;
+
 Entity::~Entity() {
     /* DO NOTHING */
 }
@@ -131,9 +135,11 @@ long double Entity::Fight(Entity& attacker, Entity& defender) {
     const auto dDef = dStats.GetStat(StatsID::Defense);
     const auto dEva = dStats.GetStat(StatsID::Evasion);
     if(aSpd < dEva) {
+        attacker.OnFight.Trigger(attacker, defender, -1.0L);
         return -1.0L; //Miss
     }
     if(aAtt < dDef) {
+        attacker.OnFight.Trigger(attacker, defender, 0.0L);
         return 0.0L; //0 Dmg
     }
     auto result = aAtt - dDef;
@@ -141,10 +147,12 @@ long double Entity::Fight(Entity& attacker, Entity& defender) {
     if(MathUtils::IsEquivalentOrLessThan(new_health, 0.0L)) {
         defender.AdjustBaseStats(dStats);
         auto& map = defender.map;
+        defender.OnDestroy.Trigger();
         map->KillEntity(defender);
     } else {
         defender.AdjustBaseStats(dStats);
     }
+    attacker.OnFight.Trigger(attacker, defender, result);
     return result;
 }
 
