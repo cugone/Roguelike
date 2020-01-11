@@ -159,6 +159,7 @@ bool Actor::Move(const IntVector2& direction) {
         }
         SetPosition(target_position);
         moved = true;
+        OnMove.Trigger(pos, target_position);
     }
     Act();
     return moved;

@@ -56,7 +56,7 @@ private:
     std::vector<Item*> GetAllLeftArmEquipment() const;
     std::vector<Item*> GetAllRightArmEquipment() const;
     std::vector<Item*> GetAllLegsEquipment() const;
-    std::vector<Item*> GetAllFeetEquipment() const;    
+    std::vector<Item*> GetAllFeetEquipment() const;
 
     static std::multimap<std::string, std::unique_ptr<Actor>> s_registry;
     std::vector<Item*> _equipment = std::vector<Item*>(static_cast<std::size_t>(EquipSlot::Max));
