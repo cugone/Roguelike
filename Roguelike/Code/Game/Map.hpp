@@ -99,6 +99,8 @@ private:
     void CreateTextEntity(const TextEntityDesc& desc) noexcept;
     void CreateTextEntityAt(const IntVector2& tileCoords, const TextEntityDesc& desc) noexcept;
 
+    void ShakeCamera(const IntVector2& from, const IntVector2& to) noexcept;
+
     std::string _name{};
     std::vector<std::unique_ptr<Layer>> _layers{};
     Renderer& _renderer;

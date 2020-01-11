@@ -8,6 +8,7 @@
 
 #include "Engine/Math/Vector4.hpp"
 #include "Engine/Math/IntVector3.hpp"
+#include "Engine/Math/MathUtils.hpp"
 
 #include "Engine/Renderer/Material.hpp"
 #include "Engine/Renderer/Renderer.hpp"
@@ -18,6 +19,7 @@
 #include "Game/EntityText.hpp"
 #include "Game/EntityDefinition.hpp"
 #include "Game/GameCommon.hpp"
+#include "Game/GameConfig.hpp"
 #include "Game/Layer.hpp"
 #include "Game/TileDefinition.hpp"
 
@@ -34,6 +36,12 @@ void Map::CreateTextEntityAt(const IntVector2& tileCoords, const TextEntityDesc&
     desc_copy.position = _renderer.ConvertWorldToScreenCoords(Vector2(tileCoords) + Vector2(0.5f, 0.5f));
     const auto text = EntityText::CreateTextEntity(desc_copy);
     _entities.push_back(text);
+}
+
+
+void Map::ShakeCamera(const IntVector2& from, const IntVector2& to) noexcept {
+    const auto distance = MathUtils::CalculateManhattanDistance(from, to);
+    camera.trauma += 0.1f + distance * 0.05f;
 }
 
 void Map::SetDebugGridColor(const Rgba& gridColor) {
@@ -192,6 +200,19 @@ void Map::Render(Renderer& renderer) const {
     vbo.clear();
     static std::vector<unsigned int> ibo{};
     ibo.clear();
+
+    g_theRenderer->ResetModelViewProjection();
+
+    //2D View / HUD
+    const float ui_view_height = currentGraphicsOptions.WindowHeight;
+    const float ui_view_width = ui_view_height * camera.GetAspectRatio();
+    const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
+    const auto ui_view_half_extents = ui_view_extents * 0.5f;
+    auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
+    auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
+    auto ui_nearFar = Vector2{0.0f, 1.0f};
+    camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, camera.GetAspectRatio());
+    g_theRenderer->SetCamera(camera);
 
     for(const auto* e : _entities) {
         const auto* eAsText = dynamic_cast<const EntityText*>(e);
@@ -444,6 +465,7 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
             }
             if(is_player) {
                 player = actor;
+                player->OnMove.Subscribe_method(this, &Map::ShakeCamera);
             }
             _entities.push_back(actor);
         });
@@ -451,21 +473,14 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
 }
 
 void Map::LoadFeaturesForMap(const XMLElement& elem) {
-    if(auto* xml_actors = elem.FirstChildElement("features")) {
-        DataUtils::ValidateXmlElement(*xml_actors, "features", "feature", "");
-        const auto actor_count = DataUtils::GetChildElementCount(*xml_actors, "feature");
-        DataUtils::ForEachChildElement(*xml_actors, "feature",
+    if(auto* xml_features = elem.FirstChildElement("features")) {
+        DataUtils::ValidateXmlElement(*xml_features, "features", "feature", "");
+        const auto actor_count = DataUtils::GetChildElementCount(*xml_features, "feature");
+        DataUtils::ForEachChildElement(*xml_features, "feature",
             [this](const XMLElement& elem) {
-            auto* actor = Actor::CreateActor(this, elem);
-            auto actor_name = StringUtils::ToLowerCase(actor->name);
-            bool is_player = actor_name == "player";
-            if(player && is_player) {
-                ERROR_AND_DIE("Map failed to load. Multiplayer not yet supported.");
-            }
-            if(is_player) {
-                player = actor;
-            }
-            _entities.push_back(actor);
+            auto* feature = Actor::CreateActor(this, elem);
+            auto feature_name = StringUtils::ToLowerCase(feature->name);
+            _entities.push_back(feature);
         });
     }
 }
