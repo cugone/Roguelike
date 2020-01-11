@@ -16,7 +16,7 @@ struct TextEntityDesc {
     Vector2 position{ 0.0f, 0.0f };
     TimeUtils::FPSeconds timeToLive{ 1.0f };
     KerningFont* font{};
-    float speed{1.0f};
+    float speed{0.0f};
 };
 
 class EntityText : public Entity {

@@ -16,7 +16,7 @@ EntityText::EntityText(const TextEntityDesc& desc) noexcept
 }
 
 void EntityText::Update(TimeUtils::FPSeconds deltaSeconds) {
-    screenPosition += Vector2{0.0f, speed} * deltaSeconds.count();
+    screenPosition += Vector2{0.0f, speed};// *deltaSeconds.count();
     color.a = static_cast<unsigned char>(255.0f * std::clamp(1.0f - (_currentLiveTime.count() / ttl.count()), 0.0f, 1.0f));
     _currentLiveTime += deltaSeconds;
     if(ttl < _currentLiveTime) {
@@ -26,7 +26,7 @@ void EntityText::Update(TimeUtils::FPSeconds deltaSeconds) {
 
 void EntityText::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t /*layer_index*/) const {
     g_theRenderer->AppendMultiLineTextBuffer(font, text, screenPosition, layer_color, verts, ibo);
-    const auto S = Matrix4::CreateScaleMatrix(1.0f);
+    const auto S = Matrix4::I;
     const auto R = Matrix4::I;
     const auto T = Matrix4::CreateTranslationMatrix(screenPosition);
     const auto M = Matrix4::MakeSRT(S, R, T);
