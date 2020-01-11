@@ -859,7 +859,7 @@ void Game::HandleDebugKeyboardInput(Camera2D& base_camera) {
     }
 
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::B)) {
-        base_camera.trauma += 1.0f;
+        base_camera.trauma += 0.2f;
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::R)) {
         const auto layer_count = _map->GetLayerCount();
