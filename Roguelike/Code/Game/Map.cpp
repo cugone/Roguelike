@@ -444,7 +444,7 @@ void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
             if(_tileset_sheet) {
                 DataUtils::ForEachChildElement(*xml_root, "tileDefinition",
                     [this](const XMLElement& elem) {
-                    TileDefinition::CreateTileDefinition(g_theRenderer, elem, _tileset_sheet);
+                    TileDefinition::CreateTileDefinition(*g_theRenderer, elem, _tileset_sheet);
                 });
             }
         }

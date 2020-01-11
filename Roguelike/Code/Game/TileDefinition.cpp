@@ -11,7 +11,7 @@
 
 std::map<std::string, std::unique_ptr<TileDefinition>> TileDefinition::s_registry{};
 
-void TileDefinition::CreateTileDefinition(Renderer* renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
+void TileDefinition::CreateTileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
     auto new_def = std::make_unique<TileDefinition>(renderer, elem, sheet);
     auto new_def_name = new_def->name;
     s_registry.try_emplace(new_def_name, std::move(new_def));
@@ -80,7 +80,7 @@ int TileDefinition::GetIndex() const {
     return -1;
 }
 
-TileDefinition::TileDefinition(Renderer* renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet)
+TileDefinition::TileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet)
     : _renderer(renderer)
     , _sheet(sheet)
 {
@@ -129,9 +129,9 @@ TileDefinition::TileDefinition(Renderer* renderer, const XMLElement& elem, std::
 
      if(auto xml_animation = elem.FirstChildElement("animation")) {
          is_animated = true;
-         _sprite = std::move(_renderer->CreateAnimatedSprite(_sheet, *xml_animation));
+         _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, *xml_animation));
      } else {
-         _sprite = std::move(_renderer->CreateAnimatedSprite(_sheet, _index));
+         _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, _index));
      }
      return true;
  }
