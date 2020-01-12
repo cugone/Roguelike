@@ -1,0 +1,14 @@
+<UI>
+    <spritesheet src="Data/Images/Tiles.png" dimensions="[65,65]" />
+    <cursors>
+        <cursor name="yellow_corner_box" index="[43,34]" />
+        <cursor name="green_box" index="[44,34]" />
+        <cursor name="red_crosshair_box" index="[45,34]" />
+        <cursor name="question" index="[46,34]" />
+    </cursors>
+    <overlays>
+        <overlay name="white_circle" index="[47,34]" />
+        <overlay name="white" index="[48,34]" />
+        <overlay name="blue" index="[49,34]" />
+    </overlays>
+</UI>

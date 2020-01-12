@@ -52,7 +52,7 @@
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-	<VcpkgConfiguration>Release</VcpkgConfiguration>
+    <VcpkgConfiguration>Release</VcpkgConfiguration>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -180,6 +180,7 @@
     <Xml Include="..\..\Run_x64\Data\Definitions\Items.xml" />
     <Xml Include="..\..\Run_x64\Data\Definitions\Map00.xml" />
     <Xml Include="..\..\Run_x64\Data\Definitions\Tiles.xml" />
+    <Xml Include="..\..\Run_x64\Data\Definitions\UI.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Run_x64\Data\Materials\Fullscreen.material">
