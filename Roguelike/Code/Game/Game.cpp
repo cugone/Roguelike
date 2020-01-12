@@ -27,9 +27,12 @@
 #include "Game/Inventory.hpp"
 
 Game::~Game() noexcept {
+    _cursors.clear();
+    CursorDefinition::ClearCursorRegistry();
     Item::ClearItemRegistry();
     Actor::ClearActorRegistry();
     EntityDefinition::ClearEntityRegistry();
+    TileDefinition::DestroyTileDefinitions();
 }
 
 void Game::Initialize() {
@@ -70,6 +73,8 @@ void Game::OnExit_Loading() {
 
 void Game::OnExit_Main() {
     UnRegisterCommands();
+    _cursors.clear();
+    CursorDefinition::ClearCursorRegistry();
     Item::ClearItemRegistry();
     Actor::ClearActorRegistry();
     EntityDefinition::ClearEntityRegistry();
