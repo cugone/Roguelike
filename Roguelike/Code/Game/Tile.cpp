@@ -154,7 +154,7 @@ const IntVector2& Tile::GetCoords() const {
 }
 
 Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) {
-    const auto* my_map = [=]()->const Map* {
+    if(const auto* my_map = [=]()->const Map* {
         if(layer) {
             //layer is valid but the requested index is out of bounds.
             if((layer->z_index <= 0 && directionAndLayerOffset.z < 0) || (layer->z_index >= 8 && directionAndLayerOffset.z > 0)) {
@@ -163,8 +163,7 @@ Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) {
             return layer->GetMap();
         }
         return nullptr;
-    }(); //IIIL;
-    if(my_map) {
+    }()) { //IIIL
         const auto my_index = IntVector3(GetCoords(), layer->z_index);
         const auto map_dims = IntVector3(my_map->CalcMaxDimensions(), 8);
         const bool is_x_not_valid = (my_index.x == 0 && directionAndLayerOffset.x < 0) || (my_index.x == map_dims.x && directionAndLayerOffset.x > 0);
@@ -174,13 +173,7 @@ Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) {
         if(is_not_valid) {
             return nullptr;
         }
-        const auto target_location = [=]()->IntVector3 {
-            auto result = my_index;
-            result.x += directionAndLayerOffset.x;
-            result.y += directionAndLayerOffset.y;
-            result.z += directionAndLayerOffset.z;
-            return result;
-        }(); //IIIL
+        const auto target_location = [result = my_index, directionAndLayerOffset]() mutable -> IntVector3 { result += directionAndLayerOffset; return result; }(); //IIIL
         return my_map->GetTile(target_location);
     }
     return nullptr;
@@ -219,30 +212,16 @@ Tile* Tile::GetNorthWestNeighbor() {
 }
 
 std::vector<Tile*> Tile::GetNeighbors(const IntVector2& direction) {
-    auto my_index = GetCoords();
-    Map* my_map = nullptr;
-    if(layer) {
-        my_map = layer->GetMap();
-    }
-    if(my_map) {
-        auto target_location = my_index;
-        auto map_dims = my_map->CalcMaxDimensions();
-        if(my_index.x && my_index.x < map_dims.x) {
-            target_location.x += direction.x;
-        } else { //x is either 0 or max
-            if((my_index.x == 0 && direction.x < 0) || (my_index.x == map_dims.x && direction.x > 0)) {
-                return{};
-            }
-            target_location.x += direction.x;
+    if(const auto* my_map = [=]()->const Map* { if(layer) { return layer->GetMap(); } return nullptr; }()) { //IIIL
+        const auto my_index = GetCoords();
+        const auto map_dims = my_map->CalcMaxDimensions();
+        const bool is_x_not_valid = (my_index.x == 0 && direction.x < 0) || (my_index.x == map_dims.x && direction.x > 0);
+        const bool is_y_not_valid = (my_index.y == 0 && direction.y < 0) || (my_index.y == map_dims.y && direction.y > 0);
+        const bool is_not_valid = is_x_not_valid && is_y_not_valid;
+        if(is_not_valid) {
+            return {};
         }
-        if(my_index.y && my_index.y < map_dims.y) {
-            target_location.y += direction.y;
-        } else { //y is either 0 or max
-            if((my_index.y == 0 && direction.y < 0) || (my_index.y == map_dims.y && direction.y > 0)) {
-                return{};
-            }
-            target_location.y += direction.y;
-        }
+        const auto target_location = [result = my_index, direction]() mutable -> IntVector2 { result += direction; return result; }(); //IIIL
         return my_map->GetTiles(target_location);
     }
     return {};
