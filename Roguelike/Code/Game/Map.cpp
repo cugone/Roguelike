@@ -66,8 +66,7 @@ AABB2 Map::CalcWorldBounds() const {
 std::vector<Tile*> Map::PickTilesFromWorldCoords(const Vector2& worldCoords) const {
     auto world_bounds = CalcWorldBounds();
     if(MathUtils::IsPointInside(world_bounds, worldCoords)) {
-        std::vector<Tile*> results = GetTiles(IntVector2{ worldCoords });
-        return results;
+        return GetTiles(IntVector2{ worldCoords });
     }
     return {};
 }
@@ -162,6 +161,9 @@ void Map::SetPriorityLayer(std::size_t i) {
 }
 
 void Map::BringLayerToFront(std::size_t i) {
+    /*
+    * This is essentially bubble sort but, for less than 10 elements, I don't care.
+    */
     auto first = std::begin(_layers);
     auto curr = first + i;
     auto next = curr + 1;
@@ -278,15 +280,15 @@ void Map::FocusEntity(Entity* entity) {
 
 Vector2 Map::CalcMaxDimensions() const {
     Vector2 results{ 1.0f, 1.0f };
-    for(const auto& layer : _layers) {
+    std::for_each(std::begin(_layers), std::end(_layers), [&results](const auto& layer) {
         const auto& cur_layer_dimensions = layer->tileDimensions;
-        if(cur_layer_dimensions.x > results.x) {
+        if(results.x < cur_layer_dimensions.x) {
             results.x = static_cast<float>(cur_layer_dimensions.x);
         }
-        if(cur_layer_dimensions.y > results.y) {
+        if(results.y < cur_layer_dimensions.y) {
             results.y = static_cast<float>(cur_layer_dimensions.y);
         }
-    }
+    });
     return results;
 }
 
