@@ -15,6 +15,7 @@
 #include "Engine/Renderer/SpriteSheet.hpp"
 
 #include "Game/Actor.hpp"
+#include "Game/Cursor.hpp"
 #include "Game/Entity.hpp"
 #include "Game/EntityText.hpp"
 #include "Game/EntityDefinition.hpp"
@@ -187,13 +188,6 @@ void Map::UpdateEntityAI(TimeUtils::FPSeconds deltaSeconds) {
 void Map::Render(Renderer& renderer) const {
     for(const auto& layer : _layers) {
         layer->Render(renderer);
-    }
-
-    if(auto* tile = PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-        auto tile_bounds = tile->GetBounds();
-        renderer.SetMaterial(renderer.GetMaterial("__2D"));
-        renderer.SetModelMatrix(Matrix4::I);
-        renderer.DrawAABB2(tile_bounds, Rgba::White, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
     }
 
     static std::vector<Vertex3D> vbo{};

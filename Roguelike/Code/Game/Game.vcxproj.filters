@@ -76,6 +76,12 @@
     <ClCompile Include="EntityText.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Cursor.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="CursorDefinition.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameCommon.hpp">
@@ -121,6 +127,12 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="EntityText.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Cursor.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="CursorDefinition.hpp">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>

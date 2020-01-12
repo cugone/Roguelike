@@ -142,6 +142,8 @@
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="Cursor.cpp" />
+    <ClCompile Include="CursorDefinition.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EntityDefinition.cpp" />
     <ClCompile Include="EntityText.cpp" />
@@ -160,6 +162,8 @@
   <ItemGroup>
     <ClInclude Include="Actor.hpp" />
     <ClInclude Include="App.hpp" />
+    <ClInclude Include="Cursor.hpp" />
+    <ClInclude Include="CursorDefinition.hpp" />
     <ClInclude Include="Entity.hpp" />
     <ClInclude Include="EntityDefinition.hpp" />
     <ClInclude Include="EntityText.hpp" />

@@ -160,6 +160,13 @@ void Layer::RenderTiles(Renderer& renderer) const {
             t.Render(verts, ibo, color, z_index);
         }
     }
+    
+    if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+        if(g_theGame->current_cursor) {
+            g_theGame->current_cursor->SetCoords(tile->GetCoords());
+            g_theGame->current_cursor->Render(verts, ibo);
+        }
+    }
     renderer.SetMaterial(_map->GetTileMaterial());
     renderer.DrawIndexed(PrimitiveType::Triangles, verts, ibo);
 }

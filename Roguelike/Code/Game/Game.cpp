@@ -17,6 +17,8 @@
 #include "Game/GameConfig.hpp"
 #include "Game/Entity.hpp"
 #include "Game/Actor.hpp"
+#include "Game/Cursor.hpp"
+#include "Game/CursorDefinition.hpp"
 #include "Game/EntityDefinition.hpp"
 #include "Game/Layer.hpp"
 #include "Game/Map.hpp"
@@ -248,6 +250,7 @@ void Game::EndFrame_Title() {
 
 void Game::EndFrame_Loading() {
     if(!_done_loading) {
+        LoadUI();
         LoadItems();
         LoadEntities();
         LoadMaps();
@@ -467,14 +470,8 @@ void Game::OnExitState(const GameState& state) {
 }
 
 void Game::LoadUI() {
-    auto str_path = std::string{"Data/Definitions/UI.xml"};
-    if(FileUtils::IsSafeReadPath(str_path)) {
-        if(auto str_buffer = FileUtils::ReadStringBufferFromFile(str_path)) {
-            tinyxml2::XMLDocument xml_doc;
-            xml_doc.Parse(str_buffer->c_str(), str_buffer->size());
-            _map = std::make_unique<Map>(*g_theRenderer, *xml_doc.RootElement());
-        }
-    }
+    LoadCursorsFromFile("Data/Definitions/UI.xml");
+    current_cursor = &(std::begin(_cursors)->second);
 }
 
 void Game::LoadMaps() {
@@ -494,6 +491,43 @@ void Game::LoadEntities() {
 
 void Game::LoadItems() {
     LoadItemsFromFile("Data/Definitions/Items.xml");
+}
+
+void Game::LoadCursorsFromFile(const std::filesystem::path& src) {
+    LoadCursorDefinitionsFromFile(src);
+    for(const auto& c : CursorDefinition::GetLoadedDefinitions()) {
+        const auto name = c.first;
+        const auto& def = c.second;
+        _cursors.try_emplace(name, Cursor(*def));
+    }
+
+}
+
+void Game::LoadCursorDefinitionsFromFile(const std::filesystem::path& src) {
+    namespace FS = std::filesystem;
+    if(!FS::exists(src)) {
+        std::ostringstream ss;
+        ss << "Cursor Definitions file at " << src << " could not be found.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    tinyxml2::XMLDocument doc;
+    auto xml_result = doc.LoadFile(src.string().c_str());
+    if(xml_result != tinyxml2::XML_SUCCESS) {
+        std::ostringstream ss;
+        ss << "Cursor Definitions at " << src << " failed to load.";
+        ERROR_AND_DIE(ss.str().c_str());
+    }
+    if(auto* xml_root = doc.RootElement()) {
+        DataUtils::ValidateXmlElement(*xml_root, "UI", "spritesheet", "", "cursors,overlays");
+        auto* xml_spritesheet = xml_root->FirstChildElement("spritesheet");
+        _cursor_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet);
+        if(auto* xml_cursors = xml_root->FirstChildElement("cursors")) {
+            DataUtils::ForEachChildElement(*xml_cursors, "cursor",
+                [this](const XMLElement& elem) {
+                    CursorDefinition::CreateCursorDefinition(*g_theRenderer, elem, _cursor_sheet);
+                });
+        }
+    }
 }
 
 void Game::LoadEntitiesFromFile(const std::filesystem::path& src) {

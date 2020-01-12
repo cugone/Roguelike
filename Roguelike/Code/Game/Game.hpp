@@ -5,13 +5,13 @@
 
 #include "Engine/Renderer/Camera2D.hpp"
 
+#include "Game/Cursor.hpp"
 #include "Game/Map.hpp"
 #include "Game/GameCommon.hpp"
 
 #include <memory>
 
 class KerningFont;
-class Cursor;
 
 struct fullscreen_cb_t {
     int effectIndex = -1;
@@ -53,6 +53,7 @@ public:
     void EndFrame();
 
     KerningFont* ingamefont{};
+    Cursor* current_cursor{};
 protected:
 private:
 
@@ -112,6 +113,9 @@ private:
     void LoadMaps();
     void LoadEntities();
     void LoadItems();
+    void LoadCursorsFromFile(const std::filesystem::path& src);
+    void LoadCursorDefinitionsFromFile(const std::filesystem::path& src);
+
     void LoadEntitiesFromFile(const std::filesystem::path& src);
     void LoadEntityDefinitionsFromFile(const std::filesystem::path& src);
     void LoadItemsFromFile(const std::filesystem::path& src);
@@ -133,8 +137,11 @@ private:
     Rgba _debug_gradientColor{Rgba::White};
     std::vector<Tile*> _debug_inspected_tiles{};
     Entity* _debug_inspected_entity = nullptr;
+    std::shared_ptr<SpriteSheet> _cursor_sheet{};
     std::shared_ptr<SpriteSheet> _entity_sheet{};
     std::shared_ptr<SpriteSheet> _item_sheet{};
+
+    std::map<std::string, Cursor> _cursors{};
 
     float _cam_speed = 1.0f;
     float _max_shake_angle = 0.0f;
@@ -166,7 +173,6 @@ private:
     Console::CommandList _consoleCommands;
     GameState _currentGameState = GameState::Title;
     GameState _nextGameState = GameState::Title;
-    Cursor* _current_cursor = nullptr;
 
     friend class Map;
     friend class Layer;
