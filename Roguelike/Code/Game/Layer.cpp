@@ -54,7 +54,6 @@ float Layer::GetDefaultViewHeight() const {
 }
 
 bool Layer::LoadFromXml(const XMLElement& elem) {
-    //Load Layer from Xml
     DataUtils::ValidateXmlElement(elem, "layer", "row", "");
     std::size_t row_count = DataUtils::GetChildElementCount(elem, "row");
     std::vector<std::string> glyph_strings;
