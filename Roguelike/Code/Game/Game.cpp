@@ -466,6 +466,17 @@ void Game::OnExitState(const GameState& state) {
     }
 }
 
+void Game::LoadUI() {
+    auto str_path = std::string{"Data/Definitions/UI.xml"};
+    if(FileUtils::IsSafeReadPath(str_path)) {
+        if(auto str_buffer = FileUtils::ReadStringBufferFromFile(str_path)) {
+            tinyxml2::XMLDocument xml_doc;
+            xml_doc.Parse(str_buffer->c_str(), str_buffer->size());
+            _map = std::make_unique<Map>(*g_theRenderer, *xml_doc.RootElement());
+        }
+    }
+}
+
 void Game::LoadMaps() {
     auto str_path = std::string{ "Data/Definitions/Map00.xml" };
     if(FileUtils::IsSafeReadPath(str_path)) {

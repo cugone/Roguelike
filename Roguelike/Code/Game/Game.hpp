@@ -11,6 +11,7 @@
 #include <memory>
 
 class KerningFont;
+class Cursor;
 
 struct fullscreen_cb_t {
     int effectIndex = -1;
@@ -107,6 +108,7 @@ private:
     void ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const AnimatedSprite* cur_sprite);
     void ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity);
 
+    void LoadUI();
     void LoadMaps();
     void LoadEntities();
     void LoadItems();
@@ -164,6 +166,7 @@ private:
     Console::CommandList _consoleCommands;
     GameState _currentGameState = GameState::Title;
     GameState _nextGameState = GameState::Title;
+    Cursor* _current_cursor = nullptr;
 
     friend class Map;
     friend class Layer;
