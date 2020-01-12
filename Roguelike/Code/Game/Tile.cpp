@@ -153,7 +153,7 @@ const IntVector2& Tile::GetCoords() const {
     return _tile_coords;
 }
 
-Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) {
+Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) const {
     if(const auto* my_map = [=]()->const Map* {
         if(layer) {
             //layer is valid but the requested index is out of bounds.
@@ -179,39 +179,39 @@ Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) {
     return nullptr;
 }
 
-Tile* Tile::GetNorthNeighbor() {
+Tile* Tile::GetNorthNeighbor() const {
     return GetNeighbor(IntVector3{0,-1,0});
 }
 
-Tile* Tile::GetNorthEastNeighbor() {
-    return GetNeighbor(IntVector3{ 1,-1,0 });
+Tile* Tile::GetNorthEastNeighbor() const {
+    return GetNeighbor(IntVector3{1,-1,0});
 }
 
-Tile* Tile::GetEastNeighbor() {
-    return GetNeighbor(IntVector3{ 1,0,0 });
+Tile* Tile::GetEastNeighbor() const {
+    return GetNeighbor(IntVector3{1,0,0});
 }
 
-Tile* Tile::GetSouthEastNeighbor() {
-    return GetNeighbor(IntVector3{ 1,1,0 });
+Tile* Tile::GetSouthEastNeighbor() const {
+    return GetNeighbor(IntVector3{1,1,0});
 }
 
-Tile* Tile::GetSouthNeighbor() {
-    return GetNeighbor(IntVector3{ 0,1,0 });
+Tile* Tile::GetSouthNeighbor() const {
+    return GetNeighbor(IntVector3{0,1,0});
 }
 
-Tile* Tile::GetSouthWestNeighbor() {
-    return GetNeighbor(IntVector3{ -1,1,0 });
+Tile* Tile::GetSouthWestNeighbor() const {
+    return GetNeighbor(IntVector3{-1,1,0});
 }
 
-Tile* Tile::GetWestNeighbor() {
-    return GetNeighbor(IntVector3{ -1,0,0 });
+Tile* Tile::GetWestNeighbor() const {
+    return GetNeighbor(IntVector3{-1,0,0});
 }
 
-Tile* Tile::GetNorthWestNeighbor() {
+Tile* Tile::GetNorthWestNeighbor() const {
     return GetNeighbor(IntVector3{ -1,-1,0 });
 }
 
-std::vector<Tile*> Tile::GetNeighbors(const IntVector2& direction) {
+std::vector<Tile*> Tile::GetNeighbors(const IntVector2& direction) const {
     if(const auto* my_map = [=]()->const Map* { if(layer) { return layer->GetMap(); } return nullptr; }()) { //IIIL
         const auto my_index = GetCoords();
         const auto map_dims = my_map->CalcMaxDimensions();
@@ -227,34 +227,34 @@ std::vector<Tile*> Tile::GetNeighbors(const IntVector2& direction) {
     return {};
 }
 
-std::vector<Tile*> Tile::GetNorthNeighbors() {
+std::vector<Tile*> Tile::GetNorthNeighbors() const {
     return GetNeighbors(IntVector2{ 0,-1 });
 }
 
-std::vector<Tile*> Tile::GetNorthEastNeighbors() {
+std::vector<Tile*> Tile::GetNorthEastNeighbors() const {
     return GetNeighbors(IntVector2{ 1,-1 });
 }
 
-std::vector<Tile*> Tile::GetEastNeighbors() {
+std::vector<Tile*> Tile::GetEastNeighbors() const {
     return GetNeighbors(IntVector2{ 1,0 });
 }
 
-std::vector<Tile*> Tile::GetSouthEastNeighbors() {
+std::vector<Tile*> Tile::GetSouthEastNeighbors() const {
     return GetNeighbors(IntVector2{ 1,1 });
 }
 
-std::vector<Tile*> Tile::GetSouthNeighbors() {
+std::vector<Tile*> Tile::GetSouthNeighbors() const {
     return GetNeighbors(IntVector2{ 0,1 });
 }
 
-std::vector<Tile*> Tile::GetSouthWestNeighbors() {
+std::vector<Tile*> Tile::GetSouthWestNeighbors() const {
     return GetNeighbors(IntVector2{ -1,1 });
 }
 
-std::vector<Tile*> Tile::GetWestNeighbors() {
+std::vector<Tile*> Tile::GetWestNeighbors() const {
     return GetNeighbors(IntVector2{ -1,0 });
 }
 
-std::vector<Tile*> Tile::GetNorthWestNeighbors() {
+std::vector<Tile*> Tile::GetNorthWestNeighbors() const {
     return GetNeighbors(IntVector2{ -1,-1 });
 }

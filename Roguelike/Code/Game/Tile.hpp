@@ -46,26 +46,26 @@ public:
     void SetCoords(const IntVector2& coords);
     const IntVector2& GetCoords() const;
 
-    Tile* GetNeighbor(const IntVector3& directionAndLayerOffset);
-    Tile* GetNorthNeighbor();
-    Tile* GetNorthEastNeighbor();
-    Tile* GetEastNeighbor();
-    Tile* GetSouthEastNeighbor();
-    Tile* GetSouthNeighbor();
-    Tile* GetSouthWestNeighbor();
-    Tile* GetWestNeighbor();
-    Tile* GetNorthWestNeighbor();
+    Tile* GetNeighbor(const IntVector3& directionAndLayerOffset) const;
+    Tile* GetNorthNeighbor() const;
+    Tile* GetNorthEastNeighbor() const;
+    Tile* GetEastNeighbor() const;
+    Tile* GetSouthEastNeighbor() const;
+    Tile* GetSouthNeighbor() const;
+    Tile* GetSouthWestNeighbor() const;
+    Tile* GetWestNeighbor() const;
+    Tile* GetNorthWestNeighbor() const;
 
 
-    std::vector<Tile*> GetNeighbors(const IntVector2& direction);
-    std::vector<Tile*> GetNorthNeighbors();
-    std::vector<Tile*> GetNorthEastNeighbors();
-    std::vector<Tile*> GetEastNeighbors();
-    std::vector<Tile*> GetSouthEastNeighbors();
-    std::vector<Tile*> GetSouthNeighbors();
-    std::vector<Tile*> GetSouthWestNeighbors();
-    std::vector<Tile*> GetWestNeighbors();
-    std::vector<Tile*> GetNorthWestNeighbors();
+    std::vector<Tile*> GetNeighbors(const IntVector2& direction) const;
+    std::vector<Tile*> GetNorthNeighbors() const;
+    std::vector<Tile*> GetNorthEastNeighbors() const;
+    std::vector<Tile*> GetEastNeighbors() const;
+    std::vector<Tile*> GetSouthEastNeighbors() const;
+    std::vector<Tile*> GetSouthNeighbors() const;
+    std::vector<Tile*> GetSouthWestNeighbors() const;
+    std::vector<Tile*> GetWestNeighbors() const;
+    std::vector<Tile*> GetNorthWestNeighbors() const;
 
     Rgba color = Rgba::White;
     Entity* entity{};
