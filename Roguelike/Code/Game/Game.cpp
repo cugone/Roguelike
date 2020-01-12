@@ -259,6 +259,8 @@ void Game::EndFrame_Loading() {
         LoadItems();
         LoadEntities();
         LoadMaps();
+
+        SetCurrentCursorByName("yellow_corner_box");
         _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
         _done_loading = true;
     }
@@ -774,6 +776,17 @@ void Game::EndFrame() {
     case GameState::Loading: EndFrame_Loading(); break;
     case GameState::Main:    EndFrame_Main(); break;
     default:                 ERROR_AND_DIE("END FRAME UNDEFINED GAME STATE"); break;
+    }
+}
+
+bool Game::HasCursor(const std::string& name) const noexcept {
+    return _cursors.find(name) != std::end(_cursors);
+}
+
+void Game::SetCurrentCursorByName(const std::string& name) noexcept {
+    const auto found_cursor = _cursors.find(name);
+    if(found_cursor != std::end(_cursors)) {
+        current_cursor = &(*found_cursor).second;
     }
 }
 

@@ -52,6 +52,9 @@ public:
     void Render() const;
     void EndFrame();
 
+    bool HasCursor(const std::string& name) const noexcept;
+    void SetCurrentCursorByName(const std::string& name) noexcept;
+
     KerningFont* ingamefont{};
     Cursor* current_cursor{};
 protected:
