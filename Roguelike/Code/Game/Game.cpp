@@ -260,7 +260,7 @@ void Game::EndFrame_Loading() {
         LoadEntities();
         LoadMaps();
 
-        SetCurrentCursorByName("yellow_corner_box");
+        SetCurrentCursorById(CursorId::Green_Box);
         _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
         _done_loading = true;
     }
@@ -478,7 +478,6 @@ void Game::OnExitState(const GameState& state) {
 
 void Game::LoadUI() {
     LoadCursorsFromFile("Data/Definitions/UI.xml");
-    current_cursor = &(std::begin(_cursors)->second);
 }
 
 void Game::LoadMaps() {
@@ -503,11 +502,8 @@ void Game::LoadItems() {
 void Game::LoadCursorsFromFile(const std::filesystem::path& src) {
     LoadCursorDefinitionsFromFile(src);
     for(const auto& c : CursorDefinition::GetLoadedDefinitions()) {
-        const auto name = c.first;
-        const auto& def = c.second;
-        _cursors.try_emplace(name, Cursor(*def));
+        _cursors.emplace_back(Cursor(*c));
     }
-
 }
 
 void Game::LoadCursorDefinitionsFromFile(const std::filesystem::path& src) {
@@ -780,14 +776,24 @@ void Game::EndFrame() {
 }
 
 bool Game::HasCursor(const std::string& name) const noexcept {
-    return _cursors.find(name) != std::end(_cursors);
+    const auto found_cursor = std::find_if(std::begin(_cursors), std::end(_cursors), [name](const Cursor& c) { return c.GetDefinition()->name == name; });
+    return found_cursor != std::end(_cursors);
+}
+
+bool Game::HasCursor(CursorId id) const noexcept {
+    const auto idAsIndex = static_cast<std::size_t>(id);
+    return std::size_t{0} <= idAsIndex && idAsIndex < _cursors.size();
 }
 
 void Game::SetCurrentCursorByName(const std::string& name) noexcept {
-    const auto found_cursor = _cursors.find(name);
+    const auto found_cursor = std::find_if(std::begin(_cursors), std::end(_cursors), [name](const Cursor& c) { return c.GetDefinition()->name == name; });
     if(found_cursor != std::end(_cursors)) {
-        current_cursor = &(*found_cursor).second;
+        current_cursor = &(*found_cursor);
     }
+}
+
+void Game::SetCurrentCursorById(CursorId id) noexcept {
+    current_cursor = &_cursors[static_cast<std::size_t>(id)];
 }
 
 void Game::HandlePlayerInput(Camera2D& base_camera) {

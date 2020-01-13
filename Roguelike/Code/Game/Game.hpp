@@ -37,6 +37,16 @@ enum class GameState {
     ,Main
 };
 
+enum class CursorId {
+    First_
+    ,Green_Box = First_
+    ,Question
+    ,Red_Crosshair_Box
+    ,Yellow_Corner_Box
+    ,Last_
+    ,Max = Last_
+};
+
 class Game {
 public:
     Game() = default;
@@ -53,10 +63,13 @@ public:
     void EndFrame();
 
     bool HasCursor(const std::string& name) const noexcept;
+    bool HasCursor(CursorId id) const noexcept;
     void SetCurrentCursorByName(const std::string& name) noexcept;
+    void SetCurrentCursorById(CursorId id) noexcept;
 
     KerningFont* ingamefont{};
     Cursor* current_cursor{};
+    CursorId current_cursorId{};
 protected:
 private:
 
@@ -144,7 +157,7 @@ private:
     std::shared_ptr<SpriteSheet> _entity_sheet{};
     std::shared_ptr<SpriteSheet> _item_sheet{};
 
-    std::map<std::string, Cursor> _cursors{};
+    std::vector<Cursor> _cursors{};
 
     float _cam_speed = 1.0f;
     float _max_shake_angle = 0.0f;

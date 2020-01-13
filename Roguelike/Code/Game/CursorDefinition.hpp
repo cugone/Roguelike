@@ -20,7 +20,7 @@ public:
     CursorDefinition& operator=(CursorDefinition&& other) = default;
     ~CursorDefinition() = default;
 
-    static const std::map<std::string, std::unique_ptr<CursorDefinition>>& GetLoadedDefinitions();
+    static const std::vector<std::unique_ptr<CursorDefinition>>& GetLoadedDefinitions();
     static void CreateCursorDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
     static void DestroyCursorDefinitions();
 
@@ -49,7 +49,7 @@ private:
     void SetIndex(int x, int y);
     void SetIndex(const IntVector2& indexCoords);
 
-    static std::map<std::string, std::unique_ptr<CursorDefinition>> s_registry;
+    static std::vector<std::unique_ptr<CursorDefinition>> s_registry;
     Renderer& _renderer;
     std::weak_ptr<SpriteSheet> _sheet{};
     std::unique_ptr<AnimatedSprite> _sprite{};

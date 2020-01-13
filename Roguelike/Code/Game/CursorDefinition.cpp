@@ -9,16 +9,14 @@
 
 #include <memory>
 
-std::map<std::string, std::unique_ptr<CursorDefinition>> CursorDefinition::s_registry;
+std::vector<std::unique_ptr<CursorDefinition>> CursorDefinition::s_registry;
 
-const std::map<std::string, std::unique_ptr<CursorDefinition>>& CursorDefinition::GetLoadedDefinitions() {
+const std::vector<std::unique_ptr<CursorDefinition>>& CursorDefinition::GetLoadedDefinitions() {
     return s_registry;
 }
 
 void CursorDefinition::CreateCursorDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
-    auto new_def = std::make_unique<CursorDefinition>(renderer, elem, sheet);
-    auto new_def_name = new_def->name;
-    s_registry.try_emplace(new_def_name, std::move(new_def));
+    s_registry.emplace_back(std::move(std::make_unique<CursorDefinition>(renderer, elem, sheet)));
 }
 
 void CursorDefinition::DestroyCursorDefinitions() {
@@ -26,9 +24,9 @@ void CursorDefinition::DestroyCursorDefinitions() {
 }
 
 CursorDefinition* CursorDefinition::GetCursorDefinitionByName(const std::string& name) {
-    auto found_iter = s_registry.find(name);
+    auto found_iter = std::find_if(std::begin(s_registry), std::end(s_registry), [name](auto&& c) { return c.get()->name == name; });
     if(found_iter != std::end(s_registry)) {
-        return found_iter->second.get();
+        return found_iter->get();
     }
     return nullptr;
 }
