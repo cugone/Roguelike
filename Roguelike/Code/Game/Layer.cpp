@@ -211,6 +211,7 @@ void Layer::Render(Renderer& renderer) const {
 }
 
 void Layer::DebugRender(Renderer& renderer) const {
+    SetModelViewProjectionBounds(renderer);
     DebugRenderTiles(renderer);
 }
 
