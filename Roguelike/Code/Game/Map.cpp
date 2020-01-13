@@ -191,32 +191,6 @@ void Map::Render(Renderer& renderer) const {
     for(const auto& layer : _layers) {
         layer->Render(renderer);
     }
-
-    static std::vector<Vertex3D> vbo{};
-    vbo.clear();
-    static std::vector<unsigned int> ibo{};
-    ibo.clear();
-
-    g_theRenderer->ResetModelViewProjection();
-
-    //2D View / HUD
-    const float ui_view_height = currentGraphicsOptions.WindowHeight;
-    const float ui_view_width = ui_view_height * camera.GetAspectRatio();
-    const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
-    const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
-    auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
-    auto ui_nearFar = Vector2{0.0f, 1.0f};
-    camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, camera.GetAspectRatio());
-    g_theRenderer->SetCamera(camera);
-
-    for(const auto* e : _entities) {
-        const auto* eAsText = dynamic_cast<const EntityText*>(e);
-        if(eAsText) {
-            eAsText->Render(vbo, ibo, Rgba::White, 0);
-        }
-    }
-
 }
 
 void Map::DebugRender(Renderer& renderer) const {
