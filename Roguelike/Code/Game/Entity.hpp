@@ -59,6 +59,7 @@ public:
 
     static Event<const IntVector2&, const IntVector2&> OnMove;
     static Event<Entity&, Entity&, long double> OnFight;
+    static Event<DamageType, long double> OnDamage;
     static Event<> OnDestroy;
 protected:
     Stats GetStatModifiers() const noexcept;
@@ -69,6 +70,8 @@ private:
     std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
 
     void AddVertsForEquipment(const IntVector2& entity_position, std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
+
+    void ApplyDamage(DamageType type, long double amount);
 
     Stats stats{};
     Stats stat_modifiers{};

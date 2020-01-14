@@ -5,6 +5,10 @@
 #include <array>
 #include <utility>
 
+enum class DamageType {
+    Physical
+};
+
 enum class StatsID {
     First_
     ,Level = First_

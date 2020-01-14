@@ -11,15 +11,17 @@
 
 Event<const IntVector2&, const IntVector2&> Entity::OnMove;
 Event<Entity&, Entity&, long double> Entity::OnFight;
+Event<DamageType, long double> Entity::OnDamage;
 Event<> Entity::OnDestroy;
 
 Entity::~Entity() {
-    /* DO NOTHING */
+    OnDamage.Unsubscribe_method(this, &Entity::ApplyDamage);
 }
 
 Entity::Entity(const XMLElement& elem) noexcept
 {
     LoadFromXml(elem);
+    OnDamage.Subscribe_method(this, &Entity::ApplyDamage);
 }
 
 Entity::Entity(EntityDefinition* definition) noexcept
@@ -127,6 +129,26 @@ void Entity::AddVertsForEquipment(const IntVector2& entity_position, std::vector
     }
 }
 
+void Entity::ApplyDamage(DamageType type, long double amount) {
+    switch(type) {
+    case DamageType::Physical:
+    {
+        auto my_total_stats = GetStats();
+        const auto new_health = my_total_stats.AdjustStat(StatsID::Health, -amount);
+        if(MathUtils::IsEquivalentOrLessThan(new_health, 0.0L)) {
+            AdjustBaseStats(my_total_stats);
+            OnDestroy.Trigger();
+            map->KillEntity(*this);
+        } else {
+            AdjustBaseStats(my_total_stats);
+        }
+        break;
+    }
+    default:
+        break;
+    }
+}
+
 long double Entity::Fight(Entity& attacker, Entity& defender) {
     auto aStats = attacker.GetStats();
     auto dStats = defender.GetStats();
@@ -143,15 +165,7 @@ long double Entity::Fight(Entity& attacker, Entity& defender) {
         return 0.0L; //0 Dmg
     }
     auto result = aAtt - dDef;
-    auto new_health = dStats.AdjustStat(StatsID::Health, -result);
-    if(MathUtils::IsEquivalentOrLessThan(new_health, 0.0L)) {
-        defender.AdjustBaseStats(dStats);
-        auto& map = defender.map;
-        defender.OnDestroy.Trigger();
-        map->KillEntity(defender);
-    } else {
-        defender.AdjustBaseStats(dStats);
-    }
+    defender.OnDamage.Trigger(DamageType::Physical, result);
     attacker.OnFight.Trigger(attacker, defender, result);
     return result;
 }
