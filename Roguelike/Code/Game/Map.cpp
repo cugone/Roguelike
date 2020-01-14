@@ -17,6 +17,7 @@
 #include "Game/Actor.hpp"
 #include "Game/Cursor.hpp"
 #include "Game/Entity.hpp"
+#include "Game/Feature.hpp"
 #include "Game/EntityText.hpp"
 #include "Game/EntityDefinition.hpp"
 #include "Game/GameCommon.hpp"
@@ -51,9 +52,20 @@ void Map::SetDebugGridColor(const Rgba& gridColor) {
 }
 
 void Map::KillEntity(Entity& e) {
-    e.tile->entity = nullptr;
+    if(auto* asActor = dynamic_cast<Actor*>(&e)) {
+        KillActor(*asActor);
+    } else if(auto* asFeature = dynamic_cast<Feature*>(&e)) {
+        KillFeature(*asFeature);
+    }
 }
 
+void Map::KillActor(Actor& a) {
+    a.tile->actor = nullptr;
+}
+
+void Map::KillFeature(Feature& f) {
+    f.tile->feature = nullptr;
+}
 
 std::vector<Entity*> Map::GetEntities() const noexcept {
     return _entities;
@@ -104,10 +116,10 @@ bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
     if(actor->MoveTo(tile)) {
         return true;
     } else {
-        if(!tile->entity) {
+        if(!tile->actor && !tile->feature) {
             return false;
         }
-        const auto dmg_result = Entity::Fight(*actor, *tile->entity);
+        const auto dmg_result = Entity::Fight(*actor, *tile->GetEntity());
         TextEntityDesc desc{};
         desc.position = Vector2(tile->GetCoords()) + Vector2{ 0.5f, 0.5f };
         desc.font = g_theGame->ingamefont;

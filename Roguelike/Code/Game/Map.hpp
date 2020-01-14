@@ -77,6 +77,8 @@ public:
     Actor* player = nullptr;
 
     void KillEntity(Entity& e);
+    void KillActor(Actor& a);
+    void KillFeature(Feature& f);
     std::vector<Entity*> GetEntities() const noexcept;
 
     static inline constexpr std::size_t max_layers = 9u;

@@ -170,10 +170,10 @@ bool Entity::IsInvisible() const {
 
 void Entity::SetPosition(const IntVector2& position) {
     auto cur_tile = map->GetTile(_position.x, _position.y, layer->z_index);
-    cur_tile->entity = nullptr;
+    cur_tile->SetEntity(nullptr);
     _position = position;
     auto next_tile = map->GetTile(_position.x, _position.y, layer->z_index);
-    next_tile->entity = this;
+    next_tile->SetEntity(this);
     tile = next_tile;
 }
 

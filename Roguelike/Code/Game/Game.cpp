@@ -17,6 +17,7 @@
 #include "Game/GameConfig.hpp"
 #include "Game/Entity.hpp"
 #include "Game/Actor.hpp"
+#include "Game/Feature.hpp"
 #include "Game/Cursor.hpp"
 #include "Game/CursorDefinition.hpp"
 #include "Game/EntityDefinition.hpp"
@@ -279,8 +280,11 @@ void Game::RegisterCommands() {
                 entity = _debug_inspected_entity;
             }
             if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-                if(tile->entity) {
-                    entity = tile->entity;
+                if(tile->actor) {
+                    entity = tile->actor;
+                }
+                if(tile->feature) {
+                    entity = tile->feature;
                 }
             }
             if(!entity) {
@@ -316,7 +320,9 @@ void Game::RegisterCommands() {
                 entity = _debug_inspected_entity;
             }
             if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-                entity = tile->entity;
+                if(auto* asActor = dynamic_cast<Actor*>(tile->actor)) {
+                    entity = asActor;
+                }
             }
             if(!entity) {
                 g_theConsole->ErrorMsg("Select an actor to give the item to.");
@@ -349,8 +355,8 @@ void Game::RegisterCommands() {
                 entity = _debug_inspected_entity;
             }
             if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-                if(tile->entity) {
-                    entity = tile->entity;
+                if(auto* asActor = dynamic_cast<Actor*>(tile->actor)) {
+                    entity = asActor;
                 }
             }
             if(!entity) {
@@ -953,7 +959,7 @@ void Game::HandleDebugMouseInput(Camera2D& /*base_camera*/) {
             _debug_inspected_tiles = picked_tiles;
         }
         if(_debug_has_picked_entity_with_click) {
-            _debug_inspected_entity = picked_tiles[0]->entity;
+            _debug_inspected_entity = picked_tiles[0]->actor;
             _debug_has_picked_entity_with_click = _debug_inspected_entity;
         }
     }
@@ -1161,9 +1167,9 @@ std::vector<Tile*> Game::DebugGetTilesFromMouse() {
         if(_debug_has_picked_tile_with_click) {
             picked_tiles = _map->PickTilesFromMouseCoords(mouse_pos);
         }
-        bool tile_has_entity = !picked_tiles.empty() && picked_tiles[0]->entity;
+        bool tile_has_entity = !picked_tiles.empty() && picked_tiles[0]->actor;
         if(tile_has_entity && _debug_has_picked_entity_with_click) {
-            _debug_inspected_entity = picked_tiles[0]->entity;
+            _debug_inspected_entity = picked_tiles[0]->actor;
         }
         return picked_tiles;
     }
@@ -1172,14 +1178,14 @@ std::vector<Tile*> Game::DebugGetTilesFromMouse() {
 
 void Game::ShowEntityInspectorUI() {
     const auto& picked_tiles = DebugGetTilesFromMouse();
-    bool has_entity = (!picked_tiles.empty() && picked_tiles[0]->entity);
+    bool has_entity = (!picked_tiles.empty() && picked_tiles[0]->actor);
     bool has_selected_entity = _debug_has_picked_entity_with_click && _debug_inspected_entity;
     bool shouldnt_show_inspector = !has_entity && !has_selected_entity;
     if(shouldnt_show_inspector) {
         ImGui::Text("Entity Inspector: None");
         return;
     }
-    if(const auto* cur_entity = _debug_inspected_entity ? _debug_inspected_entity : picked_tiles[0]->entity) {
+    if(const auto* cur_entity = _debug_inspected_entity ? _debug_inspected_entity : picked_tiles[0]->actor) {
         if(const auto* cur_sprite = cur_entity->sprite) {
             ImGui::Text("Entity Inspector");
             ImGui::SameLine();

@@ -9,6 +9,8 @@
 
 class TileDefinition;
 class Entity;
+class Actor;
+class Feature;
 class Layer;
 class Renderer;
 
@@ -67,8 +69,12 @@ public:
     std::vector<Tile*> GetWestNeighbors() const;
     std::vector<Tile*> GetNorthWestNeighbors() const;
 
+    Entity* GetEntity() const noexcept;
+    void SetEntity(Entity* e) noexcept;
+
     Rgba color = Rgba::White;
-    Entity* entity{};
+    Actor* actor{};
+    Feature* feature{};
     Layer* layer = nullptr;
 protected:
 private:

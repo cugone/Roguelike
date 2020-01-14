@@ -5,7 +5,8 @@
 #include "Engine/Renderer/AnimatedSprite.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 
-#include "Game/Entity.hpp"
+#include "Game/Actor.hpp"
+#include "Game/Feature.hpp"
 #include "Game/Layer.hpp"
 #include "Game/Map.hpp"
 #include "Game/TileDefinition.hpp"
@@ -20,8 +21,10 @@ Tile::Tile()
 
 void Tile::Update(TimeUtils::FPSeconds deltaSeconds) {
     _def->GetSprite()->Update(deltaSeconds);
-    if(entity) {
-        entity->Update(deltaSeconds);
+    if(actor) {
+        actor->Update(deltaSeconds);
+    } else if(feature) {
+        feature->Update(deltaSeconds);
     }
 }
 
@@ -30,12 +33,15 @@ void Tile::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, 
         return;
     }
     AddVertsForTile(verts, ibo, layer_color, layer_index);
-    if(entity) {
-        entity->Render(verts, ibo, layer_color, layer_index);
+    if(actor) {
+        actor->Render(verts, ibo, layer_color, layer_index);
+    } else if(feature) {
+        feature->Render(verts, ibo, layer_color, layer_index);
     }
 }
 
 void Tile::DebugRender(Renderer& renderer) const {
+    Entity* entity = (actor ? dynamic_cast<Entity*>(actor) : (feature ? dynamic_cast<Entity*>(feature) : nullptr));
     if(g_theGame->_show_all_entities && entity) {
         auto tile_bounds = GetBounds();
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
@@ -138,7 +144,7 @@ bool Tile::IsSolid() const {
 }
 
 bool Tile::IsPassable() const {
-    return !IsSolid() && !entity;
+    return !IsSolid() && !actor && (!feature || (feature && !feature->IsSolid()));
 }
 
 void Tile::SetCoords(int x, int y) {
@@ -257,4 +263,29 @@ std::vector<Tile*> Tile::GetWestNeighbors() const {
 
 std::vector<Tile*> Tile::GetNorthWestNeighbors() const {
     return GetNeighbors(IntVector2{ -1,-1 });
+}
+
+
+Entity* Tile::GetEntity() const noexcept {
+    if(actor) {
+        return actor;
+    }
+    if(feature) {
+        return feature;
+    }
+    return nullptr;
+}
+
+void Tile::SetEntity(Entity* e) noexcept {
+    if(e == nullptr) {
+        actor = nullptr;
+        feature = nullptr;
+        return;
+    }
+    if(auto* asActor = dynamic_cast<Actor*>(e)) {
+        actor = asActor;
+    }
+    if(auto* asFeature = dynamic_cast<Feature*>(e)) {
+        feature = asFeature;
+    }
 }
