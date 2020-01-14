@@ -77,7 +77,7 @@ private:
 
     void ApplyDamage(DamageType type, long double amount);
 
-    Stats stats{};
+    Stats stats{0.0L, 1.0L};
     Stats stat_modifiers{};
     IntVector2 _position{};    
 };

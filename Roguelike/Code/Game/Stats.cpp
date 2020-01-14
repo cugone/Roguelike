@@ -109,6 +109,13 @@ Stats::Stats(const XMLElement& elem) {
     }
 }
 
+Stats::Stats(std::initializer_list<long double> l) {
+    auto id = StatsID::First_;
+    for(const auto value : l) {
+        SetStat(id++, value);
+    }
+}
+
 auto Stats::GetStat(const StatsID& id) const noexcept -> decltype(_stats)::value_type {
     return _stats[static_cast<std::size_t>(id)];
 }

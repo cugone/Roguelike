@@ -13,9 +13,6 @@ EntityText::EntityText(const TextEntityDesc& desc) noexcept
     , font{desc.font}
     , speed{desc.speed}
 {
-    Stats health{};
-    health.SetStat(StatsID::Health, 1.0L);
-    AdjustBaseStats(health);
     _screen_position = desc.position;
 }
 

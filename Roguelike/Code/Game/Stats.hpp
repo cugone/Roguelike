@@ -33,6 +33,7 @@ private: //Intentional declaration order for decltype(_stats) to work.
     std::array<long double, static_cast<std::size_t>(StatsID::Max)> _stats{};
 public:
     Stats() = default;
+    Stats(std::initializer_list<long double> l);
     Stats(const Stats& other) = default;
     Stats(Stats&& r_other) = default;
     Stats& operator=(const Stats& rhs) = default;
