@@ -119,9 +119,15 @@ bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
         if(!tile->actor && !tile->feature) {
             return false;
         }
-        const auto dmg_result = Entity::Fight(*actor, *tile->GetEntity());
+        long double dmg_result = 0.0L;
+        if(tile->actor) {
+            dmg_result = Entity::Fight(*actor, *tile->actor);
+        } else if(tile->feature) {
+            dmg_result = Entity::Fight(*actor, *tile->feature);
+        }
+        //Make damage text
         TextEntityDesc desc{};
-        desc.position = Vector2(tile->GetCoords()) + Vector2{ 0.5f, 0.5f };
+        desc.position = Vector2(tile->GetCoords()) + Vector2{0.5f, 0.5f};
         desc.font = g_theGame->ingamefont;
         desc.color = Rgba::White;
         if(dmg_result >= 0) {
