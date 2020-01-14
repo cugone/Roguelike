@@ -68,7 +68,7 @@ Item::Item(ItemBuilder& builder) noexcept
         _friendly_name = StringUtils::ReplaceAll(_friendly_name, "_", " ");
     }
     for(auto stat_id = StatsID::First_; stat_id < StatsID::Last_; ++stat_id) {
-        _stat_modifiers.SetStat(stat_id, MathUtils::GetRandomLongDoubleInRange(builder._min_stats.GetStat(stat_id), builder._max_stats.GetStat(stat_id)));
+        _stat_modifiers.SetStat(stat_id, MathUtils::GetRandomLongInRange(builder._min_stats.GetStat(stat_id), builder._max_stats.GetStat(stat_id)));
     }
 }
 

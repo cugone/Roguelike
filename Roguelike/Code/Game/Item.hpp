@@ -84,7 +84,7 @@ private:
     std::unique_ptr<AnimatedSprite> _sprite{};
     Inventory* _parent_inventory{};
     Inventory _my_inventory{};
-    Stats _stat_modifiers{};
+    Stats _stat_modifiers{0};
     EquipSlot _slot{};
     std::size_t _stack_size = 0;
     std::size_t _max_stack_size = 1;

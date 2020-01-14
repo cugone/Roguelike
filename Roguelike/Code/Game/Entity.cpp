@@ -9,13 +9,12 @@
 #include "Game/Map.hpp"
 #include "Game/Item.hpp"
 
-Event<const IntVector2&, const IntVector2&> Entity::OnMove;
-Event<Entity&, Entity&, long double> Entity::OnFight;
-Event<DamageType, long double> Entity::OnDamage;
-Event<> Entity::OnDestroy;
-
 Entity::~Entity() {
     /* DO NOTHING */
+}
+
+Entity::Entity() {
+    OnDamage.Subscribe_method(this, &Entity::ApplyDamage);
 }
 
 Entity::Entity(const XMLElement& elem) noexcept
@@ -135,7 +134,7 @@ void Entity::ApplyDamage(DamageType type, long double amount) {
     {
         auto my_total_stats = GetStats();
         const auto new_health = my_total_stats.AdjustStat(StatsID::Health, -amount);
-        if(MathUtils::IsEquivalentOrLessThan(new_health, 0.0L)) {
+        if(new_health <= 0L) {
             AdjustBaseStats(my_total_stats);
             OnDestroy.Trigger();
             map->KillEntity(*this);

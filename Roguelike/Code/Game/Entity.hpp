@@ -18,7 +18,7 @@ class EntityDefinition;
 
 class Entity {
 public:
-    Entity() = default;
+    Entity();
     Entity(const Entity& other) = default;
     Entity(Entity&& other) = default;
     Entity& operator=(const Entity& other) = default;
@@ -59,10 +59,10 @@ public:
     Rgba color{Rgba::White};
     std::string name{"UNKNOWN ENTITY"};
 
-    static Event<const IntVector2&, const IntVector2&> OnMove;
-    static Event<Entity&, Entity&, long double> OnFight;
-    static Event<DamageType, long double> OnDamage;
-    static Event<> OnDestroy;
+    Event<const IntVector2&, const IntVector2&> OnMove;
+    Event<Entity&, Entity&, long double> OnFight;
+    Event<DamageType, long double> OnDamage;
+    Event<> OnDestroy;
 protected:
     Stats GetStatModifiers() const noexcept;
     const Stats& GetBaseStats() const noexcept;
@@ -77,7 +77,7 @@ private:
 
     void ApplyDamage(DamageType type, long double amount);
 
-    Stats stats{0.0L, 1.0L};
+    Stats stats{1,1,1};
     Stats stat_modifiers{};
     IntVector2 _position{};    
 };

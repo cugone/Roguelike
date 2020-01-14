@@ -33,11 +33,9 @@ void Map::CreateTextEntity(const TextEntityDesc& desc) noexcept {
     _entities.push_back(text);
 }
 
-void Map::CreateTextEntityAt(const IntVector2& tileCoords, const TextEntityDesc& desc) noexcept {
-    auto desc_copy = desc;
-    desc_copy.position = _renderer.ConvertWorldToScreenCoords(Vector2(tileCoords) + Vector2(0.5f, 0.5f));
-    const auto text = EntityText::CreateTextEntity(desc_copy);
-    _entities.push_back(text);
+void Map::CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) noexcept {
+    desc.position = _renderer.ConvertWorldToScreenCoords(Vector2(tileCoords) + Vector2(0.5f, 0.5f));
+    CreateTextEntity(desc);
 }
 
 
@@ -127,7 +125,6 @@ bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
         }
         //Make damage text
         TextEntityDesc desc{};
-        desc.position = Vector2(tile->GetCoords()) + Vector2{0.5f, 0.5f};
         desc.font = g_theGame->ingamefont;
         desc.color = Rgba::White;
         if(dmg_result >= 0) {

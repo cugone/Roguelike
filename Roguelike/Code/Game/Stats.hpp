@@ -30,10 +30,10 @@ StatsID operator--(StatsID& a, int);
 
 class Stats {
 private: //Intentional declaration order for decltype(_stats) to work.
-    std::array<long double, static_cast<std::size_t>(StatsID::Max)> _stats{};
+    std::array<long, static_cast<std::size_t>(StatsID::Max)> _stats{};
 public:
     Stats() = default;
-    Stats(std::initializer_list<long double> l);
+    Stats(std::initializer_list<decltype(_stats)::value_type> l);
     Stats(const Stats& other) = default;
     Stats(Stats&& r_other) = default;
     Stats& operator=(const Stats& rhs) = default;
@@ -44,7 +44,7 @@ public:
 
     auto GetStat(const StatsID& id) const noexcept -> decltype(_stats)::value_type;
     void SetStat(const StatsID& id, decltype(_stats)::value_type value) noexcept;
-    decltype(_stats)::value_type AdjustStat(const StatsID& id, decltype(_stats)::value_type value) noexcept;
+    decltype(_stats)::value_type AdjustStat(const StatsID& id, long double value) noexcept;
     decltype(_stats)::value_type MultiplyStat(const StatsID& id, long double value) noexcept;
 
     Stats operator+(const Stats& b) const;
