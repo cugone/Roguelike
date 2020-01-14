@@ -30,7 +30,7 @@ Entity::Entity(EntityDefinition* definition) noexcept
     , inventory(def->inventory)
     , stats(definition->GetBaseStats())
 {
-    /* DO NOTHING */
+    OnDamage.Subscribe_method(this, &Entity::ApplyDamage);
 }
 
 void Entity::BeginFrame() {
