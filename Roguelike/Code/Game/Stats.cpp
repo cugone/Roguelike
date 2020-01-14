@@ -10,7 +10,7 @@ StatsID& operator++(StatsID& a) {
 
 StatsID operator++(StatsID& a, int) {
     auto result = a;
-    ++result;
+    ++a;
     return result;
 }
 
@@ -22,7 +22,7 @@ StatsID& operator--(StatsID& a) {
 
 StatsID operator--(StatsID& a, int) {
     auto result = a;
-    --result;
+    --a;
     return result;
 }
 
