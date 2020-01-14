@@ -43,6 +43,8 @@ public:
 
     void SetPosition(const IntVector2& position);
     const IntVector2& GetPosition() const;
+    const Vector2& GetScreenPosition() const;
+    void SetScreenPosition(const Vector2& screenPosition);
 
     Stats GetStats() const;
     void AdjustBaseStats(Stats adjustments);
@@ -65,6 +67,8 @@ protected:
     Stats GetStatModifiers() const noexcept;
     const Stats& GetBaseStats() const noexcept;
     Stats& GetBaseStats() noexcept;
+
+    Vector2 _screen_position{};
 private:
     void LoadFromXml(const XMLElement& elem);
     std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
@@ -75,6 +79,5 @@ private:
 
     Stats stats{};
     Stats stat_modifiers{};
-    IntVector2 _position{};
-
+    IntVector2 _position{};    
 };

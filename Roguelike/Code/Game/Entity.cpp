@@ -161,6 +161,7 @@ long double Entity::Fight(Entity& attacker, Entity& defender) {
         return -1.0L; //Miss
     }
     if(aAtt < dDef) {
+        defender.OnDamage.Trigger(DamageType::Physical, 0.0L);
         attacker.OnFight.Trigger(attacker, defender, 0.0L);
         return 0.0L; //0 Dmg
     }
@@ -186,6 +187,7 @@ void Entity::SetPosition(const IntVector2& position) {
     auto cur_tile = map->GetTile(_position.x, _position.y, layer->z_index);
     cur_tile->SetEntity(nullptr);
     _position = position;
+    _screen_position = map->WorldCoordsToScreenCoords(Vector2(_position));
     auto next_tile = map->GetTile(_position.x, _position.y, layer->z_index);
     next_tile->SetEntity(this);
     tile = next_tile;
@@ -193,6 +195,14 @@ void Entity::SetPosition(const IntVector2& position) {
 
 const IntVector2& Entity::GetPosition() const {
     return _position;
+}
+
+const Vector2& Entity::GetScreenPosition() const {
+    return _screen_position;
+}
+
+void Entity::SetScreenPosition(const Vector2& screenPosition) {
+    _screen_position = screenPosition;
 }
 
 Stats Entity::GetStats() const {

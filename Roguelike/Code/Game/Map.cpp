@@ -131,7 +131,9 @@ bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
         desc.font = g_theGame->ingamefont;
         desc.color = Rgba::White;
         if(dmg_result >= 0) {
-            desc.text = std::to_string(dmg_result);
+            std::ostringstream ss;
+            ss << std::fixed << std::setprecision(1) << dmg_result;
+            desc.text = ss.str();
             CreateTextEntityAt(tile->GetCoords(), desc);
         } else {
             desc.text = "MISS";
@@ -162,7 +164,7 @@ void Map::BeginFrame() {
 
 void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
     UpdateLayers(deltaSeconds);
-    UpdateEntities(deltaSeconds);
+    UpdateTextEntities(deltaSeconds);
 }
 
 void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
@@ -193,9 +195,11 @@ void Map::BringLayerToFront(std::size_t i) {
     }
 }
 
-void Map::UpdateEntities(TimeUtils::FPSeconds deltaSeconds) {
-    for(auto& entity : _entities) {
-        entity->Update(deltaSeconds);
+void Map::UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds) {
+    for(auto* entity : _entities) {
+        if(auto* asText = dynamic_cast<EntityText*>(entity)) {
+            asText->Update(deltaSeconds);
+        }
     }
 }
 
@@ -209,6 +213,35 @@ void Map::Render(Renderer& renderer) const {
     for(const auto& layer : _layers) {
         layer->Render(renderer);
     }
+
+    static std::vector<Vertex3D> verts;
+    verts.clear();
+    static std::vector<unsigned int> ibo;
+    ibo.clear();
+
+    auto& ui_camera = g_theGame->ui_camera;
+
+    //2D View / HUD
+    const float ui_view_height = currentGraphicsOptions.WindowHeight;
+    const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
+    const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
+    const auto ui_view_half_extents = ui_view_extents * 0.5f;
+    auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
+    auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
+    auto ui_nearFar = Vector2{0.0f, 1.0f};
+    auto ui_cam_pos = ui_view_half_extents;
+    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, ui_camera.GetAspectRatio());
+    g_theRenderer->SetCamera(ui_camera);
+
+
+    for(auto* entity : _entities) {
+        if(auto* asText = dynamic_cast<EntityText*>(entity)) {
+            asText->Render(verts, ibo, Rgba::White, 0);
+        }
+    }
+
+    g_theRenderer->SetCamera(camera);
+
 }
 
 void Map::DebugRender(Renderer& renderer) const {
@@ -233,6 +266,11 @@ void Map::DebugRender(Renderer& renderer) const {
 void Map::EndFrame() {
     for(auto& layer : _layers) {
         layer->EndFrame();
+    }
+    for(auto* entity : _entities) {
+        if(auto* asText = dynamic_cast<EntityText*>(entity)) {
+            asText->EndFrame();
+        }
     }
     _entities.erase(std::remove_if(std::begin(_entities), std::end(_entities), [](const auto& e)->bool { return !e || (e && e->GetStats().GetStat(StatsID::Health) <= 0); }), std::end(_entities));
 }

@@ -145,17 +145,17 @@ void Game::Render_Title() const {
 
     //2D View / HUD
     const float ui_view_height = currentGraphicsOptions.WindowHeight;
-    const float ui_view_width = ui_view_height * _ui_camera.GetAspectRatio();
+    const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
     const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
     auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
     auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
     auto ui_nearFar = Vector2{ 0.0f, 1.0f };
     auto ui_cam_pos = ui_view_half_extents;
-    _ui_camera.position = ui_cam_pos;
-    _ui_camera.orientation_degrees = 0.0f;
-    _ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
-    g_theRenderer->SetCamera(_ui_camera);
+    ui_camera.position = ui_cam_pos;
+    ui_camera.orientation_degrees = 0.0f;
+    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
+    g_theRenderer->SetCamera(ui_camera);
 
     g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents));
     g_theRenderer->DrawTextLine(ingamefont, "RogueLike");
@@ -173,17 +173,17 @@ void Game::Render_Loading() const {
 
     //2D View / HUD
     const float ui_view_height = currentGraphicsOptions.WindowHeight;
-    const float ui_view_width = ui_view_height * _ui_camera.GetAspectRatio();
+    const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
     const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
     auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
     auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
     auto ui_nearFar = Vector2{ 0.0f, 1.0f };
     auto ui_cam_pos = ui_view_half_extents;
-    _ui_camera.position = ui_cam_pos;
-    _ui_camera.orientation_degrees = 0.0f;
-    _ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
-    g_theRenderer->SetCamera(_ui_camera);
+    ui_camera.position = ui_cam_pos;
+    ui_camera.orientation_degrees = 0.0f;
+    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
+    g_theRenderer->SetCamera(ui_camera);
 
     g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents));
     g_theRenderer->DrawTextLine(ingamefont, "LOADING");
@@ -232,17 +232,17 @@ void Game::Render_Main() const {
 
     //2D View / HUD
     const float ui_view_height = currentGraphicsOptions.WindowHeight;
-    const float ui_view_width = ui_view_height * _ui_camera.GetAspectRatio();
+    const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
     const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
     auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
     auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
     auto ui_nearFar = Vector2{ 0.0f, 1.0f };
     auto ui_cam_pos = ui_view_half_extents;
-    _ui_camera.position = ui_cam_pos;
-    _ui_camera.orientation_degrees = 0.0f;
-    _ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
-    g_theRenderer->SetCamera(_ui_camera);
+    ui_camera.position = ui_cam_pos;
+    ui_camera.orientation_degrees = 0.0f;
+    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
+    g_theRenderer->SetCamera(ui_camera);
 
     if(g_theApp->LostFocus()) {
         g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents));

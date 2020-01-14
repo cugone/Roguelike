@@ -16,16 +16,15 @@ struct TextEntityDesc {
     Vector2 position{ 0.0f, 0.0f };
     TimeUtils::FPSeconds timeToLive{ 1.0f };
     KerningFont* font{};
-    float speed{0.0f};
+    float speed{20.0f};
 };
 
 class EntityText : public Entity {
 public:
     std::string text{};
-    Vector2 screenPosition{};
     TimeUtils::FPSeconds ttl{1.0f};
     KerningFont* font{};
-    float speed{1.0f};
+    float speed{20.0f};
     
 
     static EntityText* CreateTextEntity(const TextEntityDesc& desc);
@@ -37,6 +36,7 @@ public:
 
     virtual void Update(TimeUtils::FPSeconds deltaSeconds) override;
     virtual void Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const override;
+    virtual void EndFrame() override;
 
 protected:
 private:

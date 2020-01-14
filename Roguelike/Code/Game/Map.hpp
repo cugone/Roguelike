@@ -94,7 +94,7 @@ private:
     void LoadFeaturesForMap(const XMLElement& elem);
     void LoadItemsForMap(const XMLElement& elem);
 
-    void UpdateEntities(TimeUtils::FPSeconds deltaSeconds);
+    void UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds);
     void UpdateEntityAI(TimeUtils::FPSeconds deltaSeconds);
 
     void BringLayerToFront(std::size_t i);

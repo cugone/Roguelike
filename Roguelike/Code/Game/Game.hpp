@@ -70,6 +70,7 @@ public:
     KerningFont* ingamefont{};
     Cursor* current_cursor{};
     CursorId current_cursorId{};
+    mutable Camera2D ui_camera{};
 protected:
 private:
 
@@ -148,7 +149,6 @@ private:
     void UnRegisterCommands();
 
     std::unique_ptr<Map> _map{nullptr};
-    mutable Camera2D _ui_camera{};
     Rgba _grid_color{Rgba::Red};
     Rgba _debug_gradientColor{Rgba::White};
     std::vector<Tile*> _debug_inspected_tiles{};
