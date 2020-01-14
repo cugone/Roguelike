@@ -15,7 +15,7 @@ Event<DamageType, long double> Entity::OnDamage;
 Event<> Entity::OnDestroy;
 
 Entity::~Entity() {
-    OnDamage.Unsubscribe_method(this, &Entity::ApplyDamage);
+    /* DO NOTHING */
 }
 
 Entity::Entity(const XMLElement& elem) noexcept
