@@ -11,7 +11,6 @@
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow);
 void Initialize(HINSTANCE hInstance, PWSTR pCmdLine);
 void MainLoop();
-void RunMessagePump();
 void Shutdown();
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) {
@@ -31,20 +30,7 @@ void Initialize(HINSTANCE hInstance, PWSTR pCmdLine) {
 
 void MainLoop() {
     while(!g_theApp->IsQuitting()) {
-        RunMessagePump();
         g_theApp->RunFrame();
-    }
-}
-
-void RunMessagePump() {
-    MSG msg{};
-    for(;;) {
-        const BOOL hasMsg = ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE);
-        if(!hasMsg) {
-            break;
-        }
-        ::TranslateMessage(&msg);
-        ::DispatchMessage(&msg);
     }
 }
 

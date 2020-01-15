@@ -213,6 +213,8 @@ void App::SetIsQuitting(bool value) {
 void App::RunFrame() {
     using namespace TimeUtils;
 
+    RunMessagePump();
+
     BeginFrame();
 
     static FPSeconds previousFrameTime = TimeUtils::GetCurrentTimeElapsed();
@@ -249,4 +251,18 @@ bool App::LostFocus() const {
 
 bool App::GainedFocus() const {
     return !_previous_focus && _current_focus;
+}
+
+void App::RunMessagePump() const {
+    MSG msg{};
+    for(;;) {
+        const BOOL hasMsg = ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE);
+        if(!hasMsg) {
+            break;
+        }
+        if(!::TranslateAcceleratorA(reinterpret_cast<HWND>(g_theRenderer->GetOutput()->GetWindow()->GetWindowHandle()), reinterpret_cast<HACCEL>(g_theConsole->GetAcceleratorTable()), &msg)) {
+            ::TranslateMessage(&msg);
+            ::DispatchMessage(&msg);
+        }
+    }
 }

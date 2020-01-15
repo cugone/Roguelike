@@ -37,6 +37,8 @@ public:
 
 protected:
 private:
+    void RunMessagePump() const;
+
     void SetupEngineSystemPointers();
     void SetupEngineSystemChainOfResponsibility();
 
