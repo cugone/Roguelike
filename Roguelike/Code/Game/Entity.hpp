@@ -41,7 +41,7 @@ public:
     bool IsNotVisible() const;
     bool IsInvisible() const;
 
-    void SetPosition(const IntVector2& position);
+    virtual void SetPosition(const IntVector2& position);
     const IntVector2& GetPosition() const;
     const Vector2& GetScreenPosition() const;
     void SetScreenPosition(const Vector2& screenPosition);
@@ -69,6 +69,7 @@ protected:
     Stats& GetBaseStats() noexcept;
 
     Vector2 _screen_position{};
+    IntVector2 _position{};
 private:
     void LoadFromXml(const XMLElement& elem);
     std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
@@ -79,5 +80,5 @@ private:
 
     Stats stats{1,1,1};
     Stats stat_modifiers{};
-    IntVector2 _position{};    
+    
 };

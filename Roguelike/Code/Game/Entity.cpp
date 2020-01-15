@@ -5,6 +5,7 @@
 #include "Engine/Renderer/AnimatedSprite.hpp"
 
 #include "Game/Actor.hpp"
+#include "Game/Feature.hpp"
 #include "Game/EntityDefinition.hpp"
 #include "Game/Map.hpp"
 #include "Game/Item.hpp"
@@ -183,13 +184,8 @@ bool Entity::IsInvisible() const {
 }
 
 void Entity::SetPosition(const IntVector2& position) {
-    auto cur_tile = map->GetTile(_position.x, _position.y, layer->z_index);
-    cur_tile->SetEntity(nullptr);
     _position = position;
     _screen_position = map->WorldCoordsToScreenCoords(Vector2(_position));
-    auto next_tile = map->GetTile(_position.x, _position.y, layer->z_index);
-    next_tile->SetEntity(this);
-    tile = next_tile;
 }
 
 const IntVector2& Entity::GetPosition() const {

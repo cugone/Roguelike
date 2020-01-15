@@ -22,6 +22,7 @@ public:
     bool ToggleOpaque() noexcept;
     bool IsOpaque() const noexcept;
 
+    virtual void SetPosition(const IntVector2& position) override;
 
 protected:
 private:

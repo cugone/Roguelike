@@ -219,3 +219,12 @@ void Actor::Unequip(const EquipSlot& slot) {
 const std::vector<Item*>& Actor::GetEquipment() const noexcept {
     return _equipment;
 }
+
+void Actor::SetPosition(const IntVector2& position) {
+    auto cur_tile = map->GetTile(_position.x, _position.y, layer->z_index);
+    cur_tile->actor = nullptr;
+    Entity::SetPosition(position);
+    auto next_tile = map->GetTile(_position.x, _position.y, layer->z_index);
+    next_tile->actor = this;
+    tile = next_tile;
+}

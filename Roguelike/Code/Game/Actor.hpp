@@ -44,6 +44,8 @@ public:
 
     const std::vector<Item*>& GetEquipment() const noexcept;
 
+    virtual void SetPosition(const IntVector2& position) override;
+
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);

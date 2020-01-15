@@ -1,5 +1,7 @@
 #include "Game/Feature.hpp"
 
+#include "Game/Map.hpp"
+
 Feature::Feature(const XMLElement& elem) noexcept
     : Entity(elem)
 {
@@ -30,4 +32,13 @@ bool Feature::ToggleOpaque() noexcept {
 
 bool Feature::IsOpaque() const noexcept {
     return _isOpaque;
+}
+
+void Feature::SetPosition(const IntVector2& position) {
+    auto cur_tile = map->GetTile(_position.x, _position.y, layer->z_index);
+    cur_tile->feature = nullptr;
+    Entity::SetPosition(position);
+    auto next_tile = map->GetTile(_position.x, _position.y, layer->z_index);
+    next_tile->feature = this;
+    tile = next_tile;
 }

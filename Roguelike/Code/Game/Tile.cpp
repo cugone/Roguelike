@@ -277,11 +277,6 @@ Entity* Tile::GetEntity() const noexcept {
 }
 
 void Tile::SetEntity(Entity* e) noexcept {
-    if(e == nullptr) {
-        actor = nullptr;
-        feature = nullptr;
-        return;
-    }
     if(auto* asActor = dynamic_cast<Actor*>(e)) {
         actor = asActor;
     }
