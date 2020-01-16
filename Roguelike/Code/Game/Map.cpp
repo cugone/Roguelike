@@ -95,7 +95,7 @@ std::vector<Tile*> Map::PickTilesFromMouseCoords(const Vector2& mouseCoords) con
 }
 
 Vector2 Map::WorldCoordsToScreenCoords(const Vector2& worldCoords) const {
-    return _renderer.ConvertWorldToScreenCoords(worldCoords);
+    return _renderer.ConvertWorldToScreenCoords(camera, worldCoords);
 }
 
 Vector2 Map::ScreenCoordsToWorldCoords(const Vector2& screenCoords) const {
