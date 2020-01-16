@@ -34,7 +34,7 @@ void Map::CreateTextEntity(const TextEntityDesc& desc) noexcept {
 }
 
 void Map::CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) noexcept {
-    desc.position = _renderer.ConvertWorldToScreenCoords(camera, Vector2(tileCoords) + Vector2(0.5f, 0.5f));
+    desc.position = _renderer.ConvertWorldToScreenCoords(camera, Vector2(tileCoords) + Vector2(0.25f, 0.25f));
     CreateTextEntity(desc);
 }
 
