@@ -196,10 +196,6 @@ const Vector2& Entity::GetScreenPosition() const {
     return _screen_position;
 }
 
-void Entity::SetScreenPosition(const Vector2& screenPosition) {
-    _screen_position = screenPosition;
-}
-
 Stats Entity::GetStats() const {
     return GetBaseStats() + stat_modifiers;
 }

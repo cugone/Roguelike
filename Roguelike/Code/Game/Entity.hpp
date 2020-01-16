@@ -44,7 +44,6 @@ public:
     virtual void SetPosition(const IntVector2& position);
     const IntVector2& GetPosition() const;
     const Vector2& GetScreenPosition() const;
-    void SetScreenPosition(const Vector2& screenPosition);
 
     Stats GetStats() const;
     void AdjustBaseStats(Stats adjustments);
