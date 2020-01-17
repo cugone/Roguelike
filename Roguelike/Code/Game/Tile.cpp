@@ -38,6 +38,9 @@ void Tile::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, 
     } else if(feature) {
         feature->Render(verts, ibo, layer_color, layer_index);
     }
+    if(!canSee && haveSeen) {
+        AddVertsForOverlay(verts, ibo, layer_color, layer_index);
+    }
 }
 
 void Tile::DebugRender(Renderer& renderer) const {
@@ -51,6 +54,11 @@ void Tile::DebugRender(Renderer& renderer) const {
 }
 
 void Tile::AddVertsForTile(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
+    if(const auto* upNeighbor = GetUpNeighbor()) {
+        if(upNeighbor->IsOpaque()) {
+            return;
+        }
+    }
     const auto& sprite = _def->GetSprite();
     const auto& coords = sprite->GetCurrentTexCoords();
 
@@ -87,6 +95,51 @@ void Tile::AddVertsForTile(std::vector<Vertex3D>& verts, std::vector<unsigned in
     ibo.push_back(static_cast<unsigned int>(v_s) - 4u);
     ibo.push_back(static_cast<unsigned int>(v_s) - 2u);
     ibo.push_back(static_cast<unsigned int>(v_s) - 1u);
+}
+
+
+void Tile::AddVertsForOverlay(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
+    const auto coords = GetCoordsForOverlay("blue");
+
+    const auto vert_left = _tile_coords.x + 0.0f;
+    const auto vert_right = _tile_coords.x + 1.0f;
+    const auto vert_top = _tile_coords.y + 0.0f;
+    const auto vert_bottom = _tile_coords.y + 1.0f;
+
+    const auto vert_bl = Vector2(vert_left, vert_bottom);
+    const auto vert_tl = Vector2(vert_left, vert_top);
+    const auto vert_tr = Vector2(vert_right, vert_top);
+    const auto vert_br = Vector2(vert_right, vert_bottom);
+
+    const auto tx_left = coords.mins.x;
+    const auto tx_right = coords.maxs.x;
+    const auto tx_top = coords.mins.y;
+    const auto tx_bottom = coords.maxs.y;
+
+    const auto tx_bl = Vector2(tx_left, tx_bottom);
+    const auto tx_tl = Vector2(tx_left, tx_top);
+    const auto tx_tr = Vector2(tx_right, tx_top);
+    const auto tx_br = Vector2(tx_right, tx_bottom);
+
+    const float z = static_cast<float>(layer_index);
+    verts.push_back(Vertex3D(Vector3(vert_bl, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_bl));
+    verts.push_back(Vertex3D(Vector3(vert_tl, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_tl));
+    verts.push_back(Vertex3D(Vector3(vert_tr, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_tr));
+    verts.push_back(Vertex3D(Vector3(vert_br, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_br));
+
+    const auto v_s = verts.size();
+    ibo.push_back(static_cast<unsigned int>(v_s) - 4u);
+    ibo.push_back(static_cast<unsigned int>(v_s) - 3u);
+    ibo.push_back(static_cast<unsigned int>(v_s) - 2u);
+    ibo.push_back(static_cast<unsigned int>(v_s) - 4u);
+    ibo.push_back(static_cast<unsigned int>(v_s) - 2u);
+    ibo.push_back(static_cast<unsigned int>(v_s) - 1u);
+}
+
+AABB2 Tile::GetCoordsForOverlay(std::string overlayName) const {
+    const auto def = TileDefinition::GetTileDefinitionByName(overlayName);
+    const auto sprite = def->GetSprite();
+    return sprite->GetCurrentTexCoords();
 }
 
 void Tile::ChangeTypeFromName(const std::string& name) {
@@ -163,7 +216,7 @@ Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) const {
     if(const auto* my_map = [=]()->const Map* {
         if(layer) {
             //layer is valid but the requested index is out of bounds.
-            if((layer->z_index <= 0 && directionAndLayerOffset.z < 0) || (layer->z_index >= 8 && directionAndLayerOffset.z > 0)) {
+            if((layer->z_index <= 0 && directionAndLayerOffset.z < 0) || (layer->z_index >= layer->GetMap()->max_layers - 1 && directionAndLayerOffset.z > 0)) {
                 return nullptr;
             }
             return layer->GetMap();
@@ -171,7 +224,7 @@ Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) const {
         return nullptr;
     }()) { //IIIL
         const auto my_index = IntVector3(GetCoords(), layer->z_index);
-        const auto map_dims = IntVector3(my_map->CalcMaxDimensions(), 8);
+        const auto map_dims = IntVector3(my_map->CalcMaxDimensions(), my_map->max_layers - 1);
         const bool is_x_not_valid = (my_index.x == 0 && directionAndLayerOffset.x < 0) || (my_index.x == map_dims.x && directionAndLayerOffset.x > 0);
         const bool is_y_not_valid = (my_index.y == 0 && directionAndLayerOffset.y < 0) || (my_index.y == map_dims.y && directionAndLayerOffset.y > 0);
         const bool is_z_not_valid = (my_index.z == 0 && directionAndLayerOffset.z < 0) || (my_index.z == map_dims.z && directionAndLayerOffset.z > 0);
@@ -215,6 +268,14 @@ Tile* Tile::GetWestNeighbor() const {
 
 Tile* Tile::GetNorthWestNeighbor() const {
     return GetNeighbor(IntVector3{ -1,-1,0 });
+}
+
+Tile* Tile::GetUpNeighbor() const {
+    return GetNeighbor(IntVector3{0,0,1});
+}
+
+Tile* Tile::GetDownNeighbor() const {
+    return GetNeighbor(IntVector3{0,0,-1});
 }
 
 std::vector<Tile*> Tile::GetNeighbors(const IntVector2& direction) const {

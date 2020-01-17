@@ -46,6 +46,8 @@ public:
 
     virtual void SetPosition(const IntVector2& position) override;
 
+    float visibility = 2.0f;
+
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);

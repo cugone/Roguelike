@@ -59,6 +59,16 @@ public:
     IntVector2 tileDimensions{1, 1};
     Rgba color{ Rgba::White };
     Rgba debug_grid_color{Rgba::Red};
+
+    std::vector<Tile>::const_iterator cbegin() const noexcept;
+    std::vector<Tile>::const_iterator cend() const noexcept;
+    std::vector<Tile>::reverse_iterator rbegin() noexcept;
+    std::vector<Tile>::reverse_iterator rend() noexcept;
+    std::vector<Tile>::const_reverse_iterator crbegin() const noexcept;
+    std::vector<Tile>::const_reverse_iterator crend() const noexcept;
+    std::vector<Tile>::iterator begin() noexcept;
+    std::vector<Tile>::iterator end() noexcept;
+
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);

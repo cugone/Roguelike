@@ -15,6 +15,7 @@
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <set>
 
 class Entity;
 class Actor;
@@ -25,6 +26,16 @@ class SpriteSheet;
 
 class Map {
 public:
+
+    struct RaycastResult2D {
+        bool didImpact{false};
+        Vector2 impactPosition{};
+        std::set<IntVector2> impactTileCoords{};
+        float impactFraction{1.0f};
+        Vector2 impactSurfaceNormal{};
+    };
+
+
     Map() noexcept = default;
     explicit Map(Renderer& renderer, const XMLElement& elem) noexcept;
     Map(const Map& other) = default;
@@ -41,13 +52,38 @@ public:
     void DebugRender(Renderer& renderer) const;
     void EndFrame();
 
-    bool IsTileInView(const IntVector2& tileCoords);
-    bool IsTileInView(const IntVector3& tileCoords);
-    bool IsTileInView(Tile* tile);
-    bool IsEntityInView(Entity* entity);
+    bool IsTileInView(const IntVector2& tileCoords) const;
+    bool IsTileInView(const IntVector3& tileCoords) const;
+    bool IsTileInView(Tile* tile) const;
+    bool IsEntityInView(Entity* entity) const;
+
+    bool IsTileSolid(const IntVector2& tileCoords) const;
+    bool IsTileSolid(const IntVector3& tileCoords) const;
+    bool IsTileSolid(Tile* tile) const;
+
+    bool IsTilePassable(const IntVector2& tileCoords) const;
+    bool IsTilePassable(const IntVector3& tileCoords) const;
+    bool IsTilePassable(Tile* tile) const;
 
     void FocusTileAt(const IntVector3& position);
     void FocusEntity(Entity* entity);
+
+    bool HasLineOfSight(const Vector2& startPosition, const Vector2& endPosition) const;
+    bool HasLineOfSight(const Vector2& startPosition, const Vector2& direction, float maxDistance) const;
+    bool IsTileWithinDistance(const Tile& startTile, unsigned int manhattanDist) const;
+
+    bool IsTileWithinDistance(const Tile& startTile, float dist) const;
+
+    std::vector<Tile*> GetTilesWithinDistance(const Tile& startTile, unsigned int manhattanDist) const;
+    std::vector<Tile*> GetTilesWithinDistance(const Tile& startTile, float dist) const;
+    std::vector<Tile*> GetVisibleTilesWithinDistance(const Tile& startTile, float dist) const;
+    std::vector<Tile*> GetVisibleTilesWithinDistance(const Tile& startTile, unsigned int manhattanDist) const;
+
+
+    RaycastResult2D StepAndSample(const Vector2& startPosition, const Vector2& endPosition, float sampleRate) const;
+    RaycastResult2D StepAndSample(const Vector2& startPosition, const Vector2& direction, float maxDistance, float sampleRate) const;
+    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& endPosition) const;
+    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& direction, float maxDistance) const;
 
     AABB2 CalcWorldBounds() const;
     Vector2 CalcMaxDimensions() const;
@@ -63,6 +99,7 @@ public:
     std::vector<Tile*> PickTilesFromMouseCoords(const Vector2& mouseCoords) const;
     Vector2 WorldCoordsToScreenCoords(const Vector2& worldCoords) const;
     Vector2 ScreenCoordsToWorldCoords(const Vector2& screenCoords) const;
+    IntVector2 TileCoordsFromWorldCoords(const Vector2& worldCoords) const;
 
     Tile* GetTile(const IntVector3& locationAndLayerIndex) const;
     Tile* GetTile(int x, int y, int z) const;
@@ -82,6 +119,7 @@ public:
     std::vector<Entity*> GetEntities() const noexcept;
 
     static inline constexpr std::size_t max_layers = 9u;
+
 protected:
 private:
     bool LoadFromXML(const XMLElement& elem);

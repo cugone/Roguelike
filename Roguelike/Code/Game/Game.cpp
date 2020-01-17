@@ -200,7 +200,7 @@ void Game::Render_Main() const {
 
     g_theRenderer->ResetModelViewProjection();
     g_theRenderer->SetRenderTarget(g_theRenderer->GetFullscreenTexture());
-    g_theRenderer->ClearColor(Rgba::Olive);
+    g_theRenderer->ClearColor(Rgba::Black);
     g_theRenderer->ClearDepthStencilBuffer();
 
     g_theRenderer->SetViewportAsPercent();
@@ -268,6 +268,40 @@ void Game::EndFrame_Loading() {
 }
 
 void Game::RegisterCommands() {
+    {
+        Console::Command setvis{};
+        setvis.command_name = "set_visibility";
+        setvis.help_text_short = "Sets the player's visibility range";
+        setvis.help_text_short = "set_visibility [distance]: Sets the player's visibility distance in tiles.";
+        setvis.command_function = [this](const std::string& args) {
+            ArgumentParser p(args);
+            if(_map) {
+                float value = 2.0f;
+                if(!(p >> value)) {
+                    return;
+                }
+                _map->player->visibility = value;
+            }
+        };
+        _consoleCommands.AddCommand(setvis);
+    }
+    {
+        Console::Command cleartilevis{};
+        cleartilevis.command_name = "clear_visibility";
+        cleartilevis.help_text_short = "Clears all tile visibility.";
+        cleartilevis.help_text_short = "clear_tile_vis: Sets every tile's visibility flags to false.";
+        cleartilevis.command_function = [this](const std::string& /*args*/) {
+            if(_map) {
+                std::size_t layer_index{0u};
+                auto* layer = _map->GetLayer(layer_index++);
+                for(auto& tile : *layer) {
+                    tile.canSee = false;
+                    tile.haveSeen = false;
+                }
+            }
+        };
+        _consoleCommands.AddCommand(cleartilevis);
+    }
     {
         Console::Command color{};
         color.command_name = "set_color";

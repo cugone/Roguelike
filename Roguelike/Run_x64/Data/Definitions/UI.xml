@@ -6,9 +6,4 @@
         <cursor name="red_crosshair_box" index="[45,34]" />
         <cursor name="question" index="[46,34]" />
     </cursors>
-    <overlays>
-        <overlay name="white_circle" index="[47,34]" />
-        <overlay name="white" index="[48,34]" />
-        <overlay name="blue" index="[49,34]" />
-    </overlays>
 </UI>

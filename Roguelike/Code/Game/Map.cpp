@@ -102,6 +102,10 @@ Vector2 Map::ScreenCoordsToWorldCoords(const Vector2& screenCoords) const {
     return _renderer.ConvertScreenToWorldCoords(camera, screenCoords);
 }
 
+IntVector2 Map::TileCoordsFromWorldCoords(const Vector2& worldCoords) const {
+    return IntVector2{worldCoords};
+}
+
 Tile* Map::PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) const {
     const auto& world_coords = _renderer.ConvertScreenToWorldCoords(camera, mouseCoords);
     return PickTileFromWorldCoords(world_coords, layerIndex);
@@ -136,6 +140,7 @@ bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
             desc.text = "MISS";
             CreateTextEntityAt(tile->GetCoords(), desc);
         }
+        actor->Act();
         return true;
     }
 }
@@ -272,15 +277,15 @@ void Map::EndFrame() {
     _entities.erase(std::remove_if(std::begin(_entities), std::end(_entities), [](const auto& e)->bool { return !e || (e && e->GetStats().GetStat(StatsID::Health) <= 0); }), std::end(_entities));
 }
 
-bool Map::IsTileInView(const IntVector2& tileCoords) {
+bool Map::IsTileInView(const IntVector2& tileCoords) const {
     return IsTileInView(IntVector3{ tileCoords, 0 });
 }
 
-bool Map::IsTileInView(const IntVector3& tileCoords) {
+bool Map::IsTileInView(const IntVector3& tileCoords) const {
     return IsTileInView(GetTile(tileCoords));
 }
 
-bool Map::IsTileInView(Tile* tile) {
+bool Map::IsTileInView(Tile* tile) const {
     if(!tile || (tile && !tile->layer)) {
         return false;
     }
@@ -289,8 +294,39 @@ bool Map::IsTileInView(Tile* tile) {
     return MathUtils::DoAABBsOverlap(tile_bounds, view_bounds);
 }
 
-bool Map::IsEntityInView(Entity* entity) {
+bool Map::IsEntityInView(Entity* entity) const {
     return entity && IsTileInView(entity->tile);
+}
+
+bool Map::IsTileSolid(const IntVector2& tileCoords) const {
+    return IsTileSolid(IntVector3{ tileCoords, 0});
+}
+
+
+bool Map::IsTileSolid(const IntVector3& tileCoords) const {
+    return IsTileSolid(GetTile(tileCoords));
+}
+
+bool Map::IsTileSolid(Tile* tile) const {
+    if(!tile || (tile && !tile->layer)) {
+        return false;
+    }
+    return tile->IsSolid();
+}
+
+bool Map::IsTilePassable(const IntVector2& tileCoords) const {
+    return IsTilePassable(IntVector3{tileCoords, 0});
+}
+
+bool Map::IsTilePassable(const IntVector3& tileCoords) const {
+    return IsTilePassable(GetTile(tileCoords));
+}
+
+bool Map::IsTilePassable(Tile* tile) const {
+    if(!tile || (tile && !tile->layer)) {
+        return false;
+    }
+    return tile->IsPassable();
 }
 
 void Map::FocusTileAt(const IntVector3& position) {
@@ -303,6 +339,226 @@ void Map::FocusEntity(Entity* entity) {
     if(entity) {
         FocusTileAt(IntVector3(entity->tile->GetCoords(), entity->layer->z_index));
     }
+}
+
+bool Map::HasLineOfSight(const Vector2& startPosition, const Vector2& endPosition) const {
+    const auto displacement = endPosition - startPosition;
+    const auto direction = displacement.GetNormalize();
+    float length = displacement.CalcLength();
+    return HasLineOfSight(startPosition, direction, length);
+}
+
+bool Map::HasLineOfSight(const Vector2& startPosition, const Vector2& direction, float maxDistance) const {
+    RaycastResult2D result = Raycast(startPosition, direction, maxDistance);
+    return !result.didImpact;
+}
+
+bool Map::IsTileWithinDistance(const Tile& startTile, unsigned int manhattanDist) const {
+    auto visibleTiles = GetTilesWithinDistance(startTile, manhattanDist);
+    bool isWithinDistance = false;
+    for(auto& t : visibleTiles) {
+        auto calculatedManhattanDist = MathUtils::CalculateManhattanDistance(startTile.GetCoords(), t->GetCoords());
+        if(calculatedManhattanDist < manhattanDist) {
+            isWithinDistance = true;
+            break;
+        }
+    }
+    return isWithinDistance;
+}
+
+bool Map::IsTileWithinDistance(const Tile& startTile, float dist) const {
+    auto visibleTiles = GetTilesWithinDistance(startTile, dist);
+    bool isWithinDistance = false;
+    for(auto& t : visibleTiles) {
+        auto calculatedDistSq = (Vector2(startTile.GetCoords()) - Vector2(t->GetCoords())).CalcLengthSquared();
+        if(calculatedDistSq < dist * dist) {
+            isWithinDistance = true;
+            break;
+        }
+    }
+    return isWithinDistance;
+}
+
+std::vector<Tile*> Map::GetTilesWithinDistance(const Tile& startTile, unsigned int manhattanDist) const {
+    std::vector<Tile*> results{};
+    const auto& layer0 = _layers[0];
+    for(auto& tile : *layer0) {
+        auto calculatedManhattanDist = MathUtils::CalculateManhattanDistance(startTile.GetCoords(), tile.GetCoords());
+        if(calculatedManhattanDist < manhattanDist) {
+            results.push_back(&tile);
+        }
+    }
+    return results;
+}
+
+std::vector<Tile*> Map::GetTilesWithinDistance(const Tile& startTile, float dist) const {
+    std::vector<Tile*> results;
+    const auto& layer0 = _layers[0];
+    for(auto& tile : *layer0) {
+        auto calculatedDistSq = (Vector2(startTile.GetCoords()) - Vector2(tile.GetCoords())).CalcLengthSquared();
+        if(calculatedDistSq < dist * dist) {
+            results.push_back(&tile);
+        }
+    }
+    return results;
+}
+
+std::vector<Tile*> Map::GetVisibleTilesWithinDistance(const Tile& startTile, unsigned int manhattanDist) const {
+    std::vector<Tile*> results = GetTilesWithinDistance(startTile, manhattanDist);
+    results.erase(std::remove_if(std::begin(results), std::end(results), [this, &startTile](Tile* tile) { return !HasLineOfSight(Vector2(startTile.GetCoords()) + Vector2{0.5f, 0.5f}, Vector2(tile->GetCoords()) + Vector2{0.5f, 0.5f}); }), std::end(results));
+    return results;
+}
+
+std::vector<Tile*> Map::GetVisibleTilesWithinDistance(const Tile& startTile, float dist) const {
+    std::vector<Tile*> results = GetTilesWithinDistance(startTile, dist);
+    results.erase(std::remove_if(std::begin(results), std::end(results), [this, &startTile](Tile* tile) { return !HasLineOfSight(Vector2(startTile.GetCoords()) + Vector2{0.5f, 0.5f}, Vector2(tile->GetCoords()) + Vector2{0.5f, 0.5f}); }), std::end(results));
+    return results;
+}
+
+Map::RaycastResult2D Map::StepAndSample(const Vector2& startPosition, const Vector2& endPosition, float sampleRate) const {
+    const auto displacement = endPosition - startPosition;
+    const auto direction = displacement.GetNormalize();
+    float length = displacement.CalcLength();
+    return StepAndSample(startPosition, direction, length, sampleRate);
+}
+
+
+Map::RaycastResult2D Map::StepAndSample(const Vector2& startPosition, const Vector2& direction, float maxDistance, float sampleRate) const {
+    auto endPosition = startPosition + (direction * maxDistance);
+    const auto D = endPosition - startPosition;
+    const auto stepFrequency = 1.0f / sampleRate;
+    const auto stepRate = direction * stepFrequency;
+    auto currentSamplePoint = startPosition;
+    IntVector2 currentTileCoords{startPosition};
+    IntVector2 endTileCoords{endPosition};
+    RaycastResult2D result;
+    if(IsTileSolid(currentTileCoords)) {
+        result.didImpact = true;
+        result.impactFraction = 0.0f;
+        result.impactPosition = currentSamplePoint;
+        result.impactTileCoords.insert(currentTileCoords);
+        result.impactSurfaceNormal = -direction;
+        return result;
+    }
+    
+    while(true) {
+        result.impactTileCoords.insert(currentTileCoords);
+        currentSamplePoint += stepRate;
+        Vector2 EP = currentSamplePoint - endPosition;
+        currentTileCoords = TileCoordsFromWorldCoords(currentSamplePoint);
+        if(MathUtils::DotProduct(direction, EP) > 0.0f) {
+            result.didImpact = false;
+            result.impactFraction = 1.0f;
+            result.impactTileCoords.insert(currentTileCoords);
+            return result;
+        }
+        Vector2 SP = currentSamplePoint - startPosition;
+        if(MathUtils::DotProduct(direction, SP) < 0.0f) {
+            result.didImpact = false;
+            result.impactFraction = 0.0f;
+            result.impactTileCoords.insert(currentTileCoords);
+            return result;
+        }
+        if(IsTileSolid(currentTileCoords)) {
+            result.didImpact = true;
+            result.impactFraction = currentSamplePoint.CalcLength() / maxDistance;
+            result.impactPosition = currentSamplePoint;
+            result.impactTileCoords.insert(currentTileCoords);
+            result.impactSurfaceNormal = -direction;
+            return result;
+        }
+    }
+}
+
+Map::RaycastResult2D Map::Raycast(const Vector2& startPosition, const Vector2& endPosition) const {
+    const auto displacement = endPosition - startPosition;
+    const auto direction = displacement.GetNormalize();
+    float length = displacement.CalcLength();
+    return Raycast(startPosition, direction, length);
+}
+
+Map::RaycastResult2D Map::Raycast(const Vector2& startPosition, const Vector2& direction, float maxDistance) const {
+    const auto endPosition = startPosition + (direction * maxDistance);
+    IntVector2 currentTileCoords{startPosition};
+    IntVector2 endTileCoords{endPosition};
+
+    const auto D = endPosition - startPosition;
+
+    float tDeltaX = (std::numeric_limits<float>::max)();
+    if(!MathUtils::IsEquivalent(D.x, 0.0f)) {
+        tDeltaX = 1.0f / std::abs(D.x);
+    }
+    int tileStepX = 0;
+    if(D.x > 0) {
+        tileStepX = 1;
+    }
+    if(D.x < 0) {
+        tileStepX = -1;
+    }
+    int offsetToLeadingEdgeX = (tileStepX + 1) / 2;
+    float firstVerticalIntersectionX = static_cast<float>(currentTileCoords.x + offsetToLeadingEdgeX);
+    float tOfNextXCrossing = std::abs(firstVerticalIntersectionX - startPosition.x) * tDeltaX;
+
+    float tDeltaY = (std::numeric_limits<float>::max)();
+    if(!MathUtils::IsEquivalent(D.y, 0.0f)) {
+        tDeltaY = 1.0f / std::abs(D.y);
+    }
+    int tileStepY = 0;
+    if(D.y > 0) {
+        tileStepY = 1;
+    }
+    if(D.y < 0) {
+        tileStepY = -1;
+    }
+    int offsetToLeadingEdgeY = (tileStepY + 1) / 2;
+    float firstVerticalIntersectionY = static_cast<float>(currentTileCoords.y + offsetToLeadingEdgeY);
+    float tOfNextYCrossing = std::abs(firstVerticalIntersectionY - startPosition.y) * tDeltaY;
+
+    Map::RaycastResult2D result;
+    if(IsTileSolid(currentTileCoords)) {
+        result.didImpact = true;
+        result.impactFraction = 0.0f;
+        result.impactPosition = startPosition;
+        result.impactTileCoords.insert(currentTileCoords);
+        result.impactSurfaceNormal = -direction;
+        return result;
+    }
+
+    while(true) {
+        result.impactTileCoords.insert(currentTileCoords);
+        if(tOfNextXCrossing < tOfNextYCrossing) {
+            if(tOfNextXCrossing > 1.0f) {
+                result.didImpact = false;
+                return result;
+            }
+            currentTileCoords.x += tileStepX;
+            if(IsTileSolid(currentTileCoords)) {
+                result.didImpact = true;
+                result.impactFraction = tOfNextXCrossing;
+                result.impactPosition = startPosition + (D * result.impactFraction);
+                result.impactTileCoords.insert(currentTileCoords);
+                result.impactSurfaceNormal = Vector2(static_cast<float>(-tileStepX), 0.0f);
+                return result;
+            }
+            tOfNextXCrossing += tDeltaX;
+        } else {
+            if(tOfNextYCrossing > 1.0f) {
+                result.didImpact = false;
+                return result;
+            }
+            currentTileCoords.y += tileStepY;
+            if(IsTileSolid(currentTileCoords)) {
+                result.didImpact = true;
+                result.impactFraction = tOfNextYCrossing;
+                result.impactPosition = startPosition + (D * result.impactFraction);
+                result.impactTileCoords.insert(currentTileCoords);
+                result.impactSurfaceNormal = Vector2(0.0f, static_cast<float>(-tileStepY));
+                return result;
+            }
+            tOfNextYCrossing += tDeltaY;
+        }
+    }
+    return result;
 }
 
 Vector2 Map::CalcMaxDimensions() const {
