@@ -200,7 +200,7 @@ void Game::Render_Main() const {
 
     g_theRenderer->ResetModelViewProjection();
     g_theRenderer->SetRenderTarget(g_theRenderer->GetFullscreenTexture());
-    g_theRenderer->ClearColor(Rgba::Olive);
+    g_theRenderer->ClearColor(Rgba::Black);
     g_theRenderer->ClearDepthStencilBuffer();
 
     g_theRenderer->SetViewportAsPercent();
@@ -268,6 +268,40 @@ void Game::EndFrame_Loading() {
 }
 
 void Game::RegisterCommands() {
+    {
+        Console::Command setvis{};
+        setvis.command_name = "set_visibility";
+        setvis.help_text_short = "Sets the player's visibility range";
+        setvis.help_text_short = "set_visibility [distance]: Sets the player's visibility distance in tiles.";
+        setvis.command_function = [this](const std::string& args) {
+            ArgumentParser p(args);
+            if(_map) {
+                float value = 2.0f;
+                if(!(p >> value)) {
+                    return;
+                }
+                _map->player->visibility = value;
+            }
+        };
+        _consoleCommands.AddCommand(setvis);
+    }
+    {
+        Console::Command cleartilevis{};
+        cleartilevis.command_name = "clear_visibility";
+        cleartilevis.help_text_short = "Clears all tile visibility.";
+        cleartilevis.help_text_short = "clear_tile_vis: Sets every tile's visibility flags to false.";
+        cleartilevis.command_function = [this](const std::string& /*args*/) {
+            if(_map) {
+                std::size_t layer_index{0u};
+                auto* layer = _map->GetLayer(layer_index++);
+                for(auto& tile : *layer) {
+                    tile.canSee = false;
+                    tile.haveSeen = false;
+                }
+            }
+        };
+        _consoleCommands.AddCommand(cleartilevis);
+    }
     {
         Console::Command color{};
         color.command_name = "set_color";
@@ -1112,6 +1146,12 @@ void Game::ShowTileInspectorUI() {
     const auto tiles_per_row = std::size_t{ 3u };
     auto picked_count = picked_tiles.size();
     if(_debug_has_picked_tile_with_click) {
+        std::ostringstream ss;
+        ss << "World Coords: " << _debug_inspected_tiles[0]->GetCoords();
+        ImGui::Text(ss.str().c_str());
+        ss.str("");
+        ss << "Screen Coords: " << g_theRenderer->ConvertWorldToScreenCoords(_map->camera, Vector2(_debug_inspected_tiles[0]->GetCoords()));
+        ImGui::Text(ss.str().c_str());
         picked_count = _debug_inspected_tiles.size();
         std::size_t i = 0u;
         for(const auto cur_tile : _debug_inspected_tiles) {
@@ -1138,6 +1178,14 @@ void Game::ShowTileInspectorUI() {
             }
         }
     } else {
+        if(picked_count) {
+            std::ostringstream ss;
+            ss << "World Coords: " << picked_tiles[0]->GetCoords();
+            ImGui::Text(ss.str().c_str());
+            ss.str("");
+            ss << "Screen Coords: " << g_theRenderer->ConvertWorldToScreenCoords(_map->camera, Vector2(picked_tiles[0]->GetCoords()));
+            ImGui::Text(ss.str().c_str());
+        }
         for(std::size_t i = 0; i < max_layers; ++i) {
             const Tile *cur_tile = i < picked_count ? picked_tiles[i] : nullptr;
             const auto* cur_def = cur_tile ? cur_tile->GetDefinition() : TileDefinition::GetTileDefinitionByName("void");
@@ -1178,7 +1226,8 @@ std::vector<Tile*> Game::DebugGetTilesFromMouse() {
 
 void Game::ShowEntityInspectorUI() {
     const auto& picked_tiles = DebugGetTilesFromMouse();
-    bool has_entity = (!picked_tiles.empty() && picked_tiles[0]->actor);
+    const auto picked_count = picked_tiles.size();
+    bool has_entity = (picked_count > 0 && picked_tiles[0]->actor);
     bool has_selected_entity = _debug_has_picked_entity_with_click && _debug_inspected_entity;
     bool shouldnt_show_inspector = !has_entity && !has_selected_entity;
     if(shouldnt_show_inspector) {
@@ -1186,6 +1235,12 @@ void Game::ShowEntityInspectorUI() {
         return;
     }
     if(const auto* cur_entity = _debug_inspected_entity ? _debug_inspected_entity : picked_tiles[0]->actor) {
+        std::ostringstream ss;
+        ss << "World Coords: " << cur_entity->GetPosition();
+        ImGui::Text(ss.str().c_str());
+        ss.str("");
+        ss << "Screen Coords: " << _map->WorldCoordsToScreenCoords(Vector2(cur_entity->GetPosition()));
+        ImGui::Text(ss.str().c_str());
         if(const auto* cur_sprite = cur_entity->sprite) {
             ImGui::Text("Entity Inspector");
             ImGui::SameLine();

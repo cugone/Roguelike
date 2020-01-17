@@ -8,6 +8,7 @@
 #include "Game/GameCommon.hpp"
 #include "Game/GameConfig.hpp"
 #include "Game/Map.hpp"
+#include "Game/Actor.hpp"
 
 #include <algorithm>
 #include <numeric>
@@ -51,6 +52,39 @@ Tile* Layer::GetNeighbor(const IntVector2& direction) {
 
 float Layer::GetDefaultViewHeight() const {
     return _defaultViewHeight;
+}
+
+std::vector<Tile>::const_iterator Layer::cbegin() const noexcept {
+    return _tiles.cbegin();
+}
+
+std::vector<Tile>::const_iterator Layer::cend() const noexcept {
+    return _tiles.cend();
+
+}
+
+std::vector<Tile>::reverse_iterator Layer::rbegin() noexcept {
+    return _tiles.rbegin();
+}
+
+std::vector<Tile>::reverse_iterator Layer::rend() noexcept {
+    return _tiles.rend();
+}
+
+std::vector<Tile>::const_reverse_iterator Layer::crbegin() const noexcept {
+    return _tiles.crbegin();
+}
+
+std::vector<Tile>::const_reverse_iterator Layer::crend() const noexcept {
+    return _tiles.crend();
+}
+
+std::vector<Tile>::iterator Layer::begin() noexcept {
+    return _tiles.begin();
+}
+
+std::vector<Tile>::iterator Layer::end() noexcept {
+    return _tiles.end();
 }
 
 bool Layer::LoadFromXml(const XMLElement& elem) {
@@ -156,7 +190,7 @@ void Layer::RenderTiles(Renderer& renderer) const {
 
     for(auto& t : _tiles) {
         AABB2 tile_bounds = t.GetBounds();
-        if(MathUtils::DoAABBsOverlap(cullbounds, tile_bounds)) {
+        if((t.canSee || t.haveSeen) && MathUtils::DoAABBsOverlap(cullbounds, tile_bounds)) {
             t.Render(verts, ibo, color, z_index);
         }
     }
@@ -192,13 +226,20 @@ void Layer::DebugRenderTiles(Renderer& renderer) const {
 }
 
 void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
+    auto visibleTiles = _map->GetTilesWithinDistance(*_map->player->tile, _map->player->visibility);
+    for(auto& tile : visibleTiles) {
+        tile->canSee = true;
+        tile->haveSeen = true;
+    }
     for(auto& tile : _tiles) {
         tile.Update(deltaSeconds);
     }
 }
 
 void Layer::BeginFrame() {
-    /* DO NOTHING */
+    for(auto& tile : _tiles) {
+        tile.canSee = false;
+    }
 }
 
 void Layer::Update(TimeUtils::FPSeconds deltaSeconds) {

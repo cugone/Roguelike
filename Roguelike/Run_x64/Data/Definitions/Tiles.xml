@@ -1,5 +1,14 @@
 <tileDefinitions>
     <spritesheet src="Data/Images/Tiles.png" dimensions="[65,65]" />
+    <tileDefinition name="white_circle" index="[47,34]">
+        <glyph value=" " />
+    </tileDefinition>
+    <tileDefinition name="white" index="[48,34]">
+        <glyph value=" " />
+    </tileDefinition>
+    <tileDefinition name="blue" index="[49,34]">
+        <glyph value=" " />
+    </tileDefinition>    
     <tileDefinition name="void" index="[45,64]">
         <glyph value=" " />
         <invisible />
@@ -40,11 +49,11 @@
         <glyph value="^" />
         <allowDiagonalMovement />
     </tileDefinition>
-    <tileDefinition name="ladderUp" index="[29,14]">
+    <tileDefinition name="ladderUp" index="[14,29]">
         <glyph value="/" />
         <allowDiagonalMovement />
     </tileDefinition>
-    <tileDefinition name="ladderDown" index="[29,13]">
+    <tileDefinition name="ladderDown" index="[0,0]">
         <glyph value="\" />
         <allowDiagonalMovement />
     </tileDefinition>
