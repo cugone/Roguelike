@@ -10,6 +10,7 @@ EntityText::EntityText(const TextEntityDesc& desc) noexcept
     : Entity()
     , text{desc.text}
     , ttl{desc.timeToLive}
+    , color{desc.color}
     , font{desc.font}
     , speed{desc.speed}
 {
@@ -25,8 +26,8 @@ void EntityText::Update(TimeUtils::FPSeconds deltaSeconds) {
     }
 }
 
-void EntityText::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t /*layer_index*/) const {
-    g_theRenderer->AppendMultiLineTextBuffer(font, text, _screen_position, layer_color, verts, ibo);
+void EntityText::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& /*layer_color*/, std::size_t /*layer_index*/) const {
+    g_theRenderer->AppendMultiLineTextBuffer(font, text, _screen_position, color, verts, ibo);
     const auto S = Matrix4::I;
     const auto R = Matrix4::I;
     const auto T = Matrix4::CreateTranslationMatrix(_screen_position);
