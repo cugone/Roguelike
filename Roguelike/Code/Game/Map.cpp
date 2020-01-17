@@ -30,7 +30,7 @@
 
 void Map::CreateTextEntity(const TextEntityDesc& desc) noexcept {
     const auto text = EntityText::CreateTextEntity(desc);
-    _entities.push_back(text);
+    _text_entities.push_back(text);
 }
 
 void Map::CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) noexcept {
@@ -167,11 +167,28 @@ void Map::BeginFrame() {
 void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
     UpdateLayers(deltaSeconds);
     UpdateTextEntities(deltaSeconds);
+    UpdateEntities(deltaSeconds);
 }
 
 void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
     for(auto& layer : _layers) {
         layer->Update(deltaSeconds);
+    }
+}
+
+void Map::UpdateEntities(TimeUtils::FPSeconds deltaSeconds) {
+    UpdateEntityAI(deltaSeconds);
+}
+
+void Map::UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds) {
+    for(auto* entity : _text_entities) {
+        entity->Update(deltaSeconds);
+    }
+}
+
+void Map::UpdateEntityAI(TimeUtils::FPSeconds deltaSeconds) {
+    for(auto& entity : _entities) {
+        entity->UpdateAI(deltaSeconds);
     }
 }
 
@@ -194,20 +211,6 @@ void Map::BringLayerToFront(std::size_t i) {
         std::iter_swap(curr, next);
         curr++;
         next = curr + 1;
-    }
-}
-
-void Map::UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds) {
-    for(auto* entity : _entities) {
-        if(auto* asText = dynamic_cast<EntityText*>(entity)) {
-            asText->Update(deltaSeconds);
-        }
-    }
-}
-
-void Map::UpdateEntityAI(TimeUtils::FPSeconds deltaSeconds) {
-    for(auto& entity : _entities) {
-        entity->UpdateAI(deltaSeconds);
     }
 }
 
@@ -236,10 +239,8 @@ void Map::Render(Renderer& renderer) const {
     g_theRenderer->SetCamera(ui_camera);
 
 
-    for(auto* entity : _entities) {
-        if(auto* asText = dynamic_cast<EntityText*>(entity)) {
-            asText->Render(verts, ibo, Rgba::White, 0);
-        }
+    for(auto* entity : _text_entities) {
+        entity->Render(verts, ibo, entity->color, 0);
     }
 
     g_theRenderer->SetCamera(camera);
