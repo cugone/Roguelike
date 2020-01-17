@@ -27,6 +27,7 @@ public:
     void Act();
     void DontAct();
 
+    void Rest();
     bool MoveTo(Tile* destination);
     bool Move(const IntVector2& direction);
     bool MoveNorth();

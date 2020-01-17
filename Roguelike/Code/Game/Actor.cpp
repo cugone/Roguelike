@@ -56,6 +56,10 @@ void Actor::DontAct() {
     Act(false);
 }
 
+void Actor::Rest() {
+    Act();
+}
+
 bool Actor::MoveTo(Tile* destination) {
     if(destination) {
         return Move(destination->GetCoords() - this->GetPosition());

@@ -156,13 +156,25 @@
     <ClCompile Include="Layer.cpp" />
     <ClCompile Include="Main_Win32.cpp" />
     <ClCompile Include="Map.cpp" />
+    <ClCompile Include="MoveCommand.cpp" />
+    <ClCompile Include="MoveEastCommand.cpp" />
+    <ClCompile Include="MoveNorthCommand.cpp" />
+    <ClCompile Include="MoveNorthEastCommand.cpp" />
+    <ClCompile Include="MoveNorthWestCommand.cpp" />
+    <ClCompile Include="MoveSouthCommand.cpp" />
+    <ClCompile Include="MoveSouthEastCommand.cpp" />
+    <ClCompile Include="MoveSouthWestCommand.cpp" />
+    <ClCompile Include="MoveWestCommand.cpp" />
+    <ClCompile Include="RestCommand.cpp" />
     <ClCompile Include="Stats.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="TileDefinition.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.hpp" />
+    <ClInclude Include="ActorCommand.hpp" />
     <ClInclude Include="App.hpp" />
+    <ClInclude Include="Command.hpp" />
     <ClInclude Include="Cursor.hpp" />
     <ClInclude Include="CursorDefinition.hpp" />
     <ClInclude Include="Entity.hpp" />
@@ -176,6 +188,16 @@
     <ClInclude Include="Item.hpp" />
     <ClInclude Include="Layer.hpp" />
     <ClInclude Include="Map.hpp" />
+    <ClInclude Include="MoveCommand.hpp" />
+    <ClInclude Include="MoveEastCommand.hpp" />
+    <ClInclude Include="MoveNorthCommand.hpp" />
+    <ClInclude Include="MoveNorthEastCommand.hpp" />
+    <ClInclude Include="MoveNorthWestCommand.hpp" />
+    <ClInclude Include="MoveSouthCommand.hpp" />
+    <ClInclude Include="MoveSouthEastCommand.hpp" />
+    <ClInclude Include="MoveSouthWestCommand.hpp" />
+    <ClInclude Include="MoveWestCommand.hpp" />
+    <ClInclude Include="RestCommand.hpp" />
     <ClInclude Include="Stats.hpp" />
     <ClInclude Include="Tile.hpp" />
     <ClInclude Include="TileDefinition.hpp" />
