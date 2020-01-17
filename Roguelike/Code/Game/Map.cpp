@@ -291,7 +291,7 @@ bool Map::IsTileInView(Tile* tile) const {
         return false;
     }
     const auto tile_bounds = tile->GetBounds();
-    const auto view_bounds = tile->layer->CalcViewBounds(Vector2(tile->GetCoords()));
+    const auto view_bounds = tile->layer->CalcViewBounds(camera.position);
     return MathUtils::DoAABBsOverlap(tile_bounds, view_bounds);
 }
 
