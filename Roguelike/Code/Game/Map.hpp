@@ -134,6 +134,7 @@ private:
 
     void UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds);
     void UpdateEntityAI(TimeUtils::FPSeconds deltaSeconds);
+    void UpdateEntities(TimeUtils::FPSeconds deltaSeconds);
 
     void BringLayerToFront(std::size_t i);
     void CreateTextEntity(const TextEntityDesc& desc) noexcept;
@@ -147,6 +148,7 @@ private:
     Material* _default_tileMaterial{};
     Material* _current_tileMaterial{};
     std::vector<Entity*> _entities{};
+    std::vector<EntityText*> _text_entities{};
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
     float _camera_speed = 1.0f;
     static inline unsigned long long default_map_index = 0ull;

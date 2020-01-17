@@ -23,6 +23,7 @@ class EntityText : public Entity {
 public:
     std::string text{};
     TimeUtils::FPSeconds ttl{1.0f};
+    Rgba color{Rgba::White};
     KerningFont* font{};
     float speed{20.0f};
     
@@ -35,7 +36,7 @@ public:
     virtual ~EntityText() = default;
 
     virtual void Update(TimeUtils::FPSeconds deltaSeconds) override;
-    virtual void Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const override;
+    virtual void Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, std::size_t layer_index) const override;
     virtual void EndFrame() override;
 
 protected:
