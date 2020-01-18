@@ -153,6 +153,9 @@ Map::~Map() noexcept {
 }
 
 void Map::BeginFrame() {
+    for(auto& actor : _actors) {
+        actor->Act(false);
+    }
     for(auto& layer : _layers) {
         layer->BeginFrame();
     }
@@ -182,8 +185,13 @@ void Map::UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds) {
 
 void Map::UpdateActorAI(TimeUtils::FPSeconds /*deltaSeconds*/) {
     for(auto& actor : _actors) {
-        if(actor->GetCurrentBehavior()) {
-            actor->GetCurrentBehavior()->Act(player);
+        const auto is_player = actor == player;
+        const auto player_acted = player->Acted();
+        const auto should_update = !is_player && player_acted;
+        if(should_update) {
+            if(auto* behavior = actor->GetCurrentBehavior()) {
+                behavior->Act(actor);
+            }
         }
     }
 }
@@ -742,7 +750,7 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
             actor->SetFaction(Faction::Enemy);
             if(is_player) {
                 player = actor;
-                player->OnMove.Subscribe_method(this, &Map::ShakeCamera);
+                //player->OnMove.Subscribe_method(this, &Map::ShakeCamera);
                 player->SetFaction(Faction::Player);
             }
             _entities.push_back(actor);
