@@ -177,7 +177,7 @@ void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
 }
 
 void Map::UpdateEntities(TimeUtils::FPSeconds deltaSeconds) {
-    UpdateEntityAI(deltaSeconds);
+    UpdateActorAI(deltaSeconds);
 }
 
 void Map::UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds) {
@@ -186,9 +186,11 @@ void Map::UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds) {
     }
 }
 
-void Map::UpdateEntityAI(TimeUtils::FPSeconds deltaSeconds) {
-    for(auto& entity : _entities) {
-        entity->UpdateAI(deltaSeconds);
+void Map::UpdateActorAI(TimeUtils::FPSeconds /*deltaSeconds*/) {
+    for(auto& actor : _actors) {
+        if(actor->GetCurrentBehavior()) {
+            actor->GetCurrentBehavior()->Act(player);
+        }
     }
 }
 

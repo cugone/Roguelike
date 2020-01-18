@@ -142,6 +142,7 @@
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="Behavior.cpp" />
     <ClCompile Include="Cursor.cpp" />
     <ClCompile Include="CursorDefinition.cpp" />
     <ClCompile Include="Entity.cpp" />
@@ -169,11 +170,13 @@
     <ClCompile Include="Stats.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="TileDefinition.cpp" />
+    <ClCompile Include="WanderBehavior.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.hpp" />
     <ClInclude Include="ActorCommand.hpp" />
     <ClInclude Include="App.hpp" />
+    <ClInclude Include="Behavior.hpp" />
     <ClInclude Include="Command.hpp" />
     <ClInclude Include="Cursor.hpp" />
     <ClInclude Include="CursorDefinition.hpp" />
@@ -201,6 +204,7 @@
     <ClInclude Include="Stats.hpp" />
     <ClInclude Include="Tile.hpp" />
     <ClInclude Include="TileDefinition.hpp" />
+    <ClInclude Include="WanderBehavior.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="..\..\Run_x64\Data\Definitions\Entities.xml" />

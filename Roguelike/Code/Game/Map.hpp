@@ -133,7 +133,7 @@ private:
     void LoadItemsForMap(const XMLElement& elem);
 
     void UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds);
-    void UpdateEntityAI(TimeUtils::FPSeconds deltaSeconds);
+    void UpdateActorAI(TimeUtils::FPSeconds deltaSeconds);
     void UpdateEntities(TimeUtils::FPSeconds deltaSeconds);
 
     void BringLayerToFront(std::size_t i);

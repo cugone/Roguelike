@@ -2,7 +2,7 @@
 
 #include "Engine/Core/ErrorWarningAssert.hpp"
 
-#include "Game/Map.hpp"
+#include "Game/Behavior.hpp"
 #include "Game/Inventory.hpp"
 #include "Game/Item.hpp"
 
@@ -68,7 +68,7 @@ bool Actor::MoveTo(Tile* destination) {
 }
 
 bool Actor::LoadFromXml(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "actor", "", "name,lookAndFeel,position");
+    DataUtils::ValidateXmlElement(elem, "actor", "", "name,lookAndFeel,position", "behaviors");
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
     def = EntityDefinition::GetEntityDefinitionByName(definitionName);
@@ -231,4 +231,16 @@ void Actor::SetPosition(const IntVector2& position) {
     auto next_tile = map->GetTile(_position.x, _position.y, layer->z_index);
     next_tile->actor = this;
     tile = next_tile;
+}
+
+void Actor::SetBehavior(const std::string& behaviorName) {
+    const auto found_iter = _available_behaviors.find(behaviorName);
+    const auto is_available = found_iter != std::end(_available_behaviors);
+    if(is_available) {
+        _active_behavior = found_iter->second.get();
+    }
+}
+
+Behavior* Actor::GetCurrentBehavior() const noexcept {
+    return _active_behavior;
 }

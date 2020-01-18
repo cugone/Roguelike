@@ -115,6 +115,12 @@
     <ClCompile Include="RestCommand.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Behavior.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="WanderBehavior.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameCommon.hpp">
@@ -205,6 +211,12 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="RestCommand.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Behavior.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="WanderBehavior.hpp">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>

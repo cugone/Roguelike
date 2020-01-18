@@ -6,6 +6,8 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 
+#include "Game/Behavior.hpp"
+
 std::map<std::string, std::unique_ptr<EntityDefinition>> EntityDefinition::s_registry;
 
 void EntityDefinition::CreateEntityDefinition(Renderer& renderer, const XMLElement& elem) {
@@ -125,6 +127,18 @@ void EntityDefinition::LoadEquipment(const XMLElement& elem) {
                 auto slot = static_cast<std::size_t>(slot_id);
                 auto item = inventory.GetItem(itemname);
                 equipment[slot] = item;
+        });
+    }
+}
+
+void EntityDefinition::LoadBehaviors(const XMLElement& elem) {
+    if(auto* xml_behaviors = elem.FirstChildElement("behaviors")) {
+        DataUtils::ValidateXmlElement(*xml_behaviors, "behaviors", "behavior", "");
+        const auto behavior_count = DataUtils::GetChildElementCount(*xml_behaviors, "behavior");
+        _available_behaviors.reserve(behavior_count);
+        DataUtils::ForEachChildElement(*xml_behaviors, "behavior",
+        [this](const XMLElement& elem) {
+            _available_behaviors.emplace_back(Behavior::Create(elem));
         });
     }
 }

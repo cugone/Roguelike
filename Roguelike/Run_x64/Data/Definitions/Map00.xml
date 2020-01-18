@@ -3,8 +3,8 @@
     <tiles src="Data/Definitions/Tiles.xml" />
     <actors>
         <actor name="player" lookAndFeel="human..male" position="[1,1]" />
-        <actor name="aerith" lookAndFeel="human..female" position="[5,5]" />
-        <actor name="aerith" lookAndFeel="human..female" position="[7,5]" />
+        <actor name="aerith" lookAndFeel="human..female" position="[5,5]" behavior="wander" />
+        <actor name="aerith" lookAndFeel="human..female" position="[7,5]" behavior="wander" />
     </actors>
     <layers>
         <layer>
