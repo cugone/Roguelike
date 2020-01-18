@@ -59,6 +59,11 @@ public:
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);
+
+    virtual void ResolveAttack(Entity& attacker, Entity& defender) override;
+    void ApplyDamage(DamageType type, long amount);
+    void AttackerMissed();
+
     bool CanMoveDiagonallyToNeighbor(const IntVector2& direction) const;
 
     std::vector<Item*> GetAllEquipmentOfType(const EquipSlot& slot) const;

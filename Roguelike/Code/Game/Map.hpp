@@ -120,6 +120,10 @@ public:
 
     static inline constexpr std::size_t max_layers = 9u;
 
+    void CreateTextEntity(const TextEntityDesc& desc) noexcept;
+    void CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) noexcept;
+
+
 protected:
 private:
     bool LoadFromXML(const XMLElement& elem);
@@ -137,8 +141,6 @@ private:
     void UpdateEntities(TimeUtils::FPSeconds deltaSeconds);
 
     void BringLayerToFront(std::size_t i);
-    void CreateTextEntity(const TextEntityDesc& desc) noexcept;
-    void CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) noexcept;
 
     void ShakeCamera(const IntVector2& from, const IntVector2& to) noexcept;
 

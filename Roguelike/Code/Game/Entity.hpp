@@ -16,6 +16,13 @@ class Tile;
 class AnimatedSprite;
 class EntityDefinition;
 
+enum class Faction {
+    None
+    ,Player
+    ,Enemy
+    ,Neutral
+};
+
 class Entity {
 public:
     Entity();
@@ -47,6 +54,10 @@ public:
     void AdjustBaseStats(Stats adjustments);
     void AdjustStatModifiers(Stats adjustments);
 
+    Faction GetFaction() const noexcept;
+    void SetFaction(const Faction& faction) noexcept;
+    Faction JoinFaction(const Faction& faction) noexcept;
+
     Map* map = nullptr;
     Layer* layer = nullptr;
     Tile* tile = nullptr;
@@ -57,23 +68,26 @@ public:
     std::string name{"UNKNOWN ENTITY"};
 
     Event<const IntVector2&, const IntVector2&> OnMove;
-    Event<Entity&, Entity&, long double> OnFight;
-    Event<DamageType, long double> OnDamage;
+    Event<Entity&, Entity&> OnFight;
+    Event<DamageType, long> OnDamage;
+    Event<> OnMiss;
     Event<> OnDestroy;
+
 protected:
+    virtual void ResolveAttack(Entity& attacker, Entity& defender);
     Stats GetStatModifiers() const noexcept;
     const Stats& GetBaseStats() const noexcept;
     Stats& GetBaseStats() noexcept;
 
     Vector2 _screen_position{};
     IntVector2 _position{};
+    Faction _faction{Faction::None};
+
 private:
     void LoadFromXml(const XMLElement& elem);
     std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
-
+    
     void AddVertsForEquipment(const IntVector2& entity_position, std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
-
-    void ApplyDamage(DamageType type, long double amount);
 
     Stats stats{1,1,1};
     Stats stat_modifiers{};

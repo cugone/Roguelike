@@ -3,10 +3,13 @@
 #include "Engine/Core/ErrorWarningAssert.hpp"
 
 #include "Game/Behavior.hpp"
+#include "Game/GameCommon.hpp"
 #include "Game/Inventory.hpp"
 #include "Game/Item.hpp"
+#include "Game/Map.hpp"
 
 #include <algorithm>
+#include <sstream>
 
 std::multimap<std::string, std::unique_ptr<Actor>> Actor::s_registry{};
 
@@ -30,6 +33,9 @@ Actor::Actor(Map* map, const XMLElement& elem) noexcept
     if(!LoadFromXml(elem)) {
         ERROR_AND_DIE("Actor failed to load.");
     }
+    OnDamage.Subscribe_method(this, &Actor::ApplyDamage);
+    OnFight.Subscribe_method(this, &Actor::ResolveAttack);
+    OnMiss.Subscribe_method(this, &Actor::AttackerMissed);
 }
 
 Actor::Actor(Map* map, EntityDefinition* definition) noexcept
@@ -38,6 +44,9 @@ Actor::Actor(Map* map, EntityDefinition* definition) noexcept
     this->map = map;
     this->layer = this->map->GetLayer(0);
     sprite = def->GetSprite();
+    OnDamage.Subscribe_method(this, &Actor::ApplyDamage);
+    OnFight.Subscribe_method(this, &Actor::ResolveAttack);
+    OnMiss.Subscribe_method(this, &Actor::AttackerMissed);
 }
 
 bool Actor::Acted() const {
@@ -107,6 +116,76 @@ bool Actor::CanMoveDiagonallyToNeighbor(const IntVector2& direction) const {
         }
     }
     return true;
+}
+
+void Actor::ResolveAttack(Entity& attacker, Entity& defender) {
+    if(attacker.GetFaction() == defender.GetFaction()) {
+        return;
+    }
+    auto aStats = attacker.GetStats();
+    auto dStats = defender.GetStats();
+    const auto aAtt = aStats.GetStat(StatsID::Attack);
+    const auto aSpd = aStats.GetStat(StatsID::Speed);
+    const auto dDef = dStats.GetStat(StatsID::Defense);
+    const auto dEva = dStats.GetStat(StatsID::Evasion);
+    const auto damageType = DamageType::Physical;
+    switch(damageType) {
+    case DamageType::None:
+        break;
+    case DamageType::Physical:
+    {
+        if(aSpd < dEva) {
+            defender.OnMiss.Trigger();
+            return;
+        }
+        auto result = aAtt - dDef;
+        if(aAtt < dDef) {
+            result = 0L;
+        }
+        defender.OnDamage.Trigger(damageType, result);
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+void Actor::ApplyDamage(DamageType type, long amount) {
+    switch(type) {
+    case DamageType::None:
+        break;
+    case DamageType::Physical:
+    {
+        auto my_total_stats = GetStats();
+        const auto new_health = my_total_stats.AdjustStat(StatsID::Health, -amount);
+        if(new_health <= 0L) {
+            AdjustBaseStats(my_total_stats);
+            OnDestroy.Trigger();
+            map->KillEntity(*this);
+        } else {
+            AdjustBaseStats(my_total_stats);
+        }
+        break;
+    }
+    default:
+        break;
+    }
+    //Make damage text
+    TextEntityDesc desc{};
+    desc.font = g_theGame->ingamefont;
+    desc.color = Rgba::White;
+    std::ostringstream ss;
+    ss << std::fixed << std::setprecision(1) << amount;
+    desc.text = ss.str();
+    map->CreateTextEntityAt(tile->GetCoords(), desc);
+}
+
+void Actor::AttackerMissed() {
+    TextEntityDesc desc{};
+    desc.font = g_theGame->ingamefont;
+    desc.color = Rgba::White;
+    desc.text = "MISS";
+    map->CreateTextEntityAt(tile->GetCoords(), desc);
 }
 
 std::vector<Item*> Actor::GetAllEquipmentOfType(const EquipSlot& slot) const {

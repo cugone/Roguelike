@@ -4,6 +4,7 @@
 #include "Engine/Core/DataUtils.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/FileUtils.hpp"
+#include "Engine/Core/KerningFont.hpp"
 #include "Engine/Core/StringUtils.hpp"
 
 #include "Engine/Math/Vector4.hpp"
@@ -34,7 +35,14 @@ void Map::CreateTextEntity(const TextEntityDesc& desc) noexcept {
 }
 
 void Map::CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) noexcept {
-    desc.position = _renderer.ConvertWorldToScreenCoords(camera, Vector2(tileCoords) + Vector2(0.25f, 0.25f));
+    const auto text_width = 1.0f / desc.font->CalculateTextWidth(desc.text);
+    const auto text_height = 1.0f / desc.font->CalculateTextHeight(desc.text);
+    const auto text_half_width = text_width * 0.5f;
+    const auto text_half_height = text_height * 0.5f;
+    const auto text_offset = Vector2{text_width, text_height};
+    const auto text_center_offset = Vector2{text_half_width, text_half_height};
+    const auto tile_center = Vector2(tileCoords) + Vector2{0.5f, 0.5f};
+    desc.position = _renderer.ConvertWorldToScreenCoords(camera, tile_center - text_center_offset);
     CreateTextEntity(desc);
 }
 
@@ -731,11 +739,14 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
             if(player && is_player) {
                 ERROR_AND_DIE("Map failed to load. Multiplayer not yet supported.");
             }
+            actor->SetFaction(Faction::Enemy);
             if(is_player) {
                 player = actor;
                 player->OnMove.Subscribe_method(this, &Map::ShakeCamera);
+                player->SetFaction(Faction::Player);
             }
             _entities.push_back(actor);
+            _actors.push_back(actor);
         });
     }
 }
