@@ -6,6 +6,9 @@
         <actor name="aerith" lookAndFeel="human..female" position="[5,5]" behavior="wander" />
         <actor name="aerith" lookAndFeel="human..female" position="[7,5]" behavior="wander" />
     </actors>
+    <features>
+        <feature name="flamePedestal" position="[3,1]" />
+    </features>
     <layers>
         <layer>
             <row glyphs="##########" />

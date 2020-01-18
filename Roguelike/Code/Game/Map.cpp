@@ -121,24 +121,10 @@ bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
         if(!tile->actor && !tile->feature) {
             return false;
         }
-        long double dmg_result = 0.0L;
         if(tile->actor) {
-            dmg_result = Entity::Fight(*actor, *tile->actor);
+            Entity::Fight(*actor, *tile->actor);
         } else if(tile->feature) {
-            dmg_result = Entity::Fight(*actor, *tile->feature);
-        }
-        //Make damage text
-        TextEntityDesc desc{};
-        desc.font = g_theGame->ingamefont;
-        desc.color = Rgba::White;
-        if(dmg_result >= 0) {
-            std::ostringstream ss;
-            ss << std::fixed << std::setprecision(1) << dmg_result;
-            desc.text = ss.str();
-            CreateTextEntityAt(tile->GetCoords(), desc);
-        } else {
-            desc.text = "MISS";
-            CreateTextEntityAt(tile->GetCoords(), desc);
+            Entity::Fight(*actor, *tile->feature);
         }
         actor->Act();
         return true;
@@ -757,12 +743,12 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
 void Map::LoadFeaturesForMap(const XMLElement& elem) {
     if(auto* xml_features = elem.FirstChildElement("features")) {
         DataUtils::ValidateXmlElement(*xml_features, "features", "feature", "");
-        const auto actor_count = DataUtils::GetChildElementCount(*xml_features, "feature");
+        const auto feature_count = DataUtils::GetChildElementCount(*xml_features, "feature");
         DataUtils::ForEachChildElement(*xml_features, "feature",
             [this](const XMLElement& elem) {
-            auto* feature = Actor::CreateActor(this, elem);
-            auto feature_name = StringUtils::ToLowerCase(feature->name);
+            auto* feature = Feature::CreateFeature(this, elem);
             _entities.push_back(feature);
+            _features.push_back(feature);
         });
     }
 }

@@ -129,24 +129,8 @@ void Entity::AddVertsForEquipment(const IntVector2& entity_position, std::vector
     }
 }
 
-void Entity::ApplyDamage(DamageType type, long double amount) {
-    switch(type) {
-    case DamageType::Physical:
-    {
-        auto my_total_stats = GetStats();
-        const auto new_health = my_total_stats.AdjustStat(StatsID::Health, -amount);
-        if(new_health <= 0L) {
-            AdjustBaseStats(my_total_stats);
-            OnDestroy.Trigger();
-            map->KillEntity(*this);
-        } else {
-            AdjustBaseStats(my_total_stats);
-        }
-        break;
-    }
-    default:
-        break;
-    }
+void Entity::Fight(Entity& attacker, Entity& defender) {
+    attacker.OnFight.Trigger(attacker, defender);
 }
 
 long double Entity::Fight(Entity& attacker, Entity& defender) {

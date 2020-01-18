@@ -149,6 +149,8 @@ private:
     Material* _current_tileMaterial{};
     std::vector<Entity*> _entities{};
     std::vector<EntityText*> _text_entities{};
+    std::vector<Actor*> _actors{};
+    std::vector<Feature*> _features{};
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
     float _camera_speed = 1.0f;
     static inline unsigned long long default_map_index = 0ull;
