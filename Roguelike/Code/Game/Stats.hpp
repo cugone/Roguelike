@@ -6,7 +6,8 @@
 #include <utility>
 
 enum class DamageType {
-    Physical
+    None
+    ,Physical
 };
 
 enum class StatsID {
@@ -44,7 +45,7 @@ public:
 
     auto GetStat(const StatsID& id) const noexcept -> decltype(_stats)::value_type;
     void SetStat(const StatsID& id, decltype(_stats)::value_type value) noexcept;
-    decltype(_stats)::value_type AdjustStat(const StatsID& id, long double value) noexcept;
+    decltype(_stats)::value_type AdjustStat(const StatsID& id, long value) noexcept;
     decltype(_stats)::value_type MultiplyStat(const StatsID& id, long double value) noexcept;
 
     Stats operator+(const Stats& b) const;

@@ -1,10 +1,14 @@
 #pragma once
 
+#include "Game/Behavior.hpp"
 #include "Game/Entity.hpp"
 #include "Game/Item.hpp"
 
 #include <map>
 #include <memory>
+#include <vector>
+
+class Behavior;
 
 class Actor : public Entity {
 public:
@@ -27,6 +31,7 @@ public:
     void Act();
     void DontAct();
 
+    void Rest();
     bool MoveTo(Tile* destination);
     bool Move(const IntVector2& direction);
     bool MoveNorth();
@@ -48,9 +53,17 @@ public:
 
     float visibility = 2.0f;
 
+    void SetBehavior(const std::string& behaviorName);
+    Behavior* GetCurrentBehavior() const noexcept;
+
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);
+
+    virtual void ResolveAttack(Entity& attacker, Entity& defender) override;
+    void ApplyDamage(DamageType type, long amount);
+    void AttackerMissed();
+
     bool CanMoveDiagonallyToNeighbor(const IntVector2& direction) const;
 
     std::vector<Item*> GetAllEquipmentOfType(const EquipSlot& slot) const;
@@ -64,5 +77,7 @@ private:
 
     static std::multimap<std::string, std::unique_ptr<Actor>> s_registry;
     std::vector<Item*> _equipment = std::vector<Item*>(static_cast<std::size_t>(EquipSlot::Max));
+    Behavior* _active_behavior{};
+    std::map<std::string, std::unique_ptr<class Behavior>> _available_behaviors{};
     bool _acted = false;
 };

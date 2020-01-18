@@ -15,13 +15,12 @@ Entity::~Entity() {
 }
 
 Entity::Entity() {
-    OnDamage.Subscribe_method(this, &Entity::ApplyDamage);
+    /* DO NOTHING */
 }
 
 Entity::Entity(const XMLElement& elem) noexcept
 {
     LoadFromXml(elem);
-    OnDamage.Subscribe_method(this, &Entity::ApplyDamage);
 }
 
 Entity::Entity(EntityDefinition* definition) noexcept
@@ -30,7 +29,7 @@ Entity::Entity(EntityDefinition* definition) noexcept
     , inventory(def->inventory)
     , stats(definition->GetBaseStats())
 {
-    OnDamage.Subscribe_method(this, &Entity::ApplyDamage);
+    /* DO NOTHING */
 }
 
 void Entity::BeginFrame() {
@@ -129,46 +128,12 @@ void Entity::AddVertsForEquipment(const IntVector2& entity_position, std::vector
     }
 }
 
-void Entity::ApplyDamage(DamageType type, long double amount) {
-    switch(type) {
-    case DamageType::Physical:
-    {
-        auto my_total_stats = GetStats();
-        const auto new_health = my_total_stats.AdjustStat(StatsID::Health, -amount);
-        if(new_health <= 0L) {
-            AdjustBaseStats(my_total_stats);
-            OnDestroy.Trigger();
-            map->KillEntity(*this);
-        } else {
-            AdjustBaseStats(my_total_stats);
-        }
-        break;
-    }
-    default:
-        break;
-    }
+void Entity::Fight(Entity& attacker, Entity& defender) {
+    attacker.OnFight.Trigger(attacker, defender);
 }
 
-long double Entity::Fight(Entity& attacker, Entity& defender) {
-    auto aStats = attacker.GetStats();
-    auto dStats = defender.GetStats();
-    const auto aAtt = aStats.GetStat(StatsID::Attack);
-    const auto aSpd = aStats.GetStat(StatsID::Speed);
-    const auto dDef = dStats.GetStat(StatsID::Defense);
-    const auto dEva = dStats.GetStat(StatsID::Evasion);
-    if(aSpd < dEva) {
-        attacker.OnFight.Trigger(attacker, defender, -1.0L);
-        return -1.0L; //Miss
-    }
-    if(aAtt < dDef) {
-        defender.OnDamage.Trigger(DamageType::Physical, 0.0L);
-        attacker.OnFight.Trigger(attacker, defender, 0.0L);
-        return 0.0L; //0 Dmg
-    }
-    auto result = aAtt - dDef;
-    defender.OnDamage.Trigger(DamageType::Physical, result);
-    attacker.OnFight.Trigger(attacker, defender, result);
-    return result;
+void Entity::ResolveAttack(Entity& /*attacker*/, Entity& /*defender*/) {
+    /* DO NOTHING */
 }
 
 bool Entity::IsVisible() const {
@@ -208,7 +173,15 @@ void Entity::AdjustStatModifiers(Stats adjustments) {
     stat_modifiers += adjustments;
 }
 
-void Entity::UpdateAI(TimeUtils::FPSeconds /*deltaSeconds*/) {
-    /* DO NOTHING */
+Faction Entity::GetFaction() const noexcept {
+    return _faction;
 }
 
+void Entity::SetFaction(const Faction& faction) noexcept {
+    _faction = faction;
+}
+
+Faction Entity::JoinFaction(const Faction& faction) noexcept {
+    SetFaction(faction);
+    return _faction;
+}

@@ -120,6 +120,10 @@ public:
 
     static inline constexpr std::size_t max_layers = 9u;
 
+    void CreateTextEntity(const TextEntityDesc& desc) noexcept;
+    void CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) noexcept;
+
+
 protected:
 private:
     bool LoadFromXML(const XMLElement& elem);
@@ -133,12 +137,10 @@ private:
     void LoadItemsForMap(const XMLElement& elem);
 
     void UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds);
-    void UpdateEntityAI(TimeUtils::FPSeconds deltaSeconds);
+    void UpdateActorAI(TimeUtils::FPSeconds deltaSeconds);
     void UpdateEntities(TimeUtils::FPSeconds deltaSeconds);
 
     void BringLayerToFront(std::size_t i);
-    void CreateTextEntity(const TextEntityDesc& desc) noexcept;
-    void CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) noexcept;
 
     void ShakeCamera(const IntVector2& from, const IntVector2& to) noexcept;
 
@@ -149,6 +151,8 @@ private:
     Material* _current_tileMaterial{};
     std::vector<Entity*> _entities{};
     std::vector<EntityText*> _text_entities{};
+    std::vector<Actor*> _actors{};
+    std::vector<Feature*> _features{};
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
     float _camera_speed = 1.0f;
     static inline unsigned long long default_map_index = 0ull;

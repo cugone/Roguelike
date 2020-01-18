@@ -269,10 +269,24 @@ void Game::EndFrame_Loading() {
 
 void Game::RegisterCommands() {
     {
+        Console::Command moveto{};
+        moveto.command_name = "move_to";
+        moveto.help_text_short = "Move towards tile";
+        moveto.help_text_long = "move_to: Moves towards the highlighted tile";
+        moveto.command_function = [this](const std::string& /*args*/) {
+            if(_map && _map->player) {
+                if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+                    _map->player->MoveTo(tile);
+                }
+            }
+        };
+        _consoleCommands.AddCommand(moveto);
+    }
+    {
         Console::Command setvis{};
         setvis.command_name = "set_visibility";
         setvis.help_text_short = "Sets the player's visibility range";
-        setvis.help_text_short = "set_visibility [distance]: Sets the player's visibility distance in tiles.";
+        setvis.help_text_long = "set_visibility [distance]: Sets the player's visibility distance in tiles.";
         setvis.command_function = [this](const std::string& args) {
             ArgumentParser p(args);
             if(_map) {
@@ -289,7 +303,7 @@ void Game::RegisterCommands() {
         Console::Command cleartilevis{};
         cleartilevis.command_name = "clear_visibility";
         cleartilevis.help_text_short = "Clears all tile visibility.";
-        cleartilevis.help_text_short = "clear_tile_vis: Sets every tile's visibility flags to false.";
+        cleartilevis.help_text_long = "clear_tile_vis: Sets every tile's visibility flags to false.";
         cleartilevis.command_function = [this](const std::string& /*args*/) {
             if(_map) {
                 std::size_t layer_index{0u};
@@ -367,8 +381,20 @@ void Game::RegisterCommands() {
                 std::ostringstream ss;
                 ss << "Item " << item_name << " not found.";
                 g_theConsole->ErrorMsg(ss.str());
+                return;
             }
-            entity->inventory.AddStack(item_name, item_count);
+            if(entity->inventory.HasItem(item_name)) {
+                entity->inventory.AddStack(item_name, item_count);
+                return;
+            }
+            auto* asActor = dynamic_cast<Actor*>(entity);
+            if(!asActor) {
+                g_theConsole->ErrorMsg("Entity is not an actor.");
+                return;
+            }
+            if(!asActor->IsEquipped(item->GetEquipSlot())) {
+                asActor->Equip(item->GetEquipSlot(), item);
+            }
         };
         _consoleCommands.AddCommand(give);
     }

@@ -132,9 +132,9 @@ void Stats::SetStat(const StatsID& id, decltype(_stats)::value_type value) noexc
     _stats[static_cast<std::size_t>(id)] = value;
 }
 
-decltype(Stats::_stats)::value_type Stats::AdjustStat(const StatsID& id, long double value) noexcept {
+decltype(Stats::_stats)::value_type Stats::AdjustStat(const StatsID& id, long value) noexcept {
     const auto i = static_cast<std::size_t>(id);
-    _stats[i] += static_cast<decltype(_stats)::value_type>(std::floor(value));
+    _stats[i] += static_cast<decltype(_stats)::value_type>(value);
     return _stats[i];
 }
 

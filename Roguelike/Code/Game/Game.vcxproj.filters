@@ -85,6 +85,42 @@
     <ClCompile Include="Feature.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="MoveCommand.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveNorthCommand.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveSouthCommand.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveEastCommand.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveWestCommand.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveNorthEastCommand.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveNorthWestCommand.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveSouthEastCommand.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveSouthWestCommand.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="RestCommand.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Behavior.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="WanderBehavior.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameCommon.hpp">
@@ -139,6 +175,48 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Feature.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="ActorCommand.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveCommand.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveNorthCommand.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveSouthCommand.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveEastCommand.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveWestCommand.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Command.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveNorthEastCommand.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveNorthWestCommand.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveSouthEastCommand.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveSouthWestCommand.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="RestCommand.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Behavior.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="WanderBehavior.hpp">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>

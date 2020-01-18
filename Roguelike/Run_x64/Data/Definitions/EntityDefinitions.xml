@@ -10,6 +10,9 @@
             <accuracy>0</accuracy>
             <experience>0</experience>
         </stats>
+        <behaviors>
+            <behavior name="wander" />
+        </behaviors>
     </entityDefinition>
     <entityDefinition name="human..female" index="[6,53]">
         <stats>
@@ -39,5 +42,8 @@
         <equipment>
             <body name="red_robe" />
         </equipment>
+        <behaviors>
+            <behavior name="wander" />
+        </behaviors>
     </entityDefinition>
 </entityDefinitions>

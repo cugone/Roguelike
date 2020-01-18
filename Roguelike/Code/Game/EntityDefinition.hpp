@@ -14,6 +14,7 @@
 class AnimatedSprite;
 class SpriteSheet;
 class Renderer;
+class Behavior;
 
 class EntityDefinition {
 public:
@@ -70,11 +71,13 @@ private:
     void LoadStats(const XMLElement& elem);
     void LoadInventory(const XMLElement& elem);
     void LoadEquipment(const XMLElement& elem);
+    void LoadBehaviors(const XMLElement& elem);
 
     static std::map<std::string, std::unique_ptr<EntityDefinition>> s_registry;
     Renderer& _renderer;
     std::shared_ptr<class SpriteSheet> _sheet{};
     std::unique_ptr<class AnimatedSprite> _sprite{};
+    std::vector<std::shared_ptr<class Behavior>> _available_behaviors{};
     std::vector<Vector2> attach_point_offsets{};
     IntVector2 _index{};
     Stats _base_stats{};
