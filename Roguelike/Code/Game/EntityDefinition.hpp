@@ -63,6 +63,8 @@ public:
     bool HasAttachPoint(const AttachPoint& attachpoint);
     Vector2 GetAttachPoint(const AttachPoint& attachpoint);
 
+    const std::vector<std::shared_ptr<class Behavior>>& GetAvailableBehaviors() const noexcept;
+
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);

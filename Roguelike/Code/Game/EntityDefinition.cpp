@@ -91,8 +91,12 @@ Vector2 EntityDefinition::GetAttachPoint(const AttachPoint& attachpoint) {
     return {};
 }
 
+const std::vector<std::shared_ptr<class Behavior>>& EntityDefinition::GetAvailableBehaviors() const noexcept {
+    return _available_behaviors;
+}
+
 bool EntityDefinition::LoadFromXml(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "entityDefinition", "", "name,index", "animation,attachPoints,inventory,stats,equipment");
+    DataUtils::ValidateXmlElement(elem, "entityDefinition", "", "name,index", "animation,attachPoints,inventory,stats,equipment,behaviors");
 
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     _index = DataUtils::ParseXmlAttribute(elem, "index", IntVector2::ZERO);
@@ -101,6 +105,7 @@ bool EntityDefinition::LoadFromXml(const XMLElement& elem) {
     LoadAttachPoints(elem);
     LoadInventory(elem);
     LoadEquipment(elem);
+    LoadBehaviors(elem);
     return true;
 }
 

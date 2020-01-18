@@ -863,7 +863,6 @@ void Game::SetCurrentCursorById(CursorId id) noexcept {
 }
 
 void Game::HandlePlayerInput(Camera2D& base_camera) {
-    _player_requested_wait = false;
     const bool is_right = g_theInputSystem->WasKeyJustPressed(KeyCode::D) ||
                           g_theInputSystem->WasKeyJustPressed(KeyCode::Right) ||
                           g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad6);
@@ -904,11 +903,11 @@ void Game::HandlePlayerInput(Camera2D& base_camera) {
         return;
     }
 
+    auto player = _map->player;
     if(is_rest) {
-        _player_requested_wait = true;
+        player->Act();
         return;
     }
-    auto player = _map->player;
     if(is_upright) {
         _map->MoveOrAttack(player, player->tile->GetNorthEastNeighbor());
     } else if(is_upleft) {

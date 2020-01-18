@@ -18,7 +18,7 @@
 WanderBehavior::WanderBehavior() noexcept
     : Behavior()
 {
-    /* DO NOTHING */
+    SetName("wander");
 }
 
 void WanderBehavior::Act(Actor* actor) noexcept {

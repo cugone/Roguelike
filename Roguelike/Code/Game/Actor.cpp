@@ -77,12 +77,14 @@ bool Actor::MoveTo(Tile* destination) {
 }
 
 bool Actor::LoadFromXml(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "actor", "", "name,lookAndFeel,position", "behaviors");
+    DataUtils::ValidateXmlElement(elem, "actor", "", "name,lookAndFeel,position", "behavior");
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
     def = EntityDefinition::GetEntityDefinitionByName(definitionName);
     sprite = def->GetSprite();
     inventory = def->inventory;
+    const auto behaviorName = DataUtils::ParseXmlAttribute(elem, "behavior", "none");
+    this->SetBehavior(Behavior::IdFromName(behaviorName));
     _equipment = def->equipment;
     for(const auto& e : _equipment) {
         if (e) {
@@ -312,11 +314,13 @@ void Actor::SetPosition(const IntVector2& position) {
     tile = next_tile;
 }
 
-void Actor::SetBehavior(const std::string& behaviorName) {
-    const auto found_iter = _available_behaviors.find(behaviorName);
-    const auto is_available = found_iter != std::end(_available_behaviors);
+void Actor::SetBehavior(BehaviorID id) {
+    const auto behaviorName = Behavior::NameFromId(id);
+    const auto& behaviors = def->GetAvailableBehaviors();
+    const auto found_iter = std::find_if(std::begin(behaviors), std::end(behaviors), [this, &behaviorName](auto b) { return b->GetName() == behaviorName; });
+    const auto is_available = found_iter != std::end(behaviors);
     if(is_available) {
-        _active_behavior = found_iter->second.get();
+        _active_behavior = found_iter->get();
     }
 }
 
