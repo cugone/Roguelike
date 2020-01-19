@@ -1051,8 +1051,8 @@ void Game::ShowEffectsDebuggerUI() {
 
 void Game::ShowEffectsUI() {
     static std::string current_item = "None";
-    bool is_selected = false;
     if(ImGui::BeginCombo("Shader Effect", current_item.c_str())) {
+        bool is_selected = false;
         if(ImGui::Selectable("None")) {
             is_selected = true;
             current_item = "None";
