@@ -39,7 +39,6 @@ void Map::CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) 
     const auto text_height = 1.0f / desc.font->CalculateTextHeight(desc.text);
     const auto text_half_width = text_width * 0.5f;
     const auto text_half_height = text_height * 0.5f;
-    const auto text_offset = Vector2{text_width, text_height};
     const auto text_center_offset = Vector2{text_half_width, text_half_height};
     const auto tile_center = Vector2(tileCoords) + Vector2{0.5f, 0.5f};
     desc.position = _renderer.ConvertWorldToScreenCoords(camera, tile_center - text_center_offset);
@@ -238,7 +237,6 @@ void Map::Render(Renderer& renderer) const {
     auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
     auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
     auto ui_nearFar = Vector2{0.0f, 1.0f};
-    auto ui_cam_pos = ui_view_half_extents;
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, ui_camera.GetAspectRatio());
     g_theRenderer->SetCamera(ui_camera);
 
@@ -336,7 +334,7 @@ bool Map::IsTilePassable(Tile* tile) const {
 }
 
 void Map::FocusTileAt(const IntVector3& position) {
-    if(const auto* tile = GetTile(position)) {
+    if(GetTile(position)) {
         camera.SetPosition(Vector3{ position });
     }
 }
@@ -738,7 +736,6 @@ void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
 void Map::LoadActorsForMap(const XMLElement& elem) {
     if(auto* xml_actors = elem.FirstChildElement("actors")) {
         DataUtils::ValidateXmlElement(*xml_actors, "actors", "actor", "");
-        const auto actor_count = DataUtils::GetChildElementCount(*xml_actors, "actor");
         DataUtils::ForEachChildElement(*xml_actors, "actor",
             [this](const XMLElement& elem) {
             auto* actor = Actor::CreateActor(this, elem);
