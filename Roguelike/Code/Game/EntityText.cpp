@@ -37,7 +37,7 @@ void EntityText::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>&
 }
 
 void EntityText::EndFrame() {
-    s_registry.erase(std::remove_if(std::begin(s_registry), std::end(s_registry), [](const auto& t)->bool { return !t || (t && t->GetStats().GetStat(StatsID::Health) <= 0); }), std::end(s_registry));
+    s_registry.erase(std::remove_if(std::begin(s_registry), std::end(s_registry), [](const auto& t)->bool { return !t || t->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(s_registry));
 }
 
 EntityText* EntityText::CreateTextEntity(const TextEntityDesc& desc) {
