@@ -4,7 +4,7 @@
 
 class RestCommand : public ActorCommand {
 public:
-    RestCommand(Actor* actor) : ActorCommand(actor) {};
+    explicit RestCommand(Actor* actor) : ActorCommand(actor) {};
     virtual ~RestCommand() = default;
     virtual void execute() override;
 protected:
