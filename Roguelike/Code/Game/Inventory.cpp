@@ -145,9 +145,8 @@ bool Inventory::TransferItem(Inventory& dest, const std::string& name) noexcept 
 }
 
 void Inventory::TransferAll(Inventory& source, Inventory& dest) noexcept {
-    bool success = false;
     for(const auto& item : source) {
-        success |= (dest.AddItem(item) != nullptr);
+        dest.AddItem(item);
     }
     source.clear();
 }
