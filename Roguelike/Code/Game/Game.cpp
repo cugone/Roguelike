@@ -1169,7 +1169,6 @@ void Game::ShowTileInspectorUI() {
     }
     const auto max_layers = std::size_t{ 9u };
     const auto tiles_per_row = std::size_t{ 3u };
-    auto picked_count = picked_tiles.size();
     if(_debug_has_picked_tile_with_click) {
         std::ostringstream ss;
         ss << "World Coords: " << _debug_inspected_tiles[0]->GetCoords();
@@ -1177,7 +1176,6 @@ void Game::ShowTileInspectorUI() {
         ss.str("");
         ss << "Screen Coords: " << g_theRenderer->ConvertWorldToScreenCoords(_map->camera, Vector2(_debug_inspected_tiles[0]->GetCoords()));
         ImGui::Text(ss.str().c_str());
-        picked_count = _debug_inspected_tiles.size();
         std::size_t i = 0u;
         for(const auto cur_tile : _debug_inspected_tiles) {
             const auto* cur_def = cur_tile ? cur_tile->GetDefinition() : TileDefinition::GetTileDefinitionByName("void");
@@ -1203,6 +1201,7 @@ void Game::ShowTileInspectorUI() {
             }
         }
     } else {
+        auto picked_count = picked_tiles.size();
         if(picked_count) {
             std::ostringstream ss;
             ss << "World Coords: " << picked_tiles[0]->GetCoords();
@@ -1234,15 +1233,16 @@ std::vector<Tile*> Game::DebugGetTilesFromMouse() {
     const auto mouse_pos = g_theInputSystem->GetCursorWindowPosition(*g_theRenderer->GetOutput()->GetWindow());
     if(_debug_has_picked_tile_with_click) {
         static std::vector<Tile*> picked_tiles{};
-        if(!_debug_has_picked_tile_with_click) {
-            picked_tiles.clear();
-        }
-        if(_debug_has_picked_tile_with_click) {
-            picked_tiles = _map->PickTilesFromMouseCoords(mouse_pos);
-        }
-        bool tile_has_entity = !picked_tiles.empty() && picked_tiles[0]->actor;
+        picked_tiles = _map->PickTilesFromMouseCoords(mouse_pos);
+        auto* tile_actor = picked_tiles[0]->actor;
+        auto* tile_feature = picked_tiles[0]->feature;
+        bool tile_has_entity = !picked_tiles.empty() && (tile_actor || tile_feature);
         if(tile_has_entity && _debug_has_picked_entity_with_click) {
-            _debug_inspected_entity = picked_tiles[0]->actor;
+            if(tile_actor) {
+                _debug_inspected_entity = tile_actor;
+            } else if(tile_feature) {
+                _debug_inspected_entity = tile_feature;
+            }
         }
         return picked_tiles;
     }
