@@ -186,7 +186,7 @@ void EntityDefinition::LoadAttachPoints(const XMLElement &elem) {
 void EntityDefinition::LoadAnimation(const XMLElement &elem) {
     if(auto* xml_animation = elem.FirstChildElement("animation")) {
         is_animated = true;
-        _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, elem));
+        _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, *xml_animation));
     } else {
         _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, _index));
     }
