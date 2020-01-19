@@ -197,7 +197,7 @@ bool Tile::IsSolid() const {
 }
 
 bool Tile::IsPassable() const {
-    return !IsSolid() && !actor && (!feature || (feature && !feature->IsSolid()));
+    return !IsSolid() && !actor && (!feature || !feature->IsSolid());
 }
 
 void Tile::SetCoords(int x, int y) {

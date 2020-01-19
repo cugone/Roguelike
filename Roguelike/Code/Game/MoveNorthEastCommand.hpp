@@ -4,7 +4,7 @@
 
 class MoveNorthEastCommand : public ActorCommand {
 public:
-    MoveNorthEastCommand(Actor* actor) : ActorCommand(actor) {};
+    explicit MoveNorthEastCommand(Actor* actor) : ActorCommand(actor) {};
     virtual ~MoveNorthEastCommand() = default;
     virtual void execute() override;
 protected:

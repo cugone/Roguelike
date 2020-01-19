@@ -39,7 +39,6 @@ void Map::CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) 
     const auto text_height = 1.0f / desc.font->CalculateTextHeight(desc.text);
     const auto text_half_width = text_width * 0.5f;
     const auto text_half_height = text_height * 0.5f;
-    const auto text_offset = Vector2{text_width, text_height};
     const auto text_center_offset = Vector2{text_half_width, text_half_height};
     const auto tile_center = Vector2(tileCoords) + Vector2{0.5f, 0.5f};
     desc.position = _renderer.ConvertWorldToScreenCoords(camera, tile_center - text_center_offset);
@@ -238,7 +237,6 @@ void Map::Render(Renderer& renderer) const {
     auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
     auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
     auto ui_nearFar = Vector2{0.0f, 1.0f};
-    auto ui_cam_pos = ui_view_half_extents;
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, ui_camera.GetAspectRatio());
     g_theRenderer->SetCamera(ui_camera);
 
@@ -277,10 +275,10 @@ void Map::EndFrame() {
     for(auto* entity : _text_entities) {
         entity->EndFrame();
     }
-    _entities.erase(std::remove_if(std::begin(_entities), std::end(_entities), [](const auto& e)->bool { return !e || (e && e->GetStats().GetStat(StatsID::Health) <= 0); }), std::end(_entities));
-    _text_entities.erase(std::remove_if(std::begin(_text_entities), std::end(_text_entities), [](const auto& e)->bool { return !e || (e && e->GetStats().GetStat(StatsID::Health) <= 0); }), std::end(_text_entities));
-    _actors.erase(std::remove_if(std::begin(_actors), std::end(_actors), [](const auto& e)->bool { return !e || (e && e->GetStats().GetStat(StatsID::Health) <= 0); }), std::end(_actors));
-    _features.erase(std::remove_if(std::begin(_features), std::end(_features), [](const auto& e)->bool { return !e || (e && e->GetStats().GetStat(StatsID::Health) <= 0); }), std::end(_features));
+    _entities.erase(std::remove_if(std::begin(_entities), std::end(_entities), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_entities));
+    _text_entities.erase(std::remove_if(std::begin(_text_entities), std::end(_text_entities), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_text_entities));
+    _actors.erase(std::remove_if(std::begin(_actors), std::end(_actors), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_actors));
+    _features.erase(std::remove_if(std::begin(_features), std::end(_features), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_features));
 }
 
 bool Map::IsTileInView(const IntVector2& tileCoords) const {
@@ -292,7 +290,7 @@ bool Map::IsTileInView(const IntVector3& tileCoords) const {
 }
 
 bool Map::IsTileInView(Tile* tile) const {
-    if(!tile || (tile && !tile->layer)) {
+    if(!tile || !tile->layer) {
         return false;
     }
     const auto tile_bounds = tile->GetBounds();
@@ -314,7 +312,7 @@ bool Map::IsTileSolid(const IntVector3& tileCoords) const {
 }
 
 bool Map::IsTileSolid(Tile* tile) const {
-    if(!tile || (tile && !tile->layer)) {
+    if(!tile || !tile->layer) {
         return false;
     }
     return tile->IsSolid();
@@ -329,14 +327,14 @@ bool Map::IsTilePassable(const IntVector3& tileCoords) const {
 }
 
 bool Map::IsTilePassable(Tile* tile) const {
-    if(!tile || (tile && !tile->layer)) {
+    if(!tile || !tile->layer) {
         return false;
     }
     return tile->IsPassable();
 }
 
 void Map::FocusTileAt(const IntVector3& position) {
-    if(const auto* tile = GetTile(position)) {
+    if(GetTile(position)) {
         camera.SetPosition(Vector3{ position });
     }
 }
@@ -431,7 +429,6 @@ Map::RaycastResult2D Map::StepAndSample(const Vector2& startPosition, const Vect
 
 Map::RaycastResult2D Map::StepAndSample(const Vector2& startPosition, const Vector2& direction, float maxDistance, float sampleRate) const {
     auto endPosition = startPosition + (direction * maxDistance);
-    const auto D = endPosition - startPosition;
     const auto stepFrequency = 1.0f / sampleRate;
     const auto stepRate = direction * stepFrequency;
     auto currentSamplePoint = startPosition;
@@ -739,7 +736,6 @@ void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
 void Map::LoadActorsForMap(const XMLElement& elem) {
     if(auto* xml_actors = elem.FirstChildElement("actors")) {
         DataUtils::ValidateXmlElement(*xml_actors, "actors", "actor", "");
-        const auto actor_count = DataUtils::GetChildElementCount(*xml_actors, "actor");
         DataUtils::ForEachChildElement(*xml_actors, "actor",
             [this](const XMLElement& elem) {
             auto* actor = Actor::CreateActor(this, elem);
@@ -763,7 +759,6 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
 void Map::LoadFeaturesForMap(const XMLElement& elem) {
     if(auto* xml_features = elem.FirstChildElement("features")) {
         DataUtils::ValidateXmlElement(*xml_features, "features", "feature", "");
-        const auto feature_count = DataUtils::GetChildElementCount(*xml_features, "feature");
         DataUtils::ForEachChildElement(*xml_features, "feature",
             [this](const XMLElement& elem) {
             auto* feature = Feature::CreateFeature(this, elem);

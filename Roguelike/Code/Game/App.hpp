@@ -18,7 +18,7 @@ class UISystem;
 
 class App : public EngineSubsystem {
 public:
-    App(const std::string& cmdString);
+    explicit App(const std::string& cmdString);
     App(const App& other) = default;
     App(App&& other) = default;
     App& operator=(const App& other) = default;
