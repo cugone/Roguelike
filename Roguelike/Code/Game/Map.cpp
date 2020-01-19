@@ -329,7 +329,7 @@ bool Map::IsTilePassable(const IntVector3& tileCoords) const {
 }
 
 bool Map::IsTilePassable(Tile* tile) const {
-    if(!tile || (tile && !tile->layer)) {
+    if(!tile || !tile->layer) {
         return false;
     }
     return tile->IsPassable();
@@ -431,7 +431,6 @@ Map::RaycastResult2D Map::StepAndSample(const Vector2& startPosition, const Vect
 
 Map::RaycastResult2D Map::StepAndSample(const Vector2& startPosition, const Vector2& direction, float maxDistance, float sampleRate) const {
     auto endPosition = startPosition + (direction * maxDistance);
-    const auto D = endPosition - startPosition;
     const auto stepFrequency = 1.0f / sampleRate;
     const auto stepRate = direction * stepFrequency;
     auto currentSamplePoint = startPosition;
@@ -763,7 +762,6 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
 void Map::LoadFeaturesForMap(const XMLElement& elem) {
     if(auto* xml_features = elem.FirstChildElement("features")) {
         DataUtils::ValidateXmlElement(*xml_features, "features", "feature", "");
-        const auto feature_count = DataUtils::GetChildElementCount(*xml_features, "feature");
         DataUtils::ForEachChildElement(*xml_features, "feature",
             [this](const XMLElement& elem) {
             auto* feature = Feature::CreateFeature(this, elem);
