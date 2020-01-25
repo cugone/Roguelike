@@ -120,6 +120,9 @@
     <ClCompile Include="Main_Win32.cpp">
       <Filter>General</Filter>
     </ClCompile>
+    <ClCompile Include="FleeBehavior.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.hpp">
@@ -217,6 +220,9 @@
     </ClInclude>
     <ClInclude Include="GameConfig.hpp">
       <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="FleeBehavior.hpp">
+      <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

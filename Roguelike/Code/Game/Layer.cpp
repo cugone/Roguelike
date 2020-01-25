@@ -231,8 +231,8 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
         tile->canSee = true;
         tile->haveSeen = true;
     }
-    for(auto& tile : _tiles) {
-        tile.Update(deltaSeconds);
+    for(auto& tile : visibleTiles) {
+        tile->Update(deltaSeconds);
     }
 }
 

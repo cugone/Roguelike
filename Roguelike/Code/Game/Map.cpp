@@ -186,7 +186,9 @@ void Map::UpdateActorAI(TimeUtils::FPSeconds /*deltaSeconds*/) {
     for(auto& actor : _actors) {
         const auto is_player = actor == player;
         const auto player_acted = player->Acted();
-        const auto should_update = !is_player && player_acted;
+        const auto is_alive = actor->GetStats().GetStat(StatsID::Health) > 0;
+        const auto is_visible = actor->tile->canSee;
+        const auto should_update = !is_player && player_acted && is_alive;
         if(should_update) {
             if(auto* behavior = actor->GetCurrentBehavior()) {
                 behavior->Act(actor);
