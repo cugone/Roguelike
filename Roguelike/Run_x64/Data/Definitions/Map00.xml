@@ -8,6 +8,7 @@
     </actors>
     <features>
         <feature name="flamePedestal" position="[3,1]" />
+        <feature name="door.open" position="[2,3]" />
     </features>
     <layers>
         <layer>
