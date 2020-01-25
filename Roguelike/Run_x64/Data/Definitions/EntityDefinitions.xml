@@ -29,8 +29,8 @@
         </inventory>
         <equipment>
             <body name="red_coat" />
-            <item name="white_pants" />
-            <item name="cutlass" />
+            <legs name="white_pants" />
+            <larm name="cutlass" />
         </equipment>
         <behaviors>
             <behavior name="wander" />
