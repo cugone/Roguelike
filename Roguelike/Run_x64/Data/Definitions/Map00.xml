@@ -8,7 +8,7 @@
     </actors>
     <features>
         <feature name="flamePedestal" position="[3,1]" />
-        <feature name="door" position="[2,3]" initialState="closed">
+        <feature name="door" position="[2,3]" initialState="locked">
             <state name="open" />
             <state name="closed" />
             <state name="locked" />
