@@ -415,10 +415,7 @@ void Game::RegisterCommands() {
                 g_theConsole->ErrorMsg(ss.str());
                 return;
             }
-            if(entity->inventory.HasItem(item_name)) {
-                entity->inventory.AddStack(item_name, item_count);
-                return;
-            }
+            entity->inventory.AddStack(item_name, item_count);
             auto* asActor = dynamic_cast<Actor*>(entity);
             if(!asActor) {
                 g_theConsole->ErrorMsg("Entity is not an actor.");
