@@ -192,4 +192,5 @@
             <experience>0</experience>
         </stats>
     </item>
+    <item name="key" maxstack="0" />
 </items>
