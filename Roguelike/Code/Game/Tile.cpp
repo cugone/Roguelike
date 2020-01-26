@@ -189,7 +189,7 @@ bool Tile::IsOpaque() const {
 }
 
 bool Tile::IsTransparent() const {
-    return !IsOpaque();
+    return _def->is_transparent;
 }
 
 bool Tile::IsSolid() const {
