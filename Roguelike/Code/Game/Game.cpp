@@ -350,6 +350,38 @@ void Game::RegisterCommands() {
     }
 
     {
+        Console::Command set_state{};
+        set_state.command_name = "set_state";
+        set_state.help_text_short = "Sets the state of a feature.";
+        set_state.help_text_long = "set_state [name]: Sets the highlighted or selected feature state to [name].";
+        set_state.command_function = [this](const std::string& args) {
+            ArgumentParser p{args};
+            std::string name{};
+            if(!(p >> name)) {
+                g_theConsole->ErrorMsg("No state name provided.");
+                return;
+            }
+            Entity* entity = nullptr;
+            if(_debug_inspected_feature) {
+                entity = _debug_inspected_feature;
+            } else
+            if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+                entity = tile->feature;
+                if(!entity) {
+                    std::ostringstream ss;
+                    ss << "Select a feature to set the state to \"" << name << "\".";
+                    g_theConsole->ErrorMsg(ss.str());
+                    return;
+                }
+                if(auto* f = entity->tile->feature) {
+                    f->SetState(name);
+                }
+            }
+        };
+        _consoleCommands.AddCommand(set_state);
+    }
+
+    {
         Console::Command give{};
         give.command_name = "give";
         give.help_text_short = "Gives object to entity.";
