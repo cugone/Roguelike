@@ -7,6 +7,8 @@
 
 #include "Game/GameCommon.hpp"
 
+#include <limits>
+
 EquipSlot EquipSlotFromString(std::string str) {
     str = StringUtils::ToLowerCase(str);
     if(str == "hair") {
@@ -188,7 +190,9 @@ std::size_t Item::GetCount() const noexcept {
 
 std::size_t Item::IncrementCount() noexcept {
     ++_stack_size;
-    _stack_size = std::clamp(_stack_size, std::size_t{ 0 }, _max_stack_size);
+    if(_max_stack_size) {
+        _stack_size = std::clamp(_stack_size, std::size_t{0}, _max_stack_size);
+    }
     return _stack_size;
 }
 
@@ -204,13 +208,17 @@ void Item::AdjustCount(long long amount) noexcept {
         _stack_size = 0u;
     } else {
         _stack_size += static_cast<std::size_t>(amount);
-        _stack_size = std::clamp(_stack_size, std::size_t{ 0 }, _max_stack_size);
+        if(_max_stack_size > 0) {
+            _stack_size = std::clamp(_stack_size, std::size_t{0}, _max_stack_size);
+        }
     }
 }
 
 void Item::SetCount(std::size_t newCount) noexcept {
     _stack_size = newCount;
-    _stack_size = std::clamp(_stack_size, std::size_t{ 0 }, _max_stack_size);
+    if(_max_stack_size) {
+        _stack_size = std::clamp(_stack_size, std::size_t{0}, _max_stack_size);
+    }
 }
 
 
