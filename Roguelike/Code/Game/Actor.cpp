@@ -283,10 +283,16 @@ bool Actor::MoveNorthWest() {
 }
 
 Item* Actor::IsEquipped(const EquipSlot& slot) {
-    return _equipment[static_cast<std::size_t>(slot)];
+    if(slot != EquipSlot::None) {
+        return _equipment[static_cast<std::size_t>(slot)];
+    }
+    return nullptr;
 }
 
 void Actor::Equip(const EquipSlot& slot, Item* item) {
+    if(slot == EquipSlot::None) {
+        return;
+    }
     auto& current_equipment = _equipment[static_cast<std::size_t>(slot)];
     if(current_equipment) {
         this->AdjustStatModifiers(-current_equipment->GetStatModifiers());
