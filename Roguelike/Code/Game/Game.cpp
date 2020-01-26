@@ -32,6 +32,7 @@ Game::~Game() noexcept {
     CursorDefinition::ClearCursorRegistry();
     Item::ClearItemRegistry();
     Actor::ClearActorRegistry();
+    Feature::ClearFeatureRegistry();
     EntityDefinition::ClearEntityRegistry();
     TileDefinition::DestroyTileDefinitions();
 }
@@ -78,6 +79,7 @@ void Game::OnExit_Main() {
     CursorDefinition::ClearCursorRegistry();
     Item::ClearItemRegistry();
     Actor::ClearActorRegistry();
+    Feature::ClearFeatureRegistry();
     EntityDefinition::ClearEntityRegistry();
     TileDefinition::DestroyTileDefinitions();
 }
