@@ -91,6 +91,18 @@ void Inventory::RemoveItem(Item* item) noexcept {
     }
 }
 
+void Inventory::RemoveItem(Item* item, std::size_t count) noexcept {
+    if(item) {
+        if(auto i = HasItem(item)) {
+            if(count < i->GetCount()) {
+                i->AdjustCount(-static_cast<long long>(count));
+            } else {
+                RemoveItem(i);
+            }
+        }
+    }
+}
+
 void Inventory::RemoveItem(const std::string& name) noexcept {
     if(auto i = HasItem(name)) {
         if(!i->DecrementCount()) {

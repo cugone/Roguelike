@@ -43,6 +43,7 @@ public:
     Item* AddItem(const std::string& name) noexcept;
 
     void RemoveItem(Item* item) noexcept;
+    void RemoveItem(Item* item, std::size_t count) noexcept;
     void RemoveItem(const std::string& name) noexcept;
 
     const Item* GetItem(const std::string& name) const noexcept;
