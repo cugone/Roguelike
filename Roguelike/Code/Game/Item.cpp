@@ -218,9 +218,10 @@ const EquipSlot& Item::GetEquipSlot() const {
     return _slot;
 }
 
-ItemBuilder::ItemBuilder(const XMLElement& elem) noexcept
+ItemBuilder::ItemBuilder(const XMLElement& elem, std::weak_ptr<SpriteSheet> itemSheet) noexcept
+    : _itemSheet(itemSheet)
 {
-    LoadFromXml(elem);
+    LoadFromXml(elem, itemSheet);
 }
 
 ItemBuilder& ItemBuilder::Name(const std::string& name) noexcept {
@@ -268,23 +269,30 @@ Item* ItemBuilder::Build() noexcept {
     return item;
 }
 
-void ItemBuilder::LoadFromXml(const XMLElement& elem) noexcept {
-    DataUtils::ValidateXmlElement(elem, "item", "animation,equipslot,stats", "maxstack");
-    if(auto* xml_animation = elem.FirstChildElement("animation")) {
-        _sprite = std::move(g_theRenderer->CreateAnimatedSprite(*xml_animation));
-    }
+void ItemBuilder::LoadFromXml(const XMLElement& elem, std::weak_ptr<SpriteSheet> itemSheet) noexcept {
+    DataUtils::ValidateXmlElement(elem, "item", "", "name", "stats,equipslot,animation", "index,maxstack");
+    const auto name = DataUtils::ParseXmlAttribute(elem, "name", "UNKNOWN ITEM");
+    Name(name);
     if(auto* xml_equipslot = elem.FirstChildElement("equipslot")) {
-        DataUtils::ValidateXmlElement(*xml_equipslot, "equipslot", "", "slot");
-        auto slot_str = DataUtils::ParseXmlAttribute(*xml_equipslot, "slot", "none");
-        _slot = EquipSlotFromString(slot_str);
+        Slot(EquipSlotFromString(DataUtils::ParseXmlElementText(*xml_equipslot, "none")));
+    } else {
+        Slot(EquipSlot::None);
     }
     if(auto* xml_minstats = elem.FirstChildElement("stats")) {
-        _min_stats = Stats(*xml_minstats);
-        _max_stats = Stats(*xml_minstats);
+        MinimumStats(Stats(*xml_minstats));
+        MaximumStats(Stats(*xml_minstats));
         if(auto* xml_maxstats = xml_minstats->NextSiblingElement("stats")) {
-            _max_stats = Stats(*xml_maxstats);
+            MaximumStats(Stats(*xml_minstats));
         }
     }
-    _max_stack_size = DataUtils::ParseXmlAttribute(elem, "maxstack", _max_stack_size);
+    if(DataUtils::HasAttribute(elem, "index")) {
+        auto startIndex = DataUtils::ParseXmlAttribute(elem, "index", IntVector2::ONE * -1);
+        if(auto* xml_animsprite = elem.FirstChildElement("animation")) {
+            AnimateSprite(g_theRenderer->CreateAnimatedSprite(_itemSheet, *xml_animsprite));
+        } else {
+            AnimateSprite(g_theRenderer->CreateAnimatedSprite(_itemSheet, startIndex));
+        }
+    }
+    MaxStackSize(DataUtils::ParseXmlAttribute(elem, "maxstack", _max_stack_size));
 }
 
