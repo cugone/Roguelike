@@ -8,7 +8,11 @@
     </actors>
     <features>
         <feature name="flamePedestal" position="[3,1]" />
-        <feature name="door.open" position="[2,3]" />
+        <feature name="door" position="[2,3]" initialState="closed">
+            <state name="open" />
+            <state name="closed" />
+            <state name="locked" />
+        </feature>
     </features>
     <layers>
         <layer>
@@ -28,7 +32,7 @@
             <row glyphs="          " />
             <row glyphs="          " />
             <row glyphs="          " />
-            <row glyphs="          " />
+            <row glyphs="     &gt;    " />
             <row glyphs="          " />
             <row glyphs="          " />
             <row glyphs="          " />
@@ -40,7 +44,7 @@
             <row glyphs="          " />
             <row glyphs="          " />
             <row glyphs="          " />
-            <row glyphs="          " />
+            <row glyphs="     &lt;    " />
             <row glyphs="          " />
             <row glyphs="          " />
             <row glyphs="          " />
