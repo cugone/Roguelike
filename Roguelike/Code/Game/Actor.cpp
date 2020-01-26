@@ -77,7 +77,7 @@ bool Actor::MoveTo(Tile* destination) {
 }
 
 bool Actor::LoadFromXml(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "actor", "", "name,lookAndFeel,position", "behavior");
+    DataUtils::ValidateXmlElement(elem, "actor", "", "name,lookAndFeel,position", "", "behavior");
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
     def = EntityDefinition::GetEntityDefinitionByName(definitionName);
