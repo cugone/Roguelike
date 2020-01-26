@@ -1021,12 +1021,17 @@ void Game::HandleDebugMouseInput(Camera2D& /*base_camera*/) {
         const auto& picked_tiles = DebugGetTilesFromMouse();
         _debug_has_picked_tile_with_click = _show_tile_debugger && !picked_tiles.empty();
         _debug_has_picked_entity_with_click = _show_entity_debugger && !picked_tiles.empty();
+        _debug_has_picked_feature_with_click = _show_feature_debugger && !picked_tiles.empty();
         if(_debug_has_picked_tile_with_click) {
             _debug_inspected_tiles = picked_tiles;
         }
         if(_debug_has_picked_entity_with_click) {
             _debug_inspected_entity = picked_tiles[0]->actor;
             _debug_has_picked_entity_with_click = _debug_inspected_entity;
+        }
+        if(_debug_has_picked_feature_with_click) {
+            _debug_inspected_feature = picked_tiles[0]->feature;
+            _debug_has_picked_feature_with_click = _debug_inspected_feature;
         }
     }
 }
@@ -1037,7 +1042,8 @@ void Game::ShowDebugUI() {
         ShowBoundsColoringUI();
         ShowEffectsDebuggerUI();
         ShowTileDebuggerUI();
-        ShowEntityDebuggerUI();
+        ShowFeatureDebuggerUI();
+        ShowEntityDebuggerUI(); //Until Tables API is available on master, Entity debugger must be last!
     }
     ImGui::End();
 }
@@ -1140,6 +1146,13 @@ void Game::ShowEntityDebuggerUI() {
     }
 }
 
+void Game::ShowFeatureDebuggerUI() {
+    _show_feature_debugger = ImGui::CollapsingHeader("Feature");
+    if(_show_feature_debugger) {
+        ShowFeatureInspectorUI();
+    }
+}
+
 void Game::ShowBoundsColoringUI() {
     if(ImGui::CollapsingHeader("World")) {
         static bool show_grid = false;
@@ -1177,12 +1190,6 @@ void Game::ShowTileInspectorUI() {
     const auto max_layers = std::size_t{ 9u };
     const auto tiles_per_row = std::size_t{ 3u };
     if(_debug_has_picked_tile_with_click) {
-        std::ostringstream ss;
-        ss << "World Coords: " << _debug_inspected_tiles[0]->GetCoords();
-        ImGui::Text(ss.str().c_str());
-        ss.str("");
-        ss << "Screen Coords: " << g_theRenderer->ConvertWorldToScreenCoords(_map->camera, Vector2(_debug_inspected_tiles[0]->GetCoords()));
-        ImGui::Text(ss.str().c_str());
         std::size_t i = 0u;
         for(const auto cur_tile : _debug_inspected_tiles) {
             const auto* cur_def = cur_tile ? cur_tile->GetDefinition() : TileDefinition::GetTileDefinitionByName("void");
@@ -1209,14 +1216,6 @@ void Game::ShowTileInspectorUI() {
         }
     } else {
         auto picked_count = picked_tiles.size();
-        if(picked_count) {
-            std::ostringstream ss;
-            ss << "World Coords: " << picked_tiles[0]->GetCoords();
-            ImGui::Text(ss.str().c_str());
-            ss.str("");
-            ss << "Screen Coords: " << g_theRenderer->ConvertWorldToScreenCoords(_map->camera, Vector2(picked_tiles[0]->GetCoords()));
-            ImGui::Text(ss.str().c_str());
-        }
         for(std::size_t i = 0; i < max_layers; ++i) {
             const Tile *cur_tile = i < picked_count ? picked_tiles[i] : nullptr;
             const auto* cur_def = cur_tile ? cur_tile->GetDefinition() : TileDefinition::GetTileDefinitionByName("void");
@@ -1267,12 +1266,6 @@ void Game::ShowEntityInspectorUI() {
         return;
     }
     if(const auto* cur_entity = _debug_inspected_entity ? _debug_inspected_entity : picked_tiles[0]->actor) {
-        std::ostringstream ss;
-        ss << "World Coords: " << cur_entity->GetPosition();
-        ImGui::Text(ss.str().c_str());
-        ss.str("");
-        ss << "Screen Coords: " << _map->WorldCoordsToScreenCoords(Vector2(cur_entity->GetPosition()));
-        ImGui::Text(ss.str().c_str());
         if(const auto* cur_sprite = cur_entity->sprite) {
             ImGui::Text("Entity Inspector");
             ImGui::SameLine();
@@ -1287,6 +1280,29 @@ void Game::ShowEntityInspectorUI() {
         }
     }
 }
+
+void Game::ShowFeatureInspectorUI() {
+    const auto& picked_tiles = DebugGetTilesFromMouse();
+    const auto picked_count = picked_tiles.size();
+    bool has_feature = (picked_count > 0 && picked_tiles[0]->feature);
+    bool has_selected_feature = _debug_has_picked_feature_with_click && _debug_inspected_feature;
+    bool shouldnt_show_inspector = !has_feature && !has_selected_feature;
+    if(shouldnt_show_inspector) {
+        ImGui::Text("Feature Inspector: None");
+        return;
+    }
+    if(const auto* cur_entity = _debug_inspected_feature ? _debug_inspected_feature : picked_tiles[0]->feature) {
+        if(const auto* cur_sprite = cur_entity->sprite) {
+            ImGui::Text("Feature Inspector");
+            ImGui::SameLine();
+            if(ImGui::Button("Unlock Feature")) {
+                _debug_has_picked_feature_with_click = false;
+                _debug_inspected_feature = nullptr;
+            }
+        }
+    }
+}
+
 
 void Game::ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const AnimatedSprite* cur_sprite) {
     std::ostringstream ss;
@@ -1320,7 +1336,11 @@ void Game::ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity) {
     }
     ss << "Inventory:";
     for(const auto* item : cur_entity->inventory) {
+        const auto count = item->GetCount();
         ss << '\n' << item->GetFriendlyName();
+        if(count > 1) {
+            ss << " x" << (count > 99u ? 99u : count);
+        }
     }
     ImGui::Text(ss.str().c_str());
 }

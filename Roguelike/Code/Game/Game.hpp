@@ -116,6 +116,7 @@ private:
 
     void ShowTileDebuggerUI();
     void ShowEntityDebuggerUI();
+    void ShowFeatureDebuggerUI();
     void ShowEffectsDebuggerUI();
 
     void ShowEffectsUI();
@@ -125,6 +126,8 @@ private:
     void ShowEntityInspectorUI();
     void ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const AnimatedSprite* cur_sprite);
     void ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity);
+
+    void ShowFeatureInspectorUI();
 
     void LoadUI();
     void LoadMaps();
@@ -153,6 +156,7 @@ private:
     Rgba _debug_gradientColor{Rgba::White};
     std::vector<Tile*> _debug_inspected_tiles{};
     Entity* _debug_inspected_entity = nullptr;
+    Feature* _debug_inspected_feature = nullptr;
     std::shared_ptr<SpriteSheet> _cursor_sheet{};
     std::shared_ptr<SpriteSheet> _entity_sheet{};
     std::shared_ptr<SpriteSheet> _item_sheet{};
@@ -168,6 +172,7 @@ private:
     float _debug_gradientRadius = 0.5f;
     float _text_alpha = 1.0f;
     bool _debug_has_picked_entity_with_click = false;
+    bool _debug_has_picked_feature_with_click = false;
     bool _debug_has_picked_tile_with_click = false;
     bool _player_requested_wait = false;
     bool _debug_render = false;
@@ -177,6 +182,7 @@ private:
     bool _show_tile_debugger = false;
     bool _show_effects_debugger = false;
     bool _show_entity_debugger = false;
+    bool _show_feature_debugger = false;
     bool _show_all_entities = false;
     bool _done_loading = false;
     std::unique_ptr<class ConstantBuffer> _fullscreen_cb = nullptr;
