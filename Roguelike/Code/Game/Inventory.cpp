@@ -167,7 +167,7 @@ void Inventory::TransferAll(Inventory& dest) noexcept {
     return Inventory::TransferAll(*this, dest);
 }
 
-auto Inventory::size() const noexcept {
+std::size_t Inventory::size() const noexcept {
     return _items.size();
 }
 

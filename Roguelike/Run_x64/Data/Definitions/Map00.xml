@@ -14,6 +14,9 @@
             <state name="locked" />
         </feature>
     </features>
+    <items>
+        <item name="key" position="[2,2]" />
+    </items>
     <layers>
         <layer>
             <row glyphs="##########" />

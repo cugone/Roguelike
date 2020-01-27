@@ -58,7 +58,7 @@ public:
     static void TransferAll(Inventory& source, Inventory& dest) noexcept;
     void TransferAll(Inventory& dest) noexcept;
 
-    auto size() const noexcept;
+    std::size_t size() const noexcept;
     bool empty() const noexcept;
     void clear() noexcept;
 

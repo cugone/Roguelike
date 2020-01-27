@@ -33,10 +33,18 @@ void Tile::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, 
         return;
     }
     AddVertsForTile(verts, ibo, layer_color, layer_index);
-    if(actor) {
+    if(canSee && actor) {
         actor->Render(verts, ibo, layer_color, layer_index);
     } else if(feature) {
         feature->Render(verts, ibo, layer_color, layer_index);
+    } else if(!inventory.empty()) {
+        if(inventory.size() > 1) {
+
+        } else {
+            if(auto* item = inventory.GetItem(0)) {
+                item->Render(_tile_coords, verts, ibo, layer_color, layer_index);
+            }
+        }
     }
     if(!canSee && haveSeen) {
         AddVertsForOverlay(verts, ibo, layer_color, layer_index);

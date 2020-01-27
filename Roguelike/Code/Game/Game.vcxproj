@@ -226,9 +226,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\Run_x64\Data\Images\Tiles.png" />
-  </ItemGroup>
-  <ItemGroup>
     <FxCompile Include="..\..\Run_x64\Data\ShaderPrograms\Fullscreen.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugProfile|x64'">true</ExcludedFromBuild>
@@ -244,6 +241,9 @@
     <ProjectReference Include="..\..\..\..\Abrams2019\Engine\Code\Engine\Engine.vcxproj">
       <Project>{acbda225-83de-4fba-a746-0135429fb391}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\Run_x64\Data\Images\Tileset.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -257,13 +257,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\Run_x64\Data\Images\Tiles.png">
-      <Filter>Data\Images</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
     <FxCompile Include="..\..\Run_x64\Data\ShaderPrograms\Fullscreen.hlsl">
       <Filter>Data\ShaderPrograms</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\Run_x64\Data\Images\Tileset.png">
+      <Filter>Data\Images</Filter>
+    </Image>
   </ItemGroup>
 </Project>

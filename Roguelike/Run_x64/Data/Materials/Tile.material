@@ -1,6 +1,6 @@
 <material name="Tile">
     <shader src="__2D" />
     <textures>
-        <diffuse src="Data/Images/Tiles.png" />
+        <diffuse src="Data/Images/Tileset.png" />
     </textures>
 </material>

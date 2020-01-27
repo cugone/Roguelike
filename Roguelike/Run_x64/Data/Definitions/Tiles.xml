@@ -1,12 +1,12 @@
 <tileDefinitions>
-    <spritesheet src="Data/Images/Tiles.png" dimensions="[65,65]" />
-    <tileDefinition name="white_circle" index="[47,34]">
+    <spritesheet src="Data/Images/Tileset.png" dimensions="[65,65]" />
+    <tileDefinition name="white_circle" index="[49,34]">
         <glyph value=" " />
     </tileDefinition>
-    <tileDefinition name="white" index="[48,34]">
+    <tileDefinition name="white" index="[50,34]">
         <glyph value=" " />
     </tileDefinition>
-    <tileDefinition name="blue" index="[49,34]">
+    <tileDefinition name="blue" index="[51,34]">
         <glyph value=" " />
     </tileDefinition>    
     <tileDefinition name="void" index="[45,64]">
