@@ -178,6 +178,7 @@ private:
     bool _debug_render = false;
     bool _show_grid = false;
     bool _show_debug_window = false;
+    bool _show_raycasts = true;
     bool _show_world_bounds = false;
     bool _show_tile_debugger = false;
     bool _show_effects_debugger = false;

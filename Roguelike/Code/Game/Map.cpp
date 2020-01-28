@@ -271,6 +271,21 @@ void Map::DebugRender(Renderer& renderer) const {
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
         renderer.DrawAABB2(bounds, Rgba::Cyan, Rgba::NoAlpha);
     }
+    if(g_theGame->_show_raycasts) {
+        const auto* map = g_theGame->_map.get();
+        const auto* p = map->player;
+        const auto vision_range = p->visibility;
+        const auto& startTile = *map->GetTile(IntVector3(p->GetPosition(), 0));
+        //const auto tiles = map->GetVisibleTilesWithinDistance(startTile, vision_range);
+        const auto tiles = map->GetTilesWithinDistance(startTile, vision_range);
+        renderer.SetModelMatrix(Matrix4::I);
+        renderer.SetMaterial(renderer.GetMaterial("__2D"));
+        const auto start = player->tile->GetBounds().CalcCenter();
+        for(const auto& tile : tiles) {
+            const auto end = tile->GetBounds().CalcCenter();
+            renderer.DrawLine2D(start, end, Rgba::White);
+        }
+    }
 }
 
 void Map::EndFrame() {

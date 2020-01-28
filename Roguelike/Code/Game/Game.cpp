@@ -1170,7 +1170,10 @@ void Game::ShowWorldInspectorUI() {
         static bool show_all_entities = false;
         ImGui::Checkbox("Show All Entities", &show_all_entities);
         _show_all_entities = show_all_entities;
-        _debug_render = _show_grid || _show_world_bounds || _show_all_entities;
+        static bool show_raycasts = false;
+        ImGui::Checkbox("Show raycasts", &show_raycasts);
+        _show_raycasts = show_raycasts;
+        _debug_render = _show_grid || _show_world_bounds || _show_all_entities || _show_raycasts;
     }
 }
 
