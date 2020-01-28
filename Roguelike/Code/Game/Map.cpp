@@ -268,6 +268,7 @@ void Map::DebugRender(Renderer& renderer) const {
     if(g_theGame->_show_world_bounds) {
         auto bounds = CalcWorldBounds();
         renderer.SetModelMatrix(Matrix4::I);
+        renderer.SetMaterial(renderer.GetMaterial("__2D"));
         renderer.DrawAABB2(bounds, Rgba::Cyan, Rgba::NoAlpha);
     }
 }
