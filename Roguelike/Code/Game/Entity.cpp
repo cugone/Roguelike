@@ -130,6 +130,7 @@ void Entity::AddVertsForEquipment(const IntVector2& entity_position, std::vector
 
 void Entity::Fight(Entity& attacker, Entity& defender) {
     attacker.OnFight.Trigger(attacker, defender);
+    defender.OnFight.Trigger(attacker, defender);
 }
 
 void Entity::ResolveAttack(Entity& /*attacker*/, Entity& /*defender*/) {

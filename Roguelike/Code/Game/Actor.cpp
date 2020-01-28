@@ -77,7 +77,7 @@ bool Actor::MoveTo(Tile* destination) {
 }
 
 bool Actor::LoadFromXml(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "actor", "", "name,lookAndFeel,position", "behavior");
+    DataUtils::ValidateXmlElement(elem, "actor", "", "name,lookAndFeel,position", "", "behavior");
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
     def = EntityDefinition::GetEntityDefinitionByName(definitionName);
@@ -283,10 +283,16 @@ bool Actor::MoveNorthWest() {
 }
 
 Item* Actor::IsEquipped(const EquipSlot& slot) {
-    return _equipment[static_cast<std::size_t>(slot)];
+    if(slot != EquipSlot::None) {
+        return _equipment[static_cast<std::size_t>(slot)];
+    }
+    return nullptr;
 }
 
 void Actor::Equip(const EquipSlot& slot, Item* item) {
+    if(slot == EquipSlot::None) {
+        return;
+    }
     auto& current_equipment = _equipment[static_cast<std::size_t>(slot)];
     if(current_equipment) {
         this->AdjustStatModifiers(-current_equipment->GetStatModifiers());
@@ -312,6 +318,7 @@ void Actor::SetPosition(const IntVector2& position) {
     auto next_tile = map->GetTile(_position.x, _position.y, layer->z_index);
     next_tile->actor = this;
     tile = next_tile;
+    Inventory::TransferAll(tile->inventory, inventory);
 }
 
 void Actor::SetBehavior(BehaviorID id) {

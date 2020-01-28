@@ -32,6 +32,7 @@ Game::~Game() noexcept {
     CursorDefinition::ClearCursorRegistry();
     Item::ClearItemRegistry();
     Actor::ClearActorRegistry();
+    Feature::ClearFeatureRegistry();
     EntityDefinition::ClearEntityRegistry();
     TileDefinition::DestroyTileDefinitions();
 }
@@ -78,6 +79,7 @@ void Game::OnExit_Main() {
     CursorDefinition::ClearCursorRegistry();
     Item::ClearItemRegistry();
     Actor::ClearActorRegistry();
+    Feature::ClearFeatureRegistry();
     EntityDefinition::ClearEntityRegistry();
     TileDefinition::DestroyTileDefinitions();
 }
@@ -350,6 +352,38 @@ void Game::RegisterCommands() {
     }
 
     {
+        Console::Command set_state{};
+        set_state.command_name = "set_state";
+        set_state.help_text_short = "Sets the state of a feature.";
+        set_state.help_text_long = "set_state [name]: Sets the highlighted or selected feature state to [name].";
+        set_state.command_function = [this](const std::string& args) {
+            ArgumentParser p{args};
+            std::string name{};
+            if(!(p >> name)) {
+                g_theConsole->ErrorMsg("No state name provided.");
+                return;
+            }
+            Entity* entity = nullptr;
+            if(_debug_inspected_feature) {
+                entity = _debug_inspected_feature;
+            } else
+            if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+                entity = tile->feature;
+                if(!entity) {
+                    std::ostringstream ss;
+                    ss << "Select a feature to set the state to \"" << name << "\".";
+                    g_theConsole->ErrorMsg(ss.str());
+                    return;
+                }
+                if(auto* f = entity->tile->feature) {
+                    f->SetState(name);
+                }
+            }
+        };
+        _consoleCommands.AddCommand(set_state);
+    }
+
+    {
         Console::Command give{};
         give.command_name = "give";
         give.help_text_short = "Gives object to entity.";
@@ -383,10 +417,7 @@ void Game::RegisterCommands() {
                 g_theConsole->ErrorMsg(ss.str());
                 return;
             }
-            if(entity->inventory.HasItem(item_name)) {
-                entity->inventory.AddStack(item_name, item_count);
-                return;
-            }
+            entity->inventory.AddStack(item_name, item_count);
             auto* asActor = dynamic_cast<Actor*>(entity);
             if(!asActor) {
                 g_theConsole->ErrorMsg("Entity is not an actor.");
@@ -674,29 +705,7 @@ void Game::LoadItemsFromFile(const std::filesystem::path& src) {
         auto* xml_item_sheet = xml_item_root->FirstChildElement("spritesheet");
         _item_sheet = g_theRenderer->CreateSpriteSheet(*xml_item_sheet);
         DataUtils::ForEachChildElement(*xml_item_root, "item", [this](const XMLElement& elem) {
-            DataUtils::ValidateXmlElement(elem, "item", "stats,equipslot", "name", "animation", "index");
-            ItemBuilder builder{};
-            const auto name = DataUtils::ParseXmlAttribute(elem, "name", "UNKNOWN ITEM");
-            builder.Name(name);
-            builder.Slot(EquipSlotFromString(DataUtils::ParseXmlElementText(*elem.FirstChildElement("equipslot"), "none")));
-            if(auto* xml_minstats = elem.FirstChildElement("stats")) {
-                builder.MinimumStats(Stats(*xml_minstats));
-                builder.MaximumStats(Stats(*xml_minstats));
-                if(auto* xml_maxstats = xml_minstats->NextSiblingElement("stats")) {
-                    builder.MaximumStats(Stats(*xml_minstats));
-                }
-            }
-            auto startIndex = DataUtils::ParseXmlAttribute(elem, "index", IntVector2::ONE * -1);
-            if(auto* xml_animsprite = elem.FirstChildElement("animation")) {
-                builder.AnimateSprite(g_theRenderer->CreateAnimatedSprite(this->_item_sheet, *xml_animsprite));
-            } else {
-                if(startIndex == IntVector2::ONE * -1) {
-                    std::ostringstream ss;
-                    ss << "Item \"" << name << "\" missing index attribute or animation child element.";
-                    ERROR_AND_DIE(ss.str().c_str());
-                }
-                builder.AnimateSprite(g_theRenderer->CreateAnimatedSprite(this->_item_sheet, startIndex));
-            }
+            ItemBuilder builder(elem, _item_sheet);
             builder.Build();
         });
     }
@@ -1014,6 +1023,7 @@ void Game::HandleDebugMouseInput(Camera2D& /*base_camera*/) {
         const auto& picked_tiles = DebugGetTilesFromMouse();
         _debug_has_picked_tile_with_click = _show_tile_debugger && !picked_tiles.empty();
         _debug_has_picked_entity_with_click = _show_entity_debugger && !picked_tiles.empty();
+        _debug_has_picked_feature_with_click = _show_feature_debugger && !picked_tiles.empty();
         if(_debug_has_picked_tile_with_click) {
             _debug_inspected_tiles = picked_tiles;
         }
@@ -1021,16 +1031,21 @@ void Game::HandleDebugMouseInput(Camera2D& /*base_camera*/) {
             _debug_inspected_entity = picked_tiles[0]->actor;
             _debug_has_picked_entity_with_click = _debug_inspected_entity;
         }
+        if(_debug_has_picked_feature_with_click) {
+            _debug_inspected_feature = picked_tiles[0]->feature;
+            _debug_has_picked_feature_with_click = _debug_inspected_feature;
+        }
     }
 }
 
 void Game::ShowDebugUI() {
     ImGui::SetNextWindowSize(Vector2{ 350.0f, 500.0f }, ImGuiCond_Always);
     if(ImGui::Begin("Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ShowBoundsColoringUI();
+        ShowWorldInspectorUI();
         ShowEffectsDebuggerUI();
         ShowTileDebuggerUI();
-        ShowEntityDebuggerUI();
+        ShowFeatureDebuggerUI();
+        ShowEntityDebuggerUI(); //Until Tables API is available on master, Entity debugger must be last!
     }
     ImGui::End();
 }
@@ -1133,7 +1148,14 @@ void Game::ShowEntityDebuggerUI() {
     }
 }
 
-void Game::ShowBoundsColoringUI() {
+void Game::ShowFeatureDebuggerUI() {
+    _show_feature_debugger = ImGui::CollapsingHeader("Feature");
+    if(_show_feature_debugger) {
+        ShowFeatureInspectorUI();
+    }
+}
+
+void Game::ShowWorldInspectorUI() {
     if(ImGui::CollapsingHeader("World")) {
         static bool show_grid = false;
         ImGui::Checkbox("World Grid", &show_grid);
@@ -1148,7 +1170,10 @@ void Game::ShowBoundsColoringUI() {
         static bool show_all_entities = false;
         ImGui::Checkbox("Show All Entities", &show_all_entities);
         _show_all_entities = show_all_entities;
-        _debug_render = _show_grid || _show_world_bounds || _show_all_entities;
+        static bool show_raycasts = false;
+        ImGui::Checkbox("Show raycasts", &show_raycasts);
+        _show_raycasts = show_raycasts;
+        _debug_render = _show_grid || _show_world_bounds || _show_all_entities || _show_raycasts;
     }
 }
 
@@ -1170,12 +1195,6 @@ void Game::ShowTileInspectorUI() {
     const auto max_layers = std::size_t{ 9u };
     const auto tiles_per_row = std::size_t{ 3u };
     if(_debug_has_picked_tile_with_click) {
-        std::ostringstream ss;
-        ss << "World Coords: " << _debug_inspected_tiles[0]->GetCoords();
-        ImGui::Text(ss.str().c_str());
-        ss.str("");
-        ss << "Screen Coords: " << g_theRenderer->ConvertWorldToScreenCoords(_map->camera, Vector2(_debug_inspected_tiles[0]->GetCoords()));
-        ImGui::Text(ss.str().c_str());
         std::size_t i = 0u;
         for(const auto cur_tile : _debug_inspected_tiles) {
             const auto* cur_def = cur_tile ? cur_tile->GetDefinition() : TileDefinition::GetTileDefinitionByName("void");
@@ -1202,14 +1221,6 @@ void Game::ShowTileInspectorUI() {
         }
     } else {
         auto picked_count = picked_tiles.size();
-        if(picked_count) {
-            std::ostringstream ss;
-            ss << "World Coords: " << picked_tiles[0]->GetCoords();
-            ImGui::Text(ss.str().c_str());
-            ss.str("");
-            ss << "Screen Coords: " << g_theRenderer->ConvertWorldToScreenCoords(_map->camera, Vector2(picked_tiles[0]->GetCoords()));
-            ImGui::Text(ss.str().c_str());
-        }
         for(std::size_t i = 0; i < max_layers; ++i) {
             const Tile *cur_tile = i < picked_count ? picked_tiles[i] : nullptr;
             const auto* cur_def = cur_tile ? cur_tile->GetDefinition() : TileDefinition::GetTileDefinitionByName("void");
@@ -1260,12 +1271,6 @@ void Game::ShowEntityInspectorUI() {
         return;
     }
     if(const auto* cur_entity = _debug_inspected_entity ? _debug_inspected_entity : picked_tiles[0]->actor) {
-        std::ostringstream ss;
-        ss << "World Coords: " << cur_entity->GetPosition();
-        ImGui::Text(ss.str().c_str());
-        ss.str("");
-        ss << "Screen Coords: " << _map->WorldCoordsToScreenCoords(Vector2(cur_entity->GetPosition()));
-        ImGui::Text(ss.str().c_str());
         if(const auto* cur_sprite = cur_entity->sprite) {
             ImGui::Text("Entity Inspector");
             ImGui::SameLine();
@@ -1280,6 +1285,29 @@ void Game::ShowEntityInspectorUI() {
         }
     }
 }
+
+void Game::ShowFeatureInspectorUI() {
+    const auto& picked_tiles = DebugGetTilesFromMouse();
+    const auto picked_count = picked_tiles.size();
+    bool has_feature = (picked_count > 0 && picked_tiles[0]->feature);
+    bool has_selected_feature = _debug_has_picked_feature_with_click && _debug_inspected_feature;
+    bool shouldnt_show_inspector = !has_feature && !has_selected_feature;
+    if(shouldnt_show_inspector) {
+        ImGui::Text("Feature Inspector: None");
+        return;
+    }
+    if(const auto* cur_entity = _debug_inspected_feature ? _debug_inspected_feature : picked_tiles[0]->feature) {
+        if(const auto* cur_sprite = cur_entity->sprite) {
+            ImGui::Text("Feature Inspector");
+            ImGui::SameLine();
+            if(ImGui::Button("Unlock Feature")) {
+                _debug_has_picked_feature_with_click = false;
+                _debug_inspected_feature = nullptr;
+            }
+        }
+    }
+}
+
 
 void Game::ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const AnimatedSprite* cur_sprite) {
     std::ostringstream ss;
@@ -1313,7 +1341,11 @@ void Game::ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity) {
     }
     ss << "Inventory:";
     for(const auto* item : cur_entity->inventory) {
+        const auto count = item->GetCount();
         ss << '\n' << item->GetFriendlyName();
+        if(count > 1) {
+            ss << " x" << (count > 99u ? 99u : count);
+        }
     }
     ImGui::Text(ss.str().c_str());
 }

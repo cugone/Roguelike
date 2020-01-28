@@ -3,6 +3,8 @@
 #include "Engine/Core/TimeUtils.hpp"
 #include "Engine/Core/Vertex3D.hpp"
 
+#include "Engine/Renderer/SpriteSheet.hpp"
+
 #include "Game/Inventory.hpp"
 #include "Game/Stats.hpp"
 
@@ -101,7 +103,7 @@ public:
     ItemBuilder& operator=(ItemBuilder&& other) noexcept = default;
     ~ItemBuilder() = default;
 
-    explicit ItemBuilder(const XMLElement& elem) noexcept;
+    explicit ItemBuilder(const XMLElement& elem, std::weak_ptr<SpriteSheet> itemSheet) noexcept;
     ItemBuilder& Name(const std::string& name) noexcept;
     ItemBuilder& FriendlyName(const std::string& friendlyName) noexcept;
     ItemBuilder& Slot(const EquipSlot& slot) noexcept;
@@ -114,13 +116,14 @@ public:
 protected:
 private:
 
-    void LoadFromXml(const XMLElement& elem) noexcept;
+    void LoadFromXml(const XMLElement& elem, std::weak_ptr<SpriteSheet> itemSheet) noexcept;
 
     Inventory _parent_inventory{};
     EquipSlot _slot{};
     Stats _min_stats{};
     Stats _max_stats{};
     std::unique_ptr<AnimatedSprite> _sprite{};
+    std::weak_ptr<SpriteSheet> _itemSheet{};
     std::string _name{};
     std::string _friendly_name{};
     std::size_t _max_stack_size{ 1 };

@@ -24,7 +24,9 @@
 #include "Game/GameCommon.hpp"
 #include "Game/GameConfig.hpp"
 #include "Game/Layer.hpp"
+#include "Game/Inventory.hpp"
 #include "Game/TileDefinition.hpp"
+#include "Game/Tile.hpp"
 
 #include <algorithm>
 #include <sstream>
@@ -186,7 +188,9 @@ void Map::UpdateActorAI(TimeUtils::FPSeconds /*deltaSeconds*/) {
     for(auto& actor : _actors) {
         const auto is_player = actor == player;
         const auto player_acted = player->Acted();
-        const auto should_update = !is_player && player_acted;
+        const auto is_alive = actor->GetStats().GetStat(StatsID::Health) > 0;
+        const auto is_visible = actor->tile->canSee;
+        const auto should_update = !is_player && player_acted && is_alive;
         if(should_update) {
             if(auto* behavior = actor->GetCurrentBehavior()) {
                 behavior->Act(actor);
@@ -264,7 +268,23 @@ void Map::DebugRender(Renderer& renderer) const {
     if(g_theGame->_show_world_bounds) {
         auto bounds = CalcWorldBounds();
         renderer.SetModelMatrix(Matrix4::I);
+        renderer.SetMaterial(renderer.GetMaterial("__2D"));
         renderer.DrawAABB2(bounds, Rgba::Cyan, Rgba::NoAlpha);
+    }
+    if(g_theGame->_show_raycasts) {
+        const auto* map = g_theGame->_map.get();
+        const auto* p = map->player;
+        const auto vision_range = p->visibility;
+        const auto& startTile = *map->GetTile(IntVector3(p->GetPosition(), 0));
+        //const auto tiles = map->GetVisibleTilesWithinDistance(startTile, vision_range);
+        const auto tiles = map->GetTilesWithinDistance(startTile, vision_range);
+        renderer.SetModelMatrix(Matrix4::I);
+        renderer.SetMaterial(renderer.GetMaterial("__2D"));
+        const auto start = player->tile->GetBounds().CalcCenter();
+        for(const auto& tile : tiles) {
+            const auto end = tile->GetBounds().CalcCenter();
+            renderer.DrawLine2D(start, end, Rgba::White);
+        }
     }
 }
 
@@ -272,9 +292,9 @@ void Map::EndFrame() {
     for(auto& layer : _layers) {
         layer->EndFrame();
     }
-    for(auto* entity : _text_entities) {
-        entity->EndFrame();
-    }
+    //for(auto* entity : _text_entities) {
+    //    entity->EndFrame();
+    //}
     _entities.erase(std::remove_if(std::begin(_entities), std::end(_entities), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_entities));
     _text_entities.erase(std::remove_if(std::begin(_text_entities), std::end(_text_entities), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_text_entities));
     _actors.erase(std::remove_if(std::begin(_actors), std::end(_actors), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_actors));
@@ -641,7 +661,7 @@ Tile* Map::GetTile(int x, int y, int z) const {
 
 bool Map::LoadFromXML(const XMLElement& elem) {
 
-    DataUtils::ValidateXmlElement(elem, "map", "tiles,layers,material", "name", "actors,features");
+    DataUtils::ValidateXmlElement(elem, "map", "tiles,layers,material", "name", "actors,features,items");
 
     LoadNameForMap(elem);
     LoadMaterialsForMap(elem);
@@ -769,11 +789,19 @@ void Map::LoadFeaturesForMap(const XMLElement& elem) {
 }
 
 void Map::LoadItemsForMap(const XMLElement& elem) {
-    if(auto* xml_map_equipment_source = elem.FirstChildElement("items")) {
-        DataUtils::ValidateXmlElement(*xml_map_equipment_source, "items", "", "src");
-        const auto src = DataUtils::ParseXmlAttribute(*xml_map_equipment_source, "src", std::string{});
-        if(src.empty()) {
-            ERROR_AND_DIE("Map item source is empty. Do not define element if map does not have items.");
-        }
+    if(auto* xml_items = elem.FirstChildElement("items")) {
+        DataUtils::ValidateXmlElement(*xml_items, "items", "item", "");
+        DataUtils::ForEachChildElement(*xml_items, "item", [this](const XMLElement& elem) {
+            DataUtils::ValidateXmlElement(elem, "item", "", "name,position");
+            const auto name = DataUtils::ParseXmlAttribute(elem, "name", nullptr);
+            const auto pos = DataUtils::ParseXmlAttribute(elem, "position", IntVector2{-1, -1});
+            if(auto* tile = this->GetTile(IntVector3(pos, 0))) {
+                tile->inventory.AddItem(Item::GetItem(name));
+            } else {
+                std::ostringstream ss;
+                ss << "Invalid tile " << pos << " for item \"" << name << "\" placement.";
+                g_theFileLogger->LogLineAndFlush(ss.str());
+            }
+        });
     }
 }

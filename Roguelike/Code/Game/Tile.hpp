@@ -5,6 +5,9 @@
 
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/IntVector2.hpp"
+
+#include "Game/Inventory.hpp"
+
 #include <vector>
 
 class TileDefinition;
@@ -76,9 +79,10 @@ public:
     Rgba color = Rgba::White;
     Actor* actor{};
     Feature* feature{};
-    Layer* layer = nullptr;
-    bool haveSeen = false;
-    bool canSee = false;
+    Layer* layer{};
+    Inventory inventory;
+    bool haveSeen{false};
+    bool canSee{false};
 protected:
 private:
     void AddVertsForTile(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;

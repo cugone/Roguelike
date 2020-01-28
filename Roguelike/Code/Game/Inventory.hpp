@@ -43,6 +43,7 @@ public:
     Item* AddItem(const std::string& name) noexcept;
 
     void RemoveItem(Item* item) noexcept;
+    void RemoveItem(Item* item, std::size_t count) noexcept;
     void RemoveItem(const std::string& name) noexcept;
 
     const Item* GetItem(const std::string& name) const noexcept;
@@ -57,7 +58,7 @@ public:
     static void TransferAll(Inventory& source, Inventory& dest) noexcept;
     void TransferAll(Inventory& dest) noexcept;
 
-    auto size() const noexcept;
+    std::size_t size() const noexcept;
     bool empty() const noexcept;
     void clear() noexcept;
 

@@ -1,6 +1,6 @@
 <entityDefinitions>
-    <spritesheet src="Data/Images/Tiles.png" dimensions="[65,65]" />
-    <entityDefinition name="human..male" index="[7,53]">
+    <spritesheet src="Data/Images/Tileset.png" dimensions="[65,65]" />
+    <entityDefinition name="human..male" index="[9,53]">
         <stats>
             <health>100</health>
             <attack>1</attack>
@@ -10,11 +10,34 @@
             <accuracy>0</accuracy>
             <experience>0</experience>
         </stats>
+        <attachPoints>
+            <body offset="[0,0]"/>
+            <!--
+            <hair offset="[0,0]"/>
+            <head offset="[0,0]"/>
+            <body offset="[0,0]"/>
+            <larm offset="[0,0]"/>
+            <rarm offset="[0,0]"/>
+            <legs offset="[0,0]"/>
+            <feet offset="[0,0]"/>
+            -->
+        </attachPoints>
+        <inventory>
+            <item name="red_coat" />
+            <item name="white_pants" />
+            <item name="cutlass" />
+        </inventory>
+        <equipment>
+            <body name="red_coat" />
+            <legs name="white_pants" />
+            <larm name="cutlass" />
+        </equipment>
         <behaviors>
             <behavior name="wander" />
+            <behavior name="flee" />
         </behaviors>
     </entityDefinition>
-    <entityDefinition name="human..female" index="[6,53]">
+    <entityDefinition name="human..female" index="[8,53]">
         <stats>
             <health>1</health>
             <attack>1</attack>
@@ -44,6 +67,7 @@
         </equipment>
         <behaviors>
             <behavior name="wander" />
+            <behavior name="flee" />
         </behaviors>
     </entityDefinition>
 </entityDefinitions>

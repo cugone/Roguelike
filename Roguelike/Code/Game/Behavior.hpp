@@ -10,6 +10,7 @@ class Actor;
 enum class BehaviorID {
     None
     ,Wander
+    ,Flee
 };
 
 class Behavior {

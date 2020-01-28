@@ -149,6 +149,7 @@
     <ClCompile Include="EntityDefinition.cpp" />
     <ClCompile Include="EntityText.cpp" />
     <ClCompile Include="Feature.cpp" />
+    <ClCompile Include="FleeBehavior.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameCommon.cpp" />
     <ClCompile Include="GameConfig.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="EntityDefinition.hpp" />
     <ClInclude Include="EntityText.hpp" />
     <ClInclude Include="Feature.hpp" />
+    <ClInclude Include="FleeBehavior.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="GameCommon.hpp" />
     <ClInclude Include="GameConfig.hpp" />
@@ -224,9 +226,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\Run_x64\Data\Images\Tiles.png" />
-  </ItemGroup>
-  <ItemGroup>
     <FxCompile Include="..\..\Run_x64\Data\ShaderPrograms\Fullscreen.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugProfile|x64'">true</ExcludedFromBuild>
@@ -242,6 +241,9 @@
     <ProjectReference Include="..\..\..\..\Abrams2019\Engine\Code\Engine\Engine.vcxproj">
       <Project>{acbda225-83de-4fba-a746-0135429fb391}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\Run_x64\Data\Images\Tileset.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
