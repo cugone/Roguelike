@@ -1041,7 +1041,7 @@ void Game::HandleDebugMouseInput(Camera2D& /*base_camera*/) {
 void Game::ShowDebugUI() {
     ImGui::SetNextWindowSize(Vector2{ 350.0f, 500.0f }, ImGuiCond_Always);
     if(ImGui::Begin("Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ShowBoundsColoringUI();
+        ShowWorldInspectorUI();
         ShowEffectsDebuggerUI();
         ShowTileDebuggerUI();
         ShowFeatureDebuggerUI();
@@ -1155,7 +1155,7 @@ void Game::ShowFeatureDebuggerUI() {
     }
 }
 
-void Game::ShowBoundsColoringUI() {
+void Game::ShowWorldInspectorUI() {
     if(ImGui::CollapsingHeader("World")) {
         static bool show_grid = false;
         ImGui::Checkbox("World Grid", &show_grid);

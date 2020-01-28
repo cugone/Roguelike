@@ -120,7 +120,7 @@ private:
     void ShowEffectsDebuggerUI();
 
     void ShowEffectsUI();
-    void ShowBoundsColoringUI();
+    void ShowWorldInspectorUI();
     void ShowTileInspectorUI();
 
     void ShowEntityInspectorUI();
