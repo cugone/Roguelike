@@ -111,6 +111,10 @@ void Feature::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ib
     ibo.push_back(static_cast<unsigned int>(v_s) - 1u);
 }
 
+bool Feature::IsTransparent() const noexcept {
+    return _tile_def->is_transparent;
+}
+
 bool Feature::IsSolid() const noexcept {
     return _tile_def->is_solid;
 }

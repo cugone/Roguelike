@@ -276,14 +276,28 @@ void Map::DebugRender(Renderer& renderer) const {
         const auto* p = map->player;
         const auto vision_range = p->visibility;
         const auto& startTile = *map->GetTile(IntVector3(p->GetPosition(), 0));
-        //const auto tiles = map->GetVisibleTilesWithinDistance(startTile, vision_range);
         const auto tiles = map->GetTilesWithinDistance(startTile, vision_range);
         renderer.SetModelMatrix(Matrix4::I);
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
         const auto start = player->tile->GetBounds().CalcCenter();
         for(const auto& tile : tiles) {
             const auto end = tile->GetBounds().CalcCenter();
+            const auto resultVisible = map->Raycast(start, end, true, [map](const IntVector2& tileCoords) { return map->IsTileOpaque(tileCoords); });
+            const auto resultPassable = map->Raycast(start, end, true, [map](const IntVector2& tileCoords) { return map->IsTilePassable(tileCoords); });
             renderer.DrawLine2D(start, end, Rgba::White);
+            if(resultVisible.didImpact) {
+                const auto normalStart = resultVisible.impactPosition;
+                const auto normalEnd = resultVisible.impactPosition + resultVisible.impactSurfaceNormal * 0.5f;
+                renderer.DrawLine2D(normalStart, normalEnd, Rgba::Red);
+            }
+            if(resultPassable.didImpact) {
+                for(const auto& impactedImpassableTileCoords : resultPassable.impactTileCoords) {
+                    auto* cur_tile = map->GetTile(IntVector3{impactedImpassableTileCoords, 0});
+                    if(!cur_tile->IsPassable()) {
+                        cur_tile->color = Rgba::Red;
+                    }
+                }
+            }
         }
     }
 }
@@ -338,6 +352,51 @@ bool Map::IsTileSolid(Tile* tile) const {
     return tile->IsSolid();
 }
 
+bool Map::IsTileOpaque(const IntVector2& tileCoords) const {
+    return IsTileOpaque(IntVector3{tileCoords, 0});
+}
+
+bool Map::IsTileOpaque(const IntVector3& tileCoords) const {
+    return IsTileOpaque(GetTile(tileCoords));
+}
+
+bool Map::IsTileOpaque(Tile* tile) const {
+    if(!tile || !tile->layer) {
+        return false;
+    }
+    return tile->IsOpaque();
+}
+
+bool Map::IsTileOpaqueOrSolid(const IntVector2& tileCoords) const {
+    return IsTileOpaqueOrSolid(IntVector3{tileCoords, 0});
+}
+
+bool Map::IsTileOpaqueOrSolid(const IntVector3& tileCoords) const {
+    return IsTileOpaqueOrSolid(GetTile(tileCoords));
+}
+
+bool Map::IsTileOpaqueOrSolid(Tile* tile) const {
+    if(!tile || !tile->layer) {
+        return false;
+    }
+    return tile->IsOpaque() || tile->IsSolid();
+}
+
+bool Map::IsTileVisible(const IntVector2& tileCoords) const {
+    return IsTileVisible(IntVector3{tileCoords, 0});
+}
+
+bool Map::IsTileVisible(const IntVector3& tileCoords) const {
+    return IsTileVisible(GetTile(tileCoords));
+}
+
+bool Map::IsTileVisible(Tile* tile) const {
+    if(!tile || !tile->layer) {
+        return false;
+    }
+    return tile->IsVisible();
+}
+
 bool Map::IsTilePassable(const IntVector2& tileCoords) const {
     return IsTilePassable(IntVector3{tileCoords, 0});
 }
@@ -373,7 +432,7 @@ bool Map::HasLineOfSight(const Vector2& startPosition, const Vector2& endPositio
 }
 
 bool Map::HasLineOfSight(const Vector2& startPosition, const Vector2& direction, float maxDistance) const {
-    RaycastResult2D result = Raycast(startPosition, direction, maxDistance);
+    RaycastResult2D result = Raycast(startPosition, direction, maxDistance, true, [this](const IntVector2& tileCoords)->bool { return this->IsTileOpaque(tileCoords); });
     return !result.didImpact;
 }
 
@@ -491,97 +550,6 @@ Map::RaycastResult2D Map::StepAndSample(const Vector2& startPosition, const Vect
             return result;
         }
     }
-}
-
-Map::RaycastResult2D Map::Raycast(const Vector2& startPosition, const Vector2& endPosition) const {
-    const auto displacement = endPosition - startPosition;
-    const auto direction = displacement.GetNormalize();
-    float length = displacement.CalcLength();
-    return Raycast(startPosition, direction, length);
-}
-
-Map::RaycastResult2D Map::Raycast(const Vector2& startPosition, const Vector2& direction, float maxDistance) const {
-    const auto endPosition = startPosition + (direction * maxDistance);
-    IntVector2 currentTileCoords{startPosition};
-    IntVector2 endTileCoords{endPosition};
-
-    const auto D = endPosition - startPosition;
-
-    float tDeltaX = (std::numeric_limits<float>::max)();
-    if(!MathUtils::IsEquivalent(D.x, 0.0f)) {
-        tDeltaX = 1.0f / std::abs(D.x);
-    }
-    int tileStepX = 0;
-    if(D.x > 0) {
-        tileStepX = 1;
-    }
-    if(D.x < 0) {
-        tileStepX = -1;
-    }
-    int offsetToLeadingEdgeX = (tileStepX + 1) / 2;
-    float firstVerticalIntersectionX = static_cast<float>(currentTileCoords.x + offsetToLeadingEdgeX);
-    float tOfNextXCrossing = std::abs(firstVerticalIntersectionX - startPosition.x) * tDeltaX;
-
-    float tDeltaY = (std::numeric_limits<float>::max)();
-    if(!MathUtils::IsEquivalent(D.y, 0.0f)) {
-        tDeltaY = 1.0f / std::abs(D.y);
-    }
-    int tileStepY = 0;
-    if(D.y > 0) {
-        tileStepY = 1;
-    }
-    if(D.y < 0) {
-        tileStepY = -1;
-    }
-    int offsetToLeadingEdgeY = (tileStepY + 1) / 2;
-    float firstVerticalIntersectionY = static_cast<float>(currentTileCoords.y + offsetToLeadingEdgeY);
-    float tOfNextYCrossing = std::abs(firstVerticalIntersectionY - startPosition.y) * tDeltaY;
-
-    Map::RaycastResult2D result;
-    if(IsTileSolid(currentTileCoords)) {
-        result.didImpact = true;
-        result.impactFraction = 0.0f;
-        result.impactPosition = startPosition;
-        result.impactTileCoords.insert(currentTileCoords);
-        result.impactSurfaceNormal = -direction;
-        return result;
-    }
-
-    while(true) {
-        result.impactTileCoords.insert(currentTileCoords);
-        if(tOfNextXCrossing < tOfNextYCrossing) {
-            if(tOfNextXCrossing > 1.0f) {
-                result.didImpact = false;
-                return result;
-            }
-            currentTileCoords.x += tileStepX;
-            if(IsTileSolid(currentTileCoords)) {
-                result.didImpact = true;
-                result.impactFraction = tOfNextXCrossing;
-                result.impactPosition = startPosition + (D * result.impactFraction);
-                result.impactTileCoords.insert(currentTileCoords);
-                result.impactSurfaceNormal = Vector2(static_cast<float>(-tileStepX), 0.0f);
-                return result;
-            }
-            tOfNextXCrossing += tDeltaX;
-        } else {
-            if(tOfNextYCrossing > 1.0f) {
-                result.didImpact = false;
-                return result;
-            }
-            currentTileCoords.y += tileStepY;
-            if(IsTileSolid(currentTileCoords)) {
-                result.didImpact = true;
-                result.impactFraction = tOfNextYCrossing;
-                result.impactPosition = startPosition + (D * result.impactFraction);
-                result.impactTileCoords.insert(currentTileCoords);
-                result.impactSurfaceNormal = Vector2(0.0f, static_cast<float>(-tileStepY));
-                return result;
-            }
-            tOfNextYCrossing += tDeltaY;
-        }
-    }
-    return result;
 }
 
 Vector2 Map::CalcMaxDimensions() const {
