@@ -193,15 +193,15 @@ bool Tile::IsInvisible() const {
 }
 
 bool Tile::IsOpaque() const {
-    return _def->is_opaque || color.a == 0;
+    return _def->is_opaque || (feature && feature->IsOpaque());
 }
 
 bool Tile::IsTransparent() const {
-    return _def->is_transparent;
+    return _def->is_transparent || (feature && feature->IsTransparent());
 }
 
 bool Tile::IsSolid() const {
-    return _def->is_solid;
+    return _def->is_solid || (feature && feature->IsSolid());;
 }
 
 bool Tile::IsPassable() const {
