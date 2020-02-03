@@ -338,6 +338,51 @@ bool Map::IsTileSolid(Tile* tile) const {
     return tile->IsSolid();
 }
 
+bool Map::IsTileOpaque(const IntVector2& tileCoords) const {
+    return IsTileOpaque(IntVector3{tileCoords, 0});
+}
+
+bool Map::IsTileOpaque(const IntVector3& tileCoords) const {
+    return IsTileOpaque(GetTile(tileCoords));
+}
+
+bool Map::IsTileOpaque(Tile* tile) const {
+    if(!tile || !tile->layer) {
+        return false;
+    }
+    return tile->IsOpaque();
+}
+
+bool Map::IsTileOpaqueOrSolid(const IntVector2& tileCoords) const {
+    return IsTileOpaqueOrSolid(IntVector3{tileCoords, 0});
+}
+
+bool Map::IsTileOpaqueOrSolid(const IntVector3& tileCoords) const {
+    return IsTileOpaqueOrSolid(GetTile(tileCoords));
+}
+
+bool Map::IsTileOpaqueOrSolid(Tile* tile) const {
+    if(!tile || !tile->layer) {
+        return false;
+    }
+    return tile->IsOpaque() || tile->IsSolid();
+}
+
+bool Map::IsTileVisible(const IntVector2& tileCoords) const {
+    return IsTileVisible(IntVector3{tileCoords, 0});
+}
+
+bool Map::IsTileVisible(const IntVector3& tileCoords) const {
+    return IsTileVisible(GetTile(tileCoords));
+}
+
+bool Map::IsTileVisible(Tile* tile) const {
+    if(!tile || !tile->layer) {
+        return false;
+    }
+    return tile->IsVisible();
+}
+
 bool Map::IsTilePassable(const IntVector2& tileCoords) const {
     return IsTilePassable(IntVector3{tileCoords, 0});
 }

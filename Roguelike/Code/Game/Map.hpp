@@ -57,9 +57,21 @@ public:
     bool IsTileInView(Tile* tile) const;
     bool IsEntityInView(Entity* entity) const;
 
+    bool IsTileOpaque(const IntVector2& tileCoords) const;
+    bool IsTileOpaque(const IntVector3& tileCoords) const;
+    bool IsTileOpaque(Tile* tile) const;
+
     bool IsTileSolid(const IntVector2& tileCoords) const;
     bool IsTileSolid(const IntVector3& tileCoords) const;
     bool IsTileSolid(Tile* tile) const;
+
+    bool IsTileOpaqueOrSolid(const IntVector2& tileCoords) const;
+    bool IsTileOpaqueOrSolid(const IntVector3& tileCoords) const;
+    bool IsTileOpaqueOrSolid(Tile* tile) const;
+
+    bool IsTileVisible(const IntVector2& tileCoords) const;
+    bool IsTileVisible(const IntVector3& tileCoords) const;
+    bool IsTileVisible(Tile* tile) const;
 
     bool IsTilePassable(const IntVector2& tileCoords) const;
     bool IsTilePassable(const IntVector3& tileCoords) const;
