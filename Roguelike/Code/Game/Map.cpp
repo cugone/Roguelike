@@ -418,7 +418,7 @@ bool Map::HasLineOfSight(const Vector2& startPosition, const Vector2& endPositio
 }
 
 bool Map::HasLineOfSight(const Vector2& startPosition, const Vector2& direction, float maxDistance) const {
-    RaycastResult2D result = Raycast(startPosition, direction, maxDistance);
+    RaycastResult2D result = Raycast(startPosition, direction, maxDistance, true, [this](const IntVector2& tileCoords)->bool { return this->IsTileOpaque(tileCoords); });
     return !result.didImpact;
 }
 
@@ -536,97 +536,6 @@ Map::RaycastResult2D Map::StepAndSample(const Vector2& startPosition, const Vect
             return result;
         }
     }
-}
-
-Map::RaycastResult2D Map::Raycast(const Vector2& startPosition, const Vector2& endPosition) const {
-    const auto displacement = endPosition - startPosition;
-    const auto direction = displacement.GetNormalize();
-    float length = displacement.CalcLength();
-    return Raycast(startPosition, direction, length);
-}
-
-Map::RaycastResult2D Map::Raycast(const Vector2& startPosition, const Vector2& direction, float maxDistance) const {
-    const auto endPosition = startPosition + (direction * maxDistance);
-    IntVector2 currentTileCoords{startPosition};
-    IntVector2 endTileCoords{endPosition};
-
-    const auto D = endPosition - startPosition;
-
-    float tDeltaX = (std::numeric_limits<float>::max)();
-    if(!MathUtils::IsEquivalent(D.x, 0.0f)) {
-        tDeltaX = 1.0f / std::abs(D.x);
-    }
-    int tileStepX = 0;
-    if(D.x > 0) {
-        tileStepX = 1;
-    }
-    if(D.x < 0) {
-        tileStepX = -1;
-    }
-    int offsetToLeadingEdgeX = (tileStepX + 1) / 2;
-    float firstVerticalIntersectionX = static_cast<float>(currentTileCoords.x + offsetToLeadingEdgeX);
-    float tOfNextXCrossing = std::abs(firstVerticalIntersectionX - startPosition.x) * tDeltaX;
-
-    float tDeltaY = (std::numeric_limits<float>::max)();
-    if(!MathUtils::IsEquivalent(D.y, 0.0f)) {
-        tDeltaY = 1.0f / std::abs(D.y);
-    }
-    int tileStepY = 0;
-    if(D.y > 0) {
-        tileStepY = 1;
-    }
-    if(D.y < 0) {
-        tileStepY = -1;
-    }
-    int offsetToLeadingEdgeY = (tileStepY + 1) / 2;
-    float firstVerticalIntersectionY = static_cast<float>(currentTileCoords.y + offsetToLeadingEdgeY);
-    float tOfNextYCrossing = std::abs(firstVerticalIntersectionY - startPosition.y) * tDeltaY;
-
-    Map::RaycastResult2D result;
-    if(IsTileSolid(currentTileCoords)) {
-        result.didImpact = true;
-        result.impactFraction = 0.0f;
-        result.impactPosition = startPosition;
-        result.impactTileCoords.insert(currentTileCoords);
-        result.impactSurfaceNormal = -direction;
-        return result;
-    }
-
-    while(true) {
-        result.impactTileCoords.insert(currentTileCoords);
-        if(tOfNextXCrossing < tOfNextYCrossing) {
-            if(tOfNextXCrossing > 1.0f) {
-                result.didImpact = false;
-                return result;
-            }
-            currentTileCoords.x += tileStepX;
-            if(IsTileSolid(currentTileCoords)) {
-                result.didImpact = true;
-                result.impactFraction = tOfNextXCrossing;
-                result.impactPosition = startPosition + (D * result.impactFraction);
-                result.impactTileCoords.insert(currentTileCoords);
-                result.impactSurfaceNormal = Vector2(static_cast<float>(-tileStepX), 0.0f);
-                return result;
-            }
-            tOfNextXCrossing += tDeltaX;
-        } else {
-            if(tOfNextYCrossing > 1.0f) {
-                result.didImpact = false;
-                return result;
-            }
-            currentTileCoords.y += tileStepY;
-            if(IsTileSolid(currentTileCoords)) {
-                result.didImpact = true;
-                result.impactFraction = tOfNextYCrossing;
-                result.impactPosition = startPosition + (D * result.impactFraction);
-                result.impactTileCoords.insert(currentTileCoords);
-                result.impactSurfaceNormal = Vector2(0.0f, static_cast<float>(-tileStepY));
-                return result;
-            }
-            tOfNextYCrossing += tDeltaY;
-        }
-    }
-    return result;
 }
 
 Vector2 Map::CalcMaxDimensions() const {

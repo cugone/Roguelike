@@ -226,7 +226,7 @@ void Layer::DebugRenderTiles(Renderer& renderer) const {
 }
 
 void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
-    auto visibleTiles = _map->GetTilesWithinDistance(*_map->player->tile, _map->player->visibility);
+    auto visibleTiles = _map->GetVisibleTilesWithinDistance(*_map->player->tile, _map->player->visibility);
     for(auto& tile : visibleTiles) {
         tile->canSee = true;
         tile->haveSeen = true;

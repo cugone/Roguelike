@@ -94,9 +94,125 @@ public:
 
     RaycastResult2D StepAndSample(const Vector2& startPosition, const Vector2& endPosition, float sampleRate) const;
     RaycastResult2D StepAndSample(const Vector2& startPosition, const Vector2& direction, float maxDistance, float sampleRate) const;
-    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& endPosition) const;
-    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& direction, float maxDistance) const;
 
+
+    //************************************
+    // Method:    Raycast
+    // FullName:  Map::Raycast
+    // Access:    public 
+    // Returns:   Map::RaycastResult2D
+    // Qualifier: const
+    // Parameter: const Vector2& startPosition: The start position in world units.
+    // Parameter: const Vector2& direction: The direction of the ray.
+    // Parameter: float maxDistance: The maximum distance in world units.
+    // Parameter: Pr predicate: A predicate function that takes an IntVector2 as an argument, representing the tile coordinate of the current tile, and returns a bool.
+    //     The predicate shall return true on impact.
+    //************************************
+    template<typename Pr>
+    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& direction, float maxDistance, bool ignoreSelf, Pr predicate) const {
+        const auto endPosition = startPosition + (direction * maxDistance);
+        IntVector2 currentTileCoords{startPosition};
+        IntVector2 endTileCoords{endPosition};
+
+        const auto D = endPosition - startPosition;
+
+        float tDeltaX = (std::numeric_limits<float>::max)();
+        if(!MathUtils::IsEquivalent(D.x, 0.0f)) {
+            tDeltaX = 1.0f / std::abs(D.x);
+        }
+        int tileStepX = 0;
+        if(D.x > 0) {
+            tileStepX = 1;
+        }
+        if(D.x < 0) {
+            tileStepX = -1;
+        }
+        int offsetToLeadingEdgeX = (tileStepX + 1) / 2;
+        float firstVerticalIntersectionX = static_cast<float>(currentTileCoords.x + offsetToLeadingEdgeX);
+        float tOfNextXCrossing = std::abs(firstVerticalIntersectionX - startPosition.x) * tDeltaX;
+
+        float tDeltaY = (std::numeric_limits<float>::max)();
+        if(!MathUtils::IsEquivalent(D.y, 0.0f)) {
+            tDeltaY = 1.0f / std::abs(D.y);
+        }
+        int tileStepY = 0;
+        if(D.y > 0) {
+            tileStepY = 1;
+        }
+        if(D.y < 0) {
+            tileStepY = -1;
+        }
+        int offsetToLeadingEdgeY = (tileStepY + 1) / 2;
+        float firstVerticalIntersectionY = static_cast<float>(currentTileCoords.y + offsetToLeadingEdgeY);
+        float tOfNextYCrossing = std::abs(firstVerticalIntersectionY - startPosition.y) * tDeltaY;
+
+        Map::RaycastResult2D result;
+        if(!ignoreSelf && predicate(currentTileCoords)) {
+            result.didImpact = true;
+            result.impactFraction = 0.0f;
+            result.impactPosition = startPosition;
+            result.impactTileCoords.insert(currentTileCoords);
+            result.impactSurfaceNormal = -direction;
+            return result;
+        }
+
+        while(true) {
+            result.impactTileCoords.insert(currentTileCoords);
+            if(tOfNextXCrossing < tOfNextYCrossing) {
+                if(tOfNextXCrossing > 1.0f) {
+                    result.didImpact = false;
+                    return result;
+                }
+                currentTileCoords.x += tileStepX;
+                if(predicate(currentTileCoords)) {
+                    result.didImpact = true;
+                    result.impactFraction = tOfNextXCrossing;
+                    result.impactPosition = startPosition + (D * result.impactFraction);
+                    result.impactTileCoords.insert(currentTileCoords);
+                    result.impactSurfaceNormal = Vector2(static_cast<float>(-tileStepX), 0.0f);
+                    return result;
+                }
+                tOfNextXCrossing += tDeltaX;
+            } else {
+                if(tOfNextYCrossing > 1.0f) {
+                    result.didImpact = false;
+                    return result;
+                }
+                currentTileCoords.y += tileStepY;
+                if(predicate(currentTileCoords)) {
+                    result.didImpact = true;
+                    result.impactFraction = tOfNextYCrossing;
+                    result.impactPosition = startPosition + (D * result.impactFraction);
+                    result.impactTileCoords.insert(currentTileCoords);
+                    result.impactSurfaceNormal = Vector2(0.0f, static_cast<float>(-tileStepY));
+                    return result;
+                }
+                tOfNextYCrossing += tDeltaY;
+            }
+        }
+        return result;
+    }
+
+    //************************************
+    // Method:    Raycast
+    // FullName:  Map::Raycast
+    // Access:    public 
+    // Returns:   Map::RaycastResult2D
+    // Qualifier: const
+    // Parameter: const Vector2& startPosition: The start position in world units.
+    // Parameter: const Vector2& endPosition: The end position in world units.
+    // Parameter: bool ignoreSelf: Ignore the initial tile.
+    // Parameter: Pr predicate: A predicate function that takes an IntVector2 as an argument, representing the tile coordinate of the current tile, and returns a bool.
+    //     The predicate shall return true on impact.
+    //************************************
+    template<typename Pr>
+    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& endPosition, bool ignoreSelf, Pr predicate) const {
+        const auto displacement = endPosition - startPosition;
+        const auto direction = displacement.GetNormalize();
+        float length = displacement.CalcLength();
+        return Raycast(startPosition, direction, length, ignoreSelf, predicate);
+    }
+    
     AABB2 CalcWorldBounds() const;
     Vector2 CalcMaxDimensions() const;
     float CalcMaxViewHeight() const;
