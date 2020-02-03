@@ -276,14 +276,28 @@ void Map::DebugRender(Renderer& renderer) const {
         const auto* p = map->player;
         const auto vision_range = p->visibility;
         const auto& startTile = *map->GetTile(IntVector3(p->GetPosition(), 0));
-        //const auto tiles = map->GetVisibleTilesWithinDistance(startTile, vision_range);
         const auto tiles = map->GetTilesWithinDistance(startTile, vision_range);
         renderer.SetModelMatrix(Matrix4::I);
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
         const auto start = player->tile->GetBounds().CalcCenter();
         for(const auto& tile : tiles) {
             const auto end = tile->GetBounds().CalcCenter();
+            const auto resultVisible = map->Raycast(start, end, true, [map](const IntVector2& tileCoords) { return map->IsTileOpaque(tileCoords); });
+            const auto resultPassable = map->Raycast(start, end, true, [map](const IntVector2& tileCoords) { return map->IsTilePassable(tileCoords); });
             renderer.DrawLine2D(start, end, Rgba::White);
+            if(resultVisible.didImpact) {
+                const auto normalStart = resultVisible.impactPosition;
+                const auto normalEnd = resultVisible.impactPosition + resultVisible.impactSurfaceNormal * 0.5f;
+                renderer.DrawLine2D(normalStart, normalEnd, Rgba::Red);
+            }
+            if(resultPassable.didImpact) {
+                for(const auto& impactedImpassableTileCoords : resultPassable.impactTileCoords) {
+                    auto* cur_tile = map->GetTile(IntVector3{impactedImpassableTileCoords, 0});
+                    if(!cur_tile->IsPassable()) {
+                        cur_tile->color = Rgba::Red;
+                    }
+                }
+            }
         }
     }
 }
