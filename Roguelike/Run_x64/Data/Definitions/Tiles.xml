@@ -21,7 +21,6 @@
     </tileDefinition>
     <tileDefinition name="grass" index="[54,6]">
         <glyph value="." />
-        <opaque />
         <allowDiagonalMovement />
     </tileDefinition>
     <tileDefinition name="stairsUp" index="[30,14]">
@@ -59,7 +58,6 @@
     </tileDefinition>
     <tileDefinition name="flamePedestal" index="[33,0]">
         <glyph value="*" />
-        <solid />
         <allowDiagonalMovement />
         <animation name="flame">
             <animationset startindex="[33,0]" framelength="8" duration="0.33" loop="true" />
