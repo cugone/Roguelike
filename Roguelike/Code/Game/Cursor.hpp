@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Engine/Core/TimeUtils.hpp"
-#include "Engine/Core/Vertex3D.hpp"
 
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/IntVector2.hpp"
+
+#include "Engine/Renderer/Vertex3D.hpp"
 
 #include <vector>
 
