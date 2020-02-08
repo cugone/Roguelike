@@ -150,9 +150,7 @@ void Feature::SetState(const std::string& stateName) {
         sprite = _tile_def->GetSprite();
         return;
     }
-    std::ostringstream ss;
-    ss << "Attempting to set Feature to invalid state: " << stateName << '\n';
-    DebuggerPrintf(ss.str().c_str());
+    DebuggerPrintf("Attempting ot set Feature to invalid state: %s\n", stateName.c_str());
 }
 
 void Feature::ResolveAttack(Entity& attacker, Entity& defender) {

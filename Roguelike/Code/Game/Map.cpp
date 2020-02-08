@@ -642,9 +642,7 @@ bool Map::LoadFromXML(const XMLElement& elem) {
 }
 
 void Map::LoadNameForMap(const XMLElement& elem) {
-    std::ostringstream ss;
-    ss << "MAP " << ++default_map_index;
-    std::string default_name = ss.str();
+    const auto default_name = std::string{"MAP "} + std::to_string(++default_map_index);
     _name = DataUtils::ParseXmlAttribute(elem, "name", default_name);
 }
 
@@ -662,11 +660,9 @@ void Map::LoadLayersForMap(const XMLElement &elem) {
         DataUtils::ValidateXmlElement(*xml_layers, "layers", "layer", "");
         std::size_t layer_count = DataUtils::GetChildElementCount(*xml_layers, "layer");
         if(layer_count > max_layers) {
-            std::ostringstream ss;
-            ss << "Layer count of map " << _name << " is greater than the maximum allowed (" << max_layers << ").";
-            ss << "\nOnly the first " << max_layers << " layers will be used.";
-            ss.flush();
-            g_theFileLogger->LogLine(ss.str());
+            const auto ss = std::string{"Layer count of map "} + _name + " is greater than the amximum allowed (" + std::to_string(max_layers) +")."
+                            "\nOnly the first " + std::to_string(max_layers) + " layers will be used.";
+            g_theFileLogger->LogLine(ss);
         }
 
         auto layer_index = 0;
@@ -696,16 +692,14 @@ void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
 void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
     if(!FS::exists(src)) {
-        std::ostringstream ss;
-        ss << "Entities file at " << src << " could not be found.";
-        ERROR_AND_DIE(ss.str().c_str());
+        const auto ss = std::string{"Entities file at "} +src.string() + " could not be found.";
+        ERROR_AND_DIE(ss.c_str());
     }
     tinyxml2::XMLDocument doc;
     auto xml_result = doc.LoadFile(src.string().c_str());
     if(xml_result != tinyxml2::XML_SUCCESS) {
-        std::ostringstream ss;
-        ss << "Map " << _name << " failed to load. Tiles source file at " << src << " could not be loaded.";
-        ERROR_AND_DIE(ss.str().c_str());
+        const auto ss = std::string("Map ") + _name + " failed to load. Tiles source file at " + src.string() + " could not be loaded.";
+        ERROR_AND_DIE(ss.c_str());
     }
     if(auto xml_root = doc.RootElement()) {
         DataUtils::ValidateXmlElement(*xml_root, "tileDefinitions", "spritesheet,tileDefinition", "");
@@ -766,6 +760,7 @@ void Map::LoadItemsForMap(const XMLElement& elem) {
             if(auto* tile = this->GetTile(IntVector3(pos, 0))) {
                 tile->inventory.AddItem(Item::GetItem(name));
             } else {
+                //TODO Add StringUtils::to_string(const IntVector2/3/4&);
                 std::ostringstream ss;
                 ss << "Invalid tile " << pos << " for item \"" << name << "\" placement.";
                 g_theFileLogger->LogLineAndFlush(ss.str());
