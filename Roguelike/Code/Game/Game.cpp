@@ -370,7 +370,7 @@ void Game::RegisterCommands() {
             if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
                 entity = tile->feature;
                 if(!entity) {
-                    const auto ss = std::string{"Select a feature to set the state to \""} +name + "\".";
+                    const auto ss = std::string{"Select a feature to set the state to \""} + name + "\".";
                     g_theConsole->ErrorMsg(ss);
                     return;
                 }
@@ -411,7 +411,7 @@ void Game::RegisterCommands() {
             }
             auto* item = Item::GetItem(item_name);
             if(!item) {
-                const auto ss = std::string{"Item "} +item_name + " not found.";
+                const auto ss = std::string{"Item "} + item_name + " not found.";
                 g_theConsole->ErrorMsg(ss);
                 return;
             }
