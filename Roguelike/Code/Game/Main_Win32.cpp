@@ -8,6 +8,10 @@
 
 #include "Game/GameCommon.hpp"
 
+
+#pragma warning(push)
+#pragma warning(disable : 28251 )
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow);
 void Initialize(HINSTANCE hInstance, PWSTR pCmdLine);
 void MainLoop();
@@ -20,6 +24,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     MainLoop();
     Shutdown();
 }
+
+#pragma warning(pop)
 
 void Initialize(HINSTANCE hInstance, PWSTR pCmdLine) {
     UNUSED(hInstance);
