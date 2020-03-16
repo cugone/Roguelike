@@ -253,6 +253,10 @@ public:
     void CreateTextEntity(const TextEntityDesc& desc) noexcept;
     void CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) noexcept;
 
+    template<typename F>
+    void ShakeCamera(F&& f) noexcept {
+        camera.trauma = f();
+    }
 
 protected:
 private:
