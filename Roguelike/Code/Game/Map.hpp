@@ -23,6 +23,7 @@ class Material;
 class Renderer;
 class TileDefinition;
 class SpriteSheet;
+class MapGenerator;
 
 class Map {
 public:
@@ -38,6 +39,7 @@ public:
 
     Map() noexcept = default;
     explicit Map(Renderer& renderer, const XMLElement& elem) noexcept;
+    explicit Map(Renderer& renderer, const MapGenerator& generator) noexcept;
     Map(const Map& other) = default;
     Map(Map&& other) = default;
     Map& operator=(const Map& other) = default;
@@ -257,7 +259,7 @@ private:
     bool LoadFromXML(const XMLElement& elem);
     void LoadNameForMap(const XMLElement& elem);
     void LoadMaterialsForMap(const XMLElement& elem);
-    void LoadLayersForMap(const XMLElement& elem);
+    void LoadGenerator(const XMLElement& elem);
     void LoadTileDefinitionsForMap(const XMLElement& elem);
     void LoadTileDefinitionsFromFile(const std::filesystem::path& src);
     void LoadActorsForMap(const XMLElement& elem);
@@ -284,4 +286,30 @@ private:
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
     float _camera_speed = 1.0f;
     static inline unsigned long long default_map_index = 0ull;
+
+    friend class MapGenerator;
+};
+
+class MapGenerator {
+public:
+    MapGenerator() = delete;
+    explicit MapGenerator(Renderer& renderer, Map* map, const XMLElement & elem) noexcept;
+    MapGenerator(const MapGenerator& other) = default;
+    MapGenerator(MapGenerator&& other) = default;
+    MapGenerator& operator=(const MapGenerator& other) = default;
+    MapGenerator& operator=(MapGenerator&& other) = default;
+    ~MapGenerator() noexcept = default;
+protected:
+private:
+    void LoadFromXml(const XMLElement& elem);
+    void LoadMapFromHeightMap(const XMLElement& elem);
+    void LoadMapFromFile(const XMLElement& elem);
+
+    void LoadLayersFromFile(const XMLElement& elem);
+
+    void LoadLayers(const XMLElement& elem);
+    void LoadLayersFromMap(const XMLElement& elem);
+
+    Renderer& _renderer;
+    Map* _map = nullptr;
 };

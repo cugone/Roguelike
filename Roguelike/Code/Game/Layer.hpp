@@ -8,6 +8,7 @@
 
 #include "Game/Tile.hpp"
 
+class Image;
 class Map;
 class Renderer;
 class Vector3;
@@ -28,6 +29,7 @@ public:
 
     Layer() = default;
     explicit Layer(Map* map, const XMLElement& elem);
+    explicit Layer(Map* map, const Image& img);
     Layer(const Layer& other) = default;
     Layer(Layer&& other) = default;
     Layer& operator=(const Layer& other) = default;
@@ -72,6 +74,7 @@ public:
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);
+    bool LoadFromImage(const Image& img);
     void InitializeTiles(const std::size_t row_count, const std::size_t max_row_length, const std::vector<std::string>& glyph_strings);
     std::size_t NormalizeLayerRows(std::vector<std::string>& glyph_strings);
     void SetModelViewProjectionBounds(Renderer& renderer) const;

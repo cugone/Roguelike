@@ -2,6 +2,7 @@
 
 #include "Engine/Core/BuildConfig.hpp"
 #include "Engine/Core/DataUtils.hpp"
+#include "Engine/Core/Image.hpp"
 
 #include "Engine/Math/Vector3.hpp"
 
@@ -21,6 +22,14 @@ Layer::Layer(Map* map, const XMLElement& elem)
     }
 }
 
+Layer::Layer(Map* map, const Image& img)
+    : _map(map)
+{
+    if(!LoadFromImage(img)) {
+        ERROR_AND_DIE("Invalid Layer");
+    }
+}
+
 Tile* Layer::GetNeighbor(const NeighborDirection& direction) {
     switch(direction) {
     case NeighborDirection::Self:
@@ -28,7 +37,7 @@ Tile* Layer::GetNeighbor(const NeighborDirection& direction) {
     case NeighborDirection::East:
         return GetNeighbor(IntVector2::X_AXIS);
     case NeighborDirection::NorthEast:
-        return GetNeighbor(IntVector2{ -1, 1 });
+        return GetNeighbor(IntVector2{ 1, -1 });
     case NeighborDirection::North:
         return GetNeighbor(-IntVector2::Y_AXIS);
     case NeighborDirection::NorthWest:
@@ -100,6 +109,26 @@ bool Layer::LoadFromXml(const XMLElement& elem) {
     });
     auto max_row_length = NormalizeLayerRows(glyph_strings);
     InitializeTiles(max_row_length, row_count, glyph_strings);
+    return true;
+}
+
+bool Layer::LoadFromImage(const Image& img) {
+    tileDimensions = img.GetDimensions();
+    const auto layer_width = tileDimensions.x;
+    const auto layer_height = tileDimensions.y;
+    _tiles.resize(static_cast<std::size_t>(layer_width) * layer_height);
+    viewHeight = static_cast<float>(layer_height);
+    _defaultViewHeight = viewHeight;
+    int tile_x = 0;
+    int tile_y = 0;
+    for(auto& t : _tiles) {
+        t.color = img.GetTexel(IntVector2{tile_x, tile_y});
+        t.SetCoords(tile_x++, tile_y);
+        tile_x %= layer_width;
+        if(tile_x == 0) {
+            ++tile_y;
+        }
+    }
     return true;
 }
 

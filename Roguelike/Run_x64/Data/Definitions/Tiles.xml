@@ -63,4 +63,8 @@
             <animationset startindex="[33,0]" framelength="8" duration="0.33" loop="true" />
         </animation>
     </tileDefinition>
+    <tileDefinition name="dirt" index="[32,2]">
+        <glyph value="_" />
+        <allowDiagonalMovement />
+    </tileDefinition>
 </tileDefinitions>

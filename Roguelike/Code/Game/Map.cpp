@@ -4,6 +4,7 @@
 #include "Engine/Core/DataUtils.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/FileUtils.hpp"
+#include "Engine/Core/Image.hpp"
 #include "Engine/Core/KerningFont.hpp"
 #include "Engine/Core/StringUtils.hpp"
 
@@ -629,12 +630,12 @@ Tile* Map::GetTile(int x, int y, int z) const {
 
 bool Map::LoadFromXML(const XMLElement& elem) {
 
-    DataUtils::ValidateXmlElement(elem, "map", "tiles,layers,material", "name", "actors,features,items");
+    DataUtils::ValidateXmlElement(elem, "map", "tiles,material,mapGenerator", "name", "actors,features,items");
 
     LoadNameForMap(elem);
     LoadMaterialsForMap(elem);
     LoadTileDefinitionsForMap(elem);
-    LoadLayersForMap(elem);
+    LoadGenerator(elem);
     LoadItemsForMap(elem);
     LoadActorsForMap(elem);
     LoadFeaturesForMap(elem);
@@ -655,27 +656,9 @@ void Map::LoadMaterialsForMap(const XMLElement& elem) {
     }
 }
 
-void Map::LoadLayersForMap(const XMLElement &elem) {
-    if(auto xml_layers = elem.FirstChildElement("layers")) {
-        DataUtils::ValidateXmlElement(*xml_layers, "layers", "layer", "");
-        std::size_t layer_count = DataUtils::GetChildElementCount(*xml_layers, "layer");
-        if(layer_count > max_layers) {
-            const auto ss = std::string{"Layer count of map "} + _name + " is greater than the amximum allowed (" + std::to_string(max_layers) +")."
-                            "\nOnly the first " + std::to_string(max_layers) + " layers will be used.";
-            g_theFileLogger->LogLine(ss);
-        }
-
-        auto layer_index = 0;
-        _layers.reserve(layer_count);
-        DataUtils::ForEachChildElement(*xml_layers, "layer",
-            [this, &layer_index](const XMLElement& xml_layer) {
-            if(static_cast<std::size_t>(layer_index) < max_layers) {
-                _layers.emplace_back(std::make_unique<Layer>(this, xml_layer));
-                _layers.back()->z_index = layer_index++;
-            }
-        });
-        _layers.shrink_to_fit();
-    }
+void Map::LoadGenerator(const XMLElement& elem) {
+    auto xml_generator = elem.FirstChildElement("mapGenerator");
+    MapGenerator generator(_renderer, this, *xml_generator);
 }
 
 void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
@@ -766,5 +749,94 @@ void Map::LoadItemsForMap(const XMLElement& elem) {
                 g_theFileLogger->LogLineAndFlush(ss.str());
             }
         });
+    }
+}
+
+MapGenerator::MapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept
+    : _renderer(renderer)
+    , _map(map)
+{
+    LoadFromXml(elem);
+}
+
+void MapGenerator::LoadFromXml(const XMLElement& elem) {
+    DataUtils::ValidateXmlElement(elem, "mapGenerator", "", "type", "glyph", "src");
+    const auto xml_type = DataUtils::ParseXmlAttribute(elem, "type", "");
+    if(xml_type == "heightmap") {
+        LoadMapFromHeightMap(elem);
+    } else if(xml_type == "file") {
+        LoadMapFromFile(elem);
+    } else {
+        ERROR_AND_DIE("Unsupported Map Generator.");
+    }
+}
+
+void MapGenerator::LoadMapFromHeightMap(const XMLElement& elem) {
+    DataUtils::ValidateXmlElement(elem, "mapGenerator", "glyph", "type,src");
+    const auto xml_src = DataUtils::ParseXmlAttribute(elem, "src", "");
+    Image img(std::filesystem::path{xml_src});
+    const auto width = img.GetDimensions().x;
+    const auto height = img.GetDimensions().y;
+    _map->_layers.emplace_back(std::make_unique<Layer>(_map, img));
+    auto* layer = _map->_layers.back().get();
+    DataUtils::ForEachChildElement(elem, "glyph",
+    [layer](const XMLElement& elem) {
+            const auto glyph_value = DataUtils::ParseXmlAttribute(elem, "value", ' ');
+            const auto glyph_height = DataUtils::ParseXmlAttribute(elem, "height", 0);
+            for(auto& t : *layer) {
+                t.ChangeTypeFromGlyph(t.color.r < glyph_height ? glyph_value : ' ');
+                t.color = Rgba::White;
+                t.layer = layer;
+            }
+    });
+}
+
+void MapGenerator::LoadMapFromFile(const XMLElement& elem) {
+    DataUtils::ValidateXmlElement(elem, "mapGenerator", "", "", "layers", "src");
+    if(DataUtils::HasAttribute(elem, "src")) {
+        LoadLayersFromFile(elem);
+    } else {
+        LoadLayersFromMap(elem);
+    }
+}
+
+void MapGenerator::LoadLayersFromFile(const XMLElement& elem) {
+    const auto xml_src = DataUtils::ParseXmlAttribute(elem, "src", "");
+    if(auto src = FileUtils::ReadStringBufferFromFile(xml_src)) {
+        if(src.value().empty()) {
+            ERROR_AND_DIE("Loading Map from file with empty or invalid source attribute.");
+        }
+        tinyxml2::XMLDocument doc;
+        if(tinyxml2::XML_SUCCESS == doc.Parse(src.value().c_str(), src.value().size())) {
+            auto* xml_layers = doc.RootElement();
+            LoadLayers(*xml_layers);
+        }
+    }
+}
+
+void MapGenerator::LoadLayers(const XMLElement& elem) {
+    DataUtils::ValidateXmlElement(elem, "layers", "layer", "");
+    std::size_t layer_count = DataUtils::GetChildElementCount(elem, "layer");
+    if(layer_count > _map->max_layers) {
+        const auto ss = std::string{"Layer count of map "} +_map->_name + " is greater than the maximum allowed (" + std::to_string(_map->max_layers) + ")."
+            "\nOnly the first " + std::to_string(_map->max_layers) + " layers will be used.";
+        g_theFileLogger->LogLine(ss);
+    }
+
+    auto layer_index = 0;
+    _map->_layers.reserve(layer_count);
+    DataUtils::ForEachChildElement(elem, "layer",
+        [this, &layer_index](const XMLElement& xml_layer) {
+            if(static_cast<std::size_t>(layer_index) < _map->max_layers) {
+                _map->_layers.emplace_back(std::make_unique<Layer>(_map, xml_layer));
+                _map->_layers.back()->z_index = layer_index++;
+            }
+        });
+    _map->_layers.shrink_to_fit();
+}
+
+void MapGenerator::LoadLayersFromMap(const XMLElement& elem) {
+    if(auto xml_layers = elem.FirstChildElement("layers")) {
+        LoadLayers(*xml_layers);
     }
 }
