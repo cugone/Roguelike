@@ -922,6 +922,10 @@ void Game::HandlePlayerInput(Camera2D& base_camera) {
         } else if(is_down) {
             base_camera.position += Vector2::Y_AXIS;
         }
+        if(is_rest) {
+            auto player = _map->player;
+            _map->FocusEntity(player);
+        }
         return;
     }
 
