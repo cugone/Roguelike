@@ -302,6 +302,30 @@ void Game::RegisterCommands() {
         _consoleCommands.AddCommand(setvis);
     }
     {
+        Console::Command setviewheight{};
+        setviewheight.command_name = "set_view_height";
+        setviewheight.help_text_short = "Sets a layer's view height";
+        setviewheight.help_text_long = "set_view height [layer id] [view height in tiles]: Sets the layer's view height in tiles.";
+        setviewheight.command_function = [this](const std::string& args) {
+            ArgumentParser p(args);
+            if(_map) {
+                std::size_t id{0u};
+                if(p >> id) {
+                    if(auto* layer = _map->GetLayer(id)) {
+                        float value = 1.0f;
+                        if(p >> value) {
+                            layer->viewHeight = value;
+                            return;
+                        }
+                        g_theConsole->ErrorMsg("Invalid view height.");
+                    }
+                }
+                g_theConsole->ErrorMsg("Invalid Layer ID.");
+            }
+        };
+        _consoleCommands.AddCommand(setviewheight);
+    }
+    {
         Console::Command cleartilevis{};
         cleartilevis.command_name = "clear_visibility";
         cleartilevis.help_text_short = "Clears all tile visibility.";
