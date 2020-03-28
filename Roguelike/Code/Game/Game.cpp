@@ -870,7 +870,7 @@ bool Game::HasCursor(const std::string& name) const noexcept {
 
 bool Game::HasCursor(CursorId id) const noexcept {
     const auto idAsIndex = static_cast<std::size_t>(id);
-    return std::size_t{0} <= idAsIndex && idAsIndex < _cursors.size();
+    return idAsIndex < _cursors.size();
 }
 
 void Game::SetCurrentCursorByName(const std::string& name) noexcept {
@@ -1225,7 +1225,7 @@ void Game::ShowTileInspectorUI() {
             }
             ++i;
         }
-        for(i; i < max_layers; ++i) {
+        for(; i < max_layers; ++i) {
             const auto* cur_def = TileDefinition::GetTileDefinitionByName("void");
             if(const auto* cur_sprite = cur_def->GetSprite()) {
                 const auto tex_coords = cur_sprite->GetCurrentTexCoords();

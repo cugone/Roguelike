@@ -119,7 +119,7 @@ Stats::Stats(std::initializer_list<decltype(_stats)::value_type> l) {
     for(const auto value : l) {
         SetStat(id++, value);
     }
-    for(id; id != StatsID::Last_; ++id) {
+    for(; id != StatsID::Last_; ++id) {
         SetStat(id, 0L);
     }
 }
