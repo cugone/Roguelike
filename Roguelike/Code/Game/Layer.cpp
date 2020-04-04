@@ -117,8 +117,10 @@ bool Layer::LoadFromImage(const Image& img) {
     const auto layer_width = tileDimensions.x;
     const auto layer_height = tileDimensions.y;
     _tiles.resize(static_cast<std::size_t>(layer_width) * layer_height);
-    viewHeight = static_cast<float>(layer_height);
-    _defaultViewHeight = viewHeight;
+    const auto tenth_view_height = layer_height * 0.1f;
+    const auto half_view_height = layer_height * 0.5f;
+    _defaultViewHeight = tenth_view_height < 1.0f ? half_view_height : tenth_view_height;
+    viewHeight = static_cast<float>(_defaultViewHeight);
     int tile_x = 0;
     int tile_y = 0;
     for(auto& t : _tiles) {
