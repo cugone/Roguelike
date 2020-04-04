@@ -265,5 +265,8 @@
     <Image Include="..\..\Run_x64\Data\Images\Tileset.png">
       <Filter>Data\Images</Filter>
     </Image>
+    <Image Include="..\..\Run_x64\Data\Images\heightmap.png">
+      <Filter>Data\Images</Filter>
+    </Image>
   </ItemGroup>
 </Project>

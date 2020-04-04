@@ -17,7 +17,7 @@
     <items>
         <item name="key" position="[2,2]" />
     </items>
-    <mapGenerator type="heightmap" src="Data/Images/mars_04_a.png">
+    <mapGenerator type="heightmap" src="Data/Images/heightmap.png">
         <glyph value="~" height="256" />
         <glyph value="#" height="192" />
         <glyph value="." height="128" />

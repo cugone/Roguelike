@@ -247,6 +247,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\Run_x64\Data\Images\heightmap.png" />
     <Image Include="..\..\Run_x64\Data\Images\Tileset.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
