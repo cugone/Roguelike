@@ -779,16 +779,24 @@ void MapGenerator::LoadMapFromHeightMap(const XMLElement& elem) {
     const auto height = img.GetDimensions().y;
     _map->_layers.emplace_back(std::make_unique<Layer>(_map, img));
     auto* layer = _map->_layers.back().get();
-    DataUtils::ForEachChildElement(elem, "glyph",
-    [layer](const XMLElement& elem) {
+    for(auto& t : *layer) {
+        int closest_height = 257;
+        char smallest_value = ' ';
+        DataUtils::ForEachChildElement(elem, "glyph",
+        [&t, &closest_height, &smallest_value, layer](const XMLElement& elem) {
             const auto glyph_value = DataUtils::ParseXmlAttribute(elem, "value", ' ');
             const auto glyph_height = DataUtils::ParseXmlAttribute(elem, "height", 0);
-            for(auto& t : *layer) {
-                t.ChangeTypeFromGlyph(t.color.r < glyph_height ? glyph_value : ' ');
-                t.color = Rgba::White;
-                t.layer = layer;
+            if(t.color.r < glyph_height) {
+                closest_height = glyph_height;
+                smallest_value = glyph_value;
             }
-    });
+        });
+        t.ChangeTypeFromGlyph(smallest_value);
+        t.color = Rgba::White;
+        t.layer = layer;
+    }
+    //TODO: Implement multiple layers for height maps
+    layer->z_index = 0;
 }
 
 void MapGenerator::LoadMapFromFile(const XMLElement& elem) {
