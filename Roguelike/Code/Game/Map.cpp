@@ -415,7 +415,7 @@ bool Map::IsTilePassable(Tile* tile) const {
 
 void Map::FocusTileAt(const IntVector3& position) {
     if(GetTile(position)) {
-        camera.SetPosition(Vector3{ position });
+        camera.SetPosition(Vector3{ position } + Vector3::ONE * 0.5f);
     }
 }
 
