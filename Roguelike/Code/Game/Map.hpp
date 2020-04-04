@@ -39,7 +39,6 @@ public:
 
     Map() noexcept = default;
     explicit Map(Renderer& renderer, const XMLElement& elem) noexcept;
-    explicit Map(Renderer& renderer, const MapGenerator& generator) noexcept;
     Map(const Map& other) = default;
     Map(Map&& other) = default;
     Map& operator=(const Map& other) = default;
