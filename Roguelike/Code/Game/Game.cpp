@@ -1192,6 +1192,7 @@ void Game::ShowFeatureDebuggerUI() {
 
 void Game::ShowWorldInspectorUI() {
     if(ImGui::CollapsingHeader("World")) {
+        ImGui::Text("Layer 0 view height: %.0f", _map->GetLayer(0)->viewHeight);
         static bool show_grid = false;
         ImGui::Checkbox("World Grid", &show_grid);
         _show_grid = show_grid;
