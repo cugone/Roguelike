@@ -106,6 +106,28 @@ float4 CircularGradient(float2 uv, float4 diffuse, float radius, float4 color) {
     return lerp(diffuse, color, saturate(D).x);
 }
 
+float4 SquareBlur(float2 uv, float w, float h, float4 diffuse) {
+    float px = 1.0f / w;
+    float py = 1.0f / h;
+
+    float2 tl = float2(uv.x - px, uv.y - py);
+    float2 tm = float2(uv.x, uv.y - py);
+    float2 tr = float2(uv.x + px, uv.y - py);
+    float2 cl = float2(uv.x - px, uv.y);
+    float2 cm = float2(uv.x, uv.y);
+    float2 cr = float2(uv.x + px, uv.y);
+    float2 bl = float2(uv.x - px, uv.y + py);
+    float2 bm = float2(uv.x, uv.y + py);
+    float2 br = float2(uv.x + px, uv.y + py);
+
+    float4 top_sum = tDiffuse.Sample(sSampler, tl) + tDiffuse.Sample(sSampler, tm) + tDiffuse.Sample(sSampler, tr);
+    float4 middle_sum = tDiffuse.Sample(sSampler, cl) + tDiffuse.Sample(sSampler, cm) + tDiffuse.Sample(sSampler, cr);
+    float4 bottom_sum = tDiffuse.Sample(sSampler, bl) + tDiffuse.Sample(sSampler, bm) + tDiffuse.Sample(sSampler, br);
+    float4 sum = top_sum + middle_sum + bottom_sum;
+    float4 avg = sum / 9.0f;
+    return avg;
+}
+
 float4 PixelFunction(ps_in_t input) : SV_Target0
 {
     float4 albedo = tDiffuse.Sample(sSampler, input.uv);
@@ -126,6 +148,8 @@ float4 PixelFunction(ps_in_t input) : SV_Target0
         return Sepia(diffuse);
     case 4:
         return CircularGradient(input.uv, diffuse, g_gradRadius, g_gradColor);
+    case 5:
+        return SquareBlur(input.uv, w, h, diffuse);
     default:
         return diffuse;
     }

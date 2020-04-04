@@ -812,6 +812,16 @@ void Game::DoSepia() {
     _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
+void Game::DoSquareBlur() {
+    static TimeUtils::FPSeconds curFadeTime{};
+    if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::SquareBlur)) {
+        _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::SquareBlur);
+        curFadeTime = curFadeTime.zero();
+    }
+    _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::SquareBlur);
+    _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+}
+
 void Game::StopFullscreenEffect() {
     static TimeUtils::FPSeconds curFadeTime{};
     _fullscreen_data.effectIndex = -1;
@@ -839,6 +849,9 @@ void Game::UpdateFullscreenEffect(const FullscreenEffect& effect) {
         break;
     case FullscreenEffect::CircularGradient:
         DoCircularGradient(_debug_gradientRadius, _debug_gradientColor);
+        break;
+    case FullscreenEffect::SquareBlur:
+        DoSquareBlur();
         break;
     default:
         break;
@@ -1115,6 +1128,11 @@ void Game::ShowEffectsUI() {
             current_item = "CircularGradiant";
             _current_fs_effect = FullscreenEffect::CircularGradient;
         }
+        if(ImGui::Selectable("SquareBlur")) {
+            is_selected = true;
+            current_item = "SquareBlur";
+            _current_fs_effect = FullscreenEffect::SquareBlur;
+        }
         if(is_selected) {
             ImGui::SetItemDefaultFocus();
         }
@@ -1148,9 +1166,12 @@ void Game::ShowEffectsUI() {
     case FullscreenEffect::CircularGradient:
         ImGui::Text("Effect: CircularGradient");
         ImGui::ColorEdit4("Gradient Color##Picker", _debug_gradientColor, ImGuiColorEditFlags_NoLabel);
-        if(ImGui::DragFloat("Radius", &_fullscreen_data.gradiantRadius, 1.0f, 0.0f, 1.0f)) {
+        if(ImGui::DragFloat("Radius##Circle", &_fullscreen_data.gradiantRadius, 1.0f, 0.0f, 1.0f)) {
             _fullscreen_data.gradiantRadius = _debug_gradientRadius;
         }
+        break;
+    case FullscreenEffect::SquareBlur:
+        ImGui::Text("Effect: SquareBlur");
         break;
     default:
         ImGui::Text("Effect Stopped");

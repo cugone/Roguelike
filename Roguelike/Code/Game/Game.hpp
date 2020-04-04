@@ -29,6 +29,7 @@ enum class FullscreenEffect {
     ,Lumosity
     ,Sepia
     ,CircularGradient
+    ,SquareBlur
 };
 
 enum class GameState {
@@ -146,6 +147,7 @@ private:
     void DoLumosity(float brightnessPower = 2.4f);
     void DoCircularGradient(float radius, const Rgba& color);
     void DoSepia();
+    void DoSquareBlur();
     void StopFullscreenEffect();
 
     void RegisterCommands();
