@@ -1024,23 +1024,6 @@ void Game::HandleDebugKeyboardInput(Camera2D& base_camera) {
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F4)) {
         g_theUISystem->ToggleImguiDemoWindow();
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::LeftBracket)) {
-        const auto count = _map->GetLayerCount();
-        for(std::size_t i = 0; i < count; ++i) {
-            auto* cur_layer = _map->GetLayer(i);
-            if(cur_layer) {
-                ++cur_layer->viewHeight;
-            }
-        }
-    } else if(g_theInputSystem->WasKeyJustPressed(KeyCode::RightBracket)) {
-        const auto count = _map->GetLayerCount();
-        for(std::size_t i = 0; i < count; ++i) {
-            auto* cur_layer = _map->GetLayer(i);
-            if(cur_layer) {
-                --cur_layer->viewHeight;
-            }
-        }
-    }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::P)) {
         _map->SetPriorityLayer(static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(static_cast<int>(_map->GetLayerCount()))));
     }
