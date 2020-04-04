@@ -298,10 +298,10 @@ class MapGenerator {
 public:
     MapGenerator() = delete;
     explicit MapGenerator(Renderer& renderer, Map* map, const XMLElement & elem) noexcept;
-    MapGenerator(const MapGenerator& other) = default;
-    MapGenerator(MapGenerator&& other) = default;
-    MapGenerator& operator=(const MapGenerator& other) = default;
-    MapGenerator& operator=(MapGenerator&& other) = default;
+    MapGenerator(const MapGenerator& other) = delete;
+    MapGenerator(MapGenerator&& other) = delete;
+    MapGenerator& operator=(const MapGenerator& other) = delete;
+    MapGenerator& operator=(MapGenerator&& other) = delete;
     ~MapGenerator() noexcept = default;
 protected:
 private:
