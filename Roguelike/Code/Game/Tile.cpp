@@ -201,11 +201,11 @@ bool Tile::IsTransparent() const {
 }
 
 bool Tile::IsSolid() const {
-    return _def->is_solid || (feature && feature->IsSolid());;
+    return _def->is_solid || actor || (feature && feature->IsSolid());
 }
 
 bool Tile::IsPassable() const {
-    return !IsSolid() && !actor && (!feature || !feature->IsSolid());
+    return !IsSolid();
 }
 
 void Tile::SetCoords(int x, int y) {
