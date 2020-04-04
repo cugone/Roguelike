@@ -1281,6 +1281,9 @@ std::vector<Tile*> Game::DebugGetTilesFromMouse() {
     if(_debug_has_picked_tile_with_click) {
         static std::vector<Tile*> picked_tiles{};
         picked_tiles = _map->PickTilesFromMouseCoords(mouse_pos);
+        if(picked_tiles.empty()) {
+            return {};
+        }
         auto* tile_actor = picked_tiles[0]->actor;
         auto* tile_feature = picked_tiles[0]->feature;
         bool tile_has_entity = !picked_tiles.empty() && (tile_actor || tile_feature);
