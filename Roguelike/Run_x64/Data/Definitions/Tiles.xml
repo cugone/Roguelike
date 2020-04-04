@@ -48,6 +48,14 @@
         <glyph value="^" />
         <allowDiagonalMovement />
     </tileDefinition>
+    <tileDefinition name="water.cyan" index="[52,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+        <animation name="watercyanflow">
+            <animationset startindex="[52,16]" framelength="12" duration="36" loop="true" />
+        </animation>
+    </tileDefinition>
     <tileDefinition name="ladderUp" index="[14,29]">
         <glyph value="/" />
         <allowDiagonalMovement />
