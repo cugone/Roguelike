@@ -898,30 +898,33 @@ void Game::SetCurrentCursorById(CursorId id) noexcept {
 }
 
 void Game::HandlePlayerInput(Camera2D& base_camera) {
-    const bool is_right = g_theInputSystem->WasKeyJustPressed(KeyCode::D) ||
-                          g_theInputSystem->WasKeyJustPressed(KeyCode::Right) ||
-                          g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad6);
-    const bool is_left = g_theInputSystem->WasKeyJustPressed(KeyCode::A) ||
-                         g_theInputSystem->WasKeyJustPressed(KeyCode::Left) ||
-                         g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad4);
+    HandlePlayerKeyboardInput(base_camera);
+    HandlePlayerMouseInput(base_camera);
+}
 
-    const bool is_up = g_theInputSystem->WasKeyJustPressed(KeyCode::W) ||
-                       g_theInputSystem->WasKeyJustPressed(KeyCode::Up) ||
-                       g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad8);
-    const bool is_down = g_theInputSystem->WasKeyJustPressed(KeyCode::S) ||
-                         g_theInputSystem->WasKeyJustPressed(KeyCode::Down) ||
-                         g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad2);
+void Game::HandlePlayerKeyboardInput(Camera2D& base_camera) {
+    const bool is_right = g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::D) ||
+        g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::Right) ||
+        g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::NumPad6);
+    const bool is_left = g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::A) ||
+        g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::Left) ||
+        g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::NumPad4);
 
-    const bool is_upright = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad9) || (is_right && is_up);
-    const bool is_upleft = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad7) || (is_left && is_up);
-    const bool is_downright = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad3) || (is_right && is_down);
-    const bool is_downleft = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad1) || (is_left && is_down);
+    const bool is_up = g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::W) ||
+        g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::Up) ||
+        g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::NumPad8);
+    const bool is_down = g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::S) ||
+        g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::Down) ||
+        g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::NumPad2);
+
+    const bool is_upright = g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::NumPad9) || (is_right && is_up);
+    const bool is_upleft = g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::NumPad7) || (is_left && is_up);
+    const bool is_downright = g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::NumPad3) || (is_right && is_down);
+    const bool is_downleft = g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::NumPad1) || (is_left && is_down);
 
     const bool is_shift = g_theInputSystem->IsKeyDown(KeyCode::Shift);
-    const bool is_rest = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad5)
-                         || g_theInputSystem->IsKeyDown(KeyCode::NumPad5)
-                         || g_theInputSystem->WasKeyJustPressed(KeyCode::Z)
-                         || g_theInputSystem->IsKeyDown(KeyCode::Z);
+    const bool is_rest = g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::NumPad5)
+        || g_theInputSystem->WasKeyJustPressedOrIsKeyDown(KeyCode::Z);
 
     if(is_shift) {
         if(is_right) {
@@ -968,10 +971,21 @@ void Game::HandlePlayerInput(Camera2D& base_camera) {
             _map->MoveOrAttack(player, player->tile->GetSouthNeighbor());
         }
     }
-    if(!_map->IsEntityInView(player)) {
-        _map->FocusEntity(player);
-    }
+    _map->FocusEntity(player);
+}
 
+void Game::HandlePlayerMouseInput(Camera2D& /*base_camera*/) {
+    auto vh = _map->GetLayer(0)->viewHeight;
+    if(g_theInputSystem->WasMouseWheelJustScrolledUp()) {
+        vh = std::clamp(--vh, 1.0f, static_cast<float>(_map->GetLayer(0)->tileDimensions.y));
+        g_theConsole->RunCommand("set_view_height 0 " + std::to_string(vh));
+    }
+    if(g_theInputSystem->WasMouseWheelJustScrolledDown()) {
+        vh = std::clamp(++vh, 1.0f, static_cast<float>(_map->GetLayer(0)->tileDimensions.y));
+        g_theConsole->RunCommand("set_view_height 0 " + std::to_string(vh));
+    }
+    _map->GetLayer(0)->viewHeight = vh;
+    _map->FocusEntity(_map->player);
 }
 
 void Game::HandleDebugInput(Camera2D& base_camera) {

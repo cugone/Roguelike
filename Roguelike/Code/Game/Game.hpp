@@ -110,6 +110,8 @@ private:
     void HandleDebugMouseInput(Camera2D& base_camera);
 
     void HandlePlayerInput(Camera2D& base_camera);
+    void HandlePlayerKeyboardInput(Camera2D& base_camera);
+    void HandlePlayerMouseInput(Camera2D& base_camera);
 
     void ShowDebugUI();
 
