@@ -72,14 +72,14 @@ public:
 
     bool IsTileVisible(const IntVector2& tileCoords) const;
     bool IsTileVisible(const IntVector3& tileCoords) const;
-    bool IsTileVisible(Tile* tile) const;
+    bool IsTileVisible(const Tile* tile) const;
 
     bool IsTilePassable(const IntVector2& tileCoords) const;
     bool IsTilePassable(const IntVector3& tileCoords) const;
-    bool IsTilePassable(Tile* tile) const;
+    bool IsTilePassable(const Tile* tile) const;
 
     void FocusTileAt(const IntVector3& position);
-    void FocusEntity(Entity* entity);
+    void FocusEntity(const Entity* entity);
 
     bool HasLineOfSight(const Vector2& startPosition, const Vector2& endPosition) const;
     bool HasLineOfSight(const Vector2& startPosition, const Vector2& direction, float maxDistance) const;

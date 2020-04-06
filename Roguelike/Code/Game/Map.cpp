@@ -407,7 +407,7 @@ bool Map::IsTileVisible(const IntVector3& tileCoords) const {
     return IsTileVisible(GetTile(tileCoords));
 }
 
-bool Map::IsTileVisible(Tile* tile) const {
+bool Map::IsTileVisible(const Tile* tile) const {
     if(!tile || !tile->layer) {
         return false;
     }
@@ -422,7 +422,7 @@ bool Map::IsTilePassable(const IntVector3& tileCoords) const {
     return IsTilePassable(GetTile(tileCoords));
 }
 
-bool Map::IsTilePassable(Tile* tile) const {
+bool Map::IsTilePassable(const Tile* tile) const {
     if(!tile || !tile->layer) {
         return false;
     }
@@ -435,7 +435,7 @@ void Map::FocusTileAt(const IntVector3& position) {
     }
 }
 
-void Map::FocusEntity(Entity* entity) {
+void Map::FocusEntity(const Entity* entity) {
     if(entity) {
         FocusTileAt(IntVector3(entity->tile->GetCoords(), entity->layer->z_index));
     }
