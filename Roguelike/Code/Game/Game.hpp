@@ -123,6 +123,7 @@ private:
     void ShowEffectsDebuggerUI();
 
     void ShowEffectsUI();
+    void ShowFrameInspectorUI();
     void ShowWorldInspectorUI();
     void ShowTileInspectorUI();
 

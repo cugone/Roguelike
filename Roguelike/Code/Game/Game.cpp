@@ -27,6 +27,11 @@
 #include "Game/Item.hpp"
 #include "Game/Inventory.hpp"
 
+#include <algorithm>
+#include <array>
+#include <numeric>
+#include <string>
+
 Game::~Game() noexcept {
     _cursors.clear();
     CursorDefinition::ClearCursorRegistry();
@@ -1068,6 +1073,7 @@ void Game::HandleDebugMouseInput(Camera2D& /*base_camera*/) {
 void Game::ShowDebugUI() {
     ImGui::SetNextWindowSize(Vector2{ 350.0f, 500.0f }, ImGuiCond_Always);
     if(ImGui::Begin("Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ShowFrameInspectorUI();
         ShowWorldInspectorUI();
         ShowEffectsDebuggerUI();
         ShowTileDebuggerUI();
@@ -1190,9 +1196,27 @@ void Game::ShowFeatureDebuggerUI() {
     }
 }
 
+void Game::ShowFrameInspectorUI() {
+    static constexpr std::size_t max_histogram_count = 30;
+    static std::array<float, max_histogram_count> histogram{};
+    static std::size_t histogramIndex = 0;
+    static const std::string histogramLabel = "Last " + std::to_string(max_histogram_count) + " Frames";
+    if(ImGui::CollapsingHeader("Frame Data")) {
+        const auto frameTime = g_theRenderer->GetGameFrameTime().count();
+        histogram[histogramIndex++] = frameTime;
+        ImGui::Text("FPS: %0.3f", 1.0f / frameTime);
+        ImGui::Text("Frame time: %0.3f", frameTime);
+        ImGui::PlotHistogram(histogramLabel.c_str(), histogram.data(), static_cast<int>(histogram.size()));
+        ImGui::Text("Avg: %0.3f", std::reduce(std::begin(histogram), std::end(histogram), 0.0f) / max_histogram_count);
+    }
+    histogramIndex %= max_histogram_count;
+}
+
 void Game::ShowWorldInspectorUI() {
     if(ImGui::CollapsingHeader("World")) {
         ImGui::Text("Layer 0 view height: %.0f", _map->GetLayer(0)->viewHeight);
+        ImGui::Text("Tiles in view: %llu", _map->DebugTilesInViewCount());
+        ImGui::Text("Tiles visible in view: %llu", _map->DebugVisibleTilesInViewCount());
         static bool show_grid = false;
         ImGui::Checkbox("World Grid", &show_grid);
         _show_grid = show_grid;

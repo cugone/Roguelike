@@ -257,6 +257,16 @@ void Layer::DebugRenderTiles(Renderer& renderer) const {
 }
 
 void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
+    debug_tiles_in_view_count = 0;
+    debug_visible_tiles_in_view_count = 0;
+    for(const auto& tile : _tiles) {
+        if(_map->IsTileInView(&tile)) {
+            ++debug_tiles_in_view_count;
+            if(tile.canSee || tile.haveSeen) {
+                ++debug_visible_tiles_in_view_count;
+            }
+        }
+    }
     auto visibleTiles = _map->GetVisibleTilesWithinDistance(*_map->player->tile, _map->player->visibility);
     for(auto& tile : visibleTiles) {
         tile->canSee = true;

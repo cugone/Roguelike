@@ -55,7 +55,7 @@ public:
 
     bool IsTileInView(const IntVector2& tileCoords) const;
     bool IsTileInView(const IntVector3& tileCoords) const;
-    bool IsTileInView(Tile* tile) const;
+    bool IsTileInView(const Tile* tile) const;
     bool IsEntityInView(Entity* entity) const;
 
     bool IsTileOpaque(const IntVector2& tileCoords) const;
@@ -257,6 +257,9 @@ public:
         camera.trauma = f();
     }
 
+    std::size_t DebugTilesInViewCount() const;
+    std::size_t DebugVisibleTilesInViewCount() const;
+
 protected:
 private:
     bool LoadFromXML(const XMLElement& elem);
@@ -288,6 +291,8 @@ private:
     std::vector<Feature*> _features{};
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
     float _camera_speed = 1.0f;
+    mutable std::size_t _debug_tiles_in_view_count{};
+    mutable std::size_t _debug_visible_tiles_in_view_count{};
     static inline unsigned long long default_map_index = 0ull;
 
     friend class MapGenerator;

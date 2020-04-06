@@ -54,6 +54,22 @@ void Map::ShakeCamera(const IntVector2& from, const IntVector2& to) noexcept {
     camera.trauma += 0.1f + distance * 0.05f;
 }
 
+std::size_t Map::DebugTilesInViewCount() const {
+    _debug_tiles_in_view_count = 0;
+    for(const auto& layer : _layers) {
+        _debug_tiles_in_view_count += layer->debug_tiles_in_view_count;
+    }
+    return _debug_tiles_in_view_count;
+}
+
+std::size_t Map::DebugVisibleTilesInViewCount() const {
+    _debug_visible_tiles_in_view_count = 0;
+    for(const auto& layer : _layers) {
+        _debug_visible_tiles_in_view_count += layer->debug_visible_tiles_in_view_count;
+    }
+    return _debug_visible_tiles_in_view_count;
+}
+
 void Map::SetDebugGridColor(const Rgba& gridColor) {
     auto* layer = GetLayer(0);
     layer->debug_grid_color = gridColor;
@@ -324,7 +340,7 @@ bool Map::IsTileInView(const IntVector3& tileCoords) const {
     return IsTileInView(GetTile(tileCoords));
 }
 
-bool Map::IsTileInView(Tile* tile) const {
+bool Map::IsTileInView(const Tile* tile) const {
     if(!tile || !tile->layer) {
         return false;
     }

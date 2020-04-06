@@ -61,6 +61,8 @@ public:
     IntVector2 tileDimensions{1, 1};
     Rgba color{ Rgba::White };
     Rgba debug_grid_color{Rgba::Red};
+    std::size_t debug_tiles_in_view_count{};
+    std::size_t debug_visible_tiles_in_view_count{};
 
     std::vector<Tile>::const_iterator cbegin() const noexcept;
     std::vector<Tile>::const_iterator cend() const noexcept;
@@ -86,5 +88,4 @@ private:
     std::vector<Tile> _tiles{};
     Map* _map = nullptr;
     float _defaultViewHeight = 1.0f;
-
 };
