@@ -23,6 +23,7 @@
 #include "Game/EntityDefinition.hpp"
 #include "Game/Layer.hpp"
 #include "Game/Map.hpp"
+#include "Game/Tile.hpp"
 #include "Game/TileDefinition.hpp"
 #include "Game/Item.hpp"
 #include "Game/Inventory.hpp"
@@ -305,6 +306,30 @@ void Game::RegisterCommands() {
             }
         };
         _consoleCommands.AddCommand(setvis);
+    }
+    {
+        Console::Command showalltiles{};
+        showalltiles.command_name = "showalltiles";
+        showalltiles.help_text_short = "Makes every tile visible.";
+        showalltiles.help_text_long = "showalltiles [0/1/true/false]: Enables or disables showing every tile. Toggles if no argument.";
+        showalltiles.command_function = [this](const std::string& args) {
+            ArgumentParser p(args);
+            if(_map) {
+                static bool value{false};
+                if(!(p >> value)) {
+                    value = !value;
+                }
+                const auto maxLayers = _map->GetLayerCount();
+                for(std::size_t layerIdx = 0u; layerIdx < maxLayers; ++layerIdx) {
+                    if(auto* layer = _map->GetLayer(layerIdx)) {
+                        for(auto& tile : *layer) {
+                            tile.debug_canSee = value;
+                        }
+                    }
+                }
+            }
+        };
+        _consoleCommands.AddCommand(showalltiles);
     }
     {
         Console::Command setviewheight{};

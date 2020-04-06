@@ -221,7 +221,7 @@ void Layer::RenderTiles(Renderer& renderer) const {
 
     for(auto& t : _tiles) {
         AABB2 tile_bounds = t.GetBounds();
-        if((t.canSee || t.haveSeen) && MathUtils::DoAABBsOverlap(cullbounds, tile_bounds)) {
+        if((t.debug_canSee || t.canSee || t.haveSeen) && MathUtils::DoAABBsOverlap(cullbounds, tile_bounds)) {
             t.Render(verts, ibo, color, z_index);
         }
     }
@@ -262,7 +262,7 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
     for(const auto& tile : _tiles) {
         if(_map->IsTileInView(&tile)) {
             ++debug_tiles_in_view_count;
-            if(tile.canSee || tile.haveSeen) {
+            if(tile.debug_canSee || tile.canSee || tile.haveSeen) {
                 ++debug_visible_tiles_in_view_count;
             }
         }

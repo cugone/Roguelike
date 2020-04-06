@@ -83,6 +83,7 @@ public:
     Inventory inventory;
     bool haveSeen{false};
     bool canSee{false};
+    bool debug_canSee{false};
 protected:
 private:
     void AddVertsForTile(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
