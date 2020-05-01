@@ -156,12 +156,9 @@ void Game::Render_Title() const {
     const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
     const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
-    auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
-    auto ui_nearFar = Vector2{ 0.0f, 1.0f };
-    auto ui_cam_pos = ui_view_half_extents;
-    ui_camera.position = ui_cam_pos;
-    ui_camera.orientation_degrees = 0.0f;
+    const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
+    const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
+    const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
 
@@ -243,12 +240,9 @@ void Game::Render_Main() const {
     const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
     const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
-    auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
-    auto ui_nearFar = Vector2{ 0.0f, 1.0f };
-    auto ui_cam_pos = ui_view_half_extents;
-    ui_camera.position = ui_cam_pos;
-    ui_camera.orientation_degrees = 0.0f;
+    const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
+    const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
+    const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
 
