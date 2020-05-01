@@ -13,7 +13,6 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/Window.hpp"
 
-#include "Engine/UI/UI.hpp"
 #include "Engine/UI/UISystem.hpp"
 
 #include "Engine/System/System.hpp"
