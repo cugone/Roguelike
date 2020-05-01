@@ -155,7 +155,7 @@ void Feature::SetState(const std::string& stateName) {
 
 void Feature::ResolveAttack(Entity& attacker, Entity& defender) {
     auto* defenderAsFeature = dynamic_cast<Feature*>(&defender);
-    if(const auto isMe = this == defenderAsFeature) {
+    if(this == defenderAsFeature) {
         if(auto key = attacker.inventory.HasItem("key")) {
             attacker.inventory.RemoveItem(key);
             defenderAsFeature->SetState("open");
