@@ -11,7 +11,7 @@ struct GraphicsOptions {
     float MaxShakeSensitivityY = 0.1f;
     bool InvertMouseY = false;
     bool InvertMouseX = false;
-    bool vsync = true;
+    bool vsync = false;
 };
 
 static GraphicsOptions defaultGraphicsOptions{};
