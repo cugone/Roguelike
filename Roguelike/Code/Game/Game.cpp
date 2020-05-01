@@ -1009,6 +1009,13 @@ void Game::HandlePlayerMouseInput(Camera2D& base_camera) {
     if(g_theInputSystem->IsKeyDown(KeyCode::MButton)) {
         _map->FocusEntity(_map->player);
     }
+    if(g_theInputSystem->IsKeyDown(KeyCode::RButton)) {
+        const auto mouse_pos = g_theInputSystem->GetCursorWindowPosition(*g_theRenderer->GetOutput()->GetWindow());
+        if(const auto& tiles = _map->PickTilesFromMouseCoords(mouse_pos); !tiles.empty()) {
+            base_camera.position = Vector2{tiles[0]->GetCoords()};
+        }
+    }
+}
 
 void Game::ZoomOut() {
     IncrementViewHeight();
@@ -1252,6 +1259,7 @@ void Game::ShowFrameInspectorUI() {
 void Game::ShowWorldInspectorUI() {
     if(ImGui::CollapsingHeader("World")) {
         ImGui::Text("Layer 0 view height: %.0f", _map->GetLayer(0)->viewHeight);
+        ImGui::Text("Camera: [%.1f,%.1f]", _map->camera.position.x, _map->camera.position.y);
         ImGui::Text("Tiles in view: %llu", _map->DebugTilesInViewCount());
         ImGui::Text("Tiles visible in view: %llu", _map->DebugVisibleTilesInViewCount());
         static bool show_grid = false;
