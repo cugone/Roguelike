@@ -441,16 +441,15 @@ void Map::FocusEntity(const Entity* entity) {
     }
 }
 
-bool Map::HasLineOfSight(const Vector2& startPosition, const Vector2& endPosition) const {
+Map::RaycastResult2D Map::HasLineOfSight(const Vector2& startPosition, const Vector2& endPosition) const {
     const auto displacement = endPosition - startPosition;
     const auto direction = displacement.GetNormalize();
     float length = displacement.CalcLength();
     return HasLineOfSight(startPosition, direction, length);
 }
 
-bool Map::HasLineOfSight(const Vector2& startPosition, const Vector2& direction, float maxDistance) const {
-    RaycastResult2D result = Raycast(startPosition, direction, maxDistance, true, [this](const IntVector2& tileCoords)->bool { return this->IsTileOpaque(tileCoords); });
-    return !result.didImpact;
+Map::RaycastResult2D Map::HasLineOfSight(const Vector2& startPosition, const Vector2& direction, float maxDistance) const {
+    return Raycast(startPosition, direction, maxDistance, true, [this](const IntVector2& tileCoords)->bool { return this->IsTileOpaque(tileCoords); });
 }
 
 bool Map::IsTileWithinDistance(const Tile& startTile, unsigned int manhattanDist) const {

@@ -81,8 +81,8 @@ public:
     void FocusTileAt(const IntVector3& position);
     void FocusEntity(const Entity* entity);
 
-    bool HasLineOfSight(const Vector2& startPosition, const Vector2& endPosition) const;
-    bool HasLineOfSight(const Vector2& startPosition, const Vector2& direction, float maxDistance) const;
+    RaycastResult2D HasLineOfSight(const Vector2& startPosition, const Vector2& endPosition) const;
+    RaycastResult2D HasLineOfSight(const Vector2& startPosition, const Vector2& direction, float maxDistance) const;
     bool IsTileWithinDistance(const Tile& startTile, unsigned int manhattanDist) const;
 
     bool IsTileWithinDistance(const Tile& startTile, float dist) const;
