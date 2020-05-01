@@ -898,6 +898,7 @@ void Game::Render() const {
 }
 
 void Game::EndFrame() {
+    g_theRenderer->SetVSync(currentGraphicsOptions.vsync);
     switch(_currentGameState) {
     case GameState::Title:   EndFrame_Title(); break;
     case GameState::Loading: EndFrame_Loading(); break;
@@ -1252,6 +1253,7 @@ void Game::ShowFrameInspectorUI() {
         ImGui::Text("Frame time: %0.3f", frameTime);
         ImGui::PlotHistogram(histogramLabel.c_str(), histogram.data(), static_cast<int>(histogram.size()));
         ImGui::Text("Avg: %0.3f", std::reduce(std::begin(histogram), std::end(histogram), 0.0f) / max_histogram_count);
+        ImGui::Checkbox("Vsync", &currentGraphicsOptions.vsync);
     }
     histogramIndex %= max_histogram_count;
 }
