@@ -300,20 +300,19 @@ void Map::DebugRender(Renderer& renderer) const {
         for(const auto& tile : tiles) {
             const auto end = tile->GetBounds().CalcCenter();
             const auto resultVisible = map->Raycast(start, end, true, [map](const IntVector2& tileCoords) { return map->IsTileOpaque(tileCoords); });
-            const auto resultPassable = map->Raycast(start, end, true, [map](const IntVector2& tileCoords) { return map->IsTilePassable(tileCoords); });
-            renderer.DrawLine2D(start, end, Rgba::White);
-            if(resultVisible.didImpact) {
-                const auto normalStart = resultVisible.impactPosition;
-                const auto normalEnd = resultVisible.impactPosition + resultVisible.impactSurfaceNormal * 0.5f;
-                renderer.DrawLine2D(normalStart, normalEnd, Rgba::Red);
-            }
-            if(resultPassable.didImpact) {
-                for(const auto& impactedImpassableTileCoords : resultPassable.impactTileCoords) {
-                    auto* cur_tile = map->GetTile(IntVector3{impactedImpassableTileCoords, 0});
-                    if(!cur_tile->IsPassable()) {
-                        cur_tile->color = Rgba::Red;
-                    }
+            const auto resultImpassable = map->Raycast(start, end, true, [map](const IntVector2& tileCoords) { return !map->IsTilePassable(tileCoords); });
+            if(resultVisible.didImpact || resultImpassable.didImpact) {
+                if(resultVisible.didImpact) {
+                    const auto normalStart = resultVisible.impactPosition;
+                    const auto normalEnd = resultVisible.impactPosition + resultVisible.impactSurfaceNormal * 0.5f;
+                    renderer.DrawLine2D(start, normalStart, Rgba::White);
+                    renderer.DrawLine2D(normalStart, normalEnd, Rgba::Red);
                 }
+                if(resultImpassable.didImpact) {
+                    auto* cur_tile = map->GetTile(IntVector3{resultImpassable.impactPosition, 0});
+                    cur_tile->color = Rgba::Red;
+                }
+                continue;
             }
         }
     }
