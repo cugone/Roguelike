@@ -290,6 +290,9 @@ void Map::DebugRender(Renderer& renderer) const {
     }
     if(g_theGame->_show_raycasts) {
         const auto* map = g_theGame->_map.get();
+        for(auto& tile : *map->GetLayer(0)) {
+            tile.color = tile.highlightColor;
+        }
         const auto* p = map->player;
         const auto vision_range = p->visibility;
         const auto& startTile = *map->GetTile(IntVector3(p->GetPosition(), 0));
@@ -310,7 +313,9 @@ void Map::DebugRender(Renderer& renderer) const {
                 }
                 if(resultImpassable.didImpact) {
                     auto* cur_tile = map->GetTile(IntVector3{resultImpassable.impactPosition, 0});
-                    cur_tile->color = Rgba::Red;
+                    if(!map->IsTilePassable(cur_tile->GetCoords())) {
+                        cur_tile->color = cur_tile->debugRaycastColor;
+                    }
                 }
                 continue;
             }

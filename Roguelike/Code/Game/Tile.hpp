@@ -76,6 +76,8 @@ public:
     Entity* GetEntity() const noexcept;
     void SetEntity(Entity* e) noexcept;
 
+    Rgba debugRaycastColor = Rgba::Red;
+    Rgba highlightColor = Rgba::White;
     Rgba color = Rgba::White;
     Actor* actor{};
     Feature* feature{};
