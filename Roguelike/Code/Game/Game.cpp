@@ -12,6 +12,9 @@
 #include "Engine/Renderer/AnimatedSprite.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 #include "Engine/Renderer/Texture.hpp"
+#include "Engine/Renderer/Window.hpp"
+
+#include "Engine/RHI/RHIOutput.hpp"
 
 #include "Game/GameCommon.hpp"
 #include "Game/GameConfig.hpp"
