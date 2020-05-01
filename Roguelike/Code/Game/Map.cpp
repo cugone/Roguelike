@@ -504,13 +504,13 @@ std::vector<Tile*> Map::GetTilesWithinDistance(const Tile& startTile, float dist
 
 std::vector<Tile*> Map::GetVisibleTilesWithinDistance(const Tile& startTile, unsigned int manhattanDist) const {
     std::vector<Tile*> results = GetTilesWithinDistance(startTile, manhattanDist);
-    results.erase(std::remove_if(std::begin(results), std::end(results), [this, &startTile](Tile* tile) { return !HasLineOfSight(Vector2(startTile.GetCoords()) + Vector2{0.5f, 0.5f}, Vector2(tile->GetCoords()) + Vector2{0.5f, 0.5f}); }), std::end(results));
+    results.erase(std::remove_if(std::begin(results), std::end(results), [this, &startTile](Tile* tile) { return tile->IsInvisible(); }), std::end(results));
     return results;
 }
 
 std::vector<Tile*> Map::GetVisibleTilesWithinDistance(const Tile& startTile, float dist) const {
     std::vector<Tile*> results = GetTilesWithinDistance(startTile, dist);
-    results.erase(std::remove_if(std::begin(results), std::end(results), [this, &startTile](Tile* tile) { return !HasLineOfSight(Vector2(startTile.GetCoords()) + Vector2{0.5f, 0.5f}, Vector2(tile->GetCoords()) + Vector2{0.5f, 0.5f}); }), std::end(results));
+    results.erase(std::remove_if(std::begin(results), std::end(results), [this, &startTile](Tile* tile) { return tile->IsInvisible(); }), std::end(results));
     return results;
 }
 
