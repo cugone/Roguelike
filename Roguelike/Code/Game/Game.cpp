@@ -968,10 +968,6 @@ void Game::HandlePlayerKeyboardInput(Camera2D& base_camera) {
         } else if(is_down) {
             base_camera.position += Vector2::Y_AXIS;
         }
-        if(is_rest) {
-            auto player = _map->player;
-            _map->FocusEntity(player);
-        }
         return;
     }
 
@@ -1001,7 +997,6 @@ void Game::HandlePlayerKeyboardInput(Camera2D& base_camera) {
             _map->MoveOrAttack(player, player->tile->GetSouthNeighbor());
         }
     }
-    _map->FocusEntity(player);
 }
 
 void Game::HandlePlayerMouseInput(Camera2D& base_camera) {
@@ -1011,7 +1006,9 @@ void Game::HandlePlayerMouseInput(Camera2D& base_camera) {
     if(g_theInputSystem->WasMouseWheelJustScrolledDown()) {
         IncrementViewHeight();
     }
-}
+    if(g_theInputSystem->IsKeyDown(KeyCode::MButton)) {
+        _map->FocusEntity(_map->player);
+    }
 
 void Game::ZoomOut() {
     IncrementViewHeight();
