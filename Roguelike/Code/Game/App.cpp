@@ -88,6 +88,7 @@ void App::SetupEngineSystemChainOfResponsibility() {
 }
 
 void App::Initialize() {
+    g_theConfig->GetValue(std::string{"vsync"}, currentGraphicsOptions.vsync);
     g_theRenderer->Initialize();
     g_theRenderer->SetVSync(currentGraphicsOptions.vsync);
     auto* output = g_theRenderer->GetOutput();
