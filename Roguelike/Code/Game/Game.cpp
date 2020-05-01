@@ -1004,18 +1004,33 @@ void Game::HandlePlayerKeyboardInput(Camera2D& base_camera) {
     _map->FocusEntity(player);
 }
 
-void Game::HandlePlayerMouseInput(Camera2D& /*base_camera*/) {
-    auto vh = _map->GetLayer(0)->viewHeight;
+void Game::HandlePlayerMouseInput(Camera2D& base_camera) {
     if(g_theInputSystem->WasMouseWheelJustScrolledUp()) {
-        vh = std::clamp(--vh, 1.0f, static_cast<float>(_map->GetLayer(0)->tileDimensions.y));
-        g_theConsole->RunCommand("set_view_height 0 " + std::to_string(vh));
+        DecrementViewHeight();
     }
     if(g_theInputSystem->WasMouseWheelJustScrolledDown()) {
-        vh = std::clamp(++vh, 1.0f, static_cast<float>(_map->GetLayer(0)->tileDimensions.y));
-        g_theConsole->RunCommand("set_view_height 0 " + std::to_string(vh));
+        IncrementViewHeight();
     }
+}
+
+void Game::ZoomOut() {
+    IncrementViewHeight();
+}
+
+void Game::IncrementViewHeight() {
+    auto vh = _map->GetLayer(0)->viewHeight;
+    vh = std::clamp(++vh, 1.0f, static_cast<float>(_map->GetLayer(0)->tileDimensions.y));
     _map->GetLayer(0)->viewHeight = vh;
-    _map->FocusEntity(_map->player);
+}
+
+void Game::ZoomIn() {
+    DecrementViewHeight();
+}
+
+void Game::DecrementViewHeight() {
+    auto vh = _map->GetLayer(0)->viewHeight;
+    vh = std::clamp(--vh, 1.0f, static_cast<float>(_map->GetLayer(0)->tileDimensions.y));
+    _map->GetLayer(0)->viewHeight = vh;
 }
 
 void Game::HandleDebugInput(Camera2D& base_camera) {

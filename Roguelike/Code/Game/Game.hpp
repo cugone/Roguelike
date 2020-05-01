@@ -113,6 +113,11 @@ private:
     void HandlePlayerKeyboardInput(Camera2D& base_camera);
     void HandlePlayerMouseInput(Camera2D& base_camera);
 
+    void ZoomOut();
+    void IncrementViewHeight();
+    void ZoomIn();
+    void DecrementViewHeight();
+
     void ShowDebugUI();
 
     std::vector<Tile*> DebugGetTilesFromMouse();
