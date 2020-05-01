@@ -1412,6 +1412,18 @@ void Game::ShowFeatureInspectorUI() {
                 _debug_has_picked_feature_with_click = false;
                 _debug_inspected_feature = nullptr;
             }
+            const auto tex_coords = cur_sprite->GetCurrentTexCoords();
+            const auto dims = Vector2::ONE * 100.0f;
+            ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+            if(const auto* actor = dynamic_cast<const Actor*>(cur_entity)) {
+                for(const auto& eq : actor->GetEquipment()) {
+                    if(eq) {
+                        const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
+                        ImGui::SameLine(8.0f);
+                        ImGui::Image(cur_sprite->GetTexture(), dims, eq_coords.mins, eq_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                    }
+                }
+            }
         }
     }
 }
