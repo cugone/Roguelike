@@ -873,7 +873,7 @@ void FileMapGenerator::LoadLayersFromFile(const XMLElement& elem) {
 }
 
 XmlMapGenerator::XmlMapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept
-    : FileMapGenerator(renderer, map, elem)
+: MapGenerator(renderer, map, elem)
 {
     /* DO NOTHING */
 }

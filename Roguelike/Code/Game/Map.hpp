@@ -349,7 +349,7 @@ private:
     void LoadLayersFromFile(const XMLElement& elem);
 };
 
-class XmlMapGenerator : public FileMapGenerator {
+class XmlMapGenerator : public MapGenerator {
 public:
     XmlMapGenerator() = delete;
     explicit XmlMapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept;
