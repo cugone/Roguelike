@@ -309,7 +309,7 @@ public:
     MapGenerator(MapGenerator&& other) = delete;
     MapGenerator& operator=(const MapGenerator& other) = delete;
     MapGenerator& operator=(MapGenerator&& other) = delete;
-    ~MapGenerator() noexcept = default;
+    virtual ~MapGenerator() noexcept = default;
     virtual void Generate() = 0;
 protected:
     void LoadLayers(const XMLElement& elem);
@@ -328,7 +328,7 @@ public:
     HeightMapGenerator(HeightMapGenerator&& other) = delete;
     HeightMapGenerator& operator=(const HeightMapGenerator& other) = delete;
     HeightMapGenerator& operator=(HeightMapGenerator&& other) = delete;
-    ~HeightMapGenerator() noexcept = default;
+    virtual ~HeightMapGenerator() noexcept = default;
     void Generate() override;
 protected:
 private:
@@ -342,7 +342,7 @@ public:
     FileMapGenerator(FileMapGenerator&& other) = delete;
     FileMapGenerator& operator=(const FileMapGenerator& other) = delete;
     FileMapGenerator& operator=(FileMapGenerator&& other) = delete;
-    ~FileMapGenerator() noexcept = default;
+    virtual ~FileMapGenerator() noexcept = default;
     void Generate() override;
 protected:
 private:
@@ -357,7 +357,7 @@ public:
     XmlMapGenerator(XmlMapGenerator&& other) = delete;
     XmlMapGenerator& operator=(const XmlMapGenerator& other) = delete;
     XmlMapGenerator& operator=(XmlMapGenerator&& other) = delete;
-    ~XmlMapGenerator() noexcept = default;
+    virtual ~XmlMapGenerator() noexcept = default;
     void Generate() override;
 protected:
 private:
