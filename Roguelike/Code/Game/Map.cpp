@@ -787,9 +787,9 @@ void Map::LoadItemsForMap(const XMLElement& elem) {
 }
 
 MapGenerator::MapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept
-    : _renderer(renderer)
-    , _xml_element(elem)
-    , _map(map)
+: _renderer(renderer)
+, _xml_element(elem)
+, _map(map)
 { /* DO NOTHING */ }
 
 void MapGenerator::LoadLayers(const XMLElement& elem) {
@@ -814,7 +814,7 @@ void MapGenerator::LoadLayers(const XMLElement& elem) {
 }
 
 HeightMapGenerator::HeightMapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept
-    : MapGenerator(renderer, map, elem)
+: MapGenerator(renderer, map, elem)
 {
     /* DO NOTHING */
 }
