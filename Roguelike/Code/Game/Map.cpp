@@ -676,8 +676,23 @@ void Map::LoadMaterialsForMap(const XMLElement& elem) {
 }
 
 void Map::LoadGenerator(const XMLElement& elem) {
-    auto xml_generator = elem.FirstChildElement("mapGenerator");
-    MapGenerator generator(_renderer, this, *xml_generator);
+    const auto* xml_generator = elem.FirstChildElement("mapGenerator");
+    CreateGeneratorFromTypename(*xml_generator);
+}
+
+void Map::CreateGeneratorFromTypename(const XMLElement& elem) {
+    DataUtils::ValidateXmlElement(elem, "mapGenerator", "", "", "", "type");
+    const auto xml_type = DataUtils::ParseXmlAttribute(elem, "type", "");
+    if(xml_type == "heightmap") {
+        HeightMapGenerator g{_renderer, this, elem};
+        g.Generate();
+    } else if(xml_type == "file") {
+        FileMapGenerator g{_renderer, this, elem};
+        g.Generate();
+    } else {
+        XmlMapGenerator g{_renderer, this, elem};
+        g.Generate();
+    }
 }
 
 void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
@@ -773,73 +788,9 @@ void Map::LoadItemsForMap(const XMLElement& elem) {
 
 MapGenerator::MapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept
     : _renderer(renderer)
+    , _xml_element(elem)
     , _map(map)
-{
-    LoadFromXml(elem);
-}
-
-void MapGenerator::LoadFromXml(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "mapGenerator", "", "type", "glyph", "src");
-    const auto xml_type = DataUtils::ParseXmlAttribute(elem, "type", "");
-    if(xml_type == "heightmap") {
-        LoadMapFromHeightMap(elem);
-    } else if(xml_type == "file") {
-        LoadMapFromFile(elem);
-    } else {
-        ERROR_AND_DIE("Unsupported Map Generator.");
-    }
-}
-
-void MapGenerator::LoadMapFromHeightMap(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "mapGenerator", "glyph", "type,src");
-    const auto xml_src = DataUtils::ParseXmlAttribute(elem, "src", "");
-    Image img(std::filesystem::path{xml_src});
-    const auto width = img.GetDimensions().x;
-    const auto height = img.GetDimensions().y;
-    _map->_layers.emplace_back(std::make_unique<Layer>(_map, img));
-    auto* layer = _map->_layers.back().get();
-    for(auto& t : *layer) {
-        int closest_height = 257;
-        char smallest_value = ' ';
-        DataUtils::ForEachChildElement(elem, "glyph",
-        [&t, &closest_height, &smallest_value, layer](const XMLElement& elem) {
-            const auto glyph_value = DataUtils::ParseXmlAttribute(elem, "value", ' ');
-            const auto glyph_height = DataUtils::ParseXmlAttribute(elem, "height", 0);
-            if(t.color.r < glyph_height) {
-                closest_height = glyph_height;
-                smallest_value = glyph_value;
-            }
-        });
-        t.ChangeTypeFromGlyph(smallest_value);
-        t.color = Rgba::White;
-        t.layer = layer;
-    }
-    //TODO: Implement multiple layers for height maps
-    layer->z_index = 0;
-}
-
-void MapGenerator::LoadMapFromFile(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "mapGenerator", "", "", "layers", "src");
-    if(DataUtils::HasAttribute(elem, "src")) {
-        LoadLayersFromFile(elem);
-    } else {
-        LoadLayersFromMap(elem);
-    }
-}
-
-void MapGenerator::LoadLayersFromFile(const XMLElement& elem) {
-    const auto xml_src = DataUtils::ParseXmlAttribute(elem, "src", "");
-    if(auto src = FileUtils::ReadStringBufferFromFile(xml_src)) {
-        if(src.value().empty()) {
-            ERROR_AND_DIE("Loading Map from file with empty or invalid source attribute.");
-        }
-        tinyxml2::XMLDocument doc;
-        if(tinyxml2::XML_SUCCESS == doc.Parse(src.value().c_str(), src.value().size())) {
-            auto* xml_layers = doc.RootElement();
-            LoadLayers(*xml_layers);
-        }
-    }
-}
+{ /* DO NOTHING */ }
 
 void MapGenerator::LoadLayers(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "layers", "layer", "");
@@ -862,8 +813,80 @@ void MapGenerator::LoadLayers(const XMLElement& elem) {
     _map->_layers.shrink_to_fit();
 }
 
-void MapGenerator::LoadLayersFromMap(const XMLElement& elem) {
+HeightMapGenerator::HeightMapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept
+    : MapGenerator(renderer, map, elem)
+{
+    /* DO NOTHING */
+}
+
+void HeightMapGenerator::Generate() {
+    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "glyph", "type,src");
+    const auto xml_src = DataUtils::ParseXmlAttribute(_xml_element, "src", "");
+    Image img(std::filesystem::path{xml_src});
+    const auto width = img.GetDimensions().x;
+    const auto height = img.GetDimensions().y;
+    _map->_layers.emplace_back(std::make_unique<Layer>(_map, img));
+    auto* layer = _map->_layers.back().get();
+    for(auto& t : *layer) {
+        int closest_height = 257;
+        char smallest_value = ' ';
+        DataUtils::ForEachChildElement(_xml_element, "glyph",
+            [&t, &closest_height, &smallest_value, layer](const XMLElement& elem) {
+                const auto glyph_value = DataUtils::ParseXmlAttribute(elem, "value", ' ');
+                const auto glyph_height = DataUtils::ParseXmlAttribute(elem, "height", 0);
+                if(t.color.r < glyph_height) {
+                    closest_height = glyph_height;
+                    smallest_value = glyph_value;
+                }
+            });
+        t.ChangeTypeFromGlyph(smallest_value);
+        t.color = Rgba::White;
+        t.layer = layer;
+    }
+    //TODO: Implement multiple layers for height maps
+    layer->z_index = 0;
+}
+
+FileMapGenerator::FileMapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept
+: MapGenerator(renderer, map, elem)
+{
+    /* DO NOTHING */
+}
+
+void FileMapGenerator::Generate() {
+    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "", "src", "", "");
+    LoadLayersFromFile(_xml_element);
+}
+
+void FileMapGenerator::LoadLayersFromFile(const XMLElement& elem) {
+    const auto xml_src = DataUtils::ParseXmlAttribute(elem, "src", "");
+    if(auto src = FileUtils::ReadStringBufferFromFile(xml_src)) {
+        if(src.value().empty()) {
+            ERROR_AND_DIE("Loading Map from file with empty or invalid source attribute.");
+        }
+        tinyxml2::XMLDocument doc;
+        if(tinyxml2::XML_SUCCESS == doc.Parse(src.value().c_str(), src.value().size())) {
+            auto* xml_layers = doc.RootElement();
+            LoadLayers(*xml_layers);
+        }
+    }
+}
+
+XmlMapGenerator::XmlMapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept
+    : FileMapGenerator(renderer, map, elem)
+{
+    /* DO NOTHING */
+}
+
+void XmlMapGenerator::Generate() {
+    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "layers", "");
+    LoadLayersFromXml(_xml_element);
+}
+
+void XmlMapGenerator::LoadLayersFromXml(const XMLElement& elem) {
     if(auto xml_layers = elem.FirstChildElement("layers")) {
         LoadLayers(*xml_layers);
     }
 }
+
+

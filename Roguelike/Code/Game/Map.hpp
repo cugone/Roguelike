@@ -266,6 +266,7 @@ private:
     void LoadNameForMap(const XMLElement& elem);
     void LoadMaterialsForMap(const XMLElement& elem);
     void LoadGenerator(const XMLElement& elem);
+    void CreateGeneratorFromTypename(const XMLElement& elem);
     void LoadTileDefinitionsForMap(const XMLElement& elem);
     void LoadTileDefinitionsFromFile(const std::filesystem::path& src);
     void LoadActorsForMap(const XMLElement& elem);
@@ -296,28 +297,70 @@ private:
     static inline unsigned long long default_map_index = 0ull;
 
     friend class MapGenerator;
+    friend class HeightMapGenerator;
+    friend class FileMapGenerator;
 };
 
 class MapGenerator {
 public:
     MapGenerator() = delete;
-    explicit MapGenerator(Renderer& renderer, Map* map, const XMLElement & elem) noexcept;
+    explicit MapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept;
     MapGenerator(const MapGenerator& other) = delete;
     MapGenerator(MapGenerator&& other) = delete;
     MapGenerator& operator=(const MapGenerator& other) = delete;
     MapGenerator& operator=(MapGenerator&& other) = delete;
     ~MapGenerator() noexcept = default;
+    virtual void Generate() = 0;
 protected:
-private:
-    void LoadFromXml(const XMLElement& elem);
-    void LoadMapFromHeightMap(const XMLElement& elem);
-    void LoadMapFromFile(const XMLElement& elem);
-
-    void LoadLayersFromFile(const XMLElement& elem);
-
     void LoadLayers(const XMLElement& elem);
-    void LoadLayersFromMap(const XMLElement& elem);
 
     Renderer& _renderer;
+    const XMLElement& _xml_element;
     Map* _map = nullptr;
+private:
 };
+
+class HeightMapGenerator : public MapGenerator {
+public:
+    HeightMapGenerator() = delete;
+    explicit HeightMapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept;
+    HeightMapGenerator(const HeightMapGenerator& other) = delete;
+    HeightMapGenerator(HeightMapGenerator&& other) = delete;
+    HeightMapGenerator& operator=(const HeightMapGenerator& other) = delete;
+    HeightMapGenerator& operator=(HeightMapGenerator&& other) = delete;
+    ~HeightMapGenerator() noexcept = default;
+    void Generate() override;
+protected:
+private:
+};
+
+class FileMapGenerator : public MapGenerator {
+public:
+    FileMapGenerator() = delete;
+    explicit FileMapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept;
+    FileMapGenerator(const FileMapGenerator& other) = delete;
+    FileMapGenerator(FileMapGenerator&& other) = delete;
+    FileMapGenerator& operator=(const FileMapGenerator& other) = delete;
+    FileMapGenerator& operator=(FileMapGenerator&& other) = delete;
+    ~FileMapGenerator() noexcept = default;
+    void Generate() override;
+protected:
+private:
+    void LoadLayersFromFile(const XMLElement& elem);
+};
+
+class XmlMapGenerator : public FileMapGenerator {
+public:
+    XmlMapGenerator() = delete;
+    explicit XmlMapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept;
+    XmlMapGenerator(const XmlMapGenerator& other) = delete;
+    XmlMapGenerator(XmlMapGenerator&& other) = delete;
+    XmlMapGenerator& operator=(const XmlMapGenerator& other) = delete;
+    XmlMapGenerator& operator=(XmlMapGenerator&& other) = delete;
+    ~XmlMapGenerator() noexcept = default;
+    void Generate() override;
+protected:
+private:
+    void LoadLayersFromXml(const XMLElement& elem);
+};
+
