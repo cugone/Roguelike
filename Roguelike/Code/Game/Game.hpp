@@ -50,7 +50,7 @@ enum class CursorId {
 
 class Game {
 public:
-    Game() = default;
+    Game();
     Game(const Game& other) = default;
     Game(Game&& other) = default;
     Game& operator=(const Game& other) = default;
@@ -181,21 +181,6 @@ private:
     float _debug_fadeOutTime = 1.0f;
     float _debug_gradientRadius = 0.5f;
     float _text_alpha = 1.0f;
-    bool _debug_has_picked_entity_with_click = false;
-    bool _debug_has_picked_feature_with_click = false;
-    bool _debug_has_picked_tile_with_click = false;
-    bool _player_requested_wait = false;
-    bool _debug_render = false;
-    bool _show_grid = false;
-    bool _show_debug_window = false;
-    bool _show_raycasts = true;
-    bool _show_world_bounds = false;
-    bool _show_tile_debugger = false;
-    bool _show_effects_debugger = false;
-    bool _show_entity_debugger = false;
-    bool _show_feature_debugger = false;
-    bool _show_all_entities = false;
-    bool _done_loading = false;
     std::unique_ptr<class ConstantBuffer> _fullscreen_cb = nullptr;
     fullscreen_cb_t _fullscreen_data = fullscreen_cb_t{};
     FullscreenEffect _current_fs_effect = FullscreenEffect::None;
@@ -206,7 +191,21 @@ private:
     Console::CommandList _consoleCommands;
     GameState _currentGameState = GameState::Title;
     GameState _nextGameState = GameState::Title;
-
+    uint16_t _debug_has_picked_entity_with_click : 1;
+    uint16_t _debug_has_picked_feature_with_click : 1;
+    uint16_t _debug_has_picked_tile_with_click : 1;
+    uint16_t _player_requested_wait : 1;
+    uint16_t _debug_render : 1;
+    uint16_t _show_grid : 1;
+    uint16_t _show_debug_window : 1;
+    uint16_t _show_raycasts : 1;
+    uint16_t _show_world_bounds : 1;
+    uint16_t _show_tile_debugger : 1;
+    uint16_t _show_effects_debugger : 1;
+    uint16_t _show_entity_debugger : 1;
+    uint16_t _show_feature_debugger : 1;
+    uint16_t _show_all_entities : 1;
+    uint16_t _done_loading : 1;
     friend class Map;
     friend class Layer;
     friend class Tile;

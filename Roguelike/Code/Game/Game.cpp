@@ -36,6 +36,26 @@
 #include <numeric>
 #include <string>
 
+Game::Game()
+:_debug_has_picked_entity_with_click{0}
+,_debug_has_picked_feature_with_click{0}
+,_debug_has_picked_tile_with_click{0}
+,_player_requested_wait{0}
+,_debug_render{0}
+,_show_grid{0}
+,_show_debug_window{0}
+,_show_raycasts{0}
+,_show_world_bounds{0}
+,_show_tile_debugger{0}
+,_show_effects_debugger{0}
+,_show_entity_debugger{0}
+,_show_feature_debugger{0}
+,_show_all_entities{0}
+,_done_loading{0}
+{
+    /* DO NOTHING */
+}
+
 Game::~Game() noexcept {
     _cursors.clear();
     CursorDefinition::ClearCursorRegistry();
@@ -1103,18 +1123,18 @@ void Game::HandleDebugMouseInput(Camera2D& /*base_camera*/) {
         }
         if(_debug_has_picked_entity_with_click) {
             _debug_inspected_entity = picked_tiles[0]->actor;
-            _debug_has_picked_entity_with_click = _debug_inspected_entity;
+            _debug_has_picked_entity_with_click = _debug_inspected_entity != nullptr;
         }
         if(_debug_has_picked_feature_with_click) {
             _debug_inspected_feature = picked_tiles[0]->feature;
-            _debug_has_picked_feature_with_click = _debug_inspected_feature;
+            _debug_has_picked_feature_with_click = _debug_inspected_feature != nullptr;
         }
     }
 }
 
 void Game::ShowDebugUI() {
     ImGui::SetNextWindowSize(Vector2{ 350.0f, 500.0f }, ImGuiCond_Always);
-    if(ImGui::Begin("Debugger", &_show_debug_window, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if(ImGui::Begin("Debugger", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ShowFrameInspectorUI();
         ShowWorldInspectorUI();
         ShowEffectsDebuggerUI();
