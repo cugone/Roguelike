@@ -363,3 +363,17 @@ private:
     void LoadLayersFromXml(const XMLElement& elem);
 };
 
+class MazeMapGenerator : public MapGenerator {
+public:
+    MazeMapGenerator() = delete;
+    explicit MazeMapGenerator(Map* map, const XMLElement& elem) noexcept;
+    MazeMapGenerator(const MazeMapGenerator& other) = delete;
+    MazeMapGenerator(MazeMapGenerator&& other) = delete;
+    MazeMapGenerator& operator=(const MazeMapGenerator& other) = delete;
+    MazeMapGenerator& operator=(MazeMapGenerator&& other) = delete;
+    virtual ~MazeMapGenerator() noexcept = default;
+    void Generate() override;
+protected:
+private:
+};
+

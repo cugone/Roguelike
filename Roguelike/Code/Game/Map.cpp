@@ -889,3 +889,12 @@ void XmlMapGenerator::LoadLayersFromXml(const XMLElement& elem) {
 }
 
 
+MazeMapGenerator::MazeMapGenerator(Map* map, const XMLElement& elem) noexcept
+    : MapGenerator(map, elem)
+{
+    /* DO NOTHING */
+}
+
+void MazeMapGenerator::Generate() {
+
+}
