@@ -684,13 +684,13 @@ void Map::CreateGeneratorFromTypename(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "mapGenerator", "", "", "", "type");
     const auto xml_type = DataUtils::ParseXmlAttribute(elem, "type", "");
     if(xml_type == "heightmap") {
-        HeightMapGenerator g{_renderer, this, elem};
+        HeightMapGenerator g{this, elem};
         g.Generate();
     } else if(xml_type == "file") {
-        FileMapGenerator g{_renderer, this, elem};
+        FileMapGenerator g{this, elem};
         g.Generate();
     } else {
-        XmlMapGenerator g{_renderer, this, elem};
+        XmlMapGenerator g{this, elem};
         g.Generate();
     }
 }
@@ -786,9 +786,8 @@ void Map::LoadItemsForMap(const XMLElement& elem) {
     }
 }
 
-MapGenerator::MapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept
-: _renderer(renderer)
-, _xml_element(elem)
+MapGenerator::MapGenerator(Map* map, const XMLElement& elem) noexcept
+: _xml_element(elem)
 , _map(map)
 { /* DO NOTHING */ }
 
@@ -813,8 +812,8 @@ void MapGenerator::LoadLayers(const XMLElement& elem) {
     _map->_layers.shrink_to_fit();
 }
 
-HeightMapGenerator::HeightMapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept
-: MapGenerator(renderer, map, elem)
+HeightMapGenerator::HeightMapGenerator(Map* map, const XMLElement& elem) noexcept
+: MapGenerator(map, elem)
 {
     /* DO NOTHING */
 }
@@ -847,8 +846,8 @@ void HeightMapGenerator::Generate() {
     layer->z_index = 0;
 }
 
-FileMapGenerator::FileMapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept
-: MapGenerator(renderer, map, elem)
+FileMapGenerator::FileMapGenerator(Map* map, const XMLElement& elem) noexcept
+: MapGenerator(map, elem)
 {
     /* DO NOTHING */
 }
@@ -872,8 +871,8 @@ void FileMapGenerator::LoadLayersFromFile(const XMLElement& elem) {
     }
 }
 
-XmlMapGenerator::XmlMapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept
-: MapGenerator(renderer, map, elem)
+XmlMapGenerator::XmlMapGenerator(Map* map, const XMLElement& elem) noexcept
+: MapGenerator(map, elem)
 {
     /* DO NOTHING */
 }

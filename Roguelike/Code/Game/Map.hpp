@@ -304,7 +304,7 @@ private:
 class MapGenerator {
 public:
     MapGenerator() = delete;
-    explicit MapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept;
+    explicit MapGenerator(Map* map, const XMLElement& elem) noexcept;
     MapGenerator(const MapGenerator& other) = delete;
     MapGenerator(MapGenerator&& other) = delete;
     MapGenerator& operator=(const MapGenerator& other) = delete;
@@ -314,7 +314,6 @@ public:
 protected:
     void LoadLayers(const XMLElement& elem);
 
-    Renderer& _renderer;
     const XMLElement& _xml_element;
     Map* _map = nullptr;
 private:
@@ -323,7 +322,7 @@ private:
 class HeightMapGenerator : public MapGenerator {
 public:
     HeightMapGenerator() = delete;
-    explicit HeightMapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept;
+    explicit HeightMapGenerator(Map* map, const XMLElement& elem) noexcept;
     HeightMapGenerator(const HeightMapGenerator& other) = delete;
     HeightMapGenerator(HeightMapGenerator&& other) = delete;
     HeightMapGenerator& operator=(const HeightMapGenerator& other) = delete;
@@ -337,7 +336,7 @@ private:
 class FileMapGenerator : public MapGenerator {
 public:
     FileMapGenerator() = delete;
-    explicit FileMapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept;
+    explicit FileMapGenerator(Map* map, const XMLElement& elem) noexcept;
     FileMapGenerator(const FileMapGenerator& other) = delete;
     FileMapGenerator(FileMapGenerator&& other) = delete;
     FileMapGenerator& operator=(const FileMapGenerator& other) = delete;
@@ -352,7 +351,7 @@ private:
 class XmlMapGenerator : public MapGenerator {
 public:
     XmlMapGenerator() = delete;
-    explicit XmlMapGenerator(Renderer& renderer, Map* map, const XMLElement& elem) noexcept;
+    explicit XmlMapGenerator(Map* map, const XMLElement& elem) noexcept;
     XmlMapGenerator(const XmlMapGenerator& other) = delete;
     XmlMapGenerator(XmlMapGenerator&& other) = delete;
     XmlMapGenerator& operator=(const XmlMapGenerator& other) = delete;
