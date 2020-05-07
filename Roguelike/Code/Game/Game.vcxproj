@@ -162,6 +162,7 @@
     <ClCompile Include="Layer.cpp" />
     <ClCompile Include="Main_Win32.cpp" />
     <ClCompile Include="Map.cpp" />
+    <ClCompile Include="MapGenerator.cpp" />
     <ClCompile Include="MoveCommand.cpp" />
     <ClCompile Include="MoveEastCommand.cpp" />
     <ClCompile Include="MoveNorthCommand.cpp" />
@@ -197,6 +198,7 @@
     <ClInclude Include="Item.hpp" />
     <ClInclude Include="Layer.hpp" />
     <ClInclude Include="Map.hpp" />
+    <ClInclude Include="MapGenerator.hpp" />
     <ClInclude Include="MoveCommand.hpp" />
     <ClInclude Include="MoveEastCommand.hpp" />
     <ClInclude Include="MoveNorthCommand.hpp" />

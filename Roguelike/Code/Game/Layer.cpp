@@ -30,6 +30,29 @@ Layer::Layer(Map* map, const Image& img)
     }
 }
 
+Layer::Layer(Map* map, const IntVector2& dimensions)
+: _map(map)
+, tileDimensions(dimensions)
+{
+    const auto layer_width = tileDimensions.x;
+    const auto layer_height = tileDimensions.y;
+    _tiles.resize(static_cast<std::size_t>(layer_width) * layer_height);
+    int x = 0;
+    int y = 0;
+    for(auto& tile : _tiles) {
+        tile.color = Rgba::White;
+        tile.layer = this;
+        tile.SetCoords(x++, y);
+        if(x == layer_width) {
+            x = 0;
+            ++y;
+        }
+        if(y == layer_height) {
+            y = 0;
+        }
+    }
+}
+
 Tile* Layer::GetNeighbor(const NeighborDirection& direction) {
     switch(direction) {
     case NeighborDirection::Self:

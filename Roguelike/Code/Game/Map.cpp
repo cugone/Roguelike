@@ -25,6 +25,7 @@
 #include "Game/GameCommon.hpp"
 #include "Game/GameConfig.hpp"
 #include "Game/Layer.hpp"
+#include "Game/MapGenerator.hpp"
 #include "Game/Inventory.hpp"
 #include "Game/TileDefinition.hpp"
 #include "Game/Tile.hpp"
@@ -483,27 +484,29 @@ bool Map::IsTileWithinDistance(const Tile& startTile, float dist) const {
 }
 
 std::vector<Tile*> Map::GetTilesWithinDistance(const Tile& startTile, unsigned int manhattanDist) const {
-    std::vector<Tile*> results{};
-    const auto& layer0 = _layers[0];
-    for(auto& tile : *layer0) {
-        auto calculatedManhattanDist = MathUtils::CalculateManhattanDistance(startTile.GetCoords(), tile.GetCoords());
-        if(calculatedManhattanDist < manhattanDist) {
-            results.push_back(&tile);
-        }
-    }
-    return results;
+    return this->GetTilesWithinDistance(startTile, static_cast<float>(manhattanDist), [&](const IntVector2& start, const IntVector2& end) { return MathUtils::CalculateManhattanDistance(start, end); });
+    //std::vector<Tile*> results{};
+    //const auto& layer0 = _layers[0];
+    //for(auto& tile : *layer0) {
+    //    auto calculatedManhattanDist = MathUtils::CalculateManhattanDistance(startTile.GetCoords(), tile.GetCoords());
+    //    if(calculatedManhattanDist < manhattanDist) {
+    //        results.push_back(&tile);
+    //    }
+    //}
+    //return results;
 }
 
 std::vector<Tile*> Map::GetTilesWithinDistance(const Tile& startTile, float dist) const {
-    std::vector<Tile*> results;
-    const auto& layer0 = _layers[0];
-    for(auto& tile : *layer0) {
-        auto calculatedDistSq = (Vector2(startTile.GetCoords()) - Vector2(tile.GetCoords())).CalcLengthSquared();
-        if(calculatedDistSq < dist * dist) {
-            results.push_back(&tile);
-        }
-    }
-    return results;
+    return this->GetTilesWithinDistance(startTile, dist * dist, [&](const IntVector2& start, const IntVector2& end) { return (Vector2(end) - Vector2(start)).CalcLengthSquared(); });
+    //std::vector<Tile*> results;
+    //const auto& layer0 = _layers[0];
+    //for(auto& tile : *layer0) {
+    //    auto calculatedDistSq = (Vector2(startTile.GetCoords()) - Vector2(tile.GetCoords())).CalcLengthSquared();
+    //    if(calculatedDistSq < dist * dist) {
+    //        results.push_back(&tile);
+    //    }
+    //}
+    //return results;
 }
 
 std::vector<Tile*> Map::GetVisibleTilesWithinDistance(const Tile& startTile, unsigned int manhattanDist) const {
@@ -689,6 +692,8 @@ void Map::CreateGeneratorFromTypename(const XMLElement& elem) {
     } else if(xml_type == "file") {
         FileMapGenerator g{this, elem};
         g.Generate();
+    } else if(xml_type == "maze") {
+        MazeMapGenerator::Generate(this, elem);
     } else {
         XmlMapGenerator g{this, elem};
         g.Generate();
@@ -784,117 +789,4 @@ void Map::LoadItemsForMap(const XMLElement& elem) {
             }
         });
     }
-}
-
-MapGenerator::MapGenerator(Map* map, const XMLElement& elem) noexcept
-: _xml_element(elem)
-, _map(map)
-{ /* DO NOTHING */ }
-
-void MapGenerator::LoadLayers(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "layers", "layer", "");
-    std::size_t layer_count = DataUtils::GetChildElementCount(elem, "layer");
-    if(layer_count > _map->max_layers) {
-        const auto ss = std::string{"Layer count of map "} +_map->_name + " is greater than the maximum allowed (" + std::to_string(_map->max_layers) + ")."
-            "\nOnly the first " + std::to_string(_map->max_layers) + " layers will be used.";
-        g_theFileLogger->LogLine(ss);
-    }
-
-    auto layer_index = 0;
-    _map->_layers.reserve(layer_count);
-    DataUtils::ForEachChildElement(elem, "layer",
-        [this, &layer_index](const XMLElement& xml_layer) {
-            if(static_cast<std::size_t>(layer_index) < _map->max_layers) {
-                _map->_layers.emplace_back(std::make_unique<Layer>(_map, xml_layer));
-                _map->_layers.back()->z_index = layer_index++;
-            }
-        });
-    _map->_layers.shrink_to_fit();
-}
-
-HeightMapGenerator::HeightMapGenerator(Map* map, const XMLElement& elem) noexcept
-: MapGenerator(map, elem)
-{
-    /* DO NOTHING */
-}
-
-void HeightMapGenerator::Generate() {
-    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "glyph", "type,src");
-    const auto xml_src = DataUtils::ParseXmlAttribute(_xml_element, "src", "");
-    Image img(std::filesystem::path{xml_src});
-    const auto width = img.GetDimensions().x;
-    const auto height = img.GetDimensions().y;
-    _map->_layers.emplace_back(std::make_unique<Layer>(_map, img));
-    auto* layer = _map->_layers.back().get();
-    for(auto& t : *layer) {
-        int closest_height = 257;
-        char smallest_value = ' ';
-        DataUtils::ForEachChildElement(_xml_element, "glyph",
-            [&t, &closest_height, &smallest_value, layer](const XMLElement& elem) {
-                const auto glyph_value = DataUtils::ParseXmlAttribute(elem, "value", ' ');
-                const auto glyph_height = DataUtils::ParseXmlAttribute(elem, "height", 0);
-                if(t.color.r < glyph_height) {
-                    closest_height = glyph_height;
-                    smallest_value = glyph_value;
-                }
-            });
-        t.ChangeTypeFromGlyph(smallest_value);
-        t.color = Rgba::White;
-        t.layer = layer;
-    }
-    //TODO: Implement multiple layers for height maps
-    layer->z_index = 0;
-}
-
-FileMapGenerator::FileMapGenerator(Map* map, const XMLElement& elem) noexcept
-: MapGenerator(map, elem)
-{
-    /* DO NOTHING */
-}
-
-void FileMapGenerator::Generate() {
-    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "", "src", "", "");
-    LoadLayersFromFile(_xml_element);
-}
-
-void FileMapGenerator::LoadLayersFromFile(const XMLElement& elem) {
-    const auto xml_src = DataUtils::ParseXmlAttribute(elem, "src", "");
-    if(auto src = FileUtils::ReadStringBufferFromFile(xml_src)) {
-        if(src.value().empty()) {
-            ERROR_AND_DIE("Loading Map from file with empty or invalid source attribute.");
-        }
-        tinyxml2::XMLDocument doc;
-        if(tinyxml2::XML_SUCCESS == doc.Parse(src.value().c_str(), src.value().size())) {
-            auto* xml_layers = doc.RootElement();
-            LoadLayers(*xml_layers);
-        }
-    }
-}
-
-XmlMapGenerator::XmlMapGenerator(Map* map, const XMLElement& elem) noexcept
-: MapGenerator(map, elem)
-{
-    /* DO NOTHING */
-}
-
-void XmlMapGenerator::Generate() {
-    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "layers", "");
-    LoadLayersFromXml(_xml_element);
-}
-
-void XmlMapGenerator::LoadLayersFromXml(const XMLElement& elem) {
-    if(auto xml_layers = elem.FirstChildElement("layers")) {
-        LoadLayers(*xml_layers);
-    }
-}
-
-
-MazeMapGenerator::MazeMapGenerator(Map* map, const XMLElement& elem) noexcept
-    : MapGenerator(map, elem)
-{
-    /* DO NOTHING */
-}
-
-void MazeMapGenerator::Generate() {
-
 }

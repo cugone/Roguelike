@@ -28,6 +28,7 @@ public:
     };
 
     Layer() = default;
+    explicit Layer(Map* map, const IntVector2& dimensions);
     explicit Layer(Map* map, const XMLElement& elem);
     explicit Layer(Map* map, const Image& img);
     Layer(const Layer& other) = default;

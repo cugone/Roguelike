@@ -16,6 +16,8 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <stack>
+#include <vector>
 
 class Entity;
 class Actor;
@@ -91,6 +93,42 @@ public:
     std::vector<Tile*> GetTilesWithinDistance(const Tile& startTile, float dist) const;
     std::vector<Tile*> GetVisibleTilesWithinDistance(const Tile& startTile, float dist) const;
     std::vector<Tile*> GetVisibleTilesWithinDistance(const Tile& startTile, unsigned int manhattanDist) const;
+
+    template<typename Pr>
+    std::vector<Tile*> GetTilesWithinDistance(const Tile& startTile, float distance, Pr&& predicate) const {
+        auto* layer0 = GetLayer(0);
+        if(!layer0) {
+            return {};
+        }
+        const auto start_coords = startTile.GetCoords();
+        std::vector<Tile*> results;
+        for(auto& tile : *layer0) {
+            const auto end_coords = tile.GetCoords();
+            if(predicate(start_coords, end_coords) < distance) {
+                results.push_back(&tile);
+            }
+        }
+        return results;
+    }
+
+    template<typename Pr>
+    std::vector<Tile*> GetTilesAtDistance(const Tile& startTile, float distance, Pr&& predicate) const {
+        auto* layer0 = GetLayer(0);
+        if(!layer0) {
+            return {};
+        }
+        const auto start_coords = startTile.GetCoords();
+        std::vector<Tile*> results;
+        for(auto& tile : *layer0) {
+            const auto end_coords = tile.GetCoords();
+            const bool pLessD = predicate(start_coords, end_coords) < distance;
+            const bool dLessP = distance < predicate(start_coords, end_coords);
+            if(!pLessD && !dLessP) {
+                results.push_back(&tile);
+            }
+        }
+        return results;
+    }
 
 
     RaycastResult2D StepAndSample(const Vector2& startPosition, const Vector2& endPosition, float sampleRate) const;
@@ -292,6 +330,7 @@ private:
     std::vector<Feature*> _features{};
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
     float _camera_speed = 1.0f;
+    IntVector2 _player_start_position{};
     mutable std::size_t _debug_tiles_in_view_count{};
     mutable std::size_t _debug_visible_tiles_in_view_count{};
     static inline unsigned long long default_map_index = 0ull;
@@ -299,81 +338,6 @@ private:
     friend class MapGenerator;
     friend class HeightMapGenerator;
     friend class FileMapGenerator;
+    friend class XmlMapGenerator;
+    friend class RoomsMapGenerator;
 };
-
-class MapGenerator {
-public:
-    MapGenerator() = delete;
-    explicit MapGenerator(Map* map, const XMLElement& elem) noexcept;
-    MapGenerator(const MapGenerator& other) = delete;
-    MapGenerator(MapGenerator&& other) = delete;
-    MapGenerator& operator=(const MapGenerator& other) = delete;
-    MapGenerator& operator=(MapGenerator&& other) = delete;
-    virtual ~MapGenerator() noexcept = default;
-    virtual void Generate() = 0;
-protected:
-    void LoadLayers(const XMLElement& elem);
-
-    const XMLElement& _xml_element;
-    Map* _map = nullptr;
-private:
-};
-
-class HeightMapGenerator : public MapGenerator {
-public:
-    HeightMapGenerator() = delete;
-    explicit HeightMapGenerator(Map* map, const XMLElement& elem) noexcept;
-    HeightMapGenerator(const HeightMapGenerator& other) = delete;
-    HeightMapGenerator(HeightMapGenerator&& other) = delete;
-    HeightMapGenerator& operator=(const HeightMapGenerator& other) = delete;
-    HeightMapGenerator& operator=(HeightMapGenerator&& other) = delete;
-    virtual ~HeightMapGenerator() noexcept = default;
-    void Generate() override;
-protected:
-private:
-};
-
-class FileMapGenerator : public MapGenerator {
-public:
-    FileMapGenerator() = delete;
-    explicit FileMapGenerator(Map* map, const XMLElement& elem) noexcept;
-    FileMapGenerator(const FileMapGenerator& other) = delete;
-    FileMapGenerator(FileMapGenerator&& other) = delete;
-    FileMapGenerator& operator=(const FileMapGenerator& other) = delete;
-    FileMapGenerator& operator=(FileMapGenerator&& other) = delete;
-    virtual ~FileMapGenerator() noexcept = default;
-    void Generate() override;
-protected:
-private:
-    void LoadLayersFromFile(const XMLElement& elem);
-};
-
-class XmlMapGenerator : public MapGenerator {
-public:
-    XmlMapGenerator() = delete;
-    explicit XmlMapGenerator(Map* map, const XMLElement& elem) noexcept;
-    XmlMapGenerator(const XmlMapGenerator& other) = delete;
-    XmlMapGenerator(XmlMapGenerator&& other) = delete;
-    XmlMapGenerator& operator=(const XmlMapGenerator& other) = delete;
-    XmlMapGenerator& operator=(XmlMapGenerator&& other) = delete;
-    virtual ~XmlMapGenerator() noexcept = default;
-    void Generate() override;
-protected:
-private:
-    void LoadLayersFromXml(const XMLElement& elem);
-};
-
-class MazeMapGenerator : public MapGenerator {
-public:
-    MazeMapGenerator() = delete;
-    explicit MazeMapGenerator(Map* map, const XMLElement& elem) noexcept;
-    MazeMapGenerator(const MazeMapGenerator& other) = delete;
-    MazeMapGenerator(MazeMapGenerator&& other) = delete;
-    MazeMapGenerator& operator=(const MazeMapGenerator& other) = delete;
-    MazeMapGenerator& operator=(MazeMapGenerator&& other) = delete;
-    virtual ~MazeMapGenerator() noexcept = default;
-    void Generate() override;
-protected:
-private:
-};
-
