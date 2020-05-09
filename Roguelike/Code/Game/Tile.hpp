@@ -8,6 +8,7 @@
 
 #include "Game/Inventory.hpp"
 
+#include <array>
 #include <vector>
 
 class TileDefinition;
@@ -51,6 +52,7 @@ public:
     void SetCoords(const IntVector2& coords);
     const IntVector2& GetCoords() const;
 
+    std::array<Tile*, 8> GetNeighbors() const;
     Tile* GetNeighbor(const IntVector3& directionAndLayerOffset) const;
     Tile* GetNorthNeighbor() const;
     Tile* GetNorthEastNeighbor() const;

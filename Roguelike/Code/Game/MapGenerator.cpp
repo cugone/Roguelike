@@ -10,6 +10,8 @@
 #include "Game/Map.hpp"
 #include "Game/TileDefinition.hpp"
 
+#include <cmath>
+
 MapGenerator::MapGenerator(Map* map, const XMLElement& elem) noexcept
     : _xml_element(elem)
     , _map(map)
@@ -148,8 +150,8 @@ void RoomsMapGenerator::Generate() {
     floorType = DataUtils::ParseXmlAttribute(_xml_element, "floor", floorType);
     wallType = DataUtils::ParseXmlAttribute(_xml_element, "wall", wallType);
     defaultType = DataUtils::ParseXmlAttribute(_xml_element, "default", defaultType);
-    stairsDownType = DataUtils::ParseXmlAttribute(_xml_element, "stairsDown", stairsDownType);
-    stairsUpType = DataUtils::ParseXmlAttribute(_xml_element, "stairsUp", stairsUpType);
+    stairsDownType = DataUtils::ParseXmlAttribute(_xml_element, "down", stairsDownType);
+    stairsUpType = DataUtils::ParseXmlAttribute(_xml_element, "up", stairsUpType);
     enterType = DataUtils::ParseXmlAttribute(_xml_element, "enter", enterType);
     exitType = DataUtils::ParseXmlAttribute(_xml_element, "exit", exitType);
     {
@@ -158,29 +160,67 @@ void RoomsMapGenerator::Generate() {
             tile.ChangeTypeFromName(defaultType);
         }
     }
-    const auto* xml_min = _xml_element.FirstChildElement("minSize");
-    const auto min_size = DataUtils::ParseXmlElementText(*xml_min, 1);
-    const auto* xml_max = _xml_element.FirstChildElement("maxSize");
-    const auto max_size = DataUtils::ParseXmlElementText(*xml_max, 1);
-
+    const auto min_size = [&]()->const int { const auto* xml_min = _xml_element.FirstChildElement("minSize"); int result = DataUtils::ParseXmlElementText(*xml_min, 0); if(result < 0) result = 0; return result; }(); //IIIL
+    const auto max_size = [&]()->const int { const auto* xml_max = _xml_element.FirstChildElement("maxSize"); int result = DataUtils::ParseXmlElementText(*xml_max, 0); if(result < 0) result = 0; return result; }(); //IIIL
+    rooms.reserve(room_count);
+    unsigned int remake_attempts = 0;
     for(int i = 0; i < room_count; ++i) {
-        const auto random_room_size = MathUtils::GetRandomIntInRange(min_size, max_size);
-        const auto roomSizeAsFloat = static_cast<float>(random_room_size);
-        const auto valid_room_bounds = [&]()->const AABB2 { AABB2 bounds = _map->CalcWorldBounds(); bounds.AddPaddingToSides(-roomSizeAsFloat, -roomSizeAsFloat); return bounds; }(); //IIIL
-        const auto room_position = IntVector2{MathUtils::GetRandomPointInside(valid_room_bounds)};
-        rooms.push_back(std::make_pair(room_position, random_room_size));
-        if(const auto* room_center_tile = _map->GetTile(IntVector3{room_position, 0})) {
-            const auto roomFloorTiles = _map->GetTilesWithinDistance(*room_center_tile, roomSizeAsFloat, [&](const IntVector2& start, const IntVector2& end) { return MathUtils::CalculateChessboardDistance(start, end); });
-            for(auto& tile : roomFloorTiles) {
-                tile->ChangeTypeFromName(floorType);
+        if(remake_attempts > 10) {
+            remake_attempts = 0;
+            break;
+        }
+        const auto random_room_size = Vector2{IntVector2{MathUtils::GetRandomIntInRange(min_size, max_size), MathUtils::GetRandomIntInRange(min_size, max_size)}};
+        const auto roomWidthAsFloat = static_cast<float>(random_room_size.x);
+        const auto roomHeightAsFloat = static_cast<float>(random_room_size.y);
+        const auto valid_room_bounds = [&]()->const AABB2 { AABB2 bounds = _map->CalcWorldBounds(); bounds.AddPaddingToSides(-(roomWidthAsFloat + 1.0f), -(roomHeightAsFloat + 1.0f)); return bounds; }(); //IIIL
+        bool rooms_overlap = false;
+        bool room_doesnt_fit = false;
+        bool room_needs_repositioning = false;
+        unsigned int reposition_attempts = 0;
+        AABB2 room_bounds{};
+        do {
+            if(reposition_attempts > 1000) {
+                break;
             }
-            const auto roomWallTiles = _map->GetTilesAtDistance(*room_center_tile, roomSizeAsFloat, [&](const IntVector2& start, const IntVector2& end) { return MathUtils::CalculateChessboardDistance(start, end); });
-            for(auto& tile : roomWallTiles) {
-                tile->ChangeTypeFromName(wallType);
+            rooms_overlap = false;
+            room_doesnt_fit = false;
+            const auto room_position = IntVector2{MathUtils::GetRandomPointInside(valid_room_bounds)};
+            const auto room_with_walls_bounds = AABB2{Vector2{room_position}, random_room_size.x + 1, random_room_size.y + 1};
+            for(const auto& room : rooms) {
+                if(MathUtils::DoAABBsOverlap(room_with_walls_bounds, room)) {
+                    rooms_overlap = true;
+                    break;
+                }
+                if(!MathUtils::Contains(valid_room_bounds, room_with_walls_bounds)) {
+                    room_doesnt_fit = true;
+                    break;
+                }
             }
+            room_needs_repositioning = rooms_overlap || room_doesnt_fit;
+            if(room_needs_repositioning) {
+                ++reposition_attempts;
+                continue;
+            }
+            room_bounds = room_with_walls_bounds;
+        } while(room_needs_repositioning);
+        if(reposition_attempts > 1000) {
+            reposition_attempts = 0;
+            --i;
+            ++remake_attempts;
+            continue;
+        }
+        remake_attempts = 0;
+        rooms.push_back(room_bounds);
+        const auto roomWallTiles = _map->GetTilesInArea(room_bounds);
+        for(auto& tile : roomWallTiles) {
+            tile->ChangeTypeFromName(wallType);
+        }
+        const auto room_floor_bounds = [&]() { auto bounds = room_bounds; bounds.AddPaddingToSides(-1.0f, -1.0f); return bounds; }();
+        const auto roomFloorTiles = _map->GetTilesInArea(room_floor_bounds);
+        for(auto& tile : roomFloorTiles) {
+            tile->ChangeTypeFromName(floorType);
         }
     }
-    _map->_player_start_position = rooms[0].first - IntVector2{rooms[0].second, rooms[0].second};
 }
 
 RoomsAndCorridorsMapGenerator::RoomsAndCorridorsMapGenerator(Map* map, const XMLElement& elem) noexcept
@@ -191,43 +231,70 @@ RoomsAndCorridorsMapGenerator::RoomsAndCorridorsMapGenerator(Map* map, const XML
 
 void RoomsAndCorridorsMapGenerator::Generate() {
     RoomsMapGenerator::Generate();
+    GenerateCorridors();
+    // TODO: Generate exit
+}
+
+void RoomsAndCorridorsMapGenerator::GenerateCorridors() noexcept {
     const auto roomCount = rooms.size();
-    for(int i = 0; i <= roomCount; ++i) {
-        const auto r1 = rooms[i % roomCount];
-        const auto r1pos = r1.first;
-        const auto r1size = r1.second;
-        const auto r2 = rooms[(i + 1) % roomCount];
-        const auto r2pos = r2.first;
-        const auto r2size = r2.second;
-        const auto [project, reject] = MathUtils::DivideIntoProjectAndReject(Vector2{r2.first - r1.first}, Vector2::X_AXIS);
-        const auto projectDir = project.GetNormalize();
-        const auto rejectDir = reject.GetNormalize();
-        for(int x = r1pos.x; x != r2pos.x; x += (int)projectDir.x) {
-            auto* tile = _map->GetTile(IntVector3{x, r1pos.y, 0});
-            const auto tilebounds = tile->GetBounds();
-            const bool corridor_candidate = !MathUtils::Contains(AABB2{Vector2{r1pos}, (float)r1size, (float)r1size}, tilebounds) && !MathUtils::Contains(AABB2{Vector2{r2pos}, (float)r2size, (float)r2size}, tilebounds);
-            tile->ChangeTypeFromName(floorType);
-            if(corridor_candidate) {
-                auto* northtile = tile->GetNorthNeighbor();
-                northtile->ChangeTypeFromName(wallType);
-                auto* southtile = tile->GetSouthNeighbor();
-                southtile->ChangeTypeFromName(wallType);
-            }
+    for(int i = 0; i < roomCount - 1; ++i) {
+        const auto r1 = rooms[i];
+        const auto r2 = rooms[i + 1];
+        const auto r1pos = r1.CalcCenter();
+        const auto r1dims = r1.CalcDimensions();
+        const auto r2pos = r2.CalcCenter();
+        const auto r2dims = r2.CalcDimensions();
+        const auto horizontal_first = MathUtils::GetRandomBool();
+        if(horizontal_first) {
+            MakeHorizontalCorridor(r1, r2);
+            MakeVerticalCorridor(r1, r2);
+        } else {
+            MakeVerticalCorridor(r1, r2);
+            MakeHorizontalCorridor(r1, r2);
         }
-        for(int y = r1pos.y; y < r2pos.y; y += (int)rejectDir.y) {
-            auto* tile = _map->GetTile(IntVector3{r2pos.x, y, 0});
-            const auto tilebounds = tile->GetBounds();
-            const bool corridor_candidate = !MathUtils::Contains(AABB2{Vector2{r1pos}, (float)r1size, (float)r1size}, tilebounds) && !MathUtils::Contains(AABB2{Vector2{r2pos}, (float)r2size, (float)r2size}, tilebounds);
-            tile->ChangeTypeFromName(floorType);
-            if(corridor_candidate) {
-                auto* easttile = tile->GetEastNeighbor();
-                easttile->ChangeTypeFromName(wallType);
-                auto* westtile = tile->GetWestNeighbor();
-                westtile->ChangeTypeFromName(wallType);
+    }
+}
+
+void RoomsAndCorridorsMapGenerator::MakeVerticalCorridor(const AABB2& r1, const AABB2& r2) noexcept {
+    const bool start_at_r1 = MathUtils::GetRandomBool();
+    auto start = (start_at_r1 ? r1.CalcCenter() : r2.CalcCenter()).y;
+    auto end = (start_at_r1 ? r2.CalcCenter() : r1.CalcCenter()).y;
+    if(end < start) {
+        std::swap(end, start);
+    }
+    const auto step = std::signbit(end - start) ? -1.0f : 1.0f;
+    const auto x = (start_at_r1 ? r1.CalcCenter() : r2.CalcCenter()).x;
+    const auto can_be_corridor_wall = [&](const std::string& name) { return name != this->floorType; };
+    for(auto y = start; y < end; y += step) {
+        auto* tile = _map->GetTile(IntVector3{static_cast<int>(x), static_cast<int>(y), 0});
+        tile->ChangeTypeFromName(floorType);
+        const auto neighbors = tile->GetNeighbors();
+        for(auto* neighbor : neighbors) {
+            if(neighbor && can_be_corridor_wall(neighbor->GetDefinition()->name)) {
+                neighbor->ChangeTypeFromName(wallType);
             }
         }
     }
-    const int exitRoom = MathUtils::GetRandomIntLessThan((int)roomCount);
-    auto* stairsDown_tile = _map->GetTile(IntVector3{rooms[exitRoom].first - IntVector2{rooms[exitRoom].second,rooms[exitRoom].second}, 0});
-    stairsDown_tile->ChangeTypeFromName(stairsDownType);
+}
+
+void RoomsAndCorridorsMapGenerator::MakeHorizontalCorridor(const AABB2& r1, const AABB2& r2) noexcept {
+    const bool start_at_r1 = MathUtils::GetRandomBool();
+    auto start = (start_at_r1 ? r1.CalcCenter() : r2.CalcCenter()).x;
+    auto end = (start_at_r1 ? r2.CalcCenter() : r1.CalcCenter()).x;
+    if(end < start) {
+        std::swap(end, start);
+    }
+    const auto step = std::signbit(end - start) ? -1.0f : 1.0f;
+    const auto y = (start_at_r1 ? r1.CalcCenter() : r2.CalcCenter()).y;
+    const auto can_be_corridor_wall = [&](const std::string& name) { return name != this->floorType; };
+    for(auto x = start; x < end; x += step) {
+        auto* tile = _map->GetTile(IntVector3{static_cast<int>(x), static_cast<int>(y), 0});
+        tile->ChangeTypeFromName(floorType);
+        const auto neighbors = tile->GetNeighbors();
+        for(auto* neighbor : neighbors) {
+            if(neighbor && can_be_corridor_wall(neighbor->GetDefinition()->name)) {
+                neighbor->ChangeTypeFromName(wallType);
+            }
+        }
+    }
 }

@@ -302,6 +302,11 @@ std::vector<Tile*> Tile::GetNeighbors(const IntVector2& direction) const {
     return {};
 }
 
+std::array<Tile*, 8> Tile::GetNeighbors() const {
+    return { GetNorthWestNeighbor(), GetNorthNeighbor(), GetNorthEastNeighbor(), GetEastNeighbor(),
+             GetSouthEastNeighbor(), GetSouthNeighbor(), GetSouthWestNeighbor(), GetWestNeighbor() };
+}
+
 std::vector<Tile*> Tile::GetNorthNeighbors() const {
     return GetNeighbors(IntVector2{ 0,-1 });
 }

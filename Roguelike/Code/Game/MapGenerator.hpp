@@ -2,6 +2,11 @@
 
 #include "Engine/Core/DataUtils.hpp"
 
+#include "Engine/Math/AABB2.hpp"
+
+#include <string>
+#include <vector>
+
 class Map;
 
 class MapGenerator {
@@ -99,7 +104,7 @@ protected:
     std::string stairsUpType{"void"};
     std::string enterType{"void"};
     std::string exitType{"void"};
-    std::vector<std::pair<IntVector2,int>> rooms{};
+    std::vector<AABB2> rooms{};
 private:
 };
 
@@ -113,5 +118,9 @@ public:
     RoomsAndCorridorsMapGenerator& operator=(RoomsAndCorridorsMapGenerator&& other) = delete;
     virtual ~RoomsAndCorridorsMapGenerator() noexcept = default;
     void Generate() override;
+
 private:
+    void GenerateCorridors() noexcept;
+    void MakeHorizontalCorridor(const AABB2& r1, const AABB2& r2) noexcept;
+    void MakeVerticalCorridor(const AABB2& r1, const AABB2& r2) noexcept;
 };
