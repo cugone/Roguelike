@@ -5,6 +5,11 @@
 
 #include "Engine/Renderer/Camera2D.hpp"
 
+#include "Engine/UI/Canvas.hpp"
+#include "Engine/UI/Label.hpp"
+#include "Engine/UI/Panel.hpp"
+#include "Engine/UI/Widget.hpp"
+
 #include "Game/Cursor.hpp"
 #include "Game/Map.hpp"
 #include "Game/GameCommon.hpp"
@@ -170,9 +175,8 @@ private:
     std::shared_ptr<SpriteSheet> _cursor_sheet{};
     std::shared_ptr<SpriteSheet> _entity_sheet{};
     std::shared_ptr<SpriteSheet> _item_sheet{};
-
+    std::unique_ptr<UI::Widget> _widgetLoading{};
     std::vector<Cursor> _cursors{};
-
     float _cam_speed = 1.0f;
     float _max_shake_angle = 0.0f;
     float _max_shake_x = 0.0f;

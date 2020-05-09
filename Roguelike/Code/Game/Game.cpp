@@ -75,6 +75,9 @@ void Game::Initialize() {
     g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
     g_theRenderer->RegisterFontsFromFolder(std::string{"Data/Fonts"});
     ingamefont = g_theRenderer->GetFont("TrebuchetMS32");
+
+    //g_theUISystem->RegisterUiWidgetsFromFolder(std::string{"Data/UI"});
+
 }
 
 void Game::CreateFullscreenConstantBuffer() {
@@ -88,6 +91,20 @@ void Game::OnEnter_Title() {
 
 void Game::OnEnter_Loading() {
     _done_loading = false;
+    g_theUISystem->LoadUiWidget("loading");
+    //_cnvLoading = std::make_unique<UI::Canvas>(*g_theRenderer);
+
+    //_pnlLoading = _cnvLoading->CreateChild<UI::Panel>();
+    //_pnlLoading->SetSize(UI::Metric{UI::Ratio{Vector2::ONE * Vector2{g_theRenderer->GetOutput()->GetDimensions()}}, {}});
+    //_pnlLoading->SetPositionRatio(Vector2::ONE * 0.75);
+
+    //_txtLoading = _pnlLoading->CreateChild<UI::Label>(_cnvLoading.get(), ingamefont, std::string{"Loading"});
+    //_txtLoading->SetColor(Rgba::White);
+    //_txtLoading->SetPositionRatio(Vector2::ONE * 0.5f);
+
+    //_txtLoadingPercentage = _pnlLoading->CreateChild<UI::Label>(_cnvLoading.get(), ingamefont, "0%");
+    //_txtLoadingPercentage->SetColor(Rgba::White);
+    //_txtLoadingPercentage->SetPosition(Vector4{0.5f, 0.5f, 0.0f, _txtLoading->GetFont()->GetLineHeight()});
 }
 
 void Game::OnEnter_Main() {
@@ -99,7 +116,7 @@ void Game::OnExit_Title() {
 }
 
 void Game::OnExit_Loading() {
-    /* DO NOTHING */
+    g_theUISystem->UnloadUiWidget("loading");
 }
 
 void Game::OnExit_Main() {
@@ -200,27 +217,24 @@ void Game::Render_Loading() const {
     g_theRenderer->SetViewportAsPercent();
 
     //2D View / HUD
-    const float ui_view_height = currentGraphicsOptions.WindowHeight;
-    const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
-    const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
-    const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
-    auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
-    auto ui_nearFar = Vector2{ 0.0f, 1.0f };
-    auto ui_cam_pos = ui_view_half_extents;
-    ui_camera.position = ui_cam_pos;
-    ui_camera.orientation_degrees = 0.0f;
-    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
-    g_theRenderer->SetCamera(ui_camera);
+    //const float ui_view_height = currentGraphicsOptions.WindowHeight;
+    //const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
+    //const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
+    //const auto ui_view_half_extents = ui_view_extents * 0.5f;
+    //const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
+    //const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
+    //const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
+    //ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
+    //g_theRenderer->SetCamera(ui_camera);
 
-    g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents));
-    g_theRenderer->DrawTextLine(ingamefont, "LOADING");
-    if(_done_loading) {
-        const std::string text = "Press Any Key";
-        static const auto text_length = ingamefont->CalculateTextWidth(text);
-        g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents + Vector2{ text_length * -0.25f, ingamefont->GetLineHeight() }));
-        g_theRenderer->DrawTextLine(ingamefont, text, Rgba{255, 255, 255, static_cast<unsigned char>(255.0f * _text_alpha)});
-    }
+    //g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents));
+    //g_theRenderer->DrawTextLine(ingamefont, "LOADING");
+    //if(_done_loading) {
+    //    const std::string text = "Press Any Key";
+    //    static const auto text_length = ingamefont->CalculateTextWidth(text);
+    //    g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents + Vector2{ text_length * -0.25f, ingamefont->GetLineHeight() }));
+    //    g_theRenderer->DrawTextLine(ingamefont, text, Rgba{255, 255, 255, static_cast<unsigned char>(255.0f * _text_alpha)});
+    //}
 
 }
 

@@ -230,6 +230,7 @@
     <None Include="..\..\Run_x64\Data\Shaders\Fullscreen.shader">
       <SubType>Designer</SubType>
     </None>
+    <None Include="..\..\Run_x64\Data\UI\loading.ui" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\Run_x64\Data\ShaderPrograms\Fullscreen.hlsl">
