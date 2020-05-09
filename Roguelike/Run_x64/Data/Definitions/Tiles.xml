@@ -9,7 +9,7 @@
     <tileDefinition name="blue" index="[51,34]">
         <glyph value=" " />
     </tileDefinition>    
-    <tileDefinition name="void" index="[34,35]">
+    <tileDefinition name="void" index="[64,64]">
         <glyph value=" " />
         <invisible />
         <allowDiagonalMovement />
