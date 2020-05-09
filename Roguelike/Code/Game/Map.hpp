@@ -89,6 +89,7 @@ public:
 
     bool IsTileWithinDistance(const Tile& startTile, float dist) const;
 
+    std::vector<Tile*> GetTilesInArea(const AABB2& bounds) const;
     std::vector<Tile*> GetTilesWithinDistance(const Tile& startTile, unsigned int manhattanDist) const;
     std::vector<Tile*> GetTilesWithinDistance(const Tile& startTile, float dist) const;
     std::vector<Tile*> GetVisibleTilesWithinDistance(const Tile& startTile, float dist) const;
@@ -330,7 +331,6 @@ private:
     std::vector<Feature*> _features{};
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
     float _camera_speed = 1.0f;
-    IntVector2 _player_start_position{};
     mutable std::size_t _debug_tiles_in_view_count{};
     mutable std::size_t _debug_visible_tiles_in_view_count{};
     static inline unsigned long long default_map_index = 0ull;

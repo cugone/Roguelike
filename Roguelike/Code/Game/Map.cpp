@@ -55,6 +55,20 @@ void Map::ShakeCamera(const IntVector2& from, const IntVector2& to) noexcept {
     camera.trauma += 0.1f + distance * 0.05f;
 }
 
+std::vector<Tile*> Map::GetTilesInArea(const AABB2& bounds) const {
+    const auto dims = bounds.CalcDimensions();
+    const auto width = static_cast<int>(dims.x);
+    const auto height = static_cast<int>(dims.y);
+    std::vector<Tile*> results;
+    results.reserve(width * height);
+    for(int x = static_cast<int>(bounds.mins.x); x <= bounds.maxs.x; ++x) {
+        for(int y = static_cast<int>(bounds.mins.y); y <= bounds.maxs.y; ++y) {
+            results.push_back(GetTile(x, y, 0));
+        }
+    }
+    return results;
+}
+
 std::size_t Map::DebugTilesInViewCount() const {
     _debug_tiles_in_view_count = 0;
     for(const auto& layer : _layers) {
