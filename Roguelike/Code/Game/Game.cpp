@@ -1273,7 +1273,7 @@ void Game::ShowFeatureDebuggerUI() {
 }
 
 void Game::ShowFrameInspectorUI() {
-    static constexpr std::size_t max_histogram_count = 30;
+    static constexpr std::size_t max_histogram_count = 60;
     static std::array<float, max_histogram_count> histogram{};
     static std::size_t histogramIndex = 0;
     static const std::string histogramLabel = "Last " + std::to_string(max_histogram_count) + " Frames";
