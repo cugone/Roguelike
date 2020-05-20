@@ -110,9 +110,9 @@ private:
 
     void CreateFullscreenConstantBuffer();
 
-    void HandleDebugInput(Camera2D& base_camera);
-    void HandleDebugKeyboardInput(Camera2D& base_camera);
-    void HandleDebugMouseInput(Camera2D& base_camera);
+    void HandleDebugInput([[maybe_unused]] Camera2D& base_camera);
+    void HandleDebugKeyboardInput([[maybe_unused]] Camera2D& base_camera);
+    void HandleDebugMouseInput([[maybe_unused]] Camera2D& base_camera);
 
     void HandlePlayerInput(Camera2D& base_camera);
     void HandlePlayerKeyboardInput(Camera2D& base_camera);
@@ -123,6 +123,7 @@ private:
     void ZoomIn();
     void DecrementViewHeight();
 
+#ifdef PROFILE_BUILD
     void ShowDebugUI();
 
     std::vector<Tile*> DebugGetTilesFromMouse();
@@ -142,6 +143,7 @@ private:
     void ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity);
 
     void ShowFeatureInspectorUI();
+#endif
 
     void LoadUI();
     void LoadMaps();

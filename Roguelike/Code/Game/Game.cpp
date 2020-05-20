@@ -1069,15 +1069,18 @@ void Game::DecrementViewHeight() {
     _map->GetLayer(0)->viewHeight = vh;
 }
 
-void Game::HandleDebugInput(Camera2D& base_camera) {
+void Game::HandleDebugInput([[maybe_unused]]Camera2D& base_camera) {
+#ifdef PROFILE_BUILD
     if(_show_debug_window) {
         ShowDebugUI();
     }
     HandleDebugKeyboardInput(base_camera);
     HandleDebugMouseInput(base_camera);
+#endif
 }
 
-void Game::HandleDebugKeyboardInput(Camera2D& base_camera) {
+void Game::HandleDebugKeyboardInput([[maybe_unused]] Camera2D& base_camera) {
+#ifdef PROFILE_BUILD
     if(g_theUISystem->GetIO().WantCaptureKeyboard) {
         return;
     }
@@ -1121,9 +1124,11 @@ void Game::HandleDebugKeyboardInput(Camera2D& base_camera) {
             }
         }
     }
+#endif
 }
 
-void Game::HandleDebugMouseInput(Camera2D& /*base_camera*/) {
+void Game::HandleDebugMouseInput([[maybe_unused]] Camera2D& base_camera) {
+#ifdef PROFILE_BUILD
     if(g_theUISystem->GetIO().WantCaptureMouse) {
         return;
     }
@@ -1144,7 +1149,10 @@ void Game::HandleDebugMouseInput(Camera2D& /*base_camera*/) {
             _debug_has_picked_feature_with_click = _debug_inspected_feature != nullptr;
         }
     }
+#endif
 }
+
+#ifdef PROFILE_BUILD
 
 void Game::ShowDebugUI() {
     ImGui::SetNextWindowSize(Vector2{ 350.0f, 500.0f }, ImGuiCond_Always);
@@ -1504,3 +1512,5 @@ void Game::ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity) {
     }
     ImGui::Text(ss.str().c_str());
 }
+
+#endif
