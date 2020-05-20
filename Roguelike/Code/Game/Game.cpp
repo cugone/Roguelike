@@ -1280,10 +1280,12 @@ void Game::ShowFrameInspectorUI() {
     if(ImGui::CollapsingHeader("Frame Data")) {
         const auto frameTime = g_theRenderer->GetGameFrameTime().count();
         histogram[histogramIndex++] = frameTime;
-        ImGui::Text("FPS: %0.3f", 1.0f / frameTime);
-        ImGui::Text("Frame time: %0.3f", frameTime);
+        ImGui::Text("FPS: %0.1f", 1.0f / frameTime);
         ImGui::PlotHistogram(histogramLabel.c_str(), histogram.data(), static_cast<int>(histogram.size()));
-        ImGui::Text("Avg: %0.3f", std::reduce(std::begin(histogram), std::end(histogram), 0.0f) / max_histogram_count);
+        ImGui::Text("Frame time: %0.7f", frameTime);
+        ImGui::Text("Min: %0.7f", *std::max_element(std::begin(histogram), std::end(histogram)));
+        ImGui::Text("Max: %0.7f", *std::min_element(std::begin(histogram), std::end(histogram)));
+        ImGui::Text("Avg: %0.7f", std::reduce(std::begin(histogram), std::end(histogram), 0.0f) / max_histogram_count);
         ImGui::Checkbox("Vsync", &currentGraphicsOptions.vsync);
     }
     histogramIndex %= max_histogram_count;
