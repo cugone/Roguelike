@@ -121,6 +121,7 @@ public:
 
 private:
     void GenerateCorridors() noexcept;
+    void GenerateExit() noexcept;
     void MakeHorizontalCorridor(const AABB2& r1, const AABB2& r2) noexcept;
     void MakeVerticalCorridor(const AABB2& r1, const AABB2& r2) noexcept;
 };

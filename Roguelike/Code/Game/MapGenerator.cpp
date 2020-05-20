@@ -232,7 +232,7 @@ RoomsAndCorridorsMapGenerator::RoomsAndCorridorsMapGenerator(Map* map, const XML
 void RoomsAndCorridorsMapGenerator::Generate() {
     RoomsMapGenerator::Generate();
     GenerateCorridors();
-    // TODO: Generate exit
+    GenerateExit();
 }
 
 void RoomsAndCorridorsMapGenerator::GenerateCorridors() noexcept {
@@ -274,6 +274,28 @@ void RoomsAndCorridorsMapGenerator::MakeVerticalCorridor(const AABB2& r1, const 
                 neighbor->ChangeTypeFromName(wallType);
             }
         }
+    }
+}
+
+void RoomsAndCorridorsMapGenerator::GenerateExit() noexcept {
+    const int roomCount = static_cast<int>(rooms.size());
+    const auto room_id_with_down = MathUtils::GetRandomIntLessThan(roomCount);
+    const auto room_id_with_up = [roomCount,room_id_with_down]()->int {
+        auto result = MathUtils::GetRandomIntLessThan(roomCount);
+        while(result == room_id_with_down) {
+            result = MathUtils::GetRandomIntLessThan(roomCount);
+        }
+        return result;
+    }();
+    const auto room_with_exit = rooms[room_id_with_down];
+    const auto room_with_entrance = rooms[room_id_with_up];
+    const auto exit_loc = room_with_exit.mins + Vector2::ONE;
+    const auto enter_loc = room_with_entrance.mins + Vector2::ONE;
+    if(auto* tile = _map->GetTile(IntVector3{exit_loc, 0})) {
+        tile->ChangeTypeFromName(stairsDownType);
+    }
+    if(auto* tile = _map->GetTile(IntVector3{enter_loc, 0})) {
+        tile->ChangeTypeFromName(stairsUpType);
     }
 }
 
