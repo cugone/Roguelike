@@ -1,10 +1,6 @@
 <shader name="fullscreen">
-    <shaderprogram src="Data/ShaderPrograms/Fullscreen.hlsl">
-        <pipelinestages>
-            <vertex entrypoint="VertexFunction" />
-            <pixel  entrypoint="PixelFunction" />
-        </pipelinestages>
-    </shaderprogram>
+    <shaderprogram src="Data/ShaderPrograms/Fullscreen_VS.cso" />
+    <shaderprogram src="Data/ShaderPrograms/Fullscreen_PS.cso" />
     <raster src="__default" />
     <sampler src="__point" />
     <blends>
