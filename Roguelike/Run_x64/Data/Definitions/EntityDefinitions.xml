@@ -1,6 +1,6 @@
 <entityDefinitions>
     <spritesheet src="Data/Images/Tileset.png" dimensions="[65,65]" />
-    <entityDefinition name="human..male" index="[9,53]">
+    <entityDefinition name="human..male" index="[9,51]">
         <stats>
             <health>100</health>
             <attack>1</attack>
@@ -23,11 +23,13 @@
             -->
         </attachPoints>
         <inventory>
+            <item name="black_cape" />
             <item name="red_coat" />
             <item name="white_pants" />
             <item name="cutlass" />
         </inventory>
         <equipment>
+            <cape name="black_cape" />
             <body name="red_coat" />
             <legs name="white_pants" />
             <larm name="cutlass" />
@@ -37,7 +39,7 @@
             <behavior name="flee" />
         </behaviors>
     </entityDefinition>
-    <entityDefinition name="human..female" index="[8,53]">
+    <entityDefinition name="human..female" index="[8,51]">
         <stats>
             <health>1</health>
             <attack>1</attack>
