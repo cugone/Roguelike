@@ -117,6 +117,7 @@ private:
     void HandlePlayerInput(Camera2D& base_camera);
     void HandlePlayerKeyboardInput(Camera2D& base_camera);
     void HandlePlayerMouseInput(Camera2D& base_camera);
+    void HandlePlayerControllerInput(Camera2D& base_camera);
 
     void ZoomOut();
     void IncrementViewHeight();
@@ -127,6 +128,7 @@ private:
     void ShowDebugUI();
 
     std::vector<Tile*> DebugGetTilesFromMouse();
+    std::vector<Tile*> DebugGetTilesFromCursor();
 
     void ShowTileDebuggerUI();
     void ShowEntityDebuggerUI();
@@ -179,12 +181,13 @@ private:
     std::shared_ptr<SpriteSheet> _item_sheet{};
     std::unique_ptr<UI::Widget> _widgetLoading{};
     std::vector<Cursor> _cursors{};
-    float _cam_speed = 1.0f;
+    float _cam_speed = 5.0f;
     float _max_shake_angle = 0.0f;
     float _max_shake_x = 0.0f;
     float _max_shake_y = 0.0f;
     float _debug_fadeInTime = 1.0f;
     float _debug_fadeOutTime = 1.0f;
+    float _debug_fadeOutInTime = 0.0f;
     float _debug_gradientRadius = 0.5f;
     float _text_alpha = 1.0f;
     std::unique_ptr<class ConstantBuffer> _fullscreen_cb = nullptr;
@@ -211,6 +214,8 @@ private:
     uint16_t _show_entity_debugger : 1;
     uint16_t _show_feature_debugger : 1;
     uint16_t _show_all_entities : 1;
+    uint16_t _show_camera : 1;
+    uint16_t _show_room_bounds : 1;
     uint16_t _done_loading : 1;
     friend class Map;
     friend class Layer;

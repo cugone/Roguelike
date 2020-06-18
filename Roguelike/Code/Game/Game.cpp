@@ -51,6 +51,8 @@ Game::Game()
 ,_show_entity_debugger{0}
 ,_show_feature_debugger{0}
 ,_show_all_entities{0}
+,_show_camera{0}
+,_show_room_bounds{0}
 ,_done_loading{0}
 {
     /* DO NOTHING */
@@ -76,6 +78,7 @@ void Game::Initialize() {
     g_theRenderer->RegisterFontsFromFolder(std::string{"Data/Fonts"});
     ingamefont = g_theRenderer->GetFont("TrebuchetMS32");
 
+    g_theInputSystem->HideMouseCursor();
     //g_theUISystem->RegisterUiWidgetsFromFolder(std::string{"Data/UI"});
 
 }
@@ -109,6 +112,9 @@ void Game::OnEnter_Loading() {
 
 void Game::OnEnter_Main() {
     RegisterCommands();
+    _map->FocusEntity(_map->player);
+    current_cursor->SetCoords(_map->player->tile->GetCoords());
+    g_theInputSystem->LockMouseToWindowViewport();
 }
 
 void Game::OnExit_Title() {
@@ -120,6 +126,7 @@ void Game::OnExit_Loading() {
 }
 
 void Game::OnExit_Main() {
+    g_theInputSystem->UnlockMouseFromViewport();
     UnRegisterCommands();
     _cursors.clear();
     CursorDefinition::ClearCursorRegistry();
@@ -169,7 +176,7 @@ void Game::Update_Main(TimeUtils::FPSeconds deltaSeconds) {
         return;
     }
     if(g_theApp->LostFocus()) {
-        deltaSeconds = TimeUtils::FPSeconds{};
+        deltaSeconds = TimeUtils::FPSeconds::zero();
     }
     g_theRenderer->UpdateGameTime(deltaSeconds);
     Camera2D& base_camera = _map->camera;
@@ -202,7 +209,7 @@ void Game::Render_Title() const {
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
 
-    g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents));
+    g_theRenderer->SetModelMatrix(Matrix4::I);
     g_theRenderer->DrawTextLine(ingamefont, "RogueLike");
 
 }
@@ -217,24 +224,24 @@ void Game::Render_Loading() const {
     g_theRenderer->SetViewportAsPercent();
 
     //2D View / HUD
-    //const float ui_view_height = currentGraphicsOptions.WindowHeight;
-    //const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
-    //const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
-    //const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    //const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
-    //const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
-    //const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
-    //ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
-    //g_theRenderer->SetCamera(ui_camera);
+    const float ui_view_height = currentGraphicsOptions.WindowHeight;
+    const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
+    const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
+    const auto ui_view_half_extents = ui_view_extents * 0.5f;
+    const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
+    const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
+    const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
+    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
+    g_theRenderer->SetCamera(ui_camera);
 
-    //g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents));
-    //g_theRenderer->DrawTextLine(ingamefont, "LOADING");
-    //if(_done_loading) {
-    //    const std::string text = "Press Any Key";
-    //    static const auto text_length = ingamefont->CalculateTextWidth(text);
-    //    g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents + Vector2{ text_length * -0.25f, ingamefont->GetLineHeight() }));
-    //    g_theRenderer->DrawTextLine(ingamefont, text, Rgba{255, 255, 255, static_cast<unsigned char>(255.0f * _text_alpha)});
-    //}
+    g_theRenderer->SetModelMatrix(Matrix4::I);
+    g_theRenderer->DrawTextLine(ingamefont, "LOADING");
+    if(_done_loading) {
+        const std::string text = "Press Any Key";
+        static const auto text_length = ingamefont->CalculateTextWidth(text);
+        g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(Vector2{ text_length * -0.25f, ingamefont->GetLineHeight() }));
+        g_theRenderer->DrawTextLine(ingamefont, text, Rgba{255, 255, 255, static_cast<unsigned char>(255.0f * _text_alpha)});
+    }
 
 }
 
@@ -269,22 +276,40 @@ void Game::Render_Main() const {
 
     if(g_theApp->LostFocus()) {
         g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
-        g_theRenderer->DrawQuad2D(Vector2::ZERO, Vector2::ONE, Rgba{ 0, 0, 0, 128 });
+        g_theRenderer->DrawQuad2D(Vector2::ZERO, Vector2::ONE, Rgba{0, 0, 0, 128});
     }
 
     //2D View / HUD
     const float ui_view_height = currentGraphicsOptions.WindowHeight;
     const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
-    const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
+    const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
-    const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
+    const auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
+    const auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
+    const auto ui_center = Vector2::ZERO;
     const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
 
+    const auto mouseWindowPos = g_theInputSystem->GetMouseCoords();
+    g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(Vector2{ui_leftBottom.x, ui_rightTop.y + ingamefont->GetLineHeight() * 1.0f}));
+    g_theRenderer->DrawTextLine(ingamefont, "MC: " + StringUtils::to_string(mouseWindowPos));
+    
+    const auto mouseDelta = g_theInputSystem->GetMouseDelta();
+    g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(Vector2{ui_leftBottom.x, ui_rightTop.y + ingamefont->GetLineHeight() * 2.0f}));
+    g_theRenderer->DrawTextLine(ingamefont, "MD: " + StringUtils::to_string(mouseDelta));
+
+    const auto windowCenter = g_theInputSystem->GetWindowCenter();
+    g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(Vector2{ui_leftBottom.x, ui_rightTop.y + ingamefont->GetLineHeight() * 3.0f}));
+    g_theRenderer->DrawTextLine(ingamefont, "WC: " + StringUtils::to_string(windowCenter));
+    
+    const auto cursorCoords = current_cursor->GetCoords();
+    g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(Vector2{ui_leftBottom.x, ui_rightTop.y + ingamefont->GetLineHeight() * 4.0f}));
+    g_theRenderer->DrawTextLine(ingamefont, "CC:" + StringUtils::to_string(Vector2{cursorCoords}));
+
+
     if(g_theApp->LostFocus()) {
-        g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_view_half_extents));
+        g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_center));
         g_theRenderer->DrawTextLine(ingamefont, "PAUSED");
     }
 }
@@ -961,6 +986,7 @@ void Game::SetCurrentCursorById(CursorId id) noexcept {
 
 void Game::HandlePlayerInput(Camera2D& base_camera) {
     HandlePlayerKeyboardInput(base_camera);
+    //HandlePlayerControllerInput(base_camera);
     HandlePlayerMouseInput(base_camera);
 }
 
@@ -1032,6 +1058,9 @@ void Game::HandlePlayerKeyboardInput(Camera2D& base_camera) {
 }
 
 void Game::HandlePlayerMouseInput(Camera2D& base_camera) {
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::H)) {
+        g_theInputSystem->ToggleMouseCursorVisibility();
+    }
     if(g_theInputSystem->WasMouseWheelJustScrolledUp()) {
         DecrementViewHeight();
     }
@@ -1040,12 +1069,38 @@ void Game::HandlePlayerMouseInput(Camera2D& base_camera) {
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::MButton)) {
         _map->FocusEntity(_map->player);
+        current_cursor->SetCoords(_map->player->tile->GetCoords());
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::RButton)) {
-        const auto mouse_pos = g_theInputSystem->GetCursorWindowPosition(*g_theRenderer->GetOutput()->GetWindow());
-        if(const auto& tiles = _map->PickTilesFromMouseCoords(mouse_pos); !tiles.empty()) {
-            base_camera.position = Vector2{tiles[0]->GetCoords()};
-        }
+        //g_theInputSystem->HideMouseCursor();
+    }
+    if(g_theInputSystem->IsKeyDown(KeyCode::RButton)) {
+        const auto mouseDelta = g_theInputSystem->GetMouseDelta();
+        base_camera.Translate(_cam_speed * mouseDelta * g_theRenderer->GetGameFrameTime().count());
+    }
+    if(g_theInputSystem->WasKeyJustReleased(KeyCode::RButton)) {
+        //g_theInputSystem->ShowMouseCursor();
+    }
+    //g_theInputSystem->SetCursorToWindowCenter();
+}
+
+void Game::HandlePlayerControllerInput(Camera2D& base_camera) {
+    auto& controller = g_theInputSystem->GetXboxController(0);
+    auto rthumb = controller.GetRightThumbPosition();
+    rthumb.y *= currentGraphicsOptions.InvertMouseY ? 1.0f : -1.0f;
+    base_camera.position += _cam_speed * rthumb * g_theRenderer->GetGameFrameTime().count();
+
+    if(controller.WasButtonJustPressed(XboxController::Button::RightThumb)) {
+        _map->FocusEntity(_map->player);
+    }
+
+    auto ltrigger = controller.GetLeftTriggerPosition();
+    auto rtrigger = controller.GetRightTriggerPosition();
+    if(ltrigger > 0.0f) {
+        ZoomOut();
+    }
+    if(rtrigger > 0.0f) {
+        ZoomIn();
     }
 }
 
@@ -1095,12 +1150,6 @@ void Game::HandleDebugKeyboardInput([[maybe_unused]] Camera2D& base_camera) {
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F1)) {
         _show_debug_window = !_show_debug_window;
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F2)) {
-        _show_grid = !_show_grid;
-    }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F3)) {
-        _show_world_bounds = !_show_world_bounds;
-    }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F4)) {
         g_theUISystem->ToggleImguiDemoWindow();
     }
@@ -1108,8 +1157,12 @@ void Game::HandleDebugKeyboardInput([[maybe_unused]] Camera2D& base_camera) {
         _map->SetPriorityLayer(static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(static_cast<int>(_map->GetLayerCount()))));
     }
 
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::G)) {
+        _map->RegenerateMap();
+    }
+
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::B)) {
-        base_camera.trauma += 0.2f;
+        _map->ShakeCamera([]()->float { const auto t = g_theRenderer->GetGameTime().count(); return std::cos(t) * std::sin(t); });
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::R)) {
         const auto layer_count = _map->GetLayerCount();
@@ -1129,7 +1182,7 @@ void Game::HandleDebugMouseInput([[maybe_unused]] Camera2D& base_camera) {
         return;
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::LButton)) {
-        const auto& picked_tiles = DebugGetTilesFromMouse();
+        const auto& picked_tiles = DebugGetTilesFromCursor();
         _debug_has_picked_tile_with_click = _show_tile_debugger && !picked_tiles.empty();
         _debug_has_picked_entity_with_click = _show_entity_debugger && !picked_tiles.empty();
         _debug_has_picked_feature_with_click = _show_feature_debugger && !picked_tiles.empty();
@@ -1301,6 +1354,9 @@ void Game::ShowWorldInspectorUI() {
         ImGui::Text("Camera: [%.1f,%.1f]", _map->camera.position.x, _map->camera.position.y);
         ImGui::Text("Tiles in view: %llu", _map->DebugTilesInViewCount());
         ImGui::Text("Tiles visible in view: %llu", _map->DebugVisibleTilesInViewCount());
+        static bool show_camera = false;
+        ImGui::Checkbox("Show Camera", &show_camera);
+        _show_camera = show_camera;
         static bool show_grid = false;
         ImGui::Checkbox("World Grid", &show_grid);
         _show_grid = show_grid;
@@ -1311,18 +1367,21 @@ void Game::ShowWorldInspectorUI() {
         static bool show_world_bounds = false;
         ImGui::Checkbox("World Bounds", &show_world_bounds);
         _show_world_bounds = show_world_bounds;
+        static bool show_room_bounds = false;
+        ImGui::Checkbox("Show Room Bounds", &show_room_bounds);
+        _show_room_bounds = show_room_bounds;
         static bool show_all_entities = false;
         ImGui::Checkbox("Show All Entities", &show_all_entities);
         _show_all_entities = show_all_entities;
         static bool show_raycasts = false;
         ImGui::Checkbox("Show raycasts", &show_raycasts);
         _show_raycasts = show_raycasts;
-        _debug_render = _show_grid || _show_world_bounds || _show_all_entities || _show_raycasts;
+        _debug_render = _show_room_bounds || _show_camera || _show_grid || _show_world_bounds || _show_all_entities || _show_raycasts;
     }
 }
 
 void Game::ShowTileInspectorUI() {
-    const auto& picked_tiles = DebugGetTilesFromMouse();
+    const auto& picked_tiles = DebugGetTilesFromCursor();
     bool has_tile = !picked_tiles.empty();
     bool has_selected_tile = _debug_has_picked_tile_with_click && !_debug_inspected_tiles.empty();
     bool shouldnt_show_inspector = !has_tile && !has_selected_tile;
@@ -1407,8 +1466,34 @@ std::vector<Tile*> Game::DebugGetTilesFromMouse() {
     return _map->PickTilesFromMouseCoords(mouse_pos);
 }
 
+std::vector<Tile*> Game::DebugGetTilesFromCursor() {
+    if(!current_cursor) {
+        return {};
+    }
+    const auto cursor_pos = current_cursor->GetCoords();
+    if(_debug_has_picked_tile_with_click) {
+        static std::vector<Tile*> picked_tiles{};
+        picked_tiles = _map->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});
+        if(picked_tiles.empty()) {
+            return {};
+        }
+        auto* tile_actor = picked_tiles[0]->actor;
+        auto* tile_feature = picked_tiles[0]->feature;
+        bool tile_has_entity = !picked_tiles.empty() && (tile_actor || tile_feature);
+        if(tile_has_entity && _debug_has_picked_entity_with_click) {
+            if(tile_actor) {
+                _debug_inspected_entity = tile_actor;
+            } else if(tile_feature) {
+                _debug_inspected_entity = tile_feature;
+            }
+        }
+        return picked_tiles;
+    }
+    return _map->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});
+}
+
 void Game::ShowEntityInspectorUI() {
-    const auto& picked_tiles = DebugGetTilesFromMouse();
+    const auto& picked_tiles = DebugGetTilesFromCursor();
     const auto picked_count = picked_tiles.size();
     bool has_entity = (picked_count > 0 && picked_tiles[0]->actor);
     bool has_selected_entity = _debug_has_picked_entity_with_click && _debug_inspected_entity;
@@ -1434,7 +1519,7 @@ void Game::ShowEntityInspectorUI() {
 }
 
 void Game::ShowFeatureInspectorUI() {
-    const auto& picked_tiles = DebugGetTilesFromMouse();
+    const auto& picked_tiles = DebugGetTilesFromCursor();
     const auto picked_count = picked_tiles.size();
     bool has_feature = (picked_count > 0 && picked_tiles[0]->feature);
     bool has_selected_feature = _debug_has_picked_feature_with_click && _debug_inspected_feature;
