@@ -52,7 +52,7 @@ App::App(const std::string& cmdString)
     , _theRenderer{std::make_unique<Renderer>(*_theFileLogger.get(), static_cast<unsigned int>(defaultGraphicsOptions.WindowWidth), static_cast<unsigned int>(defaultGraphicsOptions.WindowHeight)) }
     , _theUI{std::make_unique<UISystem>(*_theFileLogger.get(), *_theRenderer.get())}
     , _theConsole{ std::make_unique<Console>(*_theFileLogger.get(), *_theRenderer.get()) }
-    , _theInputSystem{ std::make_unique<InputSystem>(*_theFileLogger.get()) }
+    , _theInputSystem{ std::make_unique<InputSystem>(*_theFileLogger.get(), *_theRenderer.get()) }
     , _theAudioSystem{ std::make_unique<AudioSystem>(*_theFileLogger.get()) }
     , _theGame{std::make_unique<Game>()}
 {
