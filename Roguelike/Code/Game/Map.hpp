@@ -26,6 +26,7 @@ class Renderer;
 class TileDefinition;
 class SpriteSheet;
 class MapGenerator;
+class Pathfinder;
 
 class Map {
 public:
@@ -55,6 +56,9 @@ public:
     void DebugRender(Renderer& renderer) const;
     void EndFrame();
 
+    bool IsTileInArea(const AABB2& bounds, const IntVector2& tileCoords) const;
+    bool IsTileInArea(const AABB2& bounds, const IntVector3& tileCoords) const;
+    bool IsTileInArea(const AABB2& bounds, const Tile* tile) const;
     bool IsTileInView(const IntVector2& tileCoords) const;
     bool IsTileInView(const IntVector3& tileCoords) const;
     bool IsTileInView(const Tile* tile) const;
@@ -299,6 +303,12 @@ public:
     std::size_t DebugTilesInViewCount() const;
     std::size_t DebugVisibleTilesInViewCount() const;
 
+    void GenerateMap(const XMLElement& elem) noexcept;
+    void RegenerateMap() noexcept;
+
+    Pathfinder* GetPathfinder() const noexcept;
+
+    std::unique_ptr<MapGenerator> _map_generator{};
 protected:
 private:
     bool LoadFromXML(const XMLElement& elem);
@@ -323,13 +333,16 @@ private:
     std::string _name{};
     std::vector<std::unique_ptr<Layer>> _layers{};
     Renderer& _renderer;
+    const XMLElement& _root_xml_element;
     Material* _default_tileMaterial{};
     Material* _current_tileMaterial{};
+    std::unique_ptr<Pathfinder> _pathfinder{};
     std::vector<Entity*> _entities{};
     std::vector<EntityText*> _text_entities{};
     std::vector<Actor*> _actors{};
     std::vector<Feature*> _features{};
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
+
     float _camera_speed = 1.0f;
     mutable std::size_t _debug_tiles_in_view_count{};
     mutable std::size_t _debug_visible_tiles_in_view_count{};
@@ -340,4 +353,7 @@ private:
     friend class FileMapGenerator;
     friend class XmlMapGenerator;
     friend class RoomsMapGenerator;
+    friend class RoomsAndCorridorsMapGenerator;
+public:
+    std::vector<Tile*> GetViewableTiles() const noexcept;
 };

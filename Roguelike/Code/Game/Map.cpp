@@ -27,7 +27,7 @@
 #include "Game/Inventory.hpp"
 #include "Game/Layer.hpp"
 #include "Game/MapGenerator.hpp"
-#include "Game/Inventory.hpp"
+#include "Game/Pathfinder.hpp"
 #include "Game/TileDefinition.hpp"
 #include "Game/Tile.hpp"
 
@@ -98,6 +98,14 @@ std::size_t Map::DebugVisibleTilesInViewCount() const {
         _debug_visible_tiles_in_view_count += layer->debug_visible_tiles_in_view_count;
     }
     return _debug_visible_tiles_in_view_count;
+}
+
+void Map::RegenerateMap() noexcept {
+    _map_generator->Generate();
+}
+
+Pathfinder* Map::GetPathfinder() const noexcept {
+    return _pathfinder.get();
 }
 
 void Map::SetDebugGridColor(const Rgba& gridColor) {
@@ -189,6 +197,8 @@ bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
 
 Map::Map(Renderer& renderer, const XMLElement& elem) noexcept
     : _renderer(renderer)
+    , _root_xml_element(elem)
+    , _pathfinder(std::make_unique<Pathfinder>())
 {
     if(!LoadFromXML(elem)) {
         ERROR_AND_DIE("Could not load map.");
@@ -316,44 +326,27 @@ void Map::DebugRender(Renderer& renderer) const {
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
         renderer.DrawWorldGrid2D(layer->tileDimensions, layer->debug_grid_color);
     }
+    if(g_theGame->_show_room_bounds) {
+        if(auto* generator = dynamic_cast<RoomsMapGenerator*>(_map_generator.get()); generator != nullptr) {
+            for(auto& room : generator->rooms) {
+                renderer.SetModelMatrix(Matrix4::I);
+                renderer.SetMaterial(renderer.GetMaterial("__2D"));
+                renderer.DrawAABB2(room, Rgba::Cyan, Rgba::NoAlpha);
+            }
+        }
+    }
     if(g_theGame->_show_world_bounds) {
         auto bounds = CalcWorldBounds();
         renderer.SetModelMatrix(Matrix4::I);
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
         renderer.DrawAABB2(bounds, Rgba::Cyan, Rgba::NoAlpha);
     }
-    if(g_theGame->_show_raycasts) {
-        const auto* map = g_theGame->_map.get();
-        for(auto& tile : *map->GetLayer(0)) {
-            tile.color = tile.highlightColor;
-        }
-        const auto* p = map->player;
-        const auto vision_range = p->visibility;
-        const auto& startTile = *map->GetTile(IntVector3(p->GetPosition(), 0));
-        const auto tiles = map->GetTilesWithinDistance(startTile, vision_range);
-        renderer.SetModelMatrix(Matrix4::I);
+    if(g_theGame->_show_camera) {
+        const auto cam_pos = camera.GetPosition();
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
-        const auto start = player->tile->GetBounds().CalcCenter();
-        for(const auto& tile : tiles) {
-            const auto end = tile->GetBounds().CalcCenter();
-            const auto resultVisible = map->Raycast(start, end, true, [map](const IntVector2& tileCoords) { return map->IsTileOpaque(tileCoords); });
-            const auto resultImpassable = map->Raycast(start, end, true, [map](const IntVector2& tileCoords) { return !map->IsTilePassable(tileCoords); });
-            if(resultVisible.didImpact || resultImpassable.didImpact) {
-                if(resultVisible.didImpact) {
-                    const auto normalStart = resultVisible.impactPosition;
-                    const auto normalEnd = resultVisible.impactPosition + resultVisible.impactSurfaceNormal * 0.5f;
-                    renderer.DrawLine2D(start, normalStart, Rgba::White);
-                    renderer.DrawLine2D(normalStart, normalEnd, Rgba::Red);
-                }
-                if(resultImpassable.didImpact) {
-                    auto* cur_tile = map->GetTile(IntVector3{resultImpassable.impactPosition, 0});
-                    if(!map->IsTilePassable(cur_tile->GetCoords())) {
-                        cur_tile->color = cur_tile->debugRaycastColor;
-                    }
-                }
-                continue;
-            }
-        }
+        renderer.DrawCircle2D(cam_pos, 0.5f, Rgba::Cyan);
+        renderer.DrawAABB2(GetLayer(0)->CalcViewBounds(cam_pos), Rgba::Green, Rgba::NoAlpha);
+        renderer.DrawAABB2(GetLayer(0)->CalcCullBounds(cam_pos), Rgba::Blue, Rgba::NoAlpha);
     }
 }
 
@@ -368,6 +361,21 @@ void Map::EndFrame() {
     _text_entities.erase(std::remove_if(std::begin(_text_entities), std::end(_text_entities), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_text_entities));
     _actors.erase(std::remove_if(std::begin(_actors), std::end(_actors), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_actors));
     _features.erase(std::remove_if(std::begin(_features), std::end(_features), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_features));
+}
+
+bool Map::IsTileInArea(const AABB2& bounds, const IntVector2& tileCoords) const {
+    return IsTileInArea(bounds, IntVector3{tileCoords, 0});
+}
+
+bool Map::IsTileInArea(const AABB2& bounds, const IntVector3& tileCoords) const {
+    return IsTileInArea(bounds, GetTile(tileCoords));
+}
+
+bool Map::IsTileInArea(const AABB2& bounds, const Tile* tile) const {
+    if(!tile) {
+        return false;
+    }
+    return MathUtils::DoAABBsOverlap(bounds, tile->GetBounds());
 }
 
 bool Map::IsTileInView(const IntVector2& tileCoords) const {
@@ -692,11 +700,12 @@ bool Map::LoadFromXML(const XMLElement& elem) {
     LoadNameForMap(elem);
     LoadMaterialsForMap(elem);
     LoadTileDefinitionsForMap(elem);
-    LoadGenerator(elem);
-    LoadItemsForMap(elem);
-    LoadActorsForMap(elem);
-    LoadFeaturesForMap(elem);
+    GenerateMap(elem);
     return true;
+}
+
+void Map::GenerateMap(const XMLElement& elem) noexcept {
+    LoadGenerator(elem);
 }
 
 void Map::LoadNameForMap(const XMLElement& elem) {
@@ -722,16 +731,16 @@ void Map::CreateGeneratorFromTypename(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "mapGenerator", "", "", "", "type");
     const auto xml_type = DataUtils::ParseXmlAttribute(elem, "type", "");
     if(xml_type == "heightmap") {
-        HeightMapGenerator g{this, elem};
-        g.Generate();
+        _map_generator = std::make_unique<HeightMapGenerator>(this, elem);
+        _map_generator->Generate();
     } else if(xml_type == "file") {
-        FileMapGenerator g{this, elem};
-        g.Generate();
+        _map_generator = std::make_unique<FileMapGenerator>(this, elem);
+        _map_generator->Generate();
     } else if(xml_type == "maze") {
         MazeMapGenerator::Generate(this, elem);
     } else {
-        XmlMapGenerator g{this, elem};
-        g.Generate();
+        _map_generator = std::make_unique<XmlMapGenerator>(this, elem);
+        _map_generator->Generate();
     }
 }
 

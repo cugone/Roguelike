@@ -129,6 +129,9 @@
     <ClCompile Include="MapGenerator.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Pathfinder.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.hpp">
@@ -231,6 +234,9 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="MapGenerator.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Pathfinder.hpp">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>

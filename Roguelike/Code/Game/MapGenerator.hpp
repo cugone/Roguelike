@@ -21,6 +21,9 @@ public:
     virtual void Generate() = 0;
 protected:
     void LoadLayers(const XMLElement& elem);
+    virtual void LoadItems(const XMLElement& elem) = 0;
+    virtual void LoadActors(const XMLElement& elem) = 0;
+    virtual void LoadFeatures(const XMLElement& elem) = 0;
 
     const XMLElement& _xml_element;
     Map* _map = nullptr;
@@ -39,6 +42,9 @@ public:
     void Generate() override;
 protected:
 private:
+    void LoadItems(const XMLElement& elem) override;
+    void LoadActors(const XMLElement& elem) override;
+    void LoadFeatures(const XMLElement& elem) override;
 };
 
 class FileMapGenerator : public MapGenerator {
@@ -54,6 +60,9 @@ public:
 protected:
 private:
     void LoadLayersFromFile(const XMLElement& elem);
+    void LoadItems(const XMLElement& elem) override;
+    void LoadActors(const XMLElement& elem) override;
+    void LoadFeatures(const XMLElement& elem) override;
 };
 
 class XmlMapGenerator : public MapGenerator {
@@ -69,6 +78,9 @@ public:
 protected:
 private:
     void LoadLayersFromXml(const XMLElement& elem);
+    void LoadItems(const XMLElement& elem) override;
+    void LoadActors(const XMLElement& elem) override;
+    void LoadFeatures(const XMLElement& elem) override;
 };
 
 class MazeMapGenerator : public MapGenerator {
@@ -83,6 +95,9 @@ public:
     static void Generate(Map* map, const XMLElement& elem);
     virtual void Generate() = 0;
 protected:
+    virtual void LoadItems(const XMLElement& elem) = 0;
+    virtual void LoadActors(const XMLElement& elem) = 0;
+    virtual void LoadFeatures(const XMLElement& elem) = 0;
 private:
 };
 
@@ -96,6 +111,7 @@ public:
     RoomsMapGenerator& operator=(RoomsMapGenerator&& other) = delete;
     virtual ~RoomsMapGenerator() noexcept = default;
     void Generate() override;
+    std::vector<AABB2> rooms{};
 protected:
     std::string defaultType{"void"};
     std::string floorType{"void"};
@@ -104,8 +120,10 @@ protected:
     std::string stairsUpType{"void"};
     std::string enterType{"void"};
     std::string exitType{"void"};
-    std::vector<AABB2> rooms{};
 private:
+    void LoadItems(const XMLElement& elem) override;
+    void LoadActors(const XMLElement& elem) override;
+    void LoadFeatures(const XMLElement& elem) override;
 };
 
 class RoomsAndCorridorsMapGenerator : public RoomsMapGenerator {
@@ -118,10 +136,17 @@ public:
     RoomsAndCorridorsMapGenerator& operator=(RoomsAndCorridorsMapGenerator&& other) = delete;
     virtual ~RoomsAndCorridorsMapGenerator() noexcept = default;
     void Generate() override;
-
 private:
+    void LoadItems(const XMLElement& elem) override;
+    void LoadActors(const XMLElement& elem) override;
+    void LoadFeatures(const XMLElement& elem) override;
+
     void GenerateCorridors() noexcept;
-    void GenerateExit() noexcept;
+    bool GenerateExitAndEntrance() noexcept;
     void MakeHorizontalCorridor(const AABB2& r1, const AABB2& r2) noexcept;
     void MakeVerticalCorridor(const AABB2& r1, const AABB2& r2) noexcept;
+    bool VerifyExitIsReachable(const IntVector2& enter_loc, const  IntVector2& exit_loc) const noexcept;
+    void PlaceActors() noexcept;
+    void PlaceFeatures() noexcept;
+    void PlaceItems() noexcept;
 };
