@@ -61,7 +61,7 @@ Stats Stats::operator-() {
 }
 
 Stats::Stats(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "stats", "", "", "level,health,attack,defense,speed,accuracy,evasion,experience");
+    DataUtils::ValidateXmlElement(elem, "stats", "", "", "level,health,attack,defense,speed,accuracy,evasion,luck,experience");
     if(auto* xml_level = elem.FirstChildElement("level")) {
         auto id = StatsID::Level;
         auto default_value = GetStat(id);
@@ -106,6 +106,15 @@ Stats::Stats(const XMLElement& elem) {
         auto value = DataUtils::ParseXmlElementText(*xml_evasion, default_value);
         SetStat(id, value);
     }
+    if(auto* xml_luck = elem.FirstChildElement("luck")) {
+        auto id = StatsID::Luck;
+        auto default_value = GetStat(id);
+        auto value = DataUtils::ParseXmlElementText(*xml_luck, default_value);
+        SetStat(id, value);
+    } else {
+        auto value = 5L;
+        SetStat(StatsID::Luck, value);
+    }
     if(auto* xml_experience = elem.FirstChildElement("experience")) {
         auto id = StatsID::Experience;
         auto default_value = GetStat(id);
@@ -117,7 +126,9 @@ Stats::Stats(const XMLElement& elem) {
 Stats::Stats(std::initializer_list<decltype(_stats)::value_type> l) {
     auto id = StatsID::First_;
     for(const auto value : l) {
-        SetStat(id++, value);
+        if(id < StatsID::Last_) {
+            SetStat(id++, value);
+        }
     }
     for(; id != StatsID::Last_; ++id) {
         SetStat(id, 0L);

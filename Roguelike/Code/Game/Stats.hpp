@@ -19,6 +19,7 @@ enum class StatsID {
     ,Defense
     ,Speed
     ,Evasion
+    ,Luck
     ,Experience
     , Max
     , Last_ = Max
