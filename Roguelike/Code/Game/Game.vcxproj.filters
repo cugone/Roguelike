@@ -28,6 +28,9 @@
     <Filter Include="Data\UI">
       <UniqueIdentifier>{7686c2ec-8639-428c-8830-863e4f0ed00f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data\Audio">
+      <UniqueIdentifier>{11cbf8d9-694d-4492-a2b6-6f474e428cf1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp">
@@ -286,5 +289,13 @@
     <Image Include="..\..\Run_x64\Data\Images\heightmap.png">
       <Filter>Data\Images</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="..\..\Run_x64\Data\Audio\Crit.wav">
+      <Filter>Data\Audio</Filter>
+    </Media>
+    <Media Include="..\..\Run_x64\Data\Audio\Hit.wav">
+      <Filter>Data\Audio</Filter>
+    </Media>
   </ItemGroup>
 </Project>

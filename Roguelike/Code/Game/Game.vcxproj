@@ -255,6 +255,10 @@
     <Image Include="..\..\Run_x64\Data\Images\heightmap.png" />
     <Image Include="..\..\Run_x64\Data\Images\Tileset.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Media Include="..\..\Run_x64\Data\Audio\Crit.wav" />
+    <Media Include="..\..\Run_x64\Data\Audio\Hit.wav" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
