@@ -19,54 +19,30 @@ Tile::Tile()
     /* DO NOTHING */
 }
 
-void Tile::Update(TimeUtils::FPSeconds deltaSeconds) {
-    _def->GetSprite()->Update(deltaSeconds);
+void Tile::AddVerts() const noexcept {
+    AddVertsForTile();
     if(actor) {
-        actor->Update(deltaSeconds);
+        actor->AddVerts();
     } else if(feature) {
-        feature->Update(deltaSeconds);
-    }
-}
-
-void Tile::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
-    if(IsInvisible()) {
-        return;
-    }
-    AddVertsForTile(verts, ibo, layer_color, layer_index);
-    if(canSee && actor) {
-        actor->Render(verts, ibo, layer_color, layer_index);
-    } else if(feature) {
-        feature->Render(verts, ibo, layer_color, layer_index);
+        feature->AddVerts();
     } else if(!inventory.empty()) {
-        if(inventory.size() > 1) {
-
-        } else {
-            if(auto* item = inventory.GetItem(0)) {
-                item->Render(_tile_coords, verts, ibo, layer_color, layer_index);
-            }
-        }
+        inventory.AddVerts(Vector2{_tile_coords}, layer);
     }
     if(!canSee && haveSeen) {
-        AddVertsForOverlay(verts, ibo, layer_color, layer_index);
+        AddVertsForOverlay();
+    }
+
+    if(g_theGame->current_cursor; g_theGame->current_cursor->GetCoords() == _tile_coords) {
+        auto& builder = layer->GetMeshBuilder();
+        g_theGame->current_cursor->AddVertsForCursor(builder);
     }
 }
 
-void Tile::DebugRender(Renderer& renderer) const {
-    Entity* entity = (actor ? dynamic_cast<Entity*>(actor) : (feature ? dynamic_cast<Entity*>(feature) : nullptr));
-    if(g_theGame->_show_all_entities && entity) {
-        auto tile_bounds = GetBounds();
-        renderer.SetMaterial(renderer.GetMaterial("__2D"));
-        renderer.SetModelMatrix(Matrix4::I);
-        renderer.DrawAABB2(tile_bounds, Rgba::Red, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
-    }
+void Tile::Update(TimeUtils::FPSeconds deltaSeconds) {
+    _def->GetSprite()->Update(deltaSeconds);
 }
 
-void Tile::AddVertsForTile(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
-    if(const auto* upNeighbor = GetUpNeighbor()) {
-        if(upNeighbor->IsOpaque()) {
-            return;
-        }
-    }
+void Tile::AddVertsForTile() const noexcept {
     const auto& sprite = _def->GetSprite();
     const auto& coords = sprite->GetCurrentTexCoords();
 
@@ -90,24 +66,61 @@ void Tile::AddVertsForTile(std::vector<Vertex3D>& verts, std::vector<unsigned in
     const auto tx_tr = Vector2(tx_right, tx_top);
     const auto tx_br = Vector2(tx_right, tx_bottom);
 
-    const float z = static_cast<float>(layer_index);
-    verts.push_back(Vertex3D(Vector3(vert_bl, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_bl));
-    verts.push_back(Vertex3D(Vector3(vert_tl, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_tl));
-    verts.push_back(Vertex3D(Vector3(vert_tr, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_tr));
-    verts.push_back(Vertex3D(Vector3(vert_br, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_br));
+    const float z = static_cast<float>(layer->z_index);
+    const Rgba layer_color = layer->color;
+    auto& builder = layer->GetMeshBuilder();
+    //auto& vbo = layer->GetVbo();
+    const auto newColor = layer_color != color && color != Rgba::White ? color : layer_color;
+    const auto normal = -Vector3::Z_AXIS;
 
-    const auto v_s = verts.size();
-    ibo.push_back(static_cast<unsigned int>(v_s) - 4u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 3u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 2u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 4u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 2u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 1u);
+    builder.Begin(PrimitiveType::Triangles);
+    builder.SetColor(newColor);
+    builder.SetNormal(normal);
+    
+    builder.SetUV(tx_tl);
+    builder.AddVertex(Vector3{vert_tl, z});
+
+    builder.SetUV(tx_bl);
+    builder.AddVertex(Vector3{vert_bl, z});
+    
+    builder.SetUV(tx_br);
+    builder.AddVertex(Vector3{vert_br, z});
+
+    builder.SetUV(tx_tr);
+    builder.AddVertex(Vector3{vert_tr, z});
+
+    builder.AddIndicies(Mesh::Builder::Primitive::Quad);
+
+    builder.End(sprite->GetMaterial());
+
+    //vbo.push_back(Vertex3D{Vector3{vert_tl, z}, newColor, tx_tl, normal});
+    //vbo.push_back(Vertex3D{Vector3{vert_bl, z}, newColor, tx_bl, normal});
+    //vbo.push_back(Vertex3D{Vector3{vert_br, z}, newColor, tx_br, normal});
+    //vbo.push_back(Vertex3D{Vector3{vert_tr, z}, newColor, tx_tr, normal});
+
+    //const auto v_s = static_cast<unsigned int>(vbo.size());
+    //auto& ibo = layer->GetIbo();
+    //ibo.push_back(v_s - 4u);
+    //ibo.push_back(v_s - 3u);
+    //ibo.push_back(v_s - 2u);
+    //ibo.push_back(v_s - 4u);
+    //ibo.push_back(v_s - 2u);
+    //ibo.push_back(v_s - 1u);
 }
 
+void Tile::DebugRender(Renderer& renderer) const {
+    Entity* entity = (actor ? dynamic_cast<Entity*>(actor) : (feature ? dynamic_cast<Entity*>(feature) : nullptr));
+    if(g_theGame->_show_all_entities && entity) {
+        auto tile_bounds = GetBounds();
+        renderer.SetMaterial(renderer.GetMaterial("__2D"));
+        renderer.SetModelMatrix(Matrix4::I);
+        renderer.DrawAABB2(tile_bounds, Rgba::Red, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
+    }
+}
 
-void Tile::AddVertsForOverlay(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
-    const auto coords = GetCoordsForOverlay("blue");
+void Tile::AddVertsForOverlay() const noexcept {
+    const auto overlayName = std::string{"blue"};
+    const auto coords = GetCoordsForOverlay(overlayName);
 
     const auto vert_left = _tile_coords.x + 0.0f;
     const auto vert_right = _tile_coords.x + 1.0f;
@@ -129,25 +142,60 @@ void Tile::AddVertsForOverlay(std::vector<Vertex3D>& verts, std::vector<unsigned
     const auto tx_tr = Vector2(tx_right, tx_top);
     const auto tx_br = Vector2(tx_right, tx_bottom);
 
-    const float z = static_cast<float>(layer_index);
-    verts.push_back(Vertex3D(Vector3(vert_bl, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_bl));
-    verts.push_back(Vertex3D(Vector3(vert_tl, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_tl));
-    verts.push_back(Vertex3D(Vector3(vert_tr, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_tr));
-    verts.push_back(Vertex3D(Vector3(vert_br, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_br));
+    const float z = static_cast<float>(layer->z_index);
+    const Rgba layer_color = layer->color;
+    auto& builder = layer->GetMeshBuilder();
+    //auto& vbo = layer->GetVbo();
+    const auto newColor = layer_color != color && color != Rgba::White ? color : layer_color;
+    const auto normal = -Vector3::Z_AXIS;
 
-    const auto v_s = verts.size();
-    ibo.push_back(static_cast<unsigned int>(v_s) - 4u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 3u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 2u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 4u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 2u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 1u);
+
+    builder.Begin(PrimitiveType::Triangles);
+    builder.SetColor(newColor);
+    builder.SetNormal(normal);
+
+    builder.SetUV(tx_tl);
+    builder.AddVertex(Vector3{vert_tl, z});
+
+    builder.SetUV(tx_bl);
+    builder.AddVertex(Vector3{vert_bl, z});
+
+    builder.SetUV(tx_br);
+    builder.AddVertex(Vector3{vert_br, z});
+
+    builder.SetUV(tx_tr);
+    builder.AddVertex(Vector3{vert_tr, z});
+
+    builder.AddIndicies(Mesh::Builder::Primitive::Quad);
+
+    auto* sprite = GetSpriteForOverlay(overlayName);
+    builder.End(sprite->GetMaterial());
+
+
+    //vbo.push_back(Vertex3D{Vector3{vert_tl, z}, newColor, tx_tl, normal});
+    //vbo.push_back(Vertex3D{Vector3{vert_bl, z}, newColor, tx_bl, normal});
+    //vbo.push_back(Vertex3D{Vector3{vert_br, z}, newColor, tx_br, normal});
+    //vbo.push_back(Vertex3D{Vector3{vert_tr, z}, newColor, tx_tr, normal});
+
+    //const auto v_s = static_cast<unsigned int>(vbo.size());
+    //auto& ibo = layer->GetIbo();
+    //ibo.push_back(v_s - 4u);
+    //ibo.push_back(v_s - 3u);
+    //ibo.push_back(v_s - 2u);
+    //ibo.push_back(v_s - 4u);
+    //ibo.push_back(v_s - 2u);
+    //ibo.push_back(v_s - 1u);
 }
 
 AABB2 Tile::GetCoordsForOverlay(std::string overlayName) const {
     const auto def = TileDefinition::GetTileDefinitionByName(overlayName);
     const auto sprite = def->GetSprite();
     return sprite->GetCurrentTexCoords();
+}
+
+AnimatedSprite* Tile::GetSpriteForOverlay(std::string overlayName) const {
+    const auto def = TileDefinition::GetTileDefinitionByName(overlayName);
+    return def->GetSprite();
 }
 
 void Tile::ChangeTypeFromName(const std::string& name) {
@@ -214,6 +262,8 @@ void Tile::SetCoords(int x, int y) {
 
 void Tile::SetCoords(const IntVector2& coords) {
     _tile_coords = coords;
+    const auto layer_width = layer->tileDimensions.x;
+    index = _tile_coords.y * layer_width + _tile_coords.x;
 }
 
 const IntVector2& Tile::GetCoords() const {

@@ -28,6 +28,7 @@ public:
         ,RightArm
         ,Legs
         ,Feet
+        ,Cape
         ,Max
     };
 

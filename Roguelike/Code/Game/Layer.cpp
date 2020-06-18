@@ -86,6 +86,10 @@ float Layer::GetDefaultViewHeight() const {
     return _defaultViewHeight;
 }
 
+void Layer::DirtyMesh() noexcept {
+    meshDirty = true;
+}
+
 std::vector<Tile>::const_iterator Layer::cbegin() const noexcept {
     return _tiles.cbegin();
 }
@@ -119,6 +123,44 @@ std::vector<Tile>::iterator Layer::end() noexcept {
     return _tiles.end();
 }
 
+const Mesh::Builder& Layer::GetMeshBuilder() const noexcept {
+    return _mesh_builder;
+}
+
+Mesh::Builder& Layer::GetMeshBuilder() noexcept {
+    return const_cast<Mesh::Builder&>(static_cast<const Layer&>(*this).GetMeshBuilder());
+}
+
+const std::vector<Vertex3D>& Layer::GetVbo() const noexcept {
+    return vbo;
+}
+
+std::vector<Vertex3D>& Layer::GetVbo() noexcept {
+    return const_cast<std::vector<Vertex3D>&>(static_cast<const Layer&>(*this).GetVbo());
+}
+
+const std::vector<unsigned int>& Layer::GetIbo() const noexcept {
+    return ibo;
+}
+
+std::vector<unsigned int>& Layer::GetIbo() noexcept {
+    return const_cast<std::vector<unsigned int>&>(static_cast<const Layer&>(*this).GetIbo());
+}
+
+void Layer::IncrementViewHeight() noexcept {
+    auto vh = viewHeight;
+    vh = std::clamp(++vh, 8.0f, static_cast<float>(_map->GetLayer(0)->tileDimensions.y));
+    viewHeight = vh;
+    meshDirty = true;
+}
+
+void Layer::DecrementViewHeight() noexcept {
+    auto vh = viewHeight;
+    vh = std::clamp(--vh, 8.0f, static_cast<float>(_map->GetLayer(0)->tileDimensions.y));
+    viewHeight = vh;
+    meshDirty = true;
+}
+
 bool Layer::LoadFromXml(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "layer", "row", "");
     std::size_t row_count = DataUtils::GetChildElementCount(elem, "row");
@@ -143,7 +185,7 @@ bool Layer::LoadFromImage(const Image& img) {
     const auto tenth_view_height = layer_height * 0.1f;
     const auto half_view_height = layer_height * 0.5f;
     _defaultViewHeight = tenth_view_height < 1.0f ? half_view_height : tenth_view_height;
-    viewHeight = static_cast<float>(_defaultViewHeight);
+    viewHeight = _defaultViewHeight < _minimumViewHeight ? _minimumViewHeight : _defaultViewHeight;
     int tile_x = 0;
     int tile_y = 0;
     for(auto& t : _tiles) {
@@ -234,29 +276,7 @@ void Layer::SetModelViewProjectionBounds(Renderer& renderer) const {
 
 void Layer::RenderTiles(Renderer& renderer) const {
     renderer.SetModelMatrix(Matrix4::I);
-
-    AABB2 cullbounds = CalcCullBounds(_map->camera.position);
-
-    static std::vector<Vertex3D> verts;
-    verts.clear();
-    static std::vector<unsigned int> ibo;
-    ibo.clear();
-
-    for(auto& t : _tiles) {
-        AABB2 tile_bounds = t.GetBounds();
-        if((t.debug_canSee || t.canSee || t.haveSeen) && MathUtils::DoAABBsOverlap(cullbounds, tile_bounds)) {
-            t.Render(verts, ibo, color, z_index);
-        }
-    }
-    
-    if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-        if(g_theGame->current_cursor) {
-            g_theGame->current_cursor->SetCoords(tile->GetCoords());
-            g_theGame->current_cursor->Render(verts, ibo);
-        }
-    }
-    renderer.SetMaterial(_map->GetTileMaterial());
-    renderer.DrawIndexed(PrimitiveType::Triangles, verts, ibo);
+    Mesh::Render(renderer, _mesh_builder);
 }
 
 void Layer::DebugRenderTiles(Renderer& renderer) const {
@@ -266,8 +286,8 @@ void Layer::DebugRenderTiles(Renderer& renderer) const {
 
     static std::vector<Vertex3D> verts;
     verts.clear();
-    static std::vector<unsigned int> ibo;
-    ibo.clear();
+    static std::vector<unsigned int> indicies;
+    indicies.clear();
 
     for(auto& t : _tiles) {
         AABB2 tile_bounds = t.GetBounds();
@@ -276,27 +296,56 @@ void Layer::DebugRenderTiles(Renderer& renderer) const {
         }
     }
     renderer.SetMaterial(_map->GetTileMaterial());
-    renderer.DrawIndexed(PrimitiveType::Triangles, verts, ibo);
+    renderer.DrawIndexed(PrimitiveType::Triangles, verts, indicies);
 }
 
 void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
     debug_tiles_in_view_count = 0;
     debug_visible_tiles_in_view_count = 0;
-    for(const auto& tile : _tiles) {
-        if(_map->IsTileInView(&tile)) {
-            ++debug_tiles_in_view_count;
-            if(tile.debug_canSee || tile.canSee || tile.haveSeen) {
-                ++debug_visible_tiles_in_view_count;
+    const auto& viewableTiles = [this]() {
+        const auto view_area = CalcCullBounds(_map->camera.position);
+        const auto dims = view_area.CalcDimensions();
+        const auto width = static_cast<int>(dims.x);
+        const auto height = static_cast<int>(dims.y);
+        std::vector<Tile*> results;
+        results.reserve(width * height);
+        for(int x = static_cast<int>(view_area.mins.x); x <= view_area.maxs.x; ++x) {
+            for(int y = static_cast<int>(view_area.mins.y); y <= view_area.maxs.y; ++y) {
+                if(x >= tileDimensions.x || x < 0 || y >= tileDimensions.y || y < 0) {
+                    continue;
+                }
+                if(auto* tile = GetTile(x, y); tile->debug_canSee || tile->canSee || tile->haveSeen) {
+                    results.push_back(GetTile(x, y));
+                }
             }
         }
-    }
-    auto visibleTiles = _map->GetVisibleTilesWithinDistance(*_map->player->tile, _map->player->visibility);
+        results.shrink_to_fit();
+        return results;
+    }();
+    const auto& visibleTiles = _map->GetVisibleTilesWithinDistance(*_map->player->tile, _map->player->visibility);
     for(auto& tile : visibleTiles) {
         tile->canSee = true;
         tile->haveSeen = true;
     }
+    if(meshNeedsRebuild) {
+        for(auto& tile : viewableTiles) {
+            ++debug_tiles_in_view_count;
+            if(tile->canSee || tile->haveSeen) {
+                ++debug_visible_tiles_in_view_count;
+            }
+            tile->AddVerts();
+        }
+        meshNeedsRebuild = false;
+    }
     for(auto& tile : visibleTiles) {
         tile->Update(deltaSeconds);
+    }
+
+    if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+        if(g_theGame->current_cursor) {
+            g_theGame->current_cursor->SetCoords(tile->GetCoords());
+            g_theGame->current_cursor->Update(deltaSeconds);
+        }
     }
 }
 
@@ -321,7 +370,12 @@ void Layer::DebugRender(Renderer& renderer) const {
 }
 
 void Layer::EndFrame() {
-    /* DO NOTHING */
+    if(meshDirty) {
+        meshNeedsRebuild = true;
+        _mesh_builder.Clear();
+        vbo.clear();
+        ibo.clear();
+    }
 }
 
 AABB2 Layer::CalcOrthoBounds() const {
@@ -340,6 +394,12 @@ AABB2 Layer::CalcViewBounds(const Vector2& cam_pos) const {
 
 AABB2 Layer::CalcCullBounds(const Vector2& cam_pos) const {
     AABB2 cullBounds = CalcViewBounds(cam_pos);
+    cullBounds.AddPaddingToSides(1.0f, 1.0f);
+    return cullBounds;
+}
+
+AABB2 Layer::CalcCullBoundsFromOrthoBounds() const {
+    AABB2 cullBounds = CalcOrthoBounds();
     cullBounds.AddPaddingToSides(1.0f, 1.0f);
     return cullBounds;
 }

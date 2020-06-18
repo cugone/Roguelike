@@ -6,6 +6,7 @@
 #include "Engine/Renderer/AnimatedSprite.hpp"
 
 #include "Game/GameCommon.hpp"
+#include "Game/Layer.hpp"
 
 #include <limits>
 
@@ -25,6 +26,8 @@ EquipSlot EquipSlotFromString(std::string str) {
         return EquipSlot::Legs;
     } else if(str == "feet") {
         return EquipSlot::Feet;
+    } else if(str == "cape") {
+        return EquipSlot::Cape;
     } else {
         return EquipSlot::None;
     }
@@ -39,6 +42,7 @@ std::string EquipSlotToString(const EquipSlot& slot) {
     case EquipSlot::RightArm: return "rarm";
     case EquipSlot::Legs: return "legs";
     case EquipSlot::Feet: return "feet";
+    case EquipSlot::Cape: return "cape";
     default: return "none";
     }
 }
@@ -74,19 +78,19 @@ Item::Item(ItemBuilder& builder) noexcept
     }
 }
 
-void Item::Update(TimeUtils::FPSeconds deltaSeconds) {
+void Item::Update(TimeUtils::FPSeconds deltaSeconds, const Vector2& position, Layer* parent_layer) {
     if(_sprite) {
         _sprite->Update(deltaSeconds);
     }
+    AddVerts(position, parent_layer);
 }
 
-void Item::Render(const IntVector2& entity_position, std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
+void Item::AddVerts(const Vector2& position, Layer* parent_layer) const {
 
     if(!_sprite) {
         return;
     }
 
-    const auto position = entity_position;
     const auto color = Rgba::White;
 
     const auto& coords = _sprite->GetCurrentTexCoords();
@@ -111,20 +115,46 @@ void Item::Render(const IntVector2& entity_position, std::vector<Vertex3D>& vert
     const auto tx_tr = Vector2(tx_right, tx_top);
     const auto tx_br = Vector2(tx_right, tx_bottom);
 
-    const float z = static_cast<float>(layer_index);
-    verts.push_back(Vertex3D(Vector3(vert_bl, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_bl));
-    verts.push_back(Vertex3D(Vector3(vert_tl, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_tl));
-    verts.push_back(Vertex3D(Vector3(vert_tr, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_tr));
-    verts.push_back(Vertex3D(Vector3(vert_br, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_br));
+    auto* layer = parent_layer;
+    const float z = static_cast<float>(layer->z_index);
+    const Rgba layer_color = layer->color;
+    //auto& vbo = layer->GetVbo();
+    auto& builder = layer->GetMeshBuilder();
+    const auto newColor = layer_color != color && color != Rgba::White ? color : layer_color;
+    const auto normal = -Vector3::Z_AXIS;
 
-    const auto v_s = verts.size();
-    ibo.push_back(static_cast<unsigned int>(v_s) - 4u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 3u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 2u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 4u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 2u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 1u);
+    builder.Begin(PrimitiveType::Triangles);
+    builder.SetColor(newColor);
+    builder.SetNormal(normal);
 
+    builder.SetUV(tx_tl);
+    builder.AddVertex(Vector3{vert_tl, z});
+
+    builder.SetUV(tx_bl);
+    builder.AddVertex(Vector3{vert_bl, z});
+
+    builder.SetUV(tx_br);
+    builder.AddVertex(Vector3{vert_br, z});
+
+    builder.SetUV(tx_tr);
+    builder.AddVertex(Vector3{vert_tr, z});
+
+    builder.AddIndicies(Mesh::Builder::Primitive::Quad);
+    builder.End(_sprite->GetMaterial());
+
+    //vbo.push_back(Vertex3D{Vector3{vert_tl, z}, newColor, tx_tl, normal});
+    //vbo.push_back(Vertex3D{Vector3{vert_bl, z}, newColor, tx_bl, normal});
+    //vbo.push_back(Vertex3D{Vector3{vert_br, z}, newColor, tx_br, normal});
+    //vbo.push_back(Vertex3D{Vector3{vert_tr, z}, newColor, tx_tr, normal});
+
+    //const auto v_s = static_cast<unsigned int>(vbo.size());
+    //auto& ibo = layer->GetIbo();
+    //ibo.push_back(v_s - 4u);
+    //ibo.push_back(v_s - 3u);
+    //ibo.push_back(v_s - 2u);
+    //ibo.push_back(v_s - 4u);
+    //ibo.push_back(v_s - 2u);
+    //ibo.push_back(v_s - 1u);
 }
 
 bool Item::HasOwningInventory() const noexcept {

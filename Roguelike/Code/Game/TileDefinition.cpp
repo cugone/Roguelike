@@ -11,10 +11,12 @@
 
 std::map<std::string, std::unique_ptr<TileDefinition>> TileDefinition::s_registry{};
 
-void TileDefinition::CreateTileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
+TileDefinition* TileDefinition::CreateTileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
     auto new_def = std::make_unique<TileDefinition>(renderer, elem, sheet);
+    auto new_def_ptr = new_def.get();
     auto new_def_name = new_def->name;
     s_registry.try_emplace(new_def_name, std::move(new_def));
+    return new_def_ptr;
 }
 
 void TileDefinition::DestroyTileDefinitions() {

@@ -17,6 +17,7 @@ class Actor;
 class Feature;
 class Layer;
 class Renderer;
+class AnimatedSprite;
 
 class Tile {
 public:
@@ -28,7 +29,7 @@ public:
     ~Tile() = default;
 
     void Update(TimeUtils::FPSeconds deltaSeconds);
-    void Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
+
     void DebugRender(Renderer& renderer) const;
 
     void ChangeTypeFromName(const std::string& name);
@@ -78,6 +79,8 @@ public:
     Entity* GetEntity() const noexcept;
     void SetEntity(Entity* e) noexcept;
 
+    void AddVerts() const noexcept;
+
     Rgba debugRaycastColor = Rgba::Red;
     Rgba highlightColor = Rgba::White;
     Rgba color = Rgba::White;
@@ -90,10 +93,12 @@ public:
     bool debug_canSee{false};
 protected:
 private:
-    void AddVertsForTile(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
-    void AddVertsForOverlay(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
+    void AddVertsForTile() const noexcept;
+    void AddVertsForOverlay() const noexcept;
     AABB2 GetCoordsForOverlay(std::string overlayName) const;
+    AnimatedSprite* GetSpriteForOverlay(std::string overlayName) const;
 
     TileDefinition* _def{};
     IntVector2 _tile_coords{};
+    int index{};
 };

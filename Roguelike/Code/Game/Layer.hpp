@@ -6,6 +6,8 @@
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/IntVector2.hpp"
 
+#include "Engine/Renderer/Mesh.hpp"
+
 #include "Game/Tile.hpp"
 
 class Image;
@@ -46,6 +48,7 @@ public:
     AABB2 CalcOrthoBounds() const;
     AABB2 CalcViewBounds(const Vector2& cam_pos) const;
     AABB2 CalcCullBounds(const Vector2& cam_pos) const;
+    AABB2 CalcCullBoundsFromOrthoBounds() const;
 
     const Map* GetMap() const;
     Map* GetMap();
@@ -57,8 +60,10 @@ public:
 
     float GetDefaultViewHeight() const;
 
+    void DirtyMesh() noexcept;
+
     int z_index{ 0 };
-    float viewHeight{1.0f};
+    float viewHeight{8.0f};
     IntVector2 tileDimensions{1, 1};
     Rgba color{ Rgba::White };
     Rgba debug_grid_color{Rgba::Red};
@@ -74,6 +79,17 @@ public:
     std::vector<Tile>::iterator begin() noexcept;
     std::vector<Tile>::iterator end() noexcept;
 
+    const Mesh::Builder& GetMeshBuilder() const noexcept;
+    Mesh::Builder& GetMeshBuilder() noexcept;
+
+    const std::vector<Vertex3D>& GetVbo() const noexcept;
+    std::vector<Vertex3D>& GetVbo() noexcept;
+
+    const std::vector<unsigned int>& GetIbo() const noexcept;
+    std::vector<unsigned int>& GetIbo() noexcept;
+    
+    void IncrementViewHeight() noexcept;
+    void DecrementViewHeight() noexcept;
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);
@@ -88,5 +104,11 @@ private:
 
     std::vector<Tile> _tiles{};
     Map* _map = nullptr;
+    Mesh::Builder _mesh_builder{};
+    std::vector<Vertex3D> vbo{};
+    std::vector<unsigned int> ibo{};
     float _defaultViewHeight = 1.0f;
+    float _minimumViewHeight = 8.0f;
+    bool meshDirty = true;
+    bool meshNeedsRebuild = true;
 };

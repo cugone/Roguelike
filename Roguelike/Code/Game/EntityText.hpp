@@ -35,9 +35,9 @@ public:
     explicit EntityText(const TextEntityDesc & desc) noexcept;
     virtual ~EntityText() = default;
 
-    virtual void Update(TimeUtils::FPSeconds deltaSeconds) override;
-    virtual void Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, std::size_t layer_index) const override;
-    virtual void EndFrame() override;
+    void Update(TimeUtils::FPSeconds deltaSeconds) override;
+    void Render() const;
+    void EndFrame() override;
 
 protected:
 private:

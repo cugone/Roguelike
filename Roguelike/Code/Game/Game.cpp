@@ -1054,9 +1054,7 @@ void Game::ZoomOut() {
 }
 
 void Game::IncrementViewHeight() {
-    auto vh = _map->GetLayer(0)->viewHeight;
-    vh = std::clamp(++vh, 1.0f, static_cast<float>(_map->GetLayer(0)->tileDimensions.y));
-    _map->GetLayer(0)->viewHeight = vh;
+    _map->GetLayer(0)->IncrementViewHeight();
 }
 
 void Game::ZoomIn() {
@@ -1064,9 +1062,7 @@ void Game::ZoomIn() {
 }
 
 void Game::DecrementViewHeight() {
-    auto vh = _map->GetLayer(0)->viewHeight;
-    vh = std::clamp(--vh, 1.0f, static_cast<float>(_map->GetLayer(0)->tileDimensions.y));
-    _map->GetLayer(0)->viewHeight = vh;
+    _map->GetLayer(0)->DecrementViewHeight();
 }
 
 void Game::HandleDebugInput([[maybe_unused]]Camera2D& base_camera) {

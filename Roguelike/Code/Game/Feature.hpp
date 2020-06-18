@@ -21,9 +21,6 @@ public:
 
     Feature(Map* map, const XMLElement& elem) noexcept;
 
-    virtual void Update(TimeUtils::FPSeconds deltaSeconds) override;
-    virtual void Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const override;
-
     bool IsTransparent() const noexcept;
     bool IsSolid() const noexcept;
     bool IsOpaque() const noexcept;

@@ -24,16 +24,16 @@ void EntityText::Update(TimeUtils::FPSeconds deltaSeconds) {
     if(ttl < _currentLiveTime) {
         this->Entity::GetBaseStats().MultiplyStat(StatsID::Health, 0.0L);
     }
+    AddVertsForSelf();
 }
 
-void EntityText::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& /*layer_color*/, std::size_t /*layer_index*/) const {
-    g_theRenderer->AppendMultiLineTextBuffer(font, text, _screen_position, color, verts, ibo);
+void EntityText::Render() const {
     const auto S = Matrix4::I;
     const auto R = Matrix4::I;
     const auto T = Matrix4::CreateTranslationMatrix(_screen_position);
     const auto M = Matrix4::MakeSRT(S, R, T);
     g_theRenderer->SetModelMatrix(M);
-    g_theRenderer->DrawMultilineText(font, text, color);
+    g_theRenderer->DrawTextLine(font, text, color);
 }
 
 void EntityText::EndFrame() {

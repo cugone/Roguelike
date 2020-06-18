@@ -2,10 +2,13 @@
 
 #include "Engine/Core/DataUtils.hpp"
 
+#include "Engine/Math/Vector2.hpp"
+
 #include <string>
 #include <vector>
 
 class Item;
+class Layer;
 
 class Inventory {
 private:
@@ -33,6 +36,8 @@ public:
     ~Inventory() = default;
 
     explicit Inventory(const XMLElement& elem) noexcept;
+
+    void AddVerts(const Vector2& position, Layer* layer) const noexcept;
 
     Item* HasItem(Item* item) const noexcept;
     Item* HasItem(const std::string& name) const noexcept;

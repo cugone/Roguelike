@@ -123,7 +123,7 @@ void EntityDefinition::LoadInventory(const XMLElement& elem) {
 
 void EntityDefinition::LoadEquipment(const XMLElement& elem) {
     if (auto* xml_equipment = elem.FirstChildElement("equipment")) {
-        DataUtils::ValidateXmlElement(*xml_equipment, "equipment", "", "", "hair,head,body,larm,rarm,legs,feet");
+        DataUtils::ValidateXmlElement(*xml_equipment, "equipment", "", "", "cape,hair,head,body,larm,rarm,legs,feet");
         DataUtils::ForEachChildElement(*xml_equipment, "",
         [this](const XMLElement& elem) {
                 auto slotname = std::string{elem.Name() ? elem.Name() : ""};
@@ -150,7 +150,7 @@ void EntityDefinition::LoadBehaviors(const XMLElement& elem) {
 
 void EntityDefinition::LoadAttachPoints(const XMLElement &elem) {
     if(auto* xml_attachPoints = elem.FirstChildElement("attachPoints")) {
-        DataUtils::ValidateXmlElement(*xml_attachPoints, "attachPoints", "", "", "hair,head,body,larm,rarm,legs,feet");
+        DataUtils::ValidateXmlElement(*xml_attachPoints, "attachPoints", "", "", "cape,hair,head,body,larm,rarm,legs,feet");
         attach_point_offsets.resize(static_cast<std::size_t>(AttachPoint::Max));
         if(auto* xml_attachPoint_hair = xml_attachPoints->FirstChildElement("hair")) {
             DataUtils::ValidateXmlElement(*xml_attachPoint_hair, "hair", "", "offset");
@@ -178,7 +178,11 @@ void EntityDefinition::LoadAttachPoints(const XMLElement &elem) {
         }
         if(auto* xml_attachPoint_feet = xml_attachPoints->FirstChildElement("feet")) {
             DataUtils::ValidateXmlElement(*xml_attachPoint_feet, "feet", "", "offset");
-            attach_point_offsets[7] = DataUtils::ParseXmlAttribute(*xml_attachPoint_feet, "offset", attach_point_offsets[7]);
+            attach_point_offsets[6] = DataUtils::ParseXmlAttribute(*xml_attachPoint_feet, "offset", attach_point_offsets[6]);
+        }
+        if(auto* xml_attachPoint_cape = xml_attachPoints->FirstChildElement("cape")) {
+            DataUtils::ValidateXmlElement(*xml_attachPoint_cape, "cape", "", "offset");
+            attach_point_offsets[7] = DataUtils::ParseXmlAttribute(*xml_attachPoint_cape, "offset", attach_point_offsets[7]);
         }
     }
 }

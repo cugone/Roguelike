@@ -37,7 +37,6 @@ public:
 
     virtual void BeginFrame();
     virtual void Update(TimeUtils::FPSeconds deltaSeconds);
-    virtual void Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
     virtual void EndFrame();
 
     static void Fight(Entity& attacker, Entity& defender);
@@ -57,6 +56,9 @@ public:
     Faction GetFaction() const noexcept;
     void SetFaction(const Faction& faction) noexcept;
     Faction JoinFaction(const Faction& faction) noexcept;
+
+    virtual void AddVerts() noexcept;
+    virtual void AddVertsForSelf() noexcept;
 
     Map* map = nullptr;
     Layer* layer = nullptr;
@@ -87,7 +89,8 @@ private:
     void LoadFromXml(const XMLElement& elem);
     std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
     
-    void AddVertsForEquipment(const IntVector2& entity_position, std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
+    void AddVertsForEquipment() const;
+    void AddVertsForCapeEquipment() const;
 
     Stats stats{1,1,1};
     Stats stat_modifiers{};

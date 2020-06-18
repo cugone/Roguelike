@@ -16,6 +16,7 @@
 class AnimatedSprite;
 class Inventory;
 class ItemBuilder;
+class Layer;
 
 //Also represents render order.
 enum class EquipSlot {
@@ -27,6 +28,7 @@ enum class EquipSlot {
     , Feet
     , Legs
     , Body
+    , Cape
     , Max
 };
 
@@ -49,8 +51,8 @@ public:
 
     explicit Item(ItemBuilder& builder) noexcept;
 
-    void Update(TimeUtils::FPSeconds deltaSeconds);
-    void Render(const IntVector2& entity_position, std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const;
+    void Update(TimeUtils::FPSeconds deltaSeconds, const Vector2& position, Layer* parent_layer);
+    void AddVerts(const Vector2& position, Layer* parent_layer) const;
 
     const Inventory& GetInventory() const noexcept;
     Inventory& GetInventory() noexcept;

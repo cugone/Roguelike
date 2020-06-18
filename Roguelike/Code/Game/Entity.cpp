@@ -7,6 +7,7 @@
 #include "Game/Actor.hpp"
 #include "Game/Feature.hpp"
 #include "Game/EntityDefinition.hpp"
+#include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
 #include "Game/Item.hpp"
 
@@ -40,7 +41,13 @@ void Entity::Update(TimeUtils::FPSeconds deltaSeconds) {
     sprite->Update(deltaSeconds);
 }
 
-void Entity::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
+void Entity::AddVerts() noexcept {
+    AddVertsForCapeEquipment();
+    AddVertsForSelf();
+    AddVertsForEquipment();
+}
+
+void Entity::AddVertsForSelf() noexcept {
     if(!sprite || IsInvisible()) {
         return;
     }
@@ -66,22 +73,45 @@ void Entity::Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo
     const auto tx_tr = Vector2(tx_right, tx_top);
     const auto tx_br = Vector2(tx_right, tx_bottom);
 
-    const float z = static_cast<float>(layer_index);
-    verts.push_back(Vertex3D(Vector3(vert_bl, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_bl));
-    verts.push_back(Vertex3D(Vector3(vert_tl, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_tl));
-    verts.push_back(Vertex3D(Vector3(vert_tr, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_tr));
-    verts.push_back(Vertex3D(Vector3(vert_br, z), layer_color != color && color != Rgba::White ? color : layer_color, tx_br));
+    const float z = static_cast<float>(layer->z_index);
+    const Rgba layer_color = layer->color;
+    //auto& vbo = layer->GetVbo();
+    auto& builder = layer->GetMeshBuilder();
+    const auto newColor = layer_color != color && color != Rgba::White ? color : layer_color;
+    const auto normal = -Vector3::Z_AXIS;
 
-    const auto v_s = verts.size();
-    ibo.push_back(static_cast<unsigned int>(v_s) - 4u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 3u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 2u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 4u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 2u);
-    ibo.push_back(static_cast<unsigned int>(v_s) - 1u);
+    builder.Begin(PrimitiveType::Triangles);
+    builder.SetColor(newColor);
+    builder.SetNormal(normal);
 
-    AddVertsForEquipment(_position, verts, ibo, layer_color, layer_index);
-    
+    builder.SetUV(tx_tl);
+    builder.AddVertex(Vector3{vert_tl, z});
+
+    builder.SetUV(tx_bl);
+    builder.AddVertex(Vector3{vert_bl, z});
+
+    builder.SetUV(tx_br);
+    builder.AddVertex(Vector3{vert_br, z});
+
+    builder.SetUV(tx_tr);
+    builder.AddVertex(Vector3{vert_tr, z});
+
+    builder.AddIndicies(Mesh::Builder::Primitive::Quad);
+    builder.End(sprite->GetMaterial());
+
+    //vbo.push_back(Vertex3D{Vector3{vert_tl, z}, newColor, tx_tl, normal});
+    //vbo.push_back(Vertex3D{Vector3{vert_bl, z}, newColor, tx_bl, normal});
+    //vbo.push_back(Vertex3D{Vector3{vert_br, z}, newColor, tx_br, normal});
+    //vbo.push_back(Vertex3D{Vector3{vert_tr, z}, newColor, tx_tr, normal});
+
+    //const auto v_s = static_cast<unsigned int>(vbo.size());
+    //auto& ibo = layer->GetIbo();
+    //ibo.push_back(v_s - 4u);
+    //ibo.push_back(v_s - 3u);
+    //ibo.push_back(v_s - 2u);
+    //ibo.push_back(v_s - 4u);
+    //ibo.push_back(v_s - 2u);
+    //ibo.push_back(v_s - 1u);
 }
 
 void Entity::EndFrame() {
@@ -118,11 +148,29 @@ std::string Entity::ParseEntityDefinitionName(const XMLElement& xml_definition) 
     }, '.', false);
 }
 
-void Entity::AddVertsForEquipment(const IntVector2& entity_position, std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo, const Rgba& layer_color, size_t layer_index) const {
+void Entity::AddVertsForCapeEquipment() const {
     if(auto actor = dynamic_cast<const Actor*>(this)) {
         for(const auto& e : actor->GetEquipment()) {
-            if(e) {
-                e->Render(entity_position, verts, ibo, layer_color, layer_index);
+            if(e && e->GetEquipSlot() == EquipSlot::Cape) {
+
+                if(const auto* s = e->GetSprite(); !s || actor->IsInvisible()) {
+                    continue;
+                }
+                e->AddVerts(Vector2{_position}, layer);
+            }
+        }
+    }
+}
+
+void Entity::AddVertsForEquipment() const {
+    if(auto actor = dynamic_cast<const Actor*>(this)) {
+        for(const auto& e : actor->GetEquipment()) {
+            if(e && e->GetEquipSlot() != EquipSlot::Cape) {
+
+                if(const auto* s = e->GetSprite(); !s || actor->IsInvisible()) {
+                    continue;
+                }
+                e->AddVerts(Vector2{_position}, layer);
             }
         }
     }

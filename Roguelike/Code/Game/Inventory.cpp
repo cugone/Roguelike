@@ -5,11 +5,27 @@
 #include "Game/GameCommon.hpp"
 #include "Game/Item.hpp"
 
+#include "Game/Layer.hpp"
+
 #include <utility>
 
 Inventory::Inventory(const XMLElement& elem) noexcept
 {
     LoadFromXml(elem);
+}
+
+void Inventory::AddVerts(const Vector2& position, Layer* layer) const noexcept {
+    if(!empty()) {
+        if(size() > 1) {
+            if(const auto* item = Item::GetItem("chest")) {
+                item->AddVerts(position, layer);
+            }
+        } else {
+            if(const auto* item = GetItem(0)) {
+                item->AddVerts(position, layer);
+            }
+        }
+    }
 }
 
 Item* Inventory::HasItem(Item* item) const noexcept {

@@ -67,6 +67,7 @@ private:
     bool CanMoveDiagonallyToNeighbor(const IntVector2& direction) const;
 
     std::vector<Item*> GetAllEquipmentOfType(const EquipSlot& slot) const;
+    std::vector<Item*> GetAllCapeEquipment() const;
     std::vector<Item*> GetAllHairEquipment() const;
     std::vector<Item*> GetAllHeadEquipment() const;
     std::vector<Item*> GetAllBodyEquipment() const;

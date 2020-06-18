@@ -20,7 +20,7 @@ public:
     TileDefinition& operator=(TileDefinition&& other) = default;
     ~TileDefinition() = default;
 
-    static void CreateTileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
+    static TileDefinition* CreateTileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
     static void DestroyTileDefinitions();
 
     static TileDefinition* GetTileDefinitionByName(const std::string& name);

@@ -77,7 +77,7 @@ bool Actor::MoveTo(Tile* destination) {
 }
 
 bool Actor::LoadFromXml(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "actor", "", "name,lookAndFeel,position", "", "behavior");
+    DataUtils::ValidateXmlElement(elem, "actor", "", "name,lookAndFeel", "", "position,behavior");
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
     def = EntityDefinition::GetEntityDefinitionByName(definitionName);
@@ -91,7 +91,9 @@ bool Actor::LoadFromXml(const XMLElement& elem) {
             AdjustStatModifiers(e->GetStatModifiers());
         }
     }
-    SetPosition(DataUtils::ParseXmlAttribute(elem, "position", IntVector2::ZERO));
+    if(DataUtils::HasAttribute(elem, "position")) {
+        SetPosition(DataUtils::ParseXmlAttribute(elem, "position", IntVector2::ZERO));
+    }
     return true;
 }
 
@@ -130,6 +132,9 @@ void Actor::ResolveAttack(Entity& attacker, Entity& defender) {
     const auto aSpd = aStats.GetStat(StatsID::Speed);
     const auto dDef = dStats.GetStat(StatsID::Defense);
     const auto dEva = dStats.GetStat(StatsID::Evasion);
+    const auto aLck = aStats.GetStat(StatsID::Luck);
+    const auto aLvl = aStats.GetStat(StatsID::Level);
+    const auto dLvl = dStats.GetStat(StatsID::Level);
     const auto damageType = DamageType::Physical;
     switch(damageType) {
     case DamageType::None:
@@ -143,6 +148,10 @@ void Actor::ResolveAttack(Entity& attacker, Entity& defender) {
         auto result = aAtt - dDef;
         if(aAtt < dDef) {
             result = 0L;
+        }
+        const auto chance = std::floor((aLck + aLvl - dLvl) / 4.0f);
+        if(MathUtils::IsPercentChance(chance / 100.0f)) {
+            result *= 2;
         }
         defender.OnDamage.Trigger(damageType, result);
         break;
@@ -198,6 +207,10 @@ std::vector<Item*> Actor::GetAllEquipmentOfType(const EquipSlot& slot) const {
     std::copy_if(std::begin(inventory), std::end(inventory), std::back_inserter(result), pred);
     result.shrink_to_fit();
     return result;
+}
+
+std::vector<Item*> Actor::GetAllCapeEquipment() const {
+    return GetAllEquipmentOfType(EquipSlot::Cape);
 }
 
 std::vector<Item*> Actor::GetAllHairEquipment() const {
@@ -315,10 +328,11 @@ void Actor::SetPosition(const IntVector2& position) {
     if(auto* cur_tile = map->GetTile(_position.x, _position.y, layer->z_index)) {
         cur_tile->actor = nullptr;
         Entity::SetPosition(position);
-        auto next_tile = map->GetTile(_position.x, _position.y, layer->z_index);
-        next_tile->actor = this;
-        tile = next_tile;
-        Inventory::TransferAll(tile->inventory, inventory);
+        if(auto* next_tile = map->GetTile(_position.x, _position.y, layer->z_index)) {
+            next_tile->actor = this;
+            tile = next_tile;
+            Inventory::TransferAll(tile->inventory, inventory);
+        }
     }
 }
 

@@ -19,11 +19,12 @@
 #include "Game/Actor.hpp"
 #include "Game/Cursor.hpp"
 #include "Game/Entity.hpp"
-#include "Game/Feature.hpp"
 #include "Game/EntityText.hpp"
 #include "Game/EntityDefinition.hpp"
+#include "Game/Feature.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/GameConfig.hpp"
+#include "Game/Inventory.hpp"
 #include "Game/Layer.hpp"
 #include "Game/MapGenerator.hpp"
 #include "Game/Inventory.hpp"
@@ -53,6 +54,20 @@ void Map::CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) 
 void Map::ShakeCamera(const IntVector2& from, const IntVector2& to) noexcept {
     const auto distance = MathUtils::CalculateManhattanDistance(from, to);
     camera.trauma += 0.1f + distance * 0.05f;
+}
+
+std::vector<Tile*> Map::GetViewableTiles() const noexcept {
+    std::vector<Tile*> result{};
+    for(auto& layer : _layers) {
+        const auto tiles = GetTilesInArea(layer->CalcCullBounds(camera.GetPosition()));
+        result.reserve(result.size() + tiles.size());
+        for(const auto& tile : tiles) {
+            if(tile) {
+                result.push_back(tile);
+            }
+        }
+    }
+    return result;
 }
 
 std::vector<Tile*> Map::GetTilesInArea(const AABB2& bounds) const {
@@ -251,6 +266,9 @@ void Map::BringLayerToFront(std::size_t i) {
         curr++;
         next = curr + 1;
     }
+    for(auto& layer : _layers) {
+        layer->DirtyMesh();
+    }
 }
 
 void Map::Render(Renderer& renderer) const {
@@ -278,7 +296,7 @@ void Map::Render(Renderer& renderer) const {
 
 
     for(auto* entity : _text_entities) {
-        entity->Render(verts, ibo, entity->color, 0);
+        entity->Render();
     }
 
     g_theRenderer->SetCamera(camera);
@@ -295,6 +313,7 @@ void Map::DebugRender(Renderer& renderer) const {
     if(g_theGame->_show_grid) {
         renderer.SetModelMatrix(Matrix4::I);
         const auto* layer = GetLayer(0);
+        renderer.SetMaterial(renderer.GetMaterial("__2D"));
         renderer.DrawWorldGrid2D(layer->tileDimensions, layer->debug_grid_color);
     }
     if(g_theGame->_show_world_bounds) {
@@ -364,7 +383,7 @@ bool Map::IsTileInView(const Tile* tile) const {
         return false;
     }
     const auto tile_bounds = tile->GetBounds();
-    const auto view_bounds = tile->layer->CalcViewBounds(camera.position);
+    const auto view_bounds = tile->layer->CalcCullBounds(camera.position);
     return MathUtils::DoAABBsOverlap(tile_bounds, view_bounds);
 }
 
@@ -450,7 +469,7 @@ bool Map::IsTilePassable(const Tile* tile) const {
 
 void Map::FocusTileAt(const IntVector3& position) {
     if(GetTile(position)) {
-        camera.SetPosition(Vector3{ position } + Vector3::ONE * 0.5f);
+        camera.SetPosition(Vector3{ position });
     }
 }
 
@@ -526,12 +545,14 @@ std::vector<Tile*> Map::GetTilesWithinDistance(const Tile& startTile, float dist
 std::vector<Tile*> Map::GetVisibleTilesWithinDistance(const Tile& startTile, unsigned int manhattanDist) const {
     std::vector<Tile*> results = GetTilesWithinDistance(startTile, manhattanDist);
     results.erase(std::remove_if(std::begin(results), std::end(results), [this, &startTile](Tile* tile) { return tile->IsInvisible(); }), std::end(results));
+    results.shrink_to_fit();
     return results;
 }
 
 std::vector<Tile*> Map::GetVisibleTilesWithinDistance(const Tile& startTile, float dist) const {
     std::vector<Tile*> results = GetTilesWithinDistance(startTile, dist);
     results.erase(std::remove_if(std::begin(results), std::end(results), [this, &startTile](Tile* tile) { return tile->IsInvisible(); }), std::end(results));
+    results.shrink_to_fit();
     return results;
 }
 
@@ -744,7 +765,8 @@ void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
             if(_tileset_sheet) {
                 DataUtils::ForEachChildElement(*xml_root, "tileDefinition",
                     [this](const XMLElement& elem) {
-                    TileDefinition::CreateTileDefinition(*g_theRenderer, elem, _tileset_sheet);
+                    auto* def = TileDefinition::CreateTileDefinition(*g_theRenderer, elem, _tileset_sheet);
+                    def->GetSprite()->SetMaterial(_current_tileMaterial);
                 });
             }
         }
@@ -765,7 +787,6 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
             actor->SetFaction(Faction::Enemy);
             if(is_player) {
                 player = actor;
-                //player->OnMove.Subscribe_method(this, &Map::ShakeCamera);
                 player->SetFaction(Faction::Player);
             }
             _entities.push_back(actor);

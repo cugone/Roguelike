@@ -6,6 +6,8 @@
 #include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/IntVector2.hpp"
 
+#include "Engine/Renderer/Mesh.hpp"
+
 #include <vector>
 
 class CursorDefinition;
@@ -25,7 +27,6 @@ public:
     explicit Cursor(CursorDefinition& def);
 
     void Update(TimeUtils::FPSeconds deltaSeconds);
-    void Render(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo) const;
 
     AABB2 GetBounds() const;
     const CursorDefinition* GetDefinition() const;
@@ -36,9 +37,12 @@ public:
     const IntVector2& GetCoords() const;
 
     Rgba color = Rgba::White;
+
+    void AddVertsForCursor(Mesh::Builder& builder) const;
+    void AddVertsForCursor(std::vector<Vertex3D>& vbo, std::vector<unsigned int>& ibo) const;
+
 protected:
 private:
-    void AddVertsForCursor(std::vector<Vertex3D>& verts, std::vector<unsigned int>& ibo) const;
 
     CursorDefinition* _def{};
     IntVector2 _tile_coords{};
