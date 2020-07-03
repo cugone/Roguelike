@@ -93,19 +93,6 @@ void Tile::AddVertsForTile() const noexcept {
 
     builder.End(sprite->GetMaterial());
 
-    //vbo.push_back(Vertex3D{Vector3{vert_tl, z}, newColor, tx_tl, normal});
-    //vbo.push_back(Vertex3D{Vector3{vert_bl, z}, newColor, tx_bl, normal});
-    //vbo.push_back(Vertex3D{Vector3{vert_br, z}, newColor, tx_br, normal});
-    //vbo.push_back(Vertex3D{Vector3{vert_tr, z}, newColor, tx_tr, normal});
-
-    //const auto v_s = static_cast<unsigned int>(vbo.size());
-    //auto& ibo = layer->GetIbo();
-    //ibo.push_back(v_s - 4u);
-    //ibo.push_back(v_s - 3u);
-    //ibo.push_back(v_s - 2u);
-    //ibo.push_back(v_s - 4u);
-    //ibo.push_back(v_s - 2u);
-    //ibo.push_back(v_s - 1u);
 }
 
 void Tile::DebugRender(Renderer& renderer) const {
@@ -145,10 +132,9 @@ void Tile::AddVertsForOverlay() const noexcept {
     const float z = static_cast<float>(layer->z_index);
     const Rgba layer_color = layer->color;
     auto& builder = layer->GetMeshBuilder();
-    //auto& vbo = layer->GetVbo();
+
     const auto newColor = layer_color != color && color != Rgba::White ? color : layer_color;
     const auto normal = -Vector3::Z_AXIS;
-
 
     builder.Begin(PrimitiveType::Triangles);
     builder.SetColor(newColor);
@@ -171,20 +157,6 @@ void Tile::AddVertsForOverlay() const noexcept {
     auto* sprite = GetSpriteForOverlay(overlayName);
     builder.End(sprite->GetMaterial());
 
-
-    //vbo.push_back(Vertex3D{Vector3{vert_tl, z}, newColor, tx_tl, normal});
-    //vbo.push_back(Vertex3D{Vector3{vert_bl, z}, newColor, tx_bl, normal});
-    //vbo.push_back(Vertex3D{Vector3{vert_br, z}, newColor, tx_br, normal});
-    //vbo.push_back(Vertex3D{Vector3{vert_tr, z}, newColor, tx_tr, normal});
-
-    //const auto v_s = static_cast<unsigned int>(vbo.size());
-    //auto& ibo = layer->GetIbo();
-    //ibo.push_back(v_s - 4u);
-    //ibo.push_back(v_s - 3u);
-    //ibo.push_back(v_s - 2u);
-    //ibo.push_back(v_s - 4u);
-    //ibo.push_back(v_s - 2u);
-    //ibo.push_back(v_s - 1u);
 }
 
 AABB2 Tile::GetCoordsForOverlay(std::string overlayName) const {
