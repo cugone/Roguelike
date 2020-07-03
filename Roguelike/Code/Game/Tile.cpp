@@ -258,7 +258,7 @@ Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) const {
         const bool is_x_not_valid = (my_index.x == 0 && directionAndLayerOffset.x < 0) || (my_index.x == map_dims.x && directionAndLayerOffset.x > 0);
         const bool is_y_not_valid = (my_index.y == 0 && directionAndLayerOffset.y < 0) || (my_index.y == map_dims.y && directionAndLayerOffset.y > 0);
         const bool is_z_not_valid = (my_index.z == 0 && directionAndLayerOffset.z < 0) || (my_index.z == map_dims.z && directionAndLayerOffset.z > 0);
-        const bool is_not_valid = is_x_not_valid && is_y_not_valid && is_z_not_valid;
+        const bool is_not_valid = is_x_not_valid || is_y_not_valid || is_z_not_valid;
         if(is_not_valid) {
             return nullptr;
         }
@@ -314,7 +314,7 @@ std::vector<Tile*> Tile::GetNeighbors(const IntVector2& direction) const {
         const auto map_dims = my_map->CalcMaxDimensions();
         const bool is_x_not_valid = (my_index.x == 0 && direction.x < 0) || (my_index.x == map_dims.x && direction.x > 0);
         const bool is_y_not_valid = (my_index.y == 0 && direction.y < 0) || (my_index.y == map_dims.y && direction.y > 0);
-        const bool is_not_valid = is_x_not_valid && is_y_not_valid;
+        const bool is_not_valid = is_x_not_valid || is_y_not_valid;
         if(is_not_valid) {
             return {};
         }
