@@ -1,7 +1,6 @@
 #include "Game/Pathfinder.hpp"
 
 void Pathfinder::Initialize(int width, int height) noexcept {
-    PROFILE_LOG_SCOPE_FUNCTION();
     _dimensions = IntVector2{width, height};
     const auto area = width * height;
     _path.clear();
@@ -16,13 +15,8 @@ void Pathfinder::Initialize(int width, int height) noexcept {
     }
 }
 
-std::vector<Pathfinder::Node*> Pathfinder::GetResult() noexcept {
-    std::vector<Node*> result{};
-    for(auto* n : _path) {
-        result.push_back(n);
-    }
-    std::reverse(std::begin(result), std::end(result));
-    return result;
+const std::vector<const Pathfinder::Node*> Pathfinder::GetResult() const noexcept {
+    return std::vector<const Pathfinder::Node*>(std::crbegin(_path), std::crend(_path));
 }
 
 void Pathfinder::ResetNavMap() noexcept {

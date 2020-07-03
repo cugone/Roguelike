@@ -195,6 +195,21 @@ void RoomsMapGenerator::Generate() {
         const auto y = MathUtils::GetRandomIntInRange(h, 100 - 2 * h);
         rooms.push_back(AABB2{Vector2{(float)x, (float)y}, (float)w, (float)h});
     }
+    for(int i = 0; i < room_count - 1; ++i) {
+        for(int j = 1; j < room_count; ++j) {
+            if(i == j) continue;
+            auto& room1 = rooms[i];
+            auto& room2 = rooms[j];
+            if(MathUtils::DoAABBsOverlap(room1, room2)) {
+                const auto dispToR1 = room1.CalcCenter() - room2.CalcCenter();
+                const auto dispToR2 = -dispToR1;
+                const auto dirToR1 = dispToR1.GetNormalize();
+                const auto dirToR2 = -dirToR1;
+                room1.Translate(dirToR1 * dispToR1);
+                room2.Translate(dirToR2 * dispToR2);
+            }
+        }
+    }
     AABB2 world_bounds;
     for(const auto& room : rooms) {
         world_bounds.StretchToIncludePoint(room.mins - Vector2::ONE);
@@ -403,21 +418,22 @@ void RoomsAndCorridorsMapGenerator::MakeVerticalCorridor(const AABB2& r1, const 
 }
 
 bool RoomsAndCorridorsMapGenerator::VerifyExitIsReachable(const IntVector2& enter_loc, const IntVector2& exit_loc) const noexcept {
-    PROFILE_LOG_SCOPE_FUNCTION();
     const auto viable = [this](const IntVector2& a)->bool {
         return this->_map->IsTilePassable(a);
     };
-    const auto h = [](const IntVector2& /*a*/, const IntVector2& /*b*/) {
-        return 1; // MathUtils::CalculateManhattanDistance(a, b);
+    const auto h = [](const IntVector2& a, const IntVector2& b) {
+        return MathUtils::CalculateManhattanDistance(a, b);
     };
     const auto d = [this](const IntVector2& a, const IntVector2& b) {
-        const auto va = Vector2{a};
-        const auto vb = Vector2{b};
+        const auto va = Vector2{a} + Vector2{0.5f, 0.5f};
+        const auto vb = Vector2{b} + Vector2{0.5f, 0.5f};
         return MathUtils::CalcDistance(va, vb);
     };
     auto* pather = this->_map->GetPathfinder();
-    pather->AStar(enter_loc, exit_loc, viable, h, d);
-    return !pather->GetResult().empty();
+    if(const auto result = pather->AStar(enter_loc, exit_loc, viable, h, d); result == Pathfinder::PATHFINDING_SUCCESS) {
+        return true;
+    }
+    return false;
 }
 
 void RoomsAndCorridorsMapGenerator::PlaceActors() noexcept {
@@ -448,8 +464,9 @@ bool RoomsAndCorridorsMapGenerator::GenerateExitAndEntrance() noexcept {
     std::set<std::pair<int, int>> closed_set{};
     do {
         const int roomCount = static_cast<int>(rooms.size());
-        if(closed_set.size() >= (2 * roomCount)) {
+        if(closed_set.size() >= (roomCount * roomCount) - roomCount) {
             _map->_layers.clear();
+            rooms.clear();
             return false;
         }
         const auto room_id_with_down = MathUtils::GetRandomIntLessThan(roomCount);
