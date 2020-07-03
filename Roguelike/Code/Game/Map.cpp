@@ -46,20 +46,20 @@ void Map::CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) 
     const auto text_half_height = text_height * 0.5f;
     const auto text_center_offset = Vector2{text_half_width, text_half_height};
     const auto tile_center = Vector2(tileCoords) + Vector2{0.5f, 0.5f};
-    desc.position = _renderer.ConvertWorldToScreenCoords(camera, tile_center - text_center_offset);
+    desc.position = _renderer.ConvertWorldToScreenCoords(cameraController.GetCamera(), tile_center - text_center_offset);
     CreateTextEntity(desc);
 }
 
 
 void Map::ShakeCamera(const IntVector2& from, const IntVector2& to) noexcept {
     const auto distance = MathUtils::CalculateManhattanDistance(from, to);
-    camera.trauma += 0.1f + distance * 0.05f;
+    cameraController.GetCamera().trauma += 0.1f + distance * 0.05f;
 }
 
 std::vector<Tile*> Map::GetViewableTiles() const noexcept {
     std::vector<Tile*> result{};
     for(auto& layer : _layers) {
-        const auto tiles = GetTilesInArea(layer->CalcCullBounds(camera.GetPosition()));
+        const auto tiles = GetTilesInArea(layer->CalcCullBounds(cameraController.GetCamera().GetPosition()));
         result.reserve(result.size() + tiles.size());
         for(const auto& tile : tiles) {
             if(tile) {
@@ -108,6 +108,20 @@ Pathfinder* Map::GetPathfinder() const noexcept {
     return _pathfinder.get();
 }
 
+void Map::ZoomOut() noexcept {
+    cameraController.ZoomOut();
+    for(auto& layer : _layers) {
+        layer->DirtyMesh();
+    }
+}
+
+void Map::ZoomIn() noexcept {
+    cameraController.ZoomIn();
+    for(auto& layer : _layers) {
+        layer->DirtyMesh();
+    }
+}
+
 void Map::SetDebugGridColor(const Rgba& gridColor) {
     auto* layer = GetLayer(0);
     layer->debug_grid_color = gridColor;
@@ -154,16 +168,16 @@ Tile* Map::PickTileFromWorldCoords(const Vector2& worldCoords, int layerIndex) c
 }
 
 std::vector<Tile*> Map::PickTilesFromMouseCoords(const Vector2& mouseCoords) const {
-    const auto& world_coords = _renderer.ConvertScreenToWorldCoords(camera, mouseCoords);
+    const auto& world_coords = _renderer.ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
     return PickTilesFromWorldCoords(world_coords);
 }
 
 Vector2 Map::WorldCoordsToScreenCoords(const Vector2& worldCoords) const {
-    return _renderer.ConvertWorldToScreenCoords(camera, worldCoords);
+    return _renderer.ConvertWorldToScreenCoords(cameraController.GetCamera(), worldCoords);
 }
 
 Vector2 Map::ScreenCoordsToWorldCoords(const Vector2& screenCoords) const {
-    return _renderer.ConvertScreenToWorldCoords(camera, screenCoords);
+    return _renderer.ConvertScreenToWorldCoords(cameraController.GetCamera(), screenCoords);
 }
 
 IntVector2 Map::TileCoordsFromWorldCoords(const Vector2& worldCoords) const {
@@ -171,7 +185,7 @@ IntVector2 Map::TileCoordsFromWorldCoords(const Vector2& worldCoords) const {
 }
 
 Tile* Map::PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) const {
-    const auto& world_coords = _renderer.ConvertScreenToWorldCoords(camera, mouseCoords);
+    const auto& world_coords = _renderer.ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
     return PickTileFromWorldCoords(world_coords, layerIndex);
 }
 
@@ -203,6 +217,8 @@ Map::Map(Renderer& renderer, const XMLElement& elem) noexcept
     if(!LoadFromXML(elem)) {
         ERROR_AND_DIE("Could not load map.");
     }
+    cameraController = OrthographicCameraController(&_renderer, g_theInputSystem);
+    cameraController.SetZoomLevelRange(Vector2{8.0f, (float)GetLayer(0)->tileDimensions.y});
 }
 
 Map::~Map() noexcept {
@@ -220,6 +236,7 @@ void Map::BeginFrame() {
 }
 
 void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
+    cameraController.Update(deltaSeconds);
     UpdateLayers(deltaSeconds);
     UpdateTextEntities(deltaSeconds);
     UpdateEntities(deltaSeconds);
@@ -286,11 +303,6 @@ void Map::Render(Renderer& renderer) const {
         layer->Render(renderer);
     }
 
-    static std::vector<Vertex3D> verts;
-    verts.clear();
-    static std::vector<unsigned int> ibo;
-    ibo.clear();
-
     auto& ui_camera = g_theGame->ui_camera;
 
     //2D View / HUD
@@ -309,7 +321,7 @@ void Map::Render(Renderer& renderer) const {
         entity->Render();
     }
 
-    g_theRenderer->SetCamera(camera);
+    g_theRenderer->SetCamera(cameraController.GetCamera());
 
 }
 
@@ -342,7 +354,7 @@ void Map::DebugRender(Renderer& renderer) const {
         renderer.DrawAABB2(bounds, Rgba::Cyan, Rgba::NoAlpha);
     }
     if(g_theGame->_show_camera) {
-        const auto cam_pos = camera.GetPosition();
+        const auto cam_pos = cameraController.GetCamera().GetPosition();
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
         renderer.DrawCircle2D(cam_pos, 0.5f, Rgba::Cyan);
         renderer.DrawAABB2(GetLayer(0)->CalcViewBounds(cam_pos), Rgba::Green, Rgba::NoAlpha);
@@ -391,7 +403,7 @@ bool Map::IsTileInView(const Tile* tile) const {
         return false;
     }
     const auto tile_bounds = tile->GetBounds();
-    const auto view_bounds = tile->layer->CalcCullBounds(camera.position);
+    const auto view_bounds = tile->layer->CalcCullBounds(cameraController.GetCamera().position);
     return MathUtils::DoAABBsOverlap(tile_bounds, view_bounds);
 }
 
@@ -477,7 +489,7 @@ bool Map::IsTilePassable(const Tile* tile) const {
 
 void Map::FocusTileAt(const IntVector3& position) {
     if(GetTile(position)) {
-        camera.SetPosition(Vector3{ position });
+        cameraController.SetPosition(Vector2{ IntVector2{position.x, position.y} });
     }
 }
 
@@ -630,14 +642,6 @@ Vector2 Map::CalcMaxDimensions() const {
         }
     });
     return results;
-}
-
-float Map::CalcMaxViewHeight() const {
-    auto max_view_height_elem = std::max_element(std::begin(_layers), std::end(_layers),
-        [](const std::unique_ptr<Layer>& a, const std::unique_ptr<Layer>& b)->bool {
-        return a->viewHeight < b->viewHeight;
-    });
-    return (*max_view_height_elem)->viewHeight;
 }
 
 Material* Map::GetTileMaterial() const {

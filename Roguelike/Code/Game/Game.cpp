@@ -179,13 +179,10 @@ void Game::Update_Main(TimeUtils::FPSeconds deltaSeconds) {
         deltaSeconds = TimeUtils::FPSeconds::zero();
     }
     g_theRenderer->UpdateGameTime(deltaSeconds);
-    Camera2D& base_camera = _map->camera;
-    HandleDebugInput(base_camera);
-    HandlePlayerInput(base_camera);
+    HandleDebugInput();
+    HandlePlayerInput();
 
     UpdateFullscreenEffect(_current_fs_effect);
-
-    base_camera.Update(deltaSeconds);
     _map->Update(deltaSeconds);
 }
 
@@ -326,7 +323,7 @@ void Game::EndFrame_Loading() {
         LoadMaps();
 
         SetCurrentCursorById(CursorId::Green_Box);
-        _map->camera.position = _map->CalcMaxDimensions() * 0.5f;
+        _map->cameraController.GetCamera().position = _map->CalcMaxDimensions() * 0.5f;
         _done_loading = true;
     }
 }
@@ -386,30 +383,6 @@ void Game::RegisterCommands() {
             }
         };
         _consoleCommands.AddCommand(showalltiles);
-    }
-    {
-        Console::Command setviewheight{};
-        setviewheight.command_name = "set_view_height";
-        setviewheight.help_text_short = "Sets a layer's view height";
-        setviewheight.help_text_long = "set_view height [layer id] [view height in tiles]: Sets the layer's view height in tiles.";
-        setviewheight.command_function = [this](const std::string& args) {
-            ArgumentParser p(args);
-            if(_map) {
-                std::size_t id{0u};
-                if(p >> id) {
-                    if(auto* layer = _map->GetLayer(id)) {
-                        float value = 1.0f;
-                        if(p >> value) {
-                            layer->viewHeight = value;
-                            return;
-                        }
-                        g_theConsole->ErrorMsg("Invalid view height.");
-                    }
-                }
-                g_theConsole->ErrorMsg("Invalid Layer ID.");
-            }
-        };
-        _consoleCommands.AddCommand(setviewheight);
     }
     {
         Console::Command cleartilevis{};
@@ -678,6 +651,14 @@ void Game::OnExitState(const GameState& state) {
     case GameState::Main:     OnExit_Main();    break;
     default: ERROR_AND_DIE("ON ENTER UNDEFINED GAME STATE") break;
     }
+}
+
+const bool Game::IsDebugWindowOpen() const noexcept {
+#ifdef PROFILE_BUILD
+    return _show_debug_window;
+#else
+    return false;
+#endif
 }
 
 void Game::LoadUI() {
@@ -984,13 +965,13 @@ void Game::SetCurrentCursorById(CursorId id) noexcept {
     current_cursor = &_cursors[static_cast<std::size_t>(id)];
 }
 
-void Game::HandlePlayerInput(Camera2D& base_camera) {
-    HandlePlayerKeyboardInput(base_camera);
-    //HandlePlayerControllerInput(base_camera);
-    HandlePlayerMouseInput(base_camera);
+void Game::HandlePlayerInput() {
+    HandlePlayerKeyboardInput();
+    //HandlePlayerControllerInput();
+    HandlePlayerMouseInput();
 }
 
-void Game::HandlePlayerKeyboardInput(Camera2D& base_camera) {
+void Game::HandlePlayerKeyboardInput() {
     const bool is_right = g_theInputSystem->WasKeyJustPressed(KeyCode::D) ||
         g_theInputSystem->WasKeyJustPressed(KeyCode::Right) ||
         g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad6);
@@ -1016,15 +997,15 @@ void Game::HandlePlayerKeyboardInput(Camera2D& base_camera) {
 
     if(is_shift) {
         if(is_right) {
-            base_camera.position += Vector2::X_AXIS;
+            _map->cameraController.Translate(Vector2::X_AXIS);
         } else if(is_left) {
-            base_camera.position += -Vector2::X_AXIS;
+            _map->cameraController.Translate(-Vector2::X_AXIS);
         }
 
         if(is_up) {
-            base_camera.position += -Vector2::Y_AXIS;
+            _map->cameraController.Translate(-Vector2::Y_AXIS);
         } else if(is_down) {
-            base_camera.position += Vector2::Y_AXIS;
+            _map->cameraController.Translate(Vector2::Y_AXIS);
         }
         return;
     }
@@ -1057,15 +1038,15 @@ void Game::HandlePlayerKeyboardInput(Camera2D& base_camera) {
     }
 }
 
-void Game::HandlePlayerMouseInput(Camera2D& base_camera) {
+void Game::HandlePlayerMouseInput() {
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::H)) {
         g_theInputSystem->ToggleMouseCursorVisibility();
     }
     if(g_theInputSystem->WasMouseWheelJustScrolledUp()) {
-        DecrementViewHeight();
+        _map->ZoomIn();
     }
     if(g_theInputSystem->WasMouseWheelJustScrolledDown()) {
-        IncrementViewHeight();
+        _map->ZoomOut();
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::MButton)) {
         _map->FocusEntity(_map->player);
@@ -1076,7 +1057,7 @@ void Game::HandlePlayerMouseInput(Camera2D& base_camera) {
     }
     if(g_theInputSystem->IsKeyDown(KeyCode::RButton)) {
         const auto mouseDelta = g_theInputSystem->GetMouseDelta();
-        base_camera.Translate(_cam_speed * mouseDelta * g_theRenderer->GetGameFrameTime().count());
+        _map->cameraController.Translate(_cam_speed * mouseDelta * g_theRenderer->GetGameFrameTime().count());
     }
     if(g_theInputSystem->WasKeyJustReleased(KeyCode::RButton)) {
         //g_theInputSystem->ShowMouseCursor();
@@ -1084,11 +1065,11 @@ void Game::HandlePlayerMouseInput(Camera2D& base_camera) {
     //g_theInputSystem->SetCursorToWindowCenter();
 }
 
-void Game::HandlePlayerControllerInput(Camera2D& base_camera) {
+void Game::HandlePlayerControllerInput() {
     auto& controller = g_theInputSystem->GetXboxController(0);
     auto rthumb = controller.GetRightThumbPosition();
     rthumb.y *= currentGraphicsOptions.InvertMouseY ? 1.0f : -1.0f;
-    base_camera.position += _cam_speed * rthumb * g_theRenderer->GetGameFrameTime().count();
+    _map->cameraController.Translate(_cam_speed * rthumb * g_theRenderer->GetGameFrameTime().count());
 
     if(controller.WasButtonJustPressed(XboxController::Button::RightThumb)) {
         _map->FocusEntity(_map->player);
@@ -1105,32 +1086,24 @@ void Game::HandlePlayerControllerInput(Camera2D& base_camera) {
 }
 
 void Game::ZoomOut() {
-    IncrementViewHeight();
-}
-
-void Game::IncrementViewHeight() {
-    _map->GetLayer(0)->IncrementViewHeight();
+    _map->ZoomOut();
 }
 
 void Game::ZoomIn() {
-    DecrementViewHeight();
+    _map->ZoomIn();
 }
 
-void Game::DecrementViewHeight() {
-    _map->GetLayer(0)->DecrementViewHeight();
-}
-
-void Game::HandleDebugInput([[maybe_unused]]Camera2D& base_camera) {
+void Game::HandleDebugInput() {
 #ifdef PROFILE_BUILD
     if(_show_debug_window) {
         ShowDebugUI();
     }
-    HandleDebugKeyboardInput(base_camera);
-    HandleDebugMouseInput(base_camera);
+    HandleDebugKeyboardInput();
+    HandleDebugMouseInput();
 #endif
 }
 
-void Game::HandleDebugKeyboardInput([[maybe_unused]] Camera2D& base_camera) {
+void Game::HandleDebugKeyboardInput() {
 #ifdef PROFILE_BUILD
     if(g_theUISystem->GetIO().WantCaptureKeyboard) {
         return;
@@ -1149,6 +1122,10 @@ void Game::HandleDebugKeyboardInput([[maybe_unused]] Camera2D& base_camera) {
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F1)) {
         _show_debug_window = !_show_debug_window;
+        _show_debug_window ? g_theInputSystem->ShowMouseCursor() : g_theInputSystem->HideMouseCursor();
+    }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F2)) {
+        g_theInputSystem->ToggleMouseRawInput();
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F4)) {
         g_theUISystem->ToggleImguiDemoWindow();
@@ -1164,19 +1141,10 @@ void Game::HandleDebugKeyboardInput([[maybe_unused]] Camera2D& base_camera) {
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::B)) {
         _map->ShakeCamera([]()->float { const auto t = g_theRenderer->GetGameTime().count(); return std::cos(t) * std::sin(t); });
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::R)) {
-        const auto layer_count = _map->GetLayerCount();
-        for(std::size_t i = 0; i < layer_count; ++i) {
-            auto* cur_layer = _map->GetLayer(i);
-            if(cur_layer) {
-                cur_layer->viewHeight = cur_layer->GetDefaultViewHeight();
-            }
-        }
-    }
 #endif
 }
 
-void Game::HandleDebugMouseInput([[maybe_unused]] Camera2D& base_camera) {
+void Game::HandleDebugMouseInput() {
 #ifdef PROFILE_BUILD
     if(g_theUISystem->GetIO().WantCaptureMouse) {
         return;
@@ -1350,8 +1318,8 @@ void Game::ShowFrameInspectorUI() {
 
 void Game::ShowWorldInspectorUI() {
     if(ImGui::CollapsingHeader("World")) {
-        ImGui::Text("Layer 0 view height: %.0f", _map->GetLayer(0)->viewHeight);
-        ImGui::Text("Camera: [%.1f,%.1f]", _map->camera.position.x, _map->camera.position.y);
+        ImGui::Text("View height: %.0f", _map->cameraController.GetCamera().GetViewHeight());
+        ImGui::Text("Camera: [%.1f,%.1f]", _map->cameraController.GetCamera().position.x, _map->cameraController.GetCamera().position.y);
         ImGui::Text("Tiles in view: %llu", _map->DebugTilesInViewCount());
         ImGui::Text("Tiles visible in view: %llu", _map->DebugVisibleTilesInViewCount());
         static bool show_camera = false;

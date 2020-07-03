@@ -2,6 +2,7 @@
 
 #include "Engine/Core/DataUtils.hpp"
 #include "Engine/Core/TimeUtils.hpp"
+#include "Engine/Core/OrthographicCameraController.hpp"
 
 #include "Engine/Math/Vector2.hpp"
 
@@ -83,6 +84,9 @@ public:
     bool IsTilePassable(const IntVector2& tileCoords) const;
     bool IsTilePassable(const IntVector3& tileCoords) const;
     bool IsTilePassable(const Tile* tile) const;
+
+    void ZoomOut() noexcept;
+    void ZoomIn() noexcept;
 
     void FocusTileAt(const IntVector3& position);
     void FocusEntity(const Entity* entity);
@@ -259,7 +263,6 @@ public:
     
     AABB2 CalcWorldBounds() const;
     Vector2 CalcMaxDimensions() const;
-    float CalcMaxViewHeight() const;
     Material* GetTileMaterial() const;
     void SetTileMaterial(Material* material);
     void ResetTileMaterial();
@@ -282,7 +285,7 @@ public:
 
     void SetDebugGridColor(const Rgba& gridColor);
 
-    mutable Camera2D camera{};
+    OrthographicCameraController cameraController{};
     Actor* player = nullptr;
 
     void KillEntity(Entity& e);
@@ -297,7 +300,7 @@ public:
 
     template<typename F>
     void ShakeCamera(F&& f) noexcept {
-        camera.trauma = f();
+        cameraController.GetCamera().trauma = f();
     }
 
     std::size_t DebugTilesInViewCount() const;
@@ -309,6 +312,7 @@ public:
     Pathfinder* GetPathfinder() const noexcept;
 
     std::unique_ptr<MapGenerator> _map_generator{};
+
 protected:
 private:
     bool LoadFromXML(const XMLElement& elem);

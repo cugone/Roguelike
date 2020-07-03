@@ -110,19 +110,17 @@ private:
 
     void CreateFullscreenConstantBuffer();
 
-    void HandleDebugInput([[maybe_unused]] Camera2D& base_camera);
-    void HandleDebugKeyboardInput([[maybe_unused]] Camera2D& base_camera);
-    void HandleDebugMouseInput([[maybe_unused]] Camera2D& base_camera);
+    void HandleDebugInput();
+    void HandleDebugKeyboardInput();
+    void HandleDebugMouseInput();
 
-    void HandlePlayerInput(Camera2D& base_camera);
-    void HandlePlayerKeyboardInput(Camera2D& base_camera);
-    void HandlePlayerMouseInput(Camera2D& base_camera);
-    void HandlePlayerControllerInput(Camera2D& base_camera);
+    void HandlePlayerInput();
+    void HandlePlayerKeyboardInput();
+    void HandlePlayerMouseInput();
+    void HandlePlayerControllerInput();
 
     void ZoomOut();
-    void IncrementViewHeight();
     void ZoomIn();
-    void DecrementViewHeight();
 
 #ifdef PROFILE_BUILD
     void ShowDebugUI();
@@ -146,6 +144,8 @@ private:
 
     void ShowFeatureInspectorUI();
 #endif
+
+    const bool IsDebugWindowOpen() const noexcept;
 
     void LoadUI();
     void LoadMaps();

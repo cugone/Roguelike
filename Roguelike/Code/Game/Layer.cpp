@@ -82,10 +82,6 @@ Tile* Layer::GetNeighbor(const IntVector2& direction) {
     return GetTile(direction.x, direction.y);
 }
 
-float Layer::GetDefaultViewHeight() const {
-    return _defaultViewHeight;
-}
-
 void Layer::DirtyMesh() noexcept {
     meshDirty = true;
 }
@@ -147,20 +143,6 @@ std::vector<unsigned int>& Layer::GetIbo() noexcept {
     return const_cast<std::vector<unsigned int>&>(static_cast<const Layer&>(*this).GetIbo());
 }
 
-void Layer::IncrementViewHeight() noexcept {
-    auto vh = viewHeight;
-    vh = std::clamp(++vh, 8.0f, static_cast<float>(_map->GetLayer(0)->tileDimensions.y));
-    viewHeight = vh;
-    meshDirty = true;
-}
-
-void Layer::DecrementViewHeight() noexcept {
-    auto vh = viewHeight;
-    vh = std::clamp(--vh, 8.0f, static_cast<float>(_map->GetLayer(0)->tileDimensions.y));
-    viewHeight = vh;
-    meshDirty = true;
-}
-
 bool Layer::LoadFromXml(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "layer", "row", "");
     std::size_t row_count = DataUtils::GetChildElementCount(elem, "row");
@@ -182,10 +164,6 @@ bool Layer::LoadFromImage(const Image& img) {
     const auto layer_width = tileDimensions.x;
     const auto layer_height = tileDimensions.y;
     _tiles.resize(static_cast<std::size_t>(layer_width) * layer_height);
-    const auto tenth_view_height = layer_height * 0.1f;
-    const auto half_view_height = layer_height * 0.5f;
-    _defaultViewHeight = tenth_view_height < 1.0f ? half_view_height : tenth_view_height;
-    viewHeight = _defaultViewHeight < _minimumViewHeight ? _minimumViewHeight : _defaultViewHeight;
     int tile_x = 0;
     int tile_y = 0;
     for(auto& t : _tiles) {
@@ -202,8 +180,6 @@ bool Layer::LoadFromImage(const Image& img) {
 void Layer::InitializeTiles(const std::size_t layer_width, const std::size_t layer_height, const std::vector<std::string>& glyph_strings) {
     _tiles.resize(layer_width * layer_height);
     tileDimensions.SetXY(static_cast<int>(layer_width), static_cast<int>(layer_height));
-    viewHeight = static_cast<float>(layer_height);
-    _defaultViewHeight = viewHeight;
     auto tile_iter = std::begin(_tiles);
     int tile_x = 0;
     int tile_y = 0;
@@ -252,11 +228,11 @@ void Layer::SetModelViewProjectionBounds(Renderer& renderer) const {
     renderer.SetViewMatrix(Matrix4::I);
     const auto leftBottom = Vector2{ ortho_bounds.mins.x, ortho_bounds.maxs.y };
     const auto rightTop = Vector2{ ortho_bounds.maxs.x, ortho_bounds.mins.y };
-    _map->camera.SetupView(leftBottom, rightTop, Vector2(0.0f, 1000.0f));
-    renderer.SetCamera(_map->camera);
+    _map->cameraController.GetCamera().SetupView(leftBottom, rightTop, Vector2(0.0f, 1000.0f));
+    renderer.SetCamera(_map->cameraController.GetCamera());
 
-    Camera2D& base_camera = _map->camera;
-    Camera2D shakyCam = _map->camera;
+    Camera2D& base_camera = _map->cameraController.GetCamera();
+    Camera2D shakyCam = _map->cameraController.GetCamera();
     const float shake = shakyCam.GetShake();
     const float shaky_angle = currentGraphicsOptions.MaxShakeAngle * shake * MathUtils::GetRandomFloatNegOneToOne();
     const float shaky_offsetX = currentGraphicsOptions.MaxShakeOffsetHorizontal * shake * MathUtils::GetRandomFloatNegOneToOne();
@@ -282,7 +258,7 @@ void Layer::RenderTiles(Renderer& renderer) const {
 void Layer::DebugRenderTiles(Renderer& renderer) const {
     renderer.SetModelMatrix(Matrix4::I);
 
-    AABB2 cullbounds = CalcCullBounds(_map->camera.position);
+    AABB2 cullbounds = CalcCullBounds(_map->cameraController.GetCamera().position);
 
     static std::vector<Vertex3D> verts;
     verts.clear();
@@ -303,19 +279,22 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
     debug_tiles_in_view_count = 0;
     debug_visible_tiles_in_view_count = 0;
     const auto& viewableTiles = [this]() {
-        const auto view_area = CalcCullBounds(_map->camera.position);
+        const auto view_area = CalcCullBounds(_map->cameraController.GetCamera().GetPosition());
         const auto dims = view_area.CalcDimensions();
         const auto width = static_cast<int>(dims.x);
         const auto height = static_cast<int>(dims.y);
         std::vector<Tile*> results;
         results.reserve(width * height);
         for(int x = static_cast<int>(view_area.mins.x); x <= view_area.maxs.x; ++x) {
+            if(x >= tileDimensions.x || x < 0) {
+                continue;
+            }
             for(int y = static_cast<int>(view_area.mins.y); y <= view_area.maxs.y; ++y) {
-                if(x >= tileDimensions.x || x < 0 || y >= tileDimensions.y || y < 0) {
+                if(y >= tileDimensions.y || y < 0) {
                     continue;
                 }
-                if(auto* tile = GetTile(x, y); tile->debug_canSee || tile->canSee || tile->haveSeen) {
-                    results.push_back(GetTile(x, y));
+                if(auto* tile = GetTile(x, y); tile && (tile->debug_canSee || tile->canSee || tile->haveSeen)) {
+                    results.push_back(tile);
                 }
             }
         }
@@ -379,8 +358,8 @@ void Layer::EndFrame() {
 }
 
 AABB2 Layer::CalcOrthoBounds() const {
-    float half_view_height = viewHeight * 0.5f;
-    float half_view_width = half_view_height * _map->camera.GetAspectRatio();
+    float half_view_height = this->GetMap()->cameraController.GetCamera().GetViewHeight() * 0.5f;
+    float half_view_width = half_view_height * _map->cameraController.GetAspectRatio();
     auto ortho_mins = Vector2{ -half_view_width, -half_view_height };
     auto ortho_maxs = Vector2{ half_view_width, half_view_height };
     return AABB2{ ortho_mins, ortho_maxs };
