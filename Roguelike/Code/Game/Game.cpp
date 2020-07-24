@@ -288,23 +288,6 @@ void Game::Render_Main() const {
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
 
-    const auto mouseWindowPos = g_theInputSystem->GetMouseCoords();
-    g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(Vector2{ui_leftBottom.x, ui_rightTop.y + ingamefont->GetLineHeight() * 1.0f}));
-    g_theRenderer->DrawTextLine(ingamefont, "MC: " + StringUtils::to_string(mouseWindowPos));
-    
-    const auto mouseDelta = g_theInputSystem->GetMouseDelta();
-    g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(Vector2{ui_leftBottom.x, ui_rightTop.y + ingamefont->GetLineHeight() * 2.0f}));
-    g_theRenderer->DrawTextLine(ingamefont, "MD: " + StringUtils::to_string(mouseDelta));
-
-    const auto windowCenter = g_theInputSystem->GetWindowCenter();
-    g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(Vector2{ui_leftBottom.x, ui_rightTop.y + ingamefont->GetLineHeight() * 3.0f}));
-    g_theRenderer->DrawTextLine(ingamefont, "WC: " + StringUtils::to_string(windowCenter));
-    
-    const auto cursorCoords = current_cursor->GetCoords();
-    g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(Vector2{ui_leftBottom.x, ui_rightTop.y + ingamefont->GetLineHeight() * 4.0f}));
-    g_theRenderer->DrawTextLine(ingamefont, "CC:" + StringUtils::to_string(Vector2{cursorCoords}));
-
-
     if(g_theApp->LostFocus()) {
         g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_center));
         g_theRenderer->DrawTextLine(ingamefont, "PAUSED");

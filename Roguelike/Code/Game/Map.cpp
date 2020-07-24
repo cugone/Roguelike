@@ -321,8 +321,6 @@ void Map::Render(Renderer& renderer) const {
         entity->Render();
     }
 
-    g_theRenderer->SetCamera(cameraController.GetCamera());
-
 }
 
 void Map::DebugRender(Renderer& renderer) const {
