@@ -38,10 +38,13 @@ public:
             return PATHFINDING_INVALID_INITIAL_NODE;
         }
         initial->g = 0.0f;
-        initial->f = static_cast<float>(h(start, goal));
+        initial->f = static_cast<float>(std::invoke(h, start, goal));
+
         const auto comp = [](const Node* a, const Node* b) { return a->f < b->f;  };
         std::priority_queue<Node*, std::vector<Node*>, decltype(comp)> openSet(comp);
+
         std::vector<Node*> closedSet{};
+
         const auto IsGoalInClosedSet = [&closedSet, goal]()->bool {
             const auto found = std::find_if(std::begin(closedSet), std::end(closedSet), [goal](const Node* a)->bool { return a->coords == goal; });
             return found != std::end(closedSet);
@@ -62,6 +65,7 @@ public:
             }
             return visited_count >= 8;
         };
+
         openSet.push(initial);
         while(!openSet.empty() && !IsGoalInClosedSet()) {
             Node* current = openSet.top();
@@ -85,15 +89,15 @@ public:
                 if(const auto n_idx = neighbor->coords.y * _dimensions.x + neighbor->coords.x; 0 > n_idx || n_idx >= _dimensions.x * _dimensions.y) {
                     continue;
                 }
-                if(neighbor->visited || !viable(neighbor->coords)) {
+                if(neighbor->visited || !std::invoke(viable, neighbor->coords)) {
                     continue;
                 }
                 openSet.push(neighbor);
-                const float tenativeGScore = current->g + distance(current->coords, neighbor->coords);
+                const float tenativeGScore = current->g + std::invoke(distance, current->coords, neighbor->coords);
                 if(tenativeGScore < neighbor->g) {
                     neighbor->parent = current;
                     neighbor->g = tenativeGScore;
-                    neighbor->f = neighbor->g + h(neighbor->coords, goal);
+                    neighbor->f = neighbor->g + std::invoke(h, neighbor->coords, goal);
                 }
             }
         }
@@ -121,7 +125,7 @@ public:
 
     template<typename Viability, typename DistanceFunc>
     uint8_t Dijkstra(const IntVector2& start, const IntVector2& goal, Viability&& viable, DistanceFunc&& distance) {
-        return AStar(start, goal, viable, [](const IntVector2&, const IntVector2&) { return 0; }, distance);
+        return AStar(start, goal, viable, [](const IntVector2&, const IntVector2&)->int { return 0; }, distance);
     }
 
 protected:
