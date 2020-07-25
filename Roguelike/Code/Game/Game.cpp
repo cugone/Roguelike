@@ -958,36 +958,54 @@ void Game::HandlePlayerKeyboardInput() {
     const bool is_right = g_theInputSystem->WasKeyJustPressed(KeyCode::D) ||
         g_theInputSystem->WasKeyJustPressed(KeyCode::Right) ||
         g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad6);
+    const bool is_right_held = g_theInputSystem->IsKeyDown(KeyCode::D) ||
+        g_theInputSystem->IsKeyDown(KeyCode::Right) ||
+        g_theInputSystem->IsKeyDown(KeyCode::NumPad6);
+
     const bool is_left = g_theInputSystem->WasKeyJustPressed(KeyCode::A) ||
         g_theInputSystem->WasKeyJustPressed(KeyCode::Left) ||
         g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad4);
+    const bool is_left_held = g_theInputSystem->IsKeyDown(KeyCode::A) ||
+        g_theInputSystem->IsKeyDown(KeyCode::Left) ||
+        g_theInputSystem->IsKeyDown(KeyCode::NumPad4);
 
     const bool is_up = g_theInputSystem->WasKeyJustPressed(KeyCode::W) ||
         g_theInputSystem->WasKeyJustPressed(KeyCode::Up) ||
         g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad8);
+    const bool is_up_held = g_theInputSystem->IsKeyDown(KeyCode::W) ||
+        g_theInputSystem->IsKeyDown(KeyCode::Up) ||
+        g_theInputSystem->IsKeyDown(KeyCode::NumPad8);
+
     const bool is_down = g_theInputSystem->WasKeyJustPressed(KeyCode::S) ||
         g_theInputSystem->WasKeyJustPressed(KeyCode::Down) ||
         g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad2);
+    const bool is_down_held = g_theInputSystem->IsKeyDown(KeyCode::S) ||
+        g_theInputSystem->IsKeyDown(KeyCode::Down) ||
+        g_theInputSystem->IsKeyDown(KeyCode::NumPad2);
 
     const bool is_upright = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad9) || (is_right && is_up);
+    const bool is_upright_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad9) || (is_right_held && is_up_held);
     const bool is_upleft = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad7) || (is_left && is_up);
+    const bool is_upleft_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad7) || (is_left_held && is_up_held);
     const bool is_downright = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad3) || (is_right && is_down);
+    const bool is_downright_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad3) || (is_right_held && is_down_held);
     const bool is_downleft = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad1) || (is_left && is_down);
+    const bool is_downleft_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad1) || (is_left_held && is_down_held);
 
     const bool is_shift = g_theInputSystem->IsKeyDown(KeyCode::Shift);
     const bool is_rest = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad5)
         || g_theInputSystem->WasKeyJustPressed(KeyCode::Z);
 
     if(is_shift) {
-        if(is_right) {
+        if(is_right_held) {
             _map->cameraController.Translate(Vector2::X_AXIS);
-        } else if(is_left) {
+        } else if(is_left_held) {
             _map->cameraController.Translate(-Vector2::X_AXIS);
         }
 
-        if(is_up) {
+        if(is_up_held) {
             _map->cameraController.Translate(-Vector2::Y_AXIS);
-        } else if(is_down) {
+        } else if(is_down_held) {
             _map->cameraController.Translate(Vector2::Y_AXIS);
         }
         return;
