@@ -1,13 +1,9 @@
 #pragma once
 
-#include "Engine/Math/AABB2.hpp"
 #include "Engine/Math/IntVector2.hpp"
-#include "Engine/Math/MathUtils.hpp"
-
-#include "Game/Map.hpp"
-#include "Game/Tile.hpp"
 
 #include <algorithm>
+#include <array>
 #include <functional>
 #include <limits>
 #include <numeric>
