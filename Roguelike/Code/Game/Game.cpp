@@ -1016,24 +1016,24 @@ void Game::HandlePlayerKeyboardInput() {
         player->Act();
         return;
     }
-    if(is_upright || is_upright_held) {
+    if(is_upright) {
         _map->MoveOrAttack(player, player->tile->GetNorthEastNeighbor());
-    } else if(is_upleft || is_upleft_held) {
+    } else if(is_upleft) {
         _map->MoveOrAttack(player, player->tile->GetNorthWestNeighbor());
-    } else if(is_downright || is_downright_held) {
+    } else if(is_downright) {
         _map->MoveOrAttack(player, player->tile->GetSouthEastNeighbor());
-    } else if(is_downleft || is_downleft_held) {
+    } else if(is_downleft) {
         _map->MoveOrAttack(player, player->tile->GetSouthWestNeighbor());
     } else {
-        if(is_right || is_right_held) {
+        if(is_right) {
             _map->MoveOrAttack(player, player->tile->GetEastNeighbor());
-        } else if(is_left || is_left_held) {
+        } else if(is_left) {
             _map->MoveOrAttack(player, player->tile->GetWestNeighbor());
         }
 
-        if(is_up || is_up_held) {
+        if(is_up) {
             _map->MoveOrAttack(player, player->tile->GetNorthNeighbor());
-        } else if(is_down || is_down_held) {
+        } else if(is_down) {
             _map->MoveOrAttack(player, player->tile->GetSouthNeighbor());
         }
     }
