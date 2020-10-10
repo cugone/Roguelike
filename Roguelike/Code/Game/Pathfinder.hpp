@@ -46,8 +46,8 @@ public:
         std::vector<Node*> closedSet{};
 
         const auto IsGoalInClosedSet = [&closedSet, goal]()->bool {
-            const auto found = std::find_if(std::begin(closedSet), std::end(closedSet), [goal](const Node* a)->bool { return a->coords == goal; });
-            return found != std::end(closedSet);
+            const auto found = std::find_if(std::cbegin(closedSet), std::cend(closedSet), [goal](const Node* a)->bool { return a->coords == goal; });
+            return found != std::cend(closedSet);
         };
         const auto EveryNodeSearched = [this, &closedSet]()->bool {
             return _navMap.size() == closedSet.size();
