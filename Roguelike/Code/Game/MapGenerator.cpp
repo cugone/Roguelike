@@ -439,8 +439,9 @@ bool RoomsAndCorridorsMapGenerator::VerifyExitIsReachable(const IntVector2& ente
     auto* pather = this->_map->GetPathfinder();
     if(const auto result = pather->AStar(enter_loc, exit_loc, viable, h, d); result == Pathfinder::PATHFINDING_SUCCESS) {
         return true;
+    } else {
+        return false;
     }
-    return false;
 }
 
 void RoomsAndCorridorsMapGenerator::PlaceActors() noexcept {
