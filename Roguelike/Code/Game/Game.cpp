@@ -687,7 +687,7 @@ void Game::LoadItems() {
 void Game::LoadCursorsFromFile(const std::filesystem::path& src) {
     LoadCursorDefinitionsFromFile(src);
     for(const auto& c : CursorDefinition::GetLoadedDefinitions()) {
-        _cursors.emplace_back(Cursor(*c));
+        _cursors.emplace_back(*c);
     }
 }
 
