@@ -16,7 +16,7 @@ void Pathfinder::Initialize(int width, int height) noexcept {
 }
 
 const std::vector<const Pathfinder::Node*> Pathfinder::GetResult() const noexcept {
-    return std::vector<const Pathfinder::Node*>(std::crbegin(_path), std::crend(_path));
+    return {std::crbegin(_path), std::crend(_path)};
 }
 
 void Pathfinder::ResetNavMap() noexcept {
