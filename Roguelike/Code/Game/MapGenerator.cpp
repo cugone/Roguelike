@@ -478,7 +478,6 @@ bool RoomsAndCorridorsMapGenerator::GenerateExitAndEntrance() noexcept {
     do {
         const int roomCount = static_cast<int>(rooms.size());
         if(closed_set.size() >= (roomCount * roomCount) - roomCount) {
-            _map->_layers.clear();
             rooms.clear();
             return false;
         }
