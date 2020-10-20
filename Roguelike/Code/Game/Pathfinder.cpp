@@ -40,7 +40,7 @@ const Pathfinder::Node* Pathfinder::GetNode(const IntVector2& pos) const noexcep
     if(pos.x < 0 || pos.y < 0) {
         return nullptr;
     }
-    const auto index = static_cast<std::size_t>(pos.y * _dimensions.y + pos.x);
+    const auto index = static_cast<std::size_t>(static_cast<std::size_t>(pos.y) * _dimensions.y + pos.x);
     if(index >= _navMap.size()) return nullptr;
     return &_navMap[index];
 }
