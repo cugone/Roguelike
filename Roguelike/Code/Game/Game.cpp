@@ -5,6 +5,7 @@
 #include "Engine/Core/DataUtils.hpp"
 #include "Engine/Core/FileUtils.hpp"
 #include "Engine/Core/KerningFont.hpp"
+#include "Engine/Core/Utilities.hpp"
 
 #include "Engine/Math/Vector2.hpp"
 #include "Engine/Math/Vector4.hpp"
@@ -54,6 +55,7 @@ Game::Game()
 ,_show_camera{0}
 ,_show_room_bounds{0}
 ,_done_loading{0}
+,_reset_loading_flag{0}
 {
     /* DO NOTHING */
 }
@@ -94,6 +96,7 @@ void Game::OnEnter_Title() {
 
 void Game::OnEnter_Loading() {
     _done_loading = false;
+    _skip_frame = true;
     g_theUISystem->LoadUiWidget("loading");
     //_cnvLoading = std::make_unique<UI::Canvas>(*g_theRenderer);
 
@@ -123,6 +126,7 @@ void Game::OnExit_Title() {
 
 void Game::OnExit_Loading() {
     g_theUISystem->UnloadUiWidget("loading");
+    _reset_loading_flag = true;
 }
 
 void Game::OnExit_Main() {
@@ -166,6 +170,7 @@ void Game::Update_Loading(TimeUtils::FPSeconds /*deltaSeconds*/) {
         _text_alpha = std::clamp(_text_alpha, 0.0f, 1.0f);
     }
     if(_done_loading && g_theInputSystem->WasAnyKeyPressed()) {
+        _reset_loading_flag = true;
         ChangeGameState(GameState::Main);
     }
 }
@@ -298,16 +303,28 @@ void Game::EndFrame_Title() {
     /* DO NOTHING */
 }
 
+void Game::LoadData(void* /*user_data*/) {
+    LoadUI();
+    LoadItems();
+    LoadEntities();
+    LoadMaps();
+    _done_loading = true;
+}
+
 void Game::EndFrame_Loading() {
     if(!_done_loading) {
-        LoadUI();
-        LoadItems();
-        LoadEntities();
-        LoadMaps();
-
+        if(_skip_frame) {
+            _skip_frame = false;
+            return;
+        }
+        Utils::DoOnce(
+            [this]() {
+                g_theJobSystem->Run(JobType::Generic, [this](void* ud)->void { LoadData(ud); }, nullptr);
+            }
+            , _reset_loading_flag);
+    } else {
         SetCurrentCursorById(CursorId::Green_Box);
         _map->cameraController.GetCamera().position = _map->CalcMaxDimensions() * 0.5f;
-        _done_loading = true;
     }
 }
 

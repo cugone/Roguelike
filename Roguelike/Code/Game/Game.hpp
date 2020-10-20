@@ -170,6 +170,8 @@ private:
     void RegisterCommands();
     void UnRegisterCommands();
 
+    void LoadData(void* user_data);
+
     std::unique_ptr<Map> _map{nullptr};
     Rgba _grid_color{Rgba::Red};
     Rgba _debug_gradientColor{Rgba::White};
@@ -200,6 +202,7 @@ private:
     Console::CommandList _consoleCommands;
     GameState _currentGameState = GameState::Title;
     GameState _nextGameState = GameState::Title;
+    std::condition_variable _loading_signal{};
     uint16_t _debug_has_picked_entity_with_click : 1;
     uint16_t _debug_has_picked_feature_with_click : 1;
     uint16_t _debug_has_picked_tile_with_click : 1;
@@ -217,6 +220,8 @@ private:
     uint16_t _show_camera : 1;
     uint16_t _show_room_bounds : 1;
     uint16_t _done_loading : 1;
+    uint16_t _reset_loading_flag : 1;
+    uint16_t _skip_frame : 1;
     friend class Map;
     friend class Layer;
     friend class Tile;
