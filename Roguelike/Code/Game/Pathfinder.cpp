@@ -1,10 +1,13 @@
 #include "Game/Pathfinder.hpp"
 
 void Pathfinder::Initialize(int width, int height) noexcept {
+    static bool already_initialized{false};
+    if(already_initialized) {
+        return;
+    }
     _dimensions = IntVector2{width, height};
     const auto area = width * height;
     _path.clear();
-    _path.shrink_to_fit();
     _navMap.resize(area);
     for(auto x = 0; x < width; ++x) {
         for(auto y = 0; y < height; ++y) {
@@ -13,6 +16,7 @@ void Pathfinder::Initialize(int width, int height) noexcept {
             SetNeighbors(x, y);
         }
     }
+    already_initialized = true;
 }
 
 const std::vector<const Pathfinder::Node*> Pathfinder::GetResult() const noexcept {
