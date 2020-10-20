@@ -69,7 +69,7 @@ void Tile::AddVertsForTile() const noexcept {
     const float z = static_cast<float>(layer->z_index);
     const Rgba layer_color = layer->color;
     auto& builder = layer->GetMeshBuilder();
-    //auto& vbo = layer->GetVbo();
+
     const auto newColor = layer_color != color && color != Rgba::White ? color : layer_color;
     const auto normal = -Vector3::Z_AXIS;
 

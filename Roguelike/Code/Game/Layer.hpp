@@ -79,12 +79,6 @@ public:
     const Mesh::Builder& GetMeshBuilder() const noexcept;
     Mesh::Builder& GetMeshBuilder() noexcept;
 
-    const std::vector<Vertex3D>& GetVbo() const noexcept;
-    std::vector<Vertex3D>& GetVbo() noexcept;
-
-    const std::vector<unsigned int>& GetIbo() const noexcept;
-    std::vector<unsigned int>& GetIbo() noexcept;
-    
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);
@@ -100,8 +94,6 @@ private:
     std::vector<Tile> _tiles{};
     Map* _map = nullptr;
     Mesh::Builder _mesh_builder{};
-    std::vector<Vertex3D> vbo{};
-    std::vector<unsigned int> ibo{};
     bool meshDirty = true;
     bool meshNeedsRebuild = true;
 };

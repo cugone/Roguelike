@@ -75,7 +75,7 @@ void Entity::AddVertsForSelf() noexcept {
 
     const float z = static_cast<float>(layer->z_index);
     const Rgba layer_color = layer->color;
-    //auto& vbo = layer->GetVbo();
+
     auto& builder = layer->GetMeshBuilder();
     const auto newColor = layer_color != color && color != Rgba::White ? color : layer_color;
     const auto normal = -Vector3::Z_AXIS;
@@ -99,19 +99,6 @@ void Entity::AddVertsForSelf() noexcept {
     builder.AddIndicies(Mesh::Builder::Primitive::Quad);
     builder.End(sprite->GetMaterial());
 
-    //vbo.push_back(Vertex3D{Vector3{vert_tl, z}, newColor, tx_tl, normal});
-    //vbo.push_back(Vertex3D{Vector3{vert_bl, z}, newColor, tx_bl, normal});
-    //vbo.push_back(Vertex3D{Vector3{vert_br, z}, newColor, tx_br, normal});
-    //vbo.push_back(Vertex3D{Vector3{vert_tr, z}, newColor, tx_tr, normal});
-
-    //const auto v_s = static_cast<unsigned int>(vbo.size());
-    //auto& ibo = layer->GetIbo();
-    //ibo.push_back(v_s - 4u);
-    //ibo.push_back(v_s - 3u);
-    //ibo.push_back(v_s - 2u);
-    //ibo.push_back(v_s - 4u);
-    //ibo.push_back(v_s - 2u);
-    //ibo.push_back(v_s - 1u);
 }
 
 void Entity::EndFrame() {

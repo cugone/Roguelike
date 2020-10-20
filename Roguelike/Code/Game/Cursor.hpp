@@ -39,7 +39,6 @@ public:
     Rgba color = Rgba::White;
 
     void AddVertsForCursor(Mesh::Builder& builder) const;
-    void AddVertsForCursor(std::vector<Vertex3D>& vbo, std::vector<unsigned int>& ibo) const;
 
 protected:
 private:

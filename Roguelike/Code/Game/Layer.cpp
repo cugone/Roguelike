@@ -127,22 +127,6 @@ Mesh::Builder& Layer::GetMeshBuilder() noexcept {
     return const_cast<Mesh::Builder&>(static_cast<const Layer&>(*this).GetMeshBuilder());
 }
 
-const std::vector<Vertex3D>& Layer::GetVbo() const noexcept {
-    return vbo;
-}
-
-std::vector<Vertex3D>& Layer::GetVbo() noexcept {
-    return const_cast<std::vector<Vertex3D>&>(static_cast<const Layer&>(*this).GetVbo());
-}
-
-const std::vector<unsigned int>& Layer::GetIbo() const noexcept {
-    return ibo;
-}
-
-std::vector<unsigned int>& Layer::GetIbo() noexcept {
-    return const_cast<std::vector<unsigned int>&>(static_cast<const Layer&>(*this).GetIbo());
-}
-
 bool Layer::LoadFromXml(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "layer", "row", "");
     std::size_t row_count = DataUtils::GetChildElementCount(elem, "row");
@@ -352,8 +336,6 @@ void Layer::EndFrame() {
     if(meshDirty) {
         meshNeedsRebuild = true;
         _mesh_builder.Clear();
-        vbo.clear();
-        ibo.clear();
     }
 }
 
