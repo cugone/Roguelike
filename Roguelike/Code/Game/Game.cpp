@@ -962,6 +962,7 @@ void Game::SetCurrentCursorByName(const std::string& name) noexcept {
 }
 
 void Game::SetCurrentCursorById(CursorId id) noexcept {
+    GUARANTEE_OR_DIE(!_cursors.empty(), "Cursors array is empty!!");
     current_cursor = &_cursors[static_cast<std::size_t>(id)];
 }
 
