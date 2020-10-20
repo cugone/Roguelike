@@ -252,12 +252,14 @@ void Tile::SetCoords(int x, int y) {
 
 void Tile::SetCoords(const IntVector2& coords) {
     _tile_coords = coords;
-    const auto layer_width = layer->tileDimensions.x;
-    index = _tile_coords.y * layer_width + _tile_coords.x;
 }
 
 const IntVector2& Tile::GetCoords() const {
     return _tile_coords;
+}
+
+int Tile::GetIndexFromCoords() const noexcept {
+    return _tile_coords.y * layer->tileDimensions.x + _tile_coords.x;
 }
 
 Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) const {

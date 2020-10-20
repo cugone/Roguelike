@@ -56,6 +56,7 @@ public:
     void SetCoords(int x, int y);
     void SetCoords(const IntVector2& coords);
     const IntVector2& GetCoords() const;
+    int GetIndexFromCoords() const noexcept;
 
     std::array<Tile*, 8> GetNeighbors() const;
     Tile* GetNeighbor(const IntVector3& directionAndLayerOffset) const;
@@ -104,5 +105,4 @@ private:
 
     TileDefinition* _def{};
     IntVector2 _tile_coords{};
-    int index{};
 };
