@@ -1124,7 +1124,7 @@ void Game::HandleDebugInput() {
 
 void Game::HandleDebugKeyboardInput() {
 #ifdef PROFILE_BUILD
-    if(g_theUISystem->GetIO().WantCaptureKeyboard) {
+    if(g_theUISystem->WantsInputKeyboardCapture()) {
         return;
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::J)) {
@@ -1165,7 +1165,7 @@ void Game::HandleDebugKeyboardInput() {
 
 void Game::HandleDebugMouseInput() {
 #ifdef PROFILE_BUILD
-    if(g_theUISystem->GetIO().WantCaptureMouse) {
+    if(g_theUISystem->WantsInputMouseCapture()) {
         return;
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::LButton)) {
@@ -1428,7 +1428,7 @@ void Game::ShowTileInspectorUI() {
 }
 
 std::vector<Tile*> Game::DebugGetTilesFromMouse() {
-    if(g_theUISystem->GetIO().WantCaptureMouse) {
+    if(g_theUISystem->WantsInputMouseCapture()) {
         return {};
     }
     const auto mouse_pos = g_theInputSystem->GetCursorWindowPosition(*g_theRenderer->GetOutput()->GetWindow());
