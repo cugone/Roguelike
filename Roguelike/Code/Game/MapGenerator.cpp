@@ -433,9 +433,8 @@ bool RoomsAndCorridorsMapGenerator::VerifyExitIsReachable(const IntVector2& ente
         return MathUtils::CalculateManhattanDistance(a, b);
     };
     const auto d = [this](const IntVector2& a, const IntVector2& b) {
-        const auto va = Vector2{a} + Vector2{0.5f, 0.5f};
-        const auto vb = Vector2{b} + Vector2{0.5f, 0.5f};
-        return MathUtils::CalcDistance(va, vb);
+        if(a.x == b.x || a.y == b.y) return 10; //Distance of 1 times ten.
+        return 14; //Euclidian diagonal distance times 10 casted to an integer.
     };
     auto* pather = this->_map->GetPathfinder();
     if(const auto result = pather->AStar(enter_loc, exit_loc, viable, h, d); result == Pathfinder::PATHFINDING_SUCCESS) {
