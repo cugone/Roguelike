@@ -17,6 +17,8 @@ public:
     constexpr static uint8_t PATHFINDING_NO_PATH = 1;
     constexpr static uint8_t PATHFINDING_GOAL_UNREACHABLE = 2;
     constexpr static uint8_t PATHFINDING_INVALID_INITIAL_NODE = 3;
+    constexpr static uint8_t PATHFINDING_PATH_EMPTY_ERROR = 4;
+    constexpr static uint8_t PATHFINDING_UNKNOWN_ERROR = 5;
 
     struct Node {
         std::array<Node*, 8> neighbors{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
@@ -42,57 +44,69 @@ public:
 
         const auto comp = [](const Node* a, const Node* b) { return a->f < b->f;  };
         std::priority_queue<Node*, std::vector<Node*>, decltype(comp)> openSet(comp);
-
         std::vector<Node*> closedSet{};
 
         const auto IsGoalInClosedSet = [&closedSet, goal]()->bool {
             const auto found = std::find_if(std::cbegin(closedSet), std::cend(closedSet), [goal](const Node* a)->bool { return a->coords == goal; });
             return found != std::cend(closedSet);
         };
+        const auto IsNodeVisited = [](const Node* a)-> bool {
+            return a->visited;
+        };
         const auto EveryNodeSearched = [this, &closedSet]()->bool {
             return _navMap.size() == closedSet.size();
         };
-        const auto IsGoalUnreachable = [&openSet](const Node* current)->bool {
+        const auto IsGoalUnreachable = [&closedSet](const Node* current)->bool {
             unsigned char visited_count = 0;
+            const auto is_in_closed_set = std::find(std::begin(closedSet), std::end(closedSet), current) != std::end(closedSet);
             for(const Node* neighbor : current->neighbors) {
                 if(neighbor == nullptr) {
                     ++visited_count;
                     continue;
                 }
-                if(neighbor->visited) {
+                if(is_in_closed_set) {
                     ++visited_count;
                 }
             }
             return visited_count >= 8;
         };
-
+        const auto IsNeighborValid = [&closedSet](const Node* current)->bool {
+            if(current != nullptr) {
+                const auto found = std::find(std::begin(closedSet), std::end(closedSet), current);
+                return found == std::end(closedSet);
+            }
+            return false;
+        };
+        const auto IsNeighborTraversable = [this](const Node* neighbor)->bool {
+            if(neighbor == nullptr) {
+                return false;
+            }
+            const auto n_idx = neighbor->coords.y * _dimensions.x + neighbor->coords.x; 0 > n_idx || n_idx >= _dimensions.x * _dimensions.y;
+            const auto is_inside_map = n_idx < _dimensions.x * _dimensions.y;
+            return is_inside_map;
+        };
         openSet.push(initial);
-        while(!openSet.empty() && !IsGoalInClosedSet()) {
-            Node* current = openSet.top();
-            if(!openSet.empty() && current->visited) {
-                openSet.pop();
-            }
+        while(true) {
             if(openSet.empty()) {
-                break;
+                return PATHFINDING_GOAL_UNREACHABLE;
             }
-            current = openSet.top();
-            current->visited = true;
+            Node* current = openSet.top();
+            openSet.pop();
             closedSet.push_back(current);
+            current->visited = true;
             if(current->coords == goal) {
-                _path.push_back(current);
                 break;
             }
             for(const auto neighbor : current->neighbors) {
-                if(!neighbor) {
+                if(!(IsNeighborValid(neighbor) && IsNeighborTraversable(neighbor))) {
                     continue;
                 }
-                if(const auto n_idx = neighbor->coords.y * _dimensions.x + neighbor->coords.x; 0 > n_idx || n_idx >= _dimensions.x * _dimensions.y) {
+                if(!std::invoke(viable, neighbor->coords)) {
                     continue;
                 }
-                if(neighbor->visited || !std::invoke(viable, neighbor->coords)) {
-                    continue;
+                if(!IsNodeVisited(neighbor)) {
+                    openSet.push(neighbor);
                 }
-                openSet.push(neighbor);
                 const float tenativeGScore = current->g + std::invoke(distance, current->coords, neighbor->coords);
                 if(tenativeGScore < neighbor->g) {
                     neighbor->parent = current;
@@ -101,13 +115,13 @@ public:
                 }
             }
         }
-        if(!IsGoalInClosedSet() && _path.empty()) {
-            return PATHFINDING_NO_PATH;
-        }
         if(!IsGoalInClosedSet() && !_path.empty()) {
             return PATHFINDING_GOAL_UNREACHABLE;
         }
-        if(!_path.empty()) {
+        if(!IsGoalInClosedSet() && _path.empty()) {
+            return PATHFINDING_NO_PATH;
+        }
+        if(IsGoalInClosedSet() && !_path.empty()) {
             const Node* end = _path.front();
             if(end) {
                 if(const Node* p = end) {
@@ -120,7 +134,20 @@ public:
             }
             return PATHFINDING_SUCCESS;
         }
-        return PATHFINDING_NO_PATH;
+        if(IsGoalInClosedSet() && _path.empty()) {
+            if(const Node* end = closedSet.back()) {
+                if(const Node* p = end) {
+                    _path.clear();
+                    _path.push_back(p);
+                    while(p->parent) {
+                        _path.push_back(p);
+                        p = p->parent;
+                    }
+                    return PATHFINDING_SUCCESS;
+                }
+            }
+        }
+        return PATHFINDING_UNKNOWN_ERROR;
     }
 
     template<typename Viability, typename DistanceFunc>
