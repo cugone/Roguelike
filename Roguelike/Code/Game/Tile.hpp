@@ -93,9 +93,9 @@ public:
     Feature* feature{};
     Layer* layer{};
     std::unique_ptr<Inventory> inventory{};
-    bool haveSeen{false};
-    bool canSee{false};
-    bool debug_canSee{false};
+    uint8_t haveSeen : 1;
+    uint8_t canSee : 1;
+    uint8_t debug_canSee : 1;
 protected:
 private:
     void AddVertsForTile() const noexcept;
