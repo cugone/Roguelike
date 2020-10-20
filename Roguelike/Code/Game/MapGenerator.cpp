@@ -185,10 +185,12 @@ RoomsMapGenerator::RoomsMapGenerator(Map* map, const XMLElement& elem) noexcept
 }
 
 void RoomsMapGenerator::Generate() {
-    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "minSize,maxSize", "count,floor,wall,default", "", "");
+    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "minSize,maxSize", "count,floor,wall,default", "", "width,height");
     const auto min_size = std::clamp([&]()->const int { const auto* xml_min = _xml_element.FirstChildElement("minSize"); int result = DataUtils::ParseXmlElementText(*xml_min, 1); if(result < 0) result = 1; return result; }(), 1, 100); //IIIL
     const auto max_size = std::clamp([&]()->const int { const auto* xml_max = _xml_element.FirstChildElement("maxSize"); int result = DataUtils::ParseXmlElementText(*xml_max, 1); if(result < 0) result = 1; return result; }(), 1, 100); //IIIL
     const int room_count = DataUtils::ParseXmlAttribute(_xml_element, "count", 1);
+    const unsigned int width = DataUtils::ParseXmlAttribute(_xml_element, "width", 0u);
+    const unsigned int height = DataUtils::ParseXmlAttribute(_xml_element, "height", 0u);
     rooms.reserve(room_count);
     for(int i = 0; i < room_count; ++i) {
         const auto w = MathUtils::GetRandomIntInRange(min_size, max_size);
@@ -213,6 +215,8 @@ void RoomsMapGenerator::Generate() {
         }
     }
     AABB2 world_bounds;
+    world_bounds.maxs.x = static_cast<float>(width);
+    world_bounds.maxs.y = static_cast<float>(height);
     for(const auto& room : rooms) {
         world_bounds.StretchToIncludePoint(room.mins - Vector2::ONE);
         world_bounds.StretchToIncludePoint(room.maxs + Vector2::ONE);
