@@ -826,7 +826,7 @@ void Map::LoadItemsForMap(const XMLElement& elem) {
             const auto name = DataUtils::ParseXmlAttribute(elem, "name", nullptr);
             const auto pos = DataUtils::ParseXmlAttribute(elem, "position", IntVector2{-1, -1});
             if(auto* tile = this->GetTile(IntVector3(pos, 0))) {
-                tile->inventory.AddItem(Item::GetItem(name));
+                tile->AddItem(Item::GetItem(name));
             } else {
                 //TODO Add StringUtils::to_string(const IntVector2/3/4&);
                 std::ostringstream ss;

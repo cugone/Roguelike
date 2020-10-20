@@ -25,8 +25,8 @@ void Tile::AddVerts() const noexcept {
         actor->AddVerts();
     } else if(feature) {
         feature->AddVerts();
-    } else if(!inventory.empty()) {
-        inventory.AddVerts(Vector2{_tile_coords}, layer);
+    } else if(HasInventory() && !inventory->empty()) {
+        inventory->AddVerts(Vector2{_tile_coords}, layer);
     }
     if(!canSee && haveSeen) {
         AddVertsForOverlay();
@@ -226,6 +226,24 @@ bool Tile::IsSolid() const {
 
 bool Tile::IsPassable() const {
     return !IsSolid();
+}
+
+bool Tile::HasInventory() const noexcept {
+    return inventory != nullptr;
+}
+
+Item* Tile::AddItem(Item* item) noexcept {
+    if(!inventory) {
+        inventory = std::make_unique<Inventory>();
+    }
+    return inventory->AddItem(item);
+}
+
+Item* Tile::AddItem(const std::string& name) noexcept {
+    if(!inventory) {
+        inventory = std::make_unique<Inventory>();
+    }
+    return inventory->AddItem(name);
 }
 
 void Tile::SetCoords(int x, int y) {

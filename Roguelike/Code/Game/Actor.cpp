@@ -331,7 +331,9 @@ void Actor::SetPosition(const IntVector2& position) {
         if(auto* next_tile = map->GetTile(_position.x, _position.y, layer->z_index)) {
             next_tile->actor = this;
             tile = next_tile;
-            Inventory::TransferAll(tile->inventory, inventory);
+            if(tile->HasInventory()) {
+                Inventory::TransferAll(*tile->inventory, inventory);
+            }
         }
     }
 }

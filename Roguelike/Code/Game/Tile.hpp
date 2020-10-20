@@ -49,6 +49,10 @@ public:
     bool IsSolid() const;
     bool IsPassable() const;
 
+    bool HasInventory() const noexcept;
+    Item* AddItem(Item* item) noexcept;
+    Item* AddItem(const std::string& name) noexcept;
+
     void SetCoords(int x, int y);
     void SetCoords(const IntVector2& coords);
     const IntVector2& GetCoords() const;
@@ -87,7 +91,7 @@ public:
     Actor* actor{};
     Feature* feature{};
     Layer* layer{};
-    Inventory inventory;
+    std::unique_ptr<Inventory> inventory{};
     bool haveSeen{false};
     bool canSee{false};
     bool debug_canSee{false};
