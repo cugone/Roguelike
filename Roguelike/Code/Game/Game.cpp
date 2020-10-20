@@ -1267,14 +1267,14 @@ void Game::ShowEffectsUI() {
         break;
     case FullscreenEffect::FadeIn:
         ImGui::Text("Effect: Fade In");
-        ImGui::ColorEdit4("Fade In Color##Picker", _fadeIn_color, ImGuiColorEditFlags_NoLabel);
+        (void)ImGui::ColorEdit4("Fade In Color##Picker", _fadeIn_color, ImGuiColorEditFlags_NoLabel); //I don't care if the value changed.
         if(ImGui::InputFloat("Fade In Time (s)", &_debug_fadeInTime)) {
             _fadeInTime = TimeUtils::FPSeconds{ _debug_fadeInTime };
         }
         break;
     case FullscreenEffect::FadeOut:
         ImGui::Text("Effect: Fade Out");
-        ImGui::ColorEdit4("Fade Out Color##Picker", _fadeOut_color, ImGuiColorEditFlags_NoLabel);
+        (void)ImGui::ColorEdit4("Fade Out Color##Picker", _fadeOut_color, ImGuiColorEditFlags_NoLabel); //I don't care if the value changed.
         if(ImGui::InputFloat("Fade Out Time (s)", &_debug_fadeOutTime)) {
             _fadeOutTime = TimeUtils::FPSeconds{ _debug_fadeOutTime };
         }
@@ -1288,7 +1288,7 @@ void Game::ShowEffectsUI() {
         break;
     case FullscreenEffect::CircularGradient:
         ImGui::Text("Effect: CircularGradient");
-        ImGui::ColorEdit4("Gradient Color##Picker", _debug_gradientColor, ImGuiColorEditFlags_NoLabel);
+        (void)ImGui::ColorEdit4("Gradient Color##Picker", _debug_gradientColor, ImGuiColorEditFlags_NoLabel); //I don't care if the value changed.
         if(ImGui::DragFloat("Radius##Circle", &_fullscreen_data.gradiantRadius, 1.0f, 0.0f, 1.0f)) {
             _fullscreen_data.gradiantRadius = _debug_gradientRadius;
         }
