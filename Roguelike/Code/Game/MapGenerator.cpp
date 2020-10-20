@@ -227,8 +227,8 @@ void RoomsMapGenerator::Generate() {
     stairsUpType = DataUtils::ParseXmlAttribute(_xml_element, "up", stairsUpType);
     enterType = DataUtils::ParseXmlAttribute(_xml_element, "enter", enterType);
     exitType = DataUtils::ParseXmlAttribute(_xml_element, "exit", exitType);
-    {
-        auto* layer = _map->GetLayer(0);
+
+    if(auto* layer = _map->GetLayer(0); layer != nullptr) {
         for(auto& tile : *layer) {
             tile.ChangeTypeFromName(defaultType);
         }

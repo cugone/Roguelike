@@ -749,11 +749,11 @@ void Map::CreateGeneratorFromTypename(const XMLElement& elem) {
 void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
     if(auto xml_tileset = elem.FirstChildElement("tiles")) {
         DataUtils::ValidateXmlElement(*xml_tileset, "tiles", "", "src");
-        const auto src = DataUtils::ParseXmlAttribute(*xml_tileset, "src", std::string{});
-        if(src.empty()) {
+        if(const auto src = DataUtils::ParseXmlAttribute(*xml_tileset, "src", std::string{}); src.empty()) {
             ERROR_AND_DIE("Map tiles source is empty.");
+        } else {
+            LoadTileDefinitionsFromFile(src);
         }
-        LoadTileDefinitionsFromFile(src);
     }
 }
 
@@ -772,12 +772,11 @@ void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
     if(auto xml_root = doc.RootElement()) {
         DataUtils::ValidateXmlElement(*xml_root, "tileDefinitions", "spritesheet,tileDefinition", "");
         if(auto xml_spritesheet = xml_root->FirstChildElement("spritesheet")) {
-            _tileset_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet);
-            if(_tileset_sheet) {
+            if(_tileset_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet); _tileset_sheet) {
                 DataUtils::ForEachChildElement(*xml_root, "tileDefinition",
                     [this](const XMLElement& elem) {
-                    auto* def = TileDefinition::CreateTileDefinition(*g_theRenderer, elem, _tileset_sheet);
-                    def->GetSprite()->SetMaterial(_current_tileMaterial);
+                        auto* def = TileDefinition::CreateTileDefinition(*g_theRenderer, elem, _tileset_sheet);
+                        def->GetSprite()->SetMaterial(_current_tileMaterial);
                 });
             }
         }
