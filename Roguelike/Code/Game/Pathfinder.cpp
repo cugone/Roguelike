@@ -23,8 +23,6 @@ void Pathfinder::ResetNavMap() noexcept {
     for(auto& node : _navMap) {
         node = Node{};
     }
-    _path.clear();
-    _path.shrink_to_fit();
     Initialize(_dimensions.x, _dimensions.y);
 }
 
