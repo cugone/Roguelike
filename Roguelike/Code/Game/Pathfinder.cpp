@@ -8,7 +8,7 @@ void Pathfinder::Initialize(int width, int height) noexcept {
     _navMap.resize(area);
     for(auto x = 0; x < width; ++x) {
         for(auto y = 0; y < height; ++y) {
-            auto& node = _navMap[y * width + x];
+            auto& node = _navMap[static_cast<std::size_t>(y) * width + x];
             node.coords = IntVector2{x, y};
             SetNeighbors(x, y);
         }
