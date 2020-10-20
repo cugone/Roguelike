@@ -481,24 +481,31 @@ bool RoomsAndCorridorsMapGenerator::GenerateExitAndEntrance() noexcept {
             rooms.clear();
             return false;
         }
-        const auto room_id_with_down = MathUtils::GetRandomIntLessThan(roomCount);
-        const auto room_id_with_up = [roomCount, room_id_with_down]()->int {
-            auto result = MathUtils::GetRandomIntLessThan(roomCount);
-            while(result == room_id_with_down) {
-                result = MathUtils::GetRandomIntLessThan(roomCount);
-            }
-            return result;
-        }();
-        const auto is_in_dtou = closed_set.find(std::make_pair(room_id_with_down, room_id_with_up)) != std::end(closed_set);
-        const auto is_in_utod = closed_set.find(std::make_pair(room_id_with_up, room_id_with_down)) != std::end(closed_set);
-        const auto is_in_set = is_in_dtou || is_in_utod;
-        if(is_in_set) {
-            continue;
+        auto up_id = 0;
+        auto down_id = 0;
+        {
+            bool needs_restart = false;
+            do {
+                const auto room_id_with_down = MathUtils::GetRandomIntLessThan(roomCount);
+                const auto room_id_with_up = [roomCount, room_id_with_down]()->int {
+                    auto result = MathUtils::GetRandomIntLessThan(roomCount);
+                    while(result == room_id_with_down) {
+                        result = MathUtils::GetRandomIntLessThan(roomCount);
+                    }
+                    return result;
+                }();
+                const auto is_in_dtou = closed_set.find(std::make_pair(room_id_with_down, room_id_with_up)) != std::end(closed_set);
+                const auto is_in_utod = closed_set.find(std::make_pair(room_id_with_up, room_id_with_down)) != std::end(closed_set);
+                const auto is_in_set = is_in_dtou || is_in_utod;
+                needs_restart = is_in_set;
+                up_id = room_id_with_up;
+                down_id = room_id_with_down;
+            } while(needs_restart);
         }
-        closed_set.insert(std::make_pair(room_id_with_down, room_id_with_up));
-        closed_set.insert(std::make_pair(room_id_with_up, room_id_with_down));
-        const auto room_with_exit = rooms[room_id_with_down];
-        const auto room_with_entrance = rooms[room_id_with_up];
+        closed_set.insert(std::make_pair(down_id, up_id));
+        closed_set.insert(std::make_pair(up_id, down_id));
+        const auto room_with_exit = rooms[down_id];
+        const auto room_with_entrance = rooms[up_id];
         const auto exit_loc = IntVector2{room_with_exit.mins + Vector2::ONE};
         const auto enter_loc = IntVector2{room_with_entrance.mins + Vector2::ONE};
         start = enter_loc;
