@@ -11,6 +11,7 @@ enum class BehaviorID {
     None
     ,Wander
     ,Flee
+    ,Pursue
 };
 
 class Behavior {
@@ -27,11 +28,12 @@ public:
     virtual float CalculateUtility() noexcept = 0;
     const std::string& GetName() const noexcept;
 
+    void SetTarget(Actor* target) noexcept;
+    Actor* GetTarget() const noexcept;
+
 protected:
     Behavior() = default;
     explicit Behavior(Actor* target);
-    void SetTarget(Actor* target) noexcept;
-    Actor* GetTarget() const noexcept;
 
     void SetName(const std::string& name) noexcept;
 private:

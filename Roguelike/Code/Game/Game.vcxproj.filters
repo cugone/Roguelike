@@ -135,6 +135,9 @@
     <ClCompile Include="Pathfinder.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="PursueBehavior.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.hpp">
@@ -240,6 +243,9 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Pathfinder.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="PursueBehavior.hpp">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>

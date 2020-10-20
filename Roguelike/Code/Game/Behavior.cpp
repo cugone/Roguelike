@@ -4,6 +4,7 @@
 
 #include "Game/WanderBehavior.hpp"
 #include "Game/FleeBehavior.hpp"
+#include "Game/PursueBehavior.hpp"
 
 Behavior::Behavior(Actor* target)
 : _target(target)
@@ -35,6 +36,8 @@ std::string Behavior::NameFromId(BehaviorID id) {
         return std::string{"wander"};
     case BehaviorID::Flee:
         return std::string{"flee"};
+    case BehaviorID::Pursue:
+        return std::string{"pursue"};
     default:
         return std::string{"none"};
     }
@@ -48,6 +51,8 @@ BehaviorID Behavior::IdFromName(std::string name) {
         return BehaviorID::Wander;
     } else if(name == "flee") {
         return BehaviorID::Flee;
+    } else if(name == "pursue") {
+        return BehaviorID::Pursue;
     } else {
         return BehaviorID::None;
     }
@@ -66,8 +71,7 @@ std::shared_ptr<Behavior> Behavior::Create(std::string name) noexcept {
     } else if(name == "flee") {
         return std::make_shared<FleeBehavior>();
     } else if(name == "pursue") {
-        return {};
-        //return std::make_shared<PersueBehavior>();
+        return std::make_shared<PursueBehavior>();
     } else {
         return std::make_shared<WanderBehavior>();
     }

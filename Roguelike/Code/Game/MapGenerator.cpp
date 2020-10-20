@@ -15,6 +15,8 @@
 #include "Game/TileDefinition.hpp"
 #include "Game/Pathfinder.hpp"
 
+#include "Game/PursueBehavior.hpp"
+
 #include <cmath>
 
 MapGenerator::MapGenerator(Map* map, const XMLElement& elem) noexcept
@@ -441,6 +443,11 @@ void RoomsAndCorridorsMapGenerator::PlaceActors() noexcept {
     for(auto* actor : _map->_actors) {
         const auto room_idx = static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(room_count));
         actor->SetPosition(IntVector2{rooms[room_idx].CalcCenter()});
+        if(auto* b = actor->GetCurrentBehavior(); b && b->GetName() == "pursue") {
+            if(auto* bAsPursue = dynamic_cast<PursueBehavior*>(b)) {
+                bAsPursue->SetTarget(_map->player);
+            }
+        }
     }
 }
 

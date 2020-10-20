@@ -37,6 +37,7 @@
         <behaviors>
             <behavior name="wander" />
             <behavior name="flee" />
+            <behavior name="pursue" />
         </behaviors>
     </entityDefinition>
     <entityDefinition name="human..female" index="[8,51]">
@@ -70,6 +71,7 @@
         <behaviors>
             <behavior name="wander" />
             <behavior name="flee" />
+            <behavior name="pursue" />
         </behaviors>
     </entityDefinition>
 </entityDefinitions>

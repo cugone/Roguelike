@@ -184,6 +184,7 @@
     <ClCompile Include="MoveSouthWestCommand.cpp" />
     <ClCompile Include="MoveWestCommand.cpp" />
     <ClCompile Include="Pathfinder.cpp" />
+    <ClCompile Include="PursueBehavior.cpp" />
     <ClCompile Include="RestCommand.cpp" />
     <ClCompile Include="Stats.cpp" />
     <ClCompile Include="Tile.cpp" />
@@ -221,6 +222,7 @@
     <ClInclude Include="MoveSouthWestCommand.hpp" />
     <ClInclude Include="MoveWestCommand.hpp" />
     <ClInclude Include="Pathfinder.hpp" />
+    <ClInclude Include="PursueBehavior.hpp" />
     <ClInclude Include="RestCommand.hpp" />
     <ClInclude Include="Stats.hpp" />
     <ClInclude Include="Tile.hpp" />
