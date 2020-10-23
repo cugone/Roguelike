@@ -225,6 +225,10 @@ void RoomsMapGenerator::Generate() {
     const auto map_height = static_cast<int>(world_bounds.CalcDimensions().y);
     if(_map->_layers.empty()) {
         _map->_layers.emplace_back(std::make_unique<Layer>(_map, IntVector2{map_width, map_height}));
+    } else {
+        if(_map->_layers[0]->tileDimensions != IntVector2{map_width, map_height}) {
+            _map->_layers[0] = std::move(std::make_unique<Layer>(_map, IntVector2{map_width, map_height}));
+        }
     }
     floorType = DataUtils::ParseXmlAttribute(_xml_element, "floor", floorType);
     wallType = DataUtils::ParseXmlAttribute(_xml_element, "wall", wallType);
