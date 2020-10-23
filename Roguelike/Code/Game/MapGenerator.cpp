@@ -384,9 +384,9 @@ void RoomsAndCorridorsMapGenerator::Generate() {
 
 void RoomsAndCorridorsMapGenerator::GenerateCorridors() noexcept {
     const auto roomCount = rooms.size();
-    for(int i = 0; i < roomCount - 1; ++i) {
-        const auto r1 = rooms[i];
-        const auto r2 = rooms[i + 1];
+    for(int i = 0; i < roomCount; ++i) {
+        const auto r1 = rooms[i % roomCount];
+        const auto r2 = rooms[(i + 1) % roomCount];
         const auto r1pos = r1.CalcCenter();
         const auto r1dims = r1.CalcDimensions();
         const auto r2pos = r2.CalcCenter();
