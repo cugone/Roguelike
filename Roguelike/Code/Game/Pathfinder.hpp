@@ -167,4 +167,5 @@ private:
     std::vector<const Node*> _path{};
     std::vector<Node> _navMap{};
     IntVector2 _dimensions{};
+    static inline bool already_initialized{false};
 };

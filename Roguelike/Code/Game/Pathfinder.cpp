@@ -1,8 +1,7 @@
 #include "Game/Pathfinder.hpp"
 
 void Pathfinder::Initialize(int width, int height) noexcept {
-    static bool already_initialized{false};
-    if(already_initialized) {
+    if(already_initialized && _dimensions == IntVector2{width, height}) {
         return;
     }
     _dimensions = IntVector2{width, height};
