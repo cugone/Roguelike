@@ -394,25 +394,46 @@ void RoomsAndCorridorsMapGenerator::GenerateCorridors() noexcept {
         const auto horizontal_first = MathUtils::GetRandomBool();
         if(horizontal_first) {
             MakeHorizontalCorridor(r1, r2);
-            MakeVerticalCorridor(r1, r2);
+            MakeVerticalCorridor(r2, r1);
         } else {
             MakeVerticalCorridor(r1, r2);
-            MakeHorizontalCorridor(r1, r2);
+            MakeHorizontalCorridor(r2, r1);
         }
     }
 }
 
-void RoomsAndCorridorsMapGenerator::MakeVerticalCorridor(const AABB2& r1, const AABB2& r2) noexcept {
-    const bool start_at_r1 = MathUtils::GetRandomBool();
-    auto start = (start_at_r1 ? r1.CalcCenter() : r2.CalcCenter()).y;
-    auto end = (start_at_r1 ? r2.CalcCenter() : r1.CalcCenter()).y;
+void RoomsAndCorridorsMapGenerator::MakeVerticalCorridor(const AABB2& from, const AABB2& to) noexcept {
+    auto start = from.CalcCenter().y;
+    auto end = to.CalcCenter().y;
     if(end < start) {
         std::swap(end, start);
     }
     const auto step = std::signbit(end - start) ? -1.0f : 1.0f;
-    const auto x = (start_at_r1 ? r1.CalcCenter() : r2.CalcCenter()).x;
+    const auto x = from.CalcCenter().x;
     const auto can_be_corridor_wall = [&](const std::string& name) { return name != this->floorType; };
     for(auto y = start; y < end; y += step) {
+        if(auto* tile = _map->GetTile(IntVector3{static_cast<int>(x), static_cast<int>(y), 0})) {
+            tile->ChangeTypeFromName(floorType);
+            const auto neighbors = tile->GetNeighbors();
+            for(auto* neighbor : neighbors) {
+                if(neighbor && can_be_corridor_wall(neighbor->GetDefinition()->name)) {
+                    neighbor->ChangeTypeFromName(wallType);
+                }
+            }
+        }
+    }
+}
+
+void RoomsAndCorridorsMapGenerator::MakeHorizontalCorridor(const AABB2& from, const AABB2& to) noexcept {
+    auto start = from.CalcCenter().x;
+    auto end = to.CalcCenter().x;
+    if(end < start) {
+        std::swap(end, start);
+    }
+    const auto step = std::signbit(end - start) ? -1.0f : 1.0f;
+    const auto y = from.CalcCenter().y;
+    const auto can_be_corridor_wall = [&](const std::string& name) { return name != this->floorType; };
+    for(auto x = start; x < end; x += step) {
         if(auto* tile = _map->GetTile(IntVector3{static_cast<int>(x), static_cast<int>(y), 0})) {
             tile->ChangeTypeFromName(floorType);
             const auto neighbors = tile->GetNeighbors();
@@ -519,27 +540,4 @@ bool RoomsAndCorridorsMapGenerator::GenerateExitAndEntrance() noexcept {
         tile->ChangeTypeFromName(stairsUpType);
     }
     return true;
-}
-
-void RoomsAndCorridorsMapGenerator::MakeHorizontalCorridor(const AABB2& r1, const AABB2& r2) noexcept {
-    const bool start_at_r1 = MathUtils::GetRandomBool();
-    auto start = (start_at_r1 ? r1.CalcCenter() : r2.CalcCenter()).x;
-    auto end = (start_at_r1 ? r2.CalcCenter() : r1.CalcCenter()).x;
-    if(end < start) {
-        std::swap(end, start);
-    }
-    const auto step = std::signbit(end - start) ? -1.0f : 1.0f;
-    const auto y = (start_at_r1 ? r1.CalcCenter() : r2.CalcCenter()).y;
-    const auto can_be_corridor_wall = [&](const std::string& name) { return name != this->floorType; };
-    for(auto x = start; x < end; x += step) {
-        if(auto* tile = _map->GetTile(IntVector3{static_cast<int>(x), static_cast<int>(y), 0})) {
-            tile->ChangeTypeFromName(floorType);
-            const auto neighbors = tile->GetNeighbors();
-            for(auto* neighbor : neighbors) {
-                if(neighbor && can_be_corridor_wall(neighbor->GetDefinition()->name)) {
-                    neighbor->ChangeTypeFromName(wallType);
-                }
-            }
-        }
-    }
 }

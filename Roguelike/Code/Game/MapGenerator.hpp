@@ -143,8 +143,8 @@ private:
 
     void GenerateCorridors() noexcept;
     bool GenerateExitAndEntrance() noexcept;
-    void MakeHorizontalCorridor(const AABB2& r1, const AABB2& r2) noexcept;
-    void MakeVerticalCorridor(const AABB2& r1, const AABB2& r2) noexcept;
+    void MakeHorizontalCorridor(const AABB2& from, const AABB2& to) noexcept;
+    void MakeVerticalCorridor(const AABB2& from, const AABB2& to) noexcept;
     bool VerifyExitIsReachable(const IntVector2& enter_loc, const  IntVector2& exit_loc) const noexcept;
     void PlaceActors() noexcept;
     void PlaceFeatures() noexcept;
