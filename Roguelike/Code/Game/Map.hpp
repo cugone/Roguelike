@@ -260,7 +260,7 @@ public:
         float length = displacement.CalcLength();
         return Raycast(startPosition, direction, length, ignoreSelf, predicate);
     }
-    
+
     AABB2 CalcWorldBounds() const;
     Vector2 CalcMaxDimensions() const;
     Material* GetTileMaterial() const;
