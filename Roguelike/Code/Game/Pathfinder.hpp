@@ -91,6 +91,9 @@ public:
                 return PATHFINDING_GOAL_UNREACHABLE;
             }
             Node* current = openSet.top();
+            if(current == nullptr) {
+                return PATHFINDING_GOAL_UNREACHABLE;
+            }
             openSet.pop();
             closedSet.push_back(current);
             current->visited = true;
