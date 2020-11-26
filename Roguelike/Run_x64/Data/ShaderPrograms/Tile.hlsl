@@ -51,5 +51,7 @@ ps_in_t VertexFunction(vs_in_t input_vertex) {
 
 float4 PixelFunction(ps_in_t input_pixel) : SV_Target0{
     float4 albedo = tDiffuse.Sample(sSampler, input_pixel.uv);
-    return albedo * input_pixel.color;
+    float4 final_color = albedo * input_pixel.color;
+    clip(final_color.a - 0.1);
+    return final_color;
 }
