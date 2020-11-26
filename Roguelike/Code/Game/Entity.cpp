@@ -84,17 +84,17 @@ void Entity::AddVertsForSelf() noexcept {
     builder.SetColor(newColor);
     builder.SetNormal(normal);
 
-    builder.SetUV(tx_tl);
-    builder.AddVertex(Vector3{vert_tl, z});
-
     builder.SetUV(tx_bl);
     builder.AddVertex(Vector3{vert_bl, z});
 
-    builder.SetUV(tx_br);
-    builder.AddVertex(Vector3{vert_br, z});
+    builder.SetUV(tx_tl);
+    builder.AddVertex(Vector3{vert_tl, z});
 
     builder.SetUV(tx_tr);
     builder.AddVertex(Vector3{vert_tr, z});
+
+    builder.SetUV(tx_br);
+    builder.AddVertex(Vector3{vert_br, z});
 
     builder.AddIndicies(Mesh::Builder::Primitive::Quad);
     builder.End(sprite->GetMaterial());
