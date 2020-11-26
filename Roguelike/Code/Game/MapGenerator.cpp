@@ -404,6 +404,16 @@ void RoomsAndCorridorsMapGenerator::GenerateCorridors() noexcept {
             MakeHorizontalCorridor(r2, r1);
         }
     }
+    //Fill areas of conjoined rooms
+    for(auto& room : rooms) {
+        const auto room_floor_bounds = [&]() { auto bounds = room; bounds.AddPaddingToSides(-1.0f, -1.0f); return bounds; }();
+        const auto roomFloorTiles = _map->GetTilesInArea(room_floor_bounds);
+        for(auto& tile : roomFloorTiles) {
+            if(tile) {
+                tile->ChangeTypeFromName(floorType);
+            }
+        }
+    }
 }
 
 void RoomsAndCorridorsMapGenerator::MakeVerticalCorridor(const AABB2& from, const AABB2& to) noexcept {
