@@ -100,7 +100,7 @@ public:
             if(current->coords == goal) {
                 break;
             }
-            for(const auto neighbor : current->neighbors) {
+            for(auto neighbor : current->neighbors) {
                 if(!(IsNeighborValid(neighbor) && IsNeighborTraversable(neighbor))) {
                     continue;
                 }
