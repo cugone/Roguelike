@@ -209,8 +209,8 @@ void RoomsMapGenerator::Generate() {
                 const auto dispToR2 = -dispToR1;
                 const auto dirToR1 = dispToR1.GetNormalize();
                 const auto dirToR2 = -dirToR1;
-                room1.Translate(dirToR1 * dispToR1);
-                room2.Translate(dirToR2 * dispToR2);
+                rooms[i].Translate(dirToR1 * dispToR1);
+                rooms[j].Translate(dirToR2 * dispToR2);
             }
         }
     }
