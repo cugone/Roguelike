@@ -1069,7 +1069,6 @@ void Game::HandlePlayerMouseInput() {
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::MButton)) {
         _map->FocusEntity(_map->player);
-        current_cursor->SetCoords(_map->player->tile->GetCoords());
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::RButton)) {
         //g_theInputSystem->HideMouseCursor();
