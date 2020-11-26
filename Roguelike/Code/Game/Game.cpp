@@ -1156,6 +1156,9 @@ void Game::HandleDebugKeyboardInput() {
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F4)) {
         g_theUISystem->ToggleImguiDemoWindow();
     }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F9)) {
+        g_theRenderer->RequestScreenShot();
+    }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::P)) {
         _map->SetPriorityLayer(static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(static_cast<int>(_map->GetLayerCount()))));
     }
