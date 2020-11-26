@@ -96,6 +96,7 @@ void Game::OnEnter_Title() {
 
 void Game::OnEnter_Loading() {
     _done_loading = false;
+    _reset_loading_flag = false;
     _skip_frame = true;
     g_theUISystem->LoadUiWidget("loading");
     //_cnvLoading = std::make_unique<UI::Canvas>(*g_theRenderer);
