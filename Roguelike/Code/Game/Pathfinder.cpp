@@ -80,7 +80,7 @@ void Pathfinder::SetNeighbors(int x, int y) noexcept {
             if(x == _dimensions.x - 1 && i >= 2 && i <= 4) continue;
         }
         if(y == 0 || x == _dimensions.y - 1) {
-            if(y == 0 && i >= 0 || i <= 2) continue;
+            if(y == 0 && i < 3) continue;
             if(y == _dimensions.y - 1 && i >= 4 && i <= 6) continue;
         }
         auto neighbor_x = x;
