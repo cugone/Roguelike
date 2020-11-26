@@ -49,7 +49,7 @@ App::App(const std::string& cmdString)
     , _theJobSystem{std::make_unique<JobSystem>(-1, static_cast<std::size_t>(JobType::Max), new std::condition_variable)}
     , _theFileLogger{std::make_unique<FileLogger>(*_theJobSystem.get(), "game")}
     , _theConfig{ std::make_unique<Config>(KeyValueParser{cmdString}) }
-    , _theRenderer{std::make_unique<Renderer>(*_theFileLogger.get(), *_theConfig.get()) }
+    , _theRenderer{std::make_unique<Renderer>(*_theJobSystem.get(), *_theFileLogger.get(), *_theConfig.get()) }
     , _theUI{std::make_unique<UISystem>(*_theFileLogger.get(), *_theRenderer.get())}
     , _theConsole{ std::make_unique<Console>(*_theFileLogger.get(), *_theRenderer.get()) }
     , _theInputSystem{ std::make_unique<InputSystem>(*_theFileLogger.get(), *_theRenderer.get()) }
@@ -81,7 +81,8 @@ void App::SetupEngineSystemPointers() {
 void App::SetupEngineSystemChainOfResponsibility() {
     g_theConsole->SetNextHandler(g_theUISystem);
     g_theUISystem->SetNextHandler(g_theInputSystem);
-    g_theInputSystem->SetNextHandler(g_theApp);
+    g_theInputSystem->SetNextHandler(g_theRenderer);
+    g_theRenderer->SetNextHandler(g_theApp);
     g_theApp->SetNextHandler(nullptr);
     g_theSubsystemHead = g_theConsole;
 }
