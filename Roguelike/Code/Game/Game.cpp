@@ -1337,8 +1337,8 @@ void Game::ShowFrameInspectorUI() {
         ImGui::Text("FPS: %0.1f", 1.0f / frameTime);
         ImGui::PlotHistogram(histogramLabel.c_str(), histogram.data(), static_cast<int>(histogram.size()));
         ImGui::Text("Frame time: %0.7f", frameTime);
-        ImGui::Text("Min: %0.7f", *std::max_element(std::begin(histogram), std::end(histogram)));
-        ImGui::Text("Max: %0.7f", *std::min_element(std::begin(histogram), std::end(histogram)));
+        ImGui::Text("Min: %0.7f", *std::min_element(std::begin(histogram), std::end(histogram)));
+        ImGui::Text("Max: %0.7f", *std::max_element(std::begin(histogram), std::end(histogram)));
         ImGui::Text("Avg: %0.7f", std::reduce(std::begin(histogram), std::end(histogram), 0.0f) / max_histogram_count);
         ImGui::Checkbox("Vsync", &currentGraphicsOptions.vsync);
         if(ImGui::Button("Take Screenshot")) {
