@@ -495,6 +495,7 @@ void Map::FocusTileAt(const IntVector3& position) {
 void Map::FocusEntity(const Entity* entity) {
     if(entity) {
         FocusTileAt(IntVector3(entity->tile->GetCoords(), entity->layer->z_index));
+        g_theGame->current_cursor->SetCoords(entity->tile->GetCoords());
     }
 }
 
