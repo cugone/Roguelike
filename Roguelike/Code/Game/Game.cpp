@@ -311,6 +311,14 @@ void Game::LoadData(void* /*user_data*/) {
     _done_loading = true;
 }
 
+void Game::RequestScreenShot() const noexcept {
+    namespace FS = std::filesystem;
+    const auto folder = FileUtils::GetKnownFolderPath(FileUtils::KnownPathID::GameData) / FS::path{"Screenshots/"};
+    const auto screenshot_count = FileUtils::CountFilesInFolders(folder);
+    const auto filepath = folder / FS::path{"Screenshot_" + std::to_string(screenshot_count + 1) + ".png"};
+    g_theRenderer->RequestScreenShot(filepath);
+}
+
 void Game::EndFrame_Loading() {
     if(!_done_loading) {
         if(_skip_frame) {

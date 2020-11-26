@@ -158,6 +158,7 @@ private:
     void LoadEntityDefinitionsFromFile(const std::filesystem::path& src);
     void LoadItemsFromFile(const std::filesystem::path& src);
 
+    void RequestScreenShot() const noexcept;
     void UpdateFullscreenEffect(const FullscreenEffect& effect);
     bool DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime);
     bool DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime);
