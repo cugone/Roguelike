@@ -238,6 +238,7 @@
     <Xml Include="..\..\Run_x64\Data\Definitions\UI.xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Run_x64\Data\Fonts\TrebuchetMS32.fnt" />
     <None Include="..\..\Run_x64\Data\Materials\Fullscreen.material">
       <SubType>Designer</SubType>
     </None>
@@ -272,6 +273,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\Run_x64\Data\Fonts\TrebuchetMS32_0.png" />
     <Image Include="..\..\Run_x64\Data\Images\heightmap.png" />
     <Image Include="..\..\Run_x64\Data\Images\Tileset.png" />
   </ItemGroup>

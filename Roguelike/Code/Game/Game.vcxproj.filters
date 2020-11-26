@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Game">
@@ -30,6 +30,9 @@
     </Filter>
     <Filter Include="Data\Audio">
       <UniqueIdentifier>{11cbf8d9-694d-4492-a2b6-6f474e428cf1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data\Fonts">
+      <UniqueIdentifier>{79e12bd4-68df-415b-a033-933a520b5a7c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -282,6 +285,9 @@
     <None Include="..\..\Run_x64\Data\UI\loading.ui">
       <Filter>Data\UI</Filter>
     </None>
+    <None Include="..\..\Run_x64\Data\Fonts\TrebuchetMS32.fnt">
+      <Filter>Data\Fonts</Filter>
+    </None>
     <None Include="..\..\Run_x64\Data\Shaders\Tile.shader">
       <Filter>Data\Shaders</Filter>
     </None>
@@ -300,6 +306,9 @@
     </Image>
     <Image Include="..\..\Run_x64\Data\Images\heightmap.png">
       <Filter>Data\Images</Filter>
+    </Image>
+    <Image Include="..\..\Run_x64\Data\Fonts\TrebuchetMS32_0.png">
+      <Filter>Data\Fonts</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
