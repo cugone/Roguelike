@@ -1341,6 +1341,9 @@ void Game::ShowFrameInspectorUI() {
         ImGui::Text("Max: %0.7f", *std::min_element(std::begin(histogram), std::end(histogram)));
         ImGui::Text("Avg: %0.7f", std::reduce(std::begin(histogram), std::end(histogram), 0.0f) / max_histogram_count);
         ImGui::Checkbox("Vsync", &currentGraphicsOptions.vsync);
+        if(ImGui::Button("Take Screenshot")) {
+            RequestScreenShot();
+        }
     }
     histogramIndex %= max_histogram_count;
 }
