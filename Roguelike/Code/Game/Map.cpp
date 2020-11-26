@@ -240,6 +240,7 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
     UpdateLayers(deltaSeconds);
     UpdateTextEntities(deltaSeconds);
     UpdateEntities(deltaSeconds);
+    cameraController.TranslateTo(Vector2(player->tile->GetCoords()), deltaSeconds);
 }
 
 void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
