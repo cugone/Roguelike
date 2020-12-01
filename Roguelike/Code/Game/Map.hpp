@@ -262,6 +262,7 @@ public:
     }
 
     AABB2 CalcWorldBounds() const;
+    AABB2 CalcCameraBounds() const;
     Vector2 CalcMaxDimensions() const;
     Material* GetTileMaterial() const;
     void SetTileMaterial(Material* material);

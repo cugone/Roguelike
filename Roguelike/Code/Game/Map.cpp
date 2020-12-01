@@ -151,6 +151,15 @@ AABB2 Map::CalcWorldBounds() const {
     return {Vector2::ZERO, CalcMaxDimensions()};
 }
 
+AABB2 Map::CalcCameraBounds() const {
+    auto bounds = CalcWorldBounds();
+    const auto cam_dims = cameraController.GetCamera().GetViewDimensions();
+    const auto cam_w = cam_dims.x * 0.5f;
+    const auto cam_h = cam_dims.y * 0.5f;
+    bounds.AddPaddingToSides(-cam_w, -cam_h);
+    return bounds;
+}
+
 std::vector<Tile*> Map::PickTilesFromWorldCoords(const Vector2& worldCoords) const {
     auto world_bounds = CalcWorldBounds();
     if(MathUtils::IsPointInside(world_bounds, worldCoords)) {
@@ -218,7 +227,7 @@ Map::Map(Renderer& renderer, const XMLElement& elem) noexcept
         ERROR_AND_DIE("Could not load map.");
     }
     cameraController = OrthographicCameraController(&_renderer, g_theInputSystem);
-    cameraController.SetZoomLevelRange(Vector2{8.0f, (float)GetLayer(0)->tileDimensions.y});
+    cameraController.SetZoomLevelRange(Vector2{8.0f, 16.0f});
 }
 
 Map::~Map() noexcept {
@@ -241,6 +250,8 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
     UpdateTextEntities(deltaSeconds);
     UpdateEntities(deltaSeconds);
     cameraController.TranslateTo(Vector2(player->tile->GetCoords()), deltaSeconds);
+    const auto clamped_camera_position = MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
+    cameraController.SetPosition(clamped_camera_position);
 }
 
 void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
@@ -351,6 +362,12 @@ void Map::DebugRender(Renderer& renderer) const {
         renderer.SetModelMatrix(Matrix4::I);
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
         renderer.DrawAABB2(bounds, Rgba::Cyan, Rgba::NoAlpha);
+    }
+    if(g_theGame->_show_camera_bounds) {
+        auto bounds = CalcCameraBounds();
+        renderer.SetModelMatrix(Matrix4::I);
+        renderer.SetMaterial(renderer.GetMaterial("__2D"));
+        renderer.DrawAABB2(bounds, Rgba::Orange, Rgba::NoAlpha);
     }
     if(g_theGame->_show_camera) {
         const auto cam_pos = cameraController.GetCamera().GetPosition();

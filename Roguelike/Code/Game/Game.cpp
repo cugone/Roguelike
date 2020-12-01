@@ -47,6 +47,7 @@ Game::Game()
 ,_show_debug_window{0}
 ,_show_raycasts{0}
 ,_show_world_bounds{0}
+,_show_camera_bounds{0}
 ,_show_tile_debugger{0}
 ,_show_effects_debugger{0}
 ,_show_entity_debugger{0}
@@ -1368,6 +1369,9 @@ void Game::ShowWorldInspectorUI() {
         static bool show_world_bounds = false;
         ImGui::Checkbox("World Bounds", &show_world_bounds);
         _show_world_bounds = show_world_bounds;
+        static bool show_camera_bounds = false;
+        ImGui::Checkbox("Camera Bounds", &show_camera_bounds);
+        _show_camera_bounds = show_camera_bounds;
         static bool show_room_bounds = false;
         ImGui::Checkbox("Show Room Bounds", &show_room_bounds);
         _show_room_bounds = show_room_bounds;
@@ -1377,7 +1381,7 @@ void Game::ShowWorldInspectorUI() {
         static bool show_raycasts = false;
         ImGui::Checkbox("Show raycasts", &show_raycasts);
         _show_raycasts = show_raycasts;
-        _debug_render = _show_room_bounds || _show_camera || _show_grid || _show_world_bounds || _show_all_entities || _show_raycasts;
+        _debug_render = _show_room_bounds || _show_camera || _show_grid || _show_world_bounds || _show_camera_bounds || _show_all_entities || _show_raycasts;
     }
 }
 
