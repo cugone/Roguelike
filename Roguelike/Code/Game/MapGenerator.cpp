@@ -481,8 +481,17 @@ bool RoomsAndCorridorsMapGenerator::VerifyExitIsReachable(const IntVector2& ente
 
 void RoomsAndCorridorsMapGenerator::PlaceActors() noexcept {
     const int room_count = static_cast<int>(rooms.size());
+    auto closed_set = std::vector<std::size_t>{};
+    closed_set.reserve(room_count);
     for(auto* actor : _map->_actors) {
-        const auto room_idx = static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(room_count));
+        const auto room_idx = [&]() {
+            auto idx = static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(room_count));
+            while(std::find(std::begin(closed_set), std::end(closed_set), idx) != std::end(closed_set)) {
+                idx = static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(room_count));
+            }
+            closed_set.push_back(idx);
+            return idx;
+        }();
         actor->SetPosition(IntVector2{rooms[room_idx].CalcCenter()});
         if(auto* b = actor->GetCurrentBehavior(); b && b->GetName() == "pursue") {
             if(auto* bAsPursue = dynamic_cast<PursueBehavior*>(b)) {
