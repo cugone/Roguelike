@@ -50,18 +50,7 @@ void PursueBehavior::Act(Actor* actor) noexcept {
     const auto viable = [this, actor](const IntVector2& a)->bool {
         const auto coords = IntVector3{a, 0};
         const auto* map = actor->map;
-        auto* tile = map->GetTile(coords);
-        const auto is_passable = map->IsTilePassable(coords);
-        if(!tile) {
-            return false;
-        }
-        tile->color = Rgba::Yellow;
-        if(is_passable) {
-            tile->color = Rgba::Green;
-        } else {
-            tile->color = Rgba::Red;
-        }
-        return is_passable;
+        return map->IsTilePassable(coords);
     };
     const auto h = [](const IntVector2& a, const IntVector2& b) {
         return MathUtils::CalculateManhattanDistance(a, b);
