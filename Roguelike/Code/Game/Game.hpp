@@ -167,6 +167,7 @@ private:
     void DoSepia();
     void DoSquareBlur();
     void StopFullscreenEffect();
+    void SetFullscreenEffect(FullscreenEffect effect, const std::function<void()>& onDoneCallback);
 
     void RegisterCommands();
     void UnRegisterCommands();
@@ -190,16 +191,17 @@ private:
     float _max_shake_y = 0.0f;
     float _debug_fadeInTime = 1.0f;
     float _debug_fadeOutTime = 1.0f;
-    float _debug_fadeOutInTime = 0.0f;
+    float _debug_fadeOutInTime = 1.0f;
     float _debug_gradientRadius = 0.5f;
     float _text_alpha = 1.0f;
     std::unique_ptr<class ConstantBuffer> _fullscreen_cb = nullptr;
     fullscreen_cb_t _fullscreen_data = fullscreen_cb_t{};
     FullscreenEffect _current_fs_effect = FullscreenEffect::None;
+    std::function<void()> _fullscreen_callback{};
     Rgba _fadeIn_color = Rgba::Black;
     Rgba _fadeOut_color = Rgba::Black;
-    TimeUtils::FPSeconds _fadeInTime{};
-    TimeUtils::FPSeconds _fadeOutTime{};
+    TimeUtils::FPSeconds _fadeInTime{1.0f};
+    TimeUtils::FPSeconds _fadeOutTime{1.0f};
     Console::CommandList _consoleCommands;
     GameState _currentGameState = GameState::Title;
     GameState _nextGameState = GameState::Title;

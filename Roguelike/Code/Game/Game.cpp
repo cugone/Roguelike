@@ -313,6 +313,11 @@ void Game::LoadData(void* /*user_data*/) {
     _done_loading = true;
 }
 
+void Game::SetFullscreenEffect(FullscreenEffect effect, const std::function<void()>& onDoneCallback) {
+    _current_fs_effect = effect;
+    _fullscreen_callback = onDoneCallback;
+}
+
 void Game::RequestScreenShot() const noexcept {
     namespace FS = std::filesystem;
     const auto folder = FileUtils::GetKnownFolderPath(FileUtils::KnownPathID::GameData) / FS::path{"Screenshots/"};
@@ -837,6 +842,9 @@ bool Game::DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
     _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 
     curFadeTime += g_theRenderer->GetGameFrameTime();
+    if(_fullscreen_data.fadePercent == 1.0f) {
+        _fullscreen_callback();
+    }
     return _fullscreen_data.fadePercent == 1.0f;
 }
 
@@ -853,6 +861,9 @@ bool Game::DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
     _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 
     curFadeTime += g_theRenderer->GetGameFrameTime();
+    if(_fullscreen_data.fadePercent == 1.0f) {
+        _fullscreen_callback();
+    }
     return _fullscreen_data.fadePercent == 1.0f;
 }
 
@@ -1071,11 +1082,15 @@ void Game::HandlePlayerMouseInput() {
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::H)) {
         g_theInputSystem->ToggleMouseCursorVisibility();
     }
+    static bool fade_out_done = false;
+    static bool fade_in_done = false;
+    static bool requested_zoom_out = false;
+    static bool requested_zoom_in = false;
     if(g_theInputSystem->WasMouseWheelJustScrolledUp()) {
-        _map->ZoomIn();
+        requested_zoom_in = true;
     }
     if(g_theInputSystem->WasMouseWheelJustScrolledDown()) {
-        _map->ZoomOut();
+        requested_zoom_out = true;
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::MButton)) {
         _map->FocusEntity(_map->player);
@@ -1091,6 +1106,20 @@ void Game::HandlePlayerMouseInput() {
         //g_theInputSystem->ShowMouseCursor();
     }
     //g_theInputSystem->SetCursorToWindowCenter();
+    if(requested_zoom_out) {
+        SetFullscreenEffect(FullscreenEffect::FadeOut, [this]() {
+            ZoomOut();
+            requested_zoom_out = false;
+            SetFullscreenEffect(FullscreenEffect::FadeIn, [](){});
+        });
+    }
+    if(requested_zoom_in) {
+        SetFullscreenEffect(FullscreenEffect::FadeOut, [this]() {
+            ZoomIn();
+            requested_zoom_in = false;
+            SetFullscreenEffect(FullscreenEffect::FadeIn, []() {});
+        });
+    }
 }
 
 void Game::HandlePlayerControllerInput() {
