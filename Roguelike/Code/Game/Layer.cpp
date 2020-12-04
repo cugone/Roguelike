@@ -244,19 +244,12 @@ void Layer::DebugRenderTiles(Renderer& renderer) const {
 
     AABB2 cullbounds = CalcCullBounds(_map->cameraController.GetCamera().position);
 
-    static std::vector<Vertex3D> verts;
-    verts.clear();
-    static std::vector<unsigned int> indicies;
-    indicies.clear();
-
     for(auto& t : _tiles) {
         AABB2 tile_bounds = t.GetBounds();
         if(MathUtils::DoAABBsOverlap(cullbounds, tile_bounds)) {
             t.DebugRender(renderer);
         }
     }
-    renderer.SetMaterial(_map->GetTileMaterial());
-    renderer.DrawIndexed(PrimitiveType::Triangles, verts, indicies);
 }
 
 void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
