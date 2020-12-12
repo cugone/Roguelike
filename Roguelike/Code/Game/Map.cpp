@@ -124,30 +124,31 @@ void Map::GenerateTileIndexTexture() noexcept {
     mat->SetTextureSlot(Material::TextureID::Normal, _tile_index_texture.get());
 }
 
+//TODO: Fix stride
 void Map::UpdateTileIndexTexture() noexcept {
-    D3D11_MAPPED_SUBRESOURCE resource{};
-    auto dx_context = _renderer.GetDeviceContext()->GetDxContext();
-    auto* dx_resource = _tile_index_texture->GetDxResource();
-
     const auto dims = Vector2{static_cast<float>(_tile_index_texture->GetDimensions().x), static_cast<float>(_tile_index_texture->GetDimensions().y)};
     const auto width = static_cast<std::size_t>(dims.x);
     const auto height = static_cast<std::size_t>(dims.y);
-    std::vector<Vector4> data(width * height, Vector4::W_AXIS);
+    std::vector<Rgba> data(width * height * 4, Rgba::Black);
+    auto data_iter = std::begin(data);
     for(auto& layer : _layers) {
-        for(auto y = 0; y < layer->tileDimensions.y; ++y) {
-            for(auto x = 0; x < layer->tileDimensions.x; ++x) {
+        for(auto y = 0; y < height; ++y) {
+            for(auto x = 0; x < width; ++x) {
                 if(const auto* tile = layer->GetTile(x, y); tile != nullptr) {
                     if(const auto* def = tile->GetDefinition(); def != nullptr) {
                         const auto spriteCoords = Vector2{def->GetSprite()->GetCurrentSpriteCoords()};
                         const auto spriteCoordsAsFloats = Vector2{spriteCoords.x / 255.0f, spriteCoords.y / 255.0f};
-                        const auto base_index = y * width + x;
-                        data[base_index] = Vector4{spriteCoordsAsFloats.x, spriteCoordsAsFloats.y, 0.0f, 1.0f};
+                        data_iter->SetRgbFromFloats(Vector3{spriteCoordsAsFloats, 0.0f});
+                        ++data_iter;
                     }
                 }
             }
         }
     }
 
+    D3D11_MAPPED_SUBRESOURCE resource{};
+    auto dx_context = _renderer.GetDeviceContext()->GetDxContext();
+    auto* dx_resource = _tile_index_texture->GetDxResource();
     if(HRESULT hr = dx_context->Map(dx_resource, 0, D3D11_MAP_WRITE_DISCARD, 0U, &resource); SUCCEEDED(hr)) {
         std::memcpy(resource.pData, data.data(), data.size());
         dx_context->Unmap(dx_resource, 0);
@@ -309,7 +310,7 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
     cameraController.TranslateTo(Vector2(player->tile->GetCoords()), deltaSeconds);
     const auto clamped_camera_position = MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
     cameraController.SetPosition(clamped_camera_position);
-    //UpdateTileIndexTexture();
+    UpdateTileIndexTexture();
 }
 
 void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
