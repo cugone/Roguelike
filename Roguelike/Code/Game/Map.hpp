@@ -327,6 +327,8 @@ private:
     void LoadFeaturesForMap(const XMLElement& elem);
     void LoadItemsForMap(const XMLElement& elem);
 
+    void GenerateTileIndexTexture() noexcept;
+    void UpdateTileIndexTexture() noexcept;
     void UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds);
     void UpdateActorAI(TimeUtils::FPSeconds deltaSeconds);
     void UpdateEntities(TimeUtils::FPSeconds deltaSeconds);
@@ -347,6 +349,7 @@ private:
     std::vector<Actor*> _actors{};
     std::vector<Feature*> _features{};
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
+    std::unique_ptr<Texture> _tile_index_texture{};
 
     float _camera_speed = 1.0f;
     mutable std::size_t _debug_tiles_in_view_count{};
@@ -359,6 +362,7 @@ private:
     friend class XmlMapGenerator;
     friend class RoomsMapGenerator;
     friend class RoomsAndCorridorsMapGenerator;
+
 public:
     std::vector<Tile*> GetViewableTiles() const noexcept;
 };

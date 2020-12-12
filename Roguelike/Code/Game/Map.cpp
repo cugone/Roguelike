@@ -104,6 +104,56 @@ void Map::RegenerateMap() noexcept {
     _map_generator->Generate();
 }
 
+void Map::GenerateTileIndexTexture() noexcept {
+    const auto dims = CalcMaxDimensions();
+    const auto width = static_cast<std::size_t>(dims.x);
+    const auto height = static_cast<std::size_t>(dims.y);
+    std::vector<Rgba> data(width * height, Rgba::Black);
+    auto data_iter = std::begin(data);
+    for(auto& layer : _layers) {
+        for(auto& tile : *layer) {
+            const auto& def = tile.GetDefinition();
+            const auto coords = def->GetIndexCoords();
+            data_iter->r = static_cast<unsigned char>(coords.x);
+            data_iter->g = static_cast<unsigned char>(coords.y);
+            ++data_iter;
+        }
+    }
+    _tile_index_texture = _renderer.Create2DTextureFromMemory(data, static_cast<unsigned int>(width), static_cast<unsigned int>(height), BufferUsage::Dynamic);
+    auto* mat = GetTileMaterial();
+    mat->SetTextureSlot(Material::TextureID::Normal, _tile_index_texture.get());
+}
+
+void Map::UpdateTileIndexTexture() noexcept {
+    D3D11_MAPPED_SUBRESOURCE resource{};
+    auto dx_context = _renderer.GetDeviceContext()->GetDxContext();
+    auto* dx_resource = _tile_index_texture->GetDxResource();
+
+    const auto dims = Vector2{static_cast<float>(_tile_index_texture->GetDimensions().x), static_cast<float>(_tile_index_texture->GetDimensions().y)};
+    const auto width = static_cast<std::size_t>(dims.x);
+    const auto height = static_cast<std::size_t>(dims.y);
+    std::vector<Vector4> data(width * height, Vector4::W_AXIS);
+    for(auto& layer : _layers) {
+        for(auto y = 0; y < layer->tileDimensions.y; ++y) {
+            for(auto x = 0; x < layer->tileDimensions.x; ++x) {
+                if(const auto* tile = layer->GetTile(x, y); tile != nullptr) {
+                    if(const auto* def = tile->GetDefinition(); def != nullptr) {
+                        const auto spriteCoords = Vector2{def->GetSprite()->GetCurrentSpriteCoords()};
+                        const auto spriteCoordsAsFloats = Vector2{spriteCoords.x / 255.0f, spriteCoords.y / 255.0f};
+                        const auto base_index = y * width + x;
+                        data[base_index] = Vector4{spriteCoordsAsFloats.x, spriteCoordsAsFloats.y, 0.0f, 1.0f};
+                    }
+                }
+            }
+        }
+    }
+
+    if(HRESULT hr = dx_context->Map(dx_resource, 0, D3D11_MAP_WRITE_DISCARD, 0U, &resource); SUCCEEDED(hr)) {
+        std::memcpy(resource.pData, data.data(), data.size());
+        dx_context->Unmap(dx_resource, 0);
+    }
+}
+
 Pathfinder* Map::GetPathfinder() const noexcept {
     return _pathfinder.get();
 }
@@ -226,8 +276,15 @@ Map::Map(Renderer& renderer, const XMLElement& elem) noexcept
     if(!LoadFromXML(elem)) {
         ERROR_AND_DIE("Could not load map.");
     }
+
+    GenerateTileIndexTexture();
+
     cameraController = OrthographicCameraController(&_renderer, g_theInputSystem);
+#ifdef RENDER_DEBUG
+    cameraController.SetZoomLevelRange(Vector2{8.0f, 512.0f});
+#else
     cameraController.SetZoomLevelRange(Vector2{8.0f, 16.0f});
+#endif
 }
 
 Map::~Map() noexcept {
@@ -252,6 +309,7 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
     cameraController.TranslateTo(Vector2(player->tile->GetCoords()), deltaSeconds);
     const auto clamped_camera_position = MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
     cameraController.SetPosition(clamped_camera_position);
+    //UpdateTileIndexTexture();
 }
 
 void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {

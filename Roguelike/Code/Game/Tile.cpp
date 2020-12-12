@@ -21,21 +21,21 @@ Tile::Tile()
 
 void Tile::AddVerts() const noexcept {
     AddVertsForTile();
-    if(actor) {
-        actor->AddVerts();
-    } else if(feature) {
-        feature->AddVerts();
-    } else if(HasInventory() && !inventory->empty()) {
-        inventory->AddVerts(Vector2{_tile_coords}, layer);
-    }
-    if(!canSee && haveSeen) {
-        AddVertsForOverlay();
-    }
+    //if(actor) {
+    //    actor->AddVerts();
+    //} else if(feature) {
+    //    feature->AddVerts();
+    //} else if(HasInventory() && !inventory->empty()) {
+    //    inventory->AddVerts(Vector2{_tile_coords}, layer);
+    //}
+    //if(!canSee && haveSeen) {
+    //    AddVertsForOverlay();
+    //}
 
-    if(g_theGame->current_cursor; g_theGame->current_cursor->GetCoords() == _tile_coords) {
-        auto& builder = layer->GetMeshBuilder();
-        g_theGame->current_cursor->AddVertsForCursor(builder);
-    }
+    //if(g_theGame->current_cursor; g_theGame->current_cursor->GetCoords() == _tile_coords) {
+    //    auto& builder = layer->GetMeshBuilder();
+    //    g_theGame->current_cursor->AddVertsForCursor(builder);
+    //}
 }
 
 void Tile::Update(TimeUtils::FPSeconds deltaSeconds) {
@@ -73,23 +73,32 @@ void Tile::AddVertsForTile() const noexcept {
     const auto newColor = layer_color != color && color != Rgba::White ? color : layer_color;
     const auto normal = -Vector3::Z_AXIS;
 
-    builder.Begin(PrimitiveType::Triangles);
+    //builder.Begin(PrimitiveType::Triangles);
+    //builder.SetColor(newColor);
+    //builder.SetNormal(normal);
+
+    //builder.SetUV(tx_bl);
+    //builder.AddVertex(Vector3{vert_bl, z});
+    //
+    //builder.SetUV(tx_tl);
+    //builder.AddVertex(Vector3{vert_tl, z});
+
+    //builder.SetUV(tx_tr);
+    //builder.AddVertex(Vector3{vert_tr, z});
+
+    //builder.SetUV(tx_br);
+    //builder.AddVertex(Vector3{vert_br, z});
+
+    //builder.AddIndicies(Mesh::Builder::Primitive::Quad);
+
+    //builder.End(sprite->GetMaterial());
+
+    builder.Begin(PrimitiveType::Points);
     builder.SetColor(newColor);
-    builder.SetNormal(normal);
 
-    builder.SetUV(tx_bl);
     builder.AddVertex(Vector3{vert_bl, z});
-    
-    builder.SetUV(tx_tl);
-    builder.AddVertex(Vector3{vert_tl, z});
 
-    builder.SetUV(tx_tr);
-    builder.AddVertex(Vector3{vert_tr, z});
-
-    builder.SetUV(tx_br);
-    builder.AddVertex(Vector3{vert_br, z});
-
-    builder.AddIndicies(Mesh::Builder::Primitive::Quad);
+    builder.AddIndicies(Mesh::Builder::Primitive::Point);
 
     builder.End(sprite->GetMaterial());
 
