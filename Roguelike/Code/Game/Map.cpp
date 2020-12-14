@@ -112,8 +112,8 @@ void Map::GenerateTileIndexTexture() noexcept {
     auto data_iter = std::begin(data);
     for(auto& layer : _layers) {
         for(auto& tile : *layer) {
-            const auto& def = tile.GetDefinition();
-            const auto coords = def->GetIndexCoords();
+            const auto* def = tile.GetDefinition();
+            const auto coords = def->GetSprite()->GetCurrentSpriteCoords();
             data_iter->r = static_cast<unsigned char>(coords.x);
             data_iter->g = static_cast<unsigned char>(coords.y);
             ++data_iter;
@@ -124,33 +124,36 @@ void Map::GenerateTileIndexTexture() noexcept {
     mat->SetTextureSlot(Material::TextureID::Normal, _tile_index_texture.get());
 }
 
-//TODO: Fix stride
 void Map::UpdateTileIndexTexture() noexcept {
-    const auto dims = Vector2{static_cast<float>(_tile_index_texture->GetDimensions().x), static_cast<float>(_tile_index_texture->GetDimensions().y)};
-    const auto width = static_cast<std::size_t>(dims.x);
-    const auto height = static_cast<std::size_t>(dims.y);
-    std::vector<Rgba> data(width * height * 4, Rgba::Black);
+    auto* dx_resource = _tile_index_texture->GetDxResource();
+    auto* dx_tex2d = _tile_index_texture->GetDxResourceAs<ID3D11Texture2D>();
+    D3D11_TEXTURE2D_DESC desc{};
+    dx_tex2d->GetDesc(&desc);
+    const std::size_t width = desc.Width;
+    const std::size_t height = desc.Height;
+    std::vector<Rgba> data(width * height, Rgba::Black);
     auto data_iter = std::begin(data);
     for(auto& layer : _layers) {
-        for(auto y = 0; y < height; ++y) {
-            for(auto x = 0; x < width; ++x) {
-                if(const auto* tile = layer->GetTile(x, y); tile != nullptr) {
-                    if(const auto* def = tile->GetDefinition(); def != nullptr) {
-                        const auto spriteCoords = Vector2{def->GetSprite()->GetCurrentSpriteCoords()};
-                        const auto spriteCoordsAsFloats = Vector2{spriteCoords.x / 255.0f, spriteCoords.y / 255.0f};
-                        data_iter->SetRgbFromFloats(Vector3{spriteCoordsAsFloats, 0.0f});
-                        ++data_iter;
-                    }
-                }
-            }
+        for(auto& tile : *layer) {
+            const auto* def = tile.GetDefinition();
+            const auto coords = def->GetSprite()->GetCurrentSpriteCoords();
+            data_iter->r = static_cast<unsigned char>(coords.x);
+            data_iter->g = static_cast<unsigned char>(coords.y);
+            ++data_iter;
         }
     }
-
     D3D11_MAPPED_SUBRESOURCE resource{};
-    auto dx_context = _renderer.GetDeviceContext()->GetDxContext();
-    auto* dx_resource = _tile_index_texture->GetDxResource();
+    auto* dx_context = _renderer.GetDeviceContext()->GetDxContext();
     if(HRESULT hr = dx_context->Map(dx_resource, 0, D3D11_MAP_WRITE_DISCARD, 0U, &resource); SUCCEEDED(hr)) {
-        std::memcpy(resource.pData, data.data(), data.size());
+        auto* src = reinterpret_cast<unsigned int*>(data.data());
+        auto* dst = reinterpret_cast<unsigned int*>(resource.pData);
+        const auto row_pitch = resource.RowPitch;
+
+        for(std::size_t i = 0u; i < height; ++i) {
+            std::memcpy(dst, src, width * sizeof(Rgba));
+            dst += resource.RowPitch >> 2;
+            src += width;
+        }
         dx_context->Unmap(dx_resource, 0);
     }
 }
@@ -434,6 +437,18 @@ void Map::DebugRender(Renderer& renderer) const {
         renderer.DrawCircle2D(cam_pos, 0.5f, Rgba::Cyan);
         renderer.DrawAABB2(GetLayer(0)->CalcViewBounds(cam_pos), Rgba::Green, Rgba::NoAlpha);
         renderer.DrawAABB2(GetLayer(0)->CalcCullBounds(cam_pos), Rgba::Blue, Rgba::NoAlpha);
+    }
+    if(g_theGame->_show_tile_texture) {
+        auto* mat = renderer.GetMaterial("__2D");
+        mat->SetTextureSlot(Material::TextureID::Diffuse, renderer.GetTexture("__white"));
+        mat->SetTextureSlot(Material::TextureID::Diffuse, _tile_index_texture.get());
+        renderer.SetMaterial(mat);
+        const auto S = Matrix4::CreateScaleMatrix(Vector2::ONE * 20.0f);
+        const auto R = Matrix4::I;
+        const auto T = Matrix4::CreateTranslationMatrix(cameraController.GetCamera().GetPosition());
+        const auto M = Matrix4::MakeSRT(S, R, T);
+        renderer.SetModelMatrix(M);
+        renderer.DrawQuad2D();
     }
 }
 

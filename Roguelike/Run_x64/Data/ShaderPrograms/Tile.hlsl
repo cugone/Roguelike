@@ -56,15 +56,14 @@ void GeometryFunction(point gs_in_t input[1], inout TriangleStream<ps_in_t> stre
 
     float px = input[0].position.x;
     float py = input[0].position.y;
-    
+
     //TODO: Have fun with the world positions here...
 
     //float t = g_GAME_TIME;
     //float A = 1.0f;
     //float f = 1.0f;
     //float w = 0.0f;
-    
-    
+
     //px += 0.5f * cos(t);
     //py += 0.5f * sin(t);
 
@@ -85,12 +84,12 @@ void GeometryFunction(point gs_in_t input[1], inout TriangleStream<ps_in_t> stre
     float2 texCoords = 1.0f / 65.0f;
     float2 uv_mins = index_ids * texCoords;
     float2 uv_maxs = (index_ids + 1.0f) * texCoords;
-    float2 tileAtlasDims = float2(1.0f, 1.0f);
-    tDiffuse.GetDimensions(tileAtlasDims.x, tileAtlasDims.y);
-    float tileAtlasArea = tileAtlasDims.x * tileAtlasDims.y;
-    const float epsilon = 1.0f / tileAtlasArea;
-    uv_mins += epsilon;
-    uv_maxs -= epsilon;
+    //float2 tileAtlasDims = float2(1.0f, 1.0f);
+    //tDiffuse.GetDimensions(tileAtlasDims.x, tileAtlasDims.y);
+    //float tileAtlasArea = tileAtlasDims.x * tileAtlasDims.y;
+    //const float epsilon = 1.0f / tileAtlasArea;
+    //uv_mins += epsilon;
+    //uv_maxs -= epsilon;
 
     //Bottom Left
     float2 offset = bl_offset;
