@@ -84,12 +84,11 @@ void GeometryFunction(point gs_in_t input[1], inout TriangleStream<ps_in_t> stre
     float2 texCoords = 1.0f / 65.0f;
     float2 uv_mins = index_ids * texCoords;
     float2 uv_maxs = (index_ids + 1.0f) * texCoords;
-    //float2 tileAtlasDims = float2(1.0f, 1.0f);
-    //tDiffuse.GetDimensions(tileAtlasDims.x, tileAtlasDims.y);
-    //float tileAtlasArea = tileAtlasDims.x * tileAtlasDims.y;
-    //const float epsilon = 1.0f / tileAtlasArea;
-    //uv_mins += epsilon;
-    //uv_maxs -= epsilon;
+    float2 tileAtlasDims = float2(1.0f, 1.0f);
+    tDiffuse.GetDimensions(tileAtlasDims.x, tileAtlasDims.y);
+    const float2 epsilon = 1.0f / tileAtlasDims;
+    uv_mins += epsilon;
+    uv_maxs -= epsilon;
 
     //Bottom Left
     float2 offset = bl_offset;
