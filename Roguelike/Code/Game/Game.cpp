@@ -1178,6 +1178,7 @@ void Game::HandleDebugKeyboardInput() {
         g_theRenderer->SetFullscreen(is_fullscreen);
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F1)) {
+        _show_tile_texture = !_show_tile_texture;
         _show_debug_window = !_show_debug_window;
         _show_debug_window ? g_theInputSystem->ShowMouseCursor() : g_theInputSystem->HideMouseCursor();
     }
@@ -1242,6 +1243,7 @@ void Game::ShowDebugUI() {
         ShowEntityDebuggerUI(); //Until Tables API is available on master, Entity debugger must be last!
     }
     ImGui::End();
+    _debug_render = _debug_render || _show_tile_texture;
 }
 
 void Game::ShowTileDebuggerUI() {

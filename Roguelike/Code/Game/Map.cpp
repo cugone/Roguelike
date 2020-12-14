@@ -104,6 +104,60 @@ void Map::RegenerateMap() noexcept {
     _map_generator->Generate();
 }
 
+void Map::GenerateTileIndexTexture() noexcept {
+    const auto dims = CalcMaxDimensions();
+    const auto width = static_cast<std::size_t>(dims.x);
+    const auto height = static_cast<std::size_t>(dims.y);
+    std::vector<Rgba> data(width * height, Rgba::Black);
+    auto data_iter = std::begin(data);
+    for(auto& layer : _layers) {
+        for(auto& tile : *layer) {
+            const auto* def = tile.GetDefinition();
+            const auto coords = def->GetSprite()->GetCurrentSpriteCoords();
+            data_iter->r = static_cast<unsigned char>(coords.x);
+            data_iter->g = static_cast<unsigned char>(coords.y);
+            ++data_iter;
+        }
+    }
+    _tile_index_texture = _renderer.Create2DTextureFromMemory(data, static_cast<unsigned int>(width), static_cast<unsigned int>(height), BufferUsage::Dynamic);
+    auto* mat = GetTileMaterial();
+    mat->SetTextureSlot(Material::TextureID::Normal, _tile_index_texture.get());
+}
+
+void Map::UpdateTileIndexTexture() noexcept {
+    auto* dx_resource = _tile_index_texture->GetDxResource();
+    auto* dx_tex2d = _tile_index_texture->GetDxResourceAs<ID3D11Texture2D>();
+    D3D11_TEXTURE2D_DESC desc{};
+    dx_tex2d->GetDesc(&desc);
+    const std::size_t width = desc.Width;
+    const std::size_t height = desc.Height;
+    std::vector<Rgba> data(width * height, Rgba::Black);
+    auto data_iter = std::begin(data);
+    for(auto& layer : _layers) {
+        for(auto& tile : *layer) {
+            const auto* def = tile.GetDefinition();
+            const auto coords = def->GetSprite()->GetCurrentSpriteCoords();
+            data_iter->r = static_cast<unsigned char>(coords.x);
+            data_iter->g = static_cast<unsigned char>(coords.y);
+            ++data_iter;
+        }
+    }
+    D3D11_MAPPED_SUBRESOURCE resource{};
+    auto* dx_context = _renderer.GetDeviceContext()->GetDxContext();
+    if(HRESULT hr = dx_context->Map(dx_resource, 0, D3D11_MAP_WRITE_DISCARD, 0U, &resource); SUCCEEDED(hr)) {
+        auto* src = reinterpret_cast<unsigned int*>(data.data());
+        auto* dst = reinterpret_cast<unsigned int*>(resource.pData);
+        const auto row_pitch = resource.RowPitch;
+
+        for(std::size_t i = 0u; i < height; ++i) {
+            std::memcpy(dst, src, width * sizeof(Rgba));
+            dst += resource.RowPitch >> 2;
+            src += width;
+        }
+        dx_context->Unmap(dx_resource, 0);
+    }
+}
+
 Pathfinder* Map::GetPathfinder() const noexcept {
     return _pathfinder.get();
 }
@@ -226,8 +280,15 @@ Map::Map(Renderer& renderer, const XMLElement& elem) noexcept
     if(!LoadFromXML(elem)) {
         ERROR_AND_DIE("Could not load map.");
     }
+
+    GenerateTileIndexTexture();
+
     cameraController = OrthographicCameraController(&_renderer, g_theInputSystem);
+#ifdef RENDER_DEBUG
+    cameraController.SetZoomLevelRange(Vector2{8.0f, 512.0f});
+#else
     cameraController.SetZoomLevelRange(Vector2{8.0f, 16.0f});
+#endif
 }
 
 Map::~Map() noexcept {
@@ -252,6 +313,7 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
     cameraController.TranslateTo(Vector2(player->tile->GetCoords()), deltaSeconds);
     const auto clamped_camera_position = MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
     cameraController.SetPosition(clamped_camera_position);
+    UpdateTileIndexTexture();
 }
 
 void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
@@ -375,6 +437,18 @@ void Map::DebugRender(Renderer& renderer) const {
         renderer.DrawCircle2D(cam_pos, 0.5f, Rgba::Cyan);
         renderer.DrawAABB2(GetLayer(0)->CalcViewBounds(cam_pos), Rgba::Green, Rgba::NoAlpha);
         renderer.DrawAABB2(GetLayer(0)->CalcCullBounds(cam_pos), Rgba::Blue, Rgba::NoAlpha);
+    }
+    if(g_theGame->_show_tile_texture) {
+        auto* mat = renderer.GetMaterial("__2D");
+        mat->SetTextureSlot(Material::TextureID::Diffuse, renderer.GetTexture("__white"));
+        mat->SetTextureSlot(Material::TextureID::Diffuse, _tile_index_texture.get());
+        renderer.SetMaterial(mat);
+        const auto S = Matrix4::CreateScaleMatrix(Vector2::ONE * 20.0f);
+        const auto R = Matrix4::I;
+        const auto T = Matrix4::CreateTranslationMatrix(cameraController.GetCamera().GetPosition());
+        const auto M = Matrix4::MakeSRT(S, R, T);
+        renderer.SetModelMatrix(M);
+        renderer.DrawQuad2D();
     }
 }
 
