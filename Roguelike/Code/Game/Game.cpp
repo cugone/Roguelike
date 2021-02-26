@@ -1023,13 +1023,9 @@ void Game::HandlePlayerKeyboardInput() {
         g_theInputSystem->IsKeyDown(KeyCode::NumPad2);
 
     const bool is_upright = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad9) || (is_right && is_up);
-    const bool is_upright_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad9) || (is_right_held && is_up_held);
     const bool is_upleft = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad7) || (is_left && is_up);
-    const bool is_upleft_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad7) || (is_left_held && is_up_held);
     const bool is_downright = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad3) || (is_right && is_down);
-    const bool is_downright_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad3) || (is_right_held && is_down_held);
     const bool is_downleft = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad1) || (is_left && is_down);
-    const bool is_downleft_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad1) || (is_left_held && is_down_held);
 
     const bool is_shift = g_theInputSystem->IsKeyDown(KeyCode::Shift);
     const bool is_rest = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad5)
@@ -1506,10 +1502,10 @@ std::vector<Tile*> Game::DebugGetTilesFromCursor() {
     if(!current_cursor) {
         return {};
     }
-    const auto cursor_pos = current_cursor->GetCoords();
+    const auto& cursor_pos = current_cursor->GetCoords();
     if(_debug_has_picked_tile_with_click) {
         static std::vector<Tile*> picked_tiles{};
-        picked_tiles = _map->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});
+        picked_tiles = _map->PickTilesFromWorldCoords(Vector2{cursor_pos});
         if(picked_tiles.empty()) {
             return {};
         }
@@ -1525,7 +1521,7 @@ std::vector<Tile*> Game::DebugGetTilesFromCursor() {
         }
         return picked_tiles;
     }
-    return _map->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});
+    return _map->PickTilesFromWorldCoords(Vector2{cursor_pos});
 }
 
 void Game::ShowEntityInspectorUI() {
