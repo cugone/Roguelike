@@ -151,7 +151,7 @@ void Map::UpdateTileIndexTexture() noexcept {
 
         for(std::size_t i = 0u; i < height; ++i) {
             std::memcpy(dst, src, width * sizeof(Rgba));
-            dst += resource.RowPitch >> 2;
+            dst += row_pitch >> 2;
             src += width;
         }
         dx_context->Unmap(dx_resource, 0);
@@ -337,7 +337,6 @@ void Map::UpdateActorAI(TimeUtils::FPSeconds /*deltaSeconds*/) {
         const auto is_player = actor == player;
         const auto player_acted = player->Acted();
         const auto is_alive = actor->GetStats().GetStat(StatsID::Health) > 0;
-        const auto is_visible = actor->tile->canSee;
         const auto should_update = !is_player && player_acted && is_alive;
         if(should_update) {
             if(auto* behavior = actor->GetCurrentBehavior()) {
