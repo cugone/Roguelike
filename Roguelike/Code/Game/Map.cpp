@@ -145,8 +145,8 @@ void Map::UpdateTileIndexTexture() noexcept {
     D3D11_MAPPED_SUBRESOURCE resource{};
     auto* dx_context = _renderer.GetDeviceContext()->GetDxContext();
     if(HRESULT hr = dx_context->Map(dx_resource, 0, D3D11_MAP_WRITE_DISCARD, 0U, &resource); SUCCEEDED(hr)) {
-        auto* src = reinterpret_cast<unsigned int*>(data.data());
-        auto* dst = reinterpret_cast<unsigned int*>(resource.pData);
+        auto* src = reinterpret_cast<uint32_t*>(data.data());
+        auto* dst = reinterpret_cast<uint32_t*>(resource.pData);
         const auto row_pitch = resource.RowPitch;
 
         for(std::size_t i = 0u; i < height; ++i) {
