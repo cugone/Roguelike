@@ -306,12 +306,24 @@
     <None Include="..\..\Run_x64\Data\ShaderPrograms\Tile_VS.cso">
       <Filter>Data\ShaderPrograms</Filter>
     </None>
+    <None Include="..\..\Run_x64\Data\ShaderPrograms\Entity_GS.cso">
+      <Filter>Data\ShaderPrograms</Filter>
+    </None>
+    <None Include="..\..\Run_x64\Data\ShaderPrograms\Entity_PS.cso">
+      <Filter>Data\ShaderPrograms</Filter>
+    </None>
+    <None Include="..\..\Run_x64\Data\ShaderPrograms\Entity_VS.cso">
+      <Filter>Data\ShaderPrograms</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\Run_x64\Data\ShaderPrograms\Fullscreen.hlsl">
       <Filter>Data\ShaderPrograms</Filter>
     </FxCompile>
     <FxCompile Include="..\..\Run_x64\Data\ShaderPrograms\Tile.hlsl">
+      <Filter>Data\ShaderPrograms</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\Run_x64\Data\ShaderPrograms\Entity.hlsl">
       <Filter>Data\ShaderPrograms</Filter>
     </FxCompile>
   </ItemGroup>
