@@ -126,6 +126,27 @@ void Map::GenerateTileIndexTexture() noexcept {
     mat->SetTextureSlot(Material::TextureID::Normal, _tile_index_texture.get());
 }
 
+void Map::GenerateEntityIndexTexture() noexcept {
+    const auto dims = CalcMaxDimensions();
+    const auto width = static_cast<std::size_t>(dims.x);
+    const auto height = static_cast<std::size_t>(dims.y);
+    std::vector<Rgba> data(width * height, Rgba::Black);
+    auto data_iter = std::begin(data);
+    for(auto& layer : _layers) {
+        for(auto& tile : *layer) {
+            if(tile.actor && tile.actor->def && tile.actor->def->GetSprite()) {
+                const auto coords = tile.actor->def->GetSprite()->GetCurrentSpriteCoords();
+                data_iter->r = static_cast<unsigned char>(coords.x);
+                data_iter->g = static_cast<unsigned char>(coords.y);
+                ++data_iter;
+            }
+        }
+    }
+    _entity_index_texture = _renderer.Create2DTextureFromMemory(data, static_cast<unsigned int>(width), static_cast<unsigned int>(height), BufferUsage::Dynamic);
+    auto* mat = GetTileMaterial();
+    mat->SetTextureSlot(Material::TextureID::Displacement, _entity_index_texture.get());
+}
+
 void Map::UpdateTileIndexTexture() noexcept {
     auto* dx_resource = _tile_index_texture->GetDxResource();
     auto* dx_tex2d = _tile_index_texture->GetDxResourceAs<ID3D11Texture2D>();
@@ -160,8 +181,51 @@ void Map::UpdateTileIndexTexture() noexcept {
     }
 }
 
+void Map::UpdateEntityIndexTexture() noexcept {
+    auto* dx_resource = _entity_index_texture->GetDxResource();
+    auto* dx_tex2d = _entity_index_texture->GetDxResourceAs<ID3D11Texture2D>();
+    D3D11_TEXTURE2D_DESC desc{};
+    dx_tex2d->GetDesc(&desc);
+    const std::size_t width = desc.Width;
+    const std::size_t height = desc.Height;
+    std::vector<Rgba> data(width * height, Rgba::Black);
+    auto data_iter = std::begin(data);
+    for(auto& layer : _layers) {
+        for(auto& tile : *layer) {
+            if(tile.actor && tile.actor->def && tile.actor->def->GetSprite()) {
+                const auto coords = tile.actor->def->GetSprite()->GetCurrentSpriteCoords();
+                data_iter->r = static_cast<unsigned char>(coords.x);
+                data_iter->g = static_cast<unsigned char>(coords.y);
+                ++data_iter;
+            }
+        }
+    }
+    D3D11_MAPPED_SUBRESOURCE resource{};
+    auto* dx_context = _renderer.GetDeviceContext()->GetDxContext();
+    if(HRESULT hr = dx_context->Map(dx_resource, 0, D3D11_MAP_WRITE_DISCARD, 0U, &resource); SUCCEEDED(hr)) {
+        auto* src = reinterpret_cast<uint32_t*>(data.data());
+        auto* dst = reinterpret_cast<uint32_t*>(resource.pData);
+        const auto row_pitch = resource.RowPitch;
+
+        for(std::size_t i = 0u; i < height; ++i) {
+            std::memcpy(dst, src, width * sizeof(Rgba));
+            dst += row_pitch >> 2;
+            src += width;
+        }
+        dx_context->Unmap(dx_resource, 0);
+    }
+}
+
 Pathfinder* Map::GetPathfinder() const noexcept {
     return _pathfinder.get();
+}
+
+const Texture* Map::DebugGetTileIndexTexture() const noexcept {
+    return _tile_index_texture.get();
+}
+
+const Texture* Map::DebugGetEntityIndexTexture() const noexcept {
+    return _entity_index_texture.get();
 }
 
 void Map::ZoomOut() noexcept {
@@ -284,6 +348,7 @@ Map::Map(Renderer& renderer, const XMLElement& elem) noexcept
     }
 
     GenerateTileIndexTexture();
+    GenerateEntityIndexTexture();
 
     cameraController = OrthographicCameraController(&_renderer, g_theInputSystem);
 #ifdef RENDER_DEBUG
@@ -316,6 +381,7 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
     const auto clamped_camera_position = MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
     cameraController.SetPosition(clamped_camera_position);
     UpdateTileIndexTexture();
+    UpdateEntityIndexTexture();
 }
 
 void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
