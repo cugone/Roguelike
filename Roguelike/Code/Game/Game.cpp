@@ -1228,7 +1228,12 @@ void Game::HandleDebugMouseInput() {
 #ifdef PROFILE_BUILD
 
 void Game::ShowDebugUI() {
-    ImGui::SetNextWindowSize(Vector2{ 350.0f, 500.0f }, ImGuiCond_Always);
+    ShowDebuggerWindow();
+    ShowIndexImageDebugger();
+}
+
+void Game::ShowDebuggerWindow() {
+    ImGui::SetNextWindowSize(Vector2{350.0f, 500.0f}, ImGuiCond_Always);
     if(ImGui::Begin("Debugger", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ShowFrameInspectorUI();
         ShowWorldInspectorUI();
@@ -1236,6 +1241,14 @@ void Game::ShowDebugUI() {
         ShowTileDebuggerUI();
         ShowFeatureDebuggerUI();
         ShowEntityDebuggerUI(); //Until Tables API is available on master, Entity debugger must be last!
+    }
+    ImGui::End();
+}
+
+void Game::ShowIndexImageDebugger() {
+    if(ImGui::Begin("Index Image Debugger", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ShowTileIndexInspectorUI();
+        ShowEntityIndexInspectorUI();
     }
     ImGui::End();
 }
@@ -1622,6 +1635,36 @@ void Game::ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity) {
         }
     }
     ImGui::Text(ss.str().c_str());
+}
+
+void Game::ShowTileIndexInspectorUI() {
+    const auto* tex = _map->DebugGetTileIndexTexture();
+    ShowImageWithZoomedToolTip(tex, 5.0f);
+}
+
+void Game::ShowEntityIndexInspectorUI() {
+    const auto* tex = _map->DebugGetEntityIndexTexture();
+    ShowImageWithZoomedToolTip(tex, 5.0f);
+}
+
+void Game::ShowImageWithZoomedToolTip(const Texture* tex, const float zoomLevel /*= 4.0f*/) {
+    const auto pos = ImGui::GetCursorScreenPos();
+    const auto dims = Vector2{Vector3{tex->GetDimensions()}};
+    ImGui::Image(tex, Vector2::ONE * 100.0f, Vector2::ZERO, Vector2::ONE, Rgba::White, Rgba{255, 255, 255, 128});
+    auto& io = ImGui::GetIO();
+    if(ImGui::IsItemHovered()) {
+        ImGui::BeginTooltip();
+        const auto region_sz = 32.0f;
+        const auto region_x = std::clamp(io.MousePos.x - pos.x - region_sz * 0.5f, 0.0f, dims.x - region_sz);
+        const auto region_y = std::clamp(io.MousePos.y - pos.y - region_sz * 0.5f, 0.0f, dims.y - region_sz);
+        const auto zoom = zoomLevel;
+        ImGui::Text("Min: (%.2f, %.2f)", region_x, region_y);
+        ImGui::Text("Max: (%.2f, %.2f)", region_x + region_sz, region_y + region_sz);
+        const auto uv0 = Vector2{(region_x) / dims.x, (region_y) / dims.y};
+        const auto uv1 = Vector2{(region_x + region_sz) / dims.x, (region_y + region_sz) / dims.y};
+        ImGui::Image(tex, Vector2{region_sz * zoom, region_sz * zoom}, uv0, uv1, Rgba::White, Rgba{255, 255, 255, 128});
+        ImGui::EndTooltip();
+    }
 }
 
 #endif
