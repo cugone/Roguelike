@@ -257,26 +257,7 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
     debug_visible_tiles_in_view_count = 0;
     const auto& viewableTiles = [this]() {
         const auto view_area = CalcCullBounds(_map->cameraController.GetCamera().GetPosition());
-        const auto dims = view_area.CalcDimensions();
-        const auto width = static_cast<int>(dims.x);
-        const auto height = static_cast<int>(dims.y);
-        std::vector<Tile*> results;
-        results.reserve(width * height);
-        for(int x = static_cast<int>(view_area.mins.x); x <= view_area.maxs.x; ++x) {
-            if(x >= tileDimensions.x || x < 0) {
-                continue;
-            }
-            for(int y = static_cast<int>(view_area.mins.y); y <= view_area.maxs.y; ++y) {
-                if(y >= tileDimensions.y || y < 0) {
-                    continue;
-                }
-                if(auto* tile = GetTile(x, y); tile && (tile->debug_canSee || tile->canSee || tile->haveSeen)) {
-                    results.push_back(tile);
-                }
-            }
-        }
-        results.shrink_to_fit();
-        return results;
+        return _map->GetTilesInArea(view_area);
     }();
     const auto& visibleTiles = _map->GetVisibleTilesWithinDistance(*_map->player->tile, _map->player->visibility);
     for(auto& tile : visibleTiles) {
