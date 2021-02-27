@@ -72,13 +72,15 @@ std::vector<Tile*> Map::GetViewableTiles() const noexcept {
 
 std::vector<Tile*> Map::GetTilesInArea(const AABB2& bounds) const {
     const auto dims = bounds.CalcDimensions();
-    const auto width = static_cast<int>(dims.x);
-    const auto height = static_cast<int>(dims.y);
-    std::vector<Tile*> results;
+    const auto width = static_cast<std::size_t>(dims.x);
+    const auto height = static_cast<std::size_t>(dims.y);
+    std::vector<Tile*> results{};
     results.reserve(width * height);
     for(int x = static_cast<int>(bounds.mins.x); x <= bounds.maxs.x; ++x) {
         for(int y = static_cast<int>(bounds.mins.y); y <= bounds.maxs.y; ++y) {
-            results.push_back(GetTile(x, y, 0));
+            if(auto* t = GetTile(x, y, 0); t != nullptr) {
+                results.push_back(t);
+            }
         }
     }
     return results;
