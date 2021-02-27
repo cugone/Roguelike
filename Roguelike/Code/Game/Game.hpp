@@ -223,7 +223,6 @@ private:
     uint8_t _show_all_entities : 1;
     uint8_t _show_camera : 1;
     uint8_t _show_room_bounds : 1;
-    uint8_t _show_tile_texture : 1;
     uint8_t _done_loading : 1;
     uint8_t _reset_loading_flag : 1;
     uint8_t _skip_frame : 1;

@@ -439,18 +439,6 @@ void Map::DebugRender(Renderer& renderer) const {
         renderer.DrawAABB2(GetLayer(0)->CalcViewBounds(cam_pos), Rgba::Green, Rgba::NoAlpha);
         renderer.DrawAABB2(GetLayer(0)->CalcCullBounds(cam_pos), Rgba::Blue, Rgba::NoAlpha);
     }
-    if(g_theGame->_show_tile_texture) {
-        auto* mat = renderer.GetMaterial("__2D");
-        mat->SetTextureSlot(Material::TextureID::Diffuse, renderer.GetTexture("__white"));
-        mat->SetTextureSlot(Material::TextureID::Diffuse, _tile_index_texture.get());
-        renderer.SetMaterial(mat);
-        const auto S = Matrix4::CreateScaleMatrix(Vector2::ONE * 20.0f);
-        const auto R = Matrix4::I;
-        const auto T = Matrix4::CreateTranslationMatrix(cameraController.GetCamera().GetPosition());
-        const auto M = Matrix4::MakeSRT(S, R, T);
-        renderer.SetModelMatrix(M);
-        renderer.DrawQuad2D();
-    }
 }
 
 void Map::EndFrame() {
