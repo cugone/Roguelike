@@ -30,9 +30,12 @@ Actor::Actor(Map* map, const XMLElement& elem) noexcept
 {
     this->map = map;
     this->layer = this->map->GetLayer(0);
+
     if(!LoadFromXml(elem)) {
         ERROR_AND_DIE("Actor failed to load.");
     }
+    this->sprite = def->GetSprite();
+    this->sprite->SetMaterial(g_theRenderer->GetMaterial("Tile"));
     OnDamage.Subscribe_method(this, &Actor::ApplyDamage);
     OnFight.Subscribe_method(this, &Actor::ResolveAttack);
     OnMiss.Subscribe_method(this, &Actor::AttackerMissed);
@@ -44,6 +47,7 @@ Actor::Actor(Map* map, EntityDefinition* definition) noexcept
     this->map = map;
     this->layer = this->map->GetLayer(0);
     sprite = def->GetSprite();
+    sprite->SetMaterial(g_theRenderer->GetMaterial("Tile"));
     OnDamage.Subscribe_method(this, &Actor::ApplyDamage);
     OnFight.Subscribe_method(this, &Actor::ResolveAttack);
     OnMiss.Subscribe_method(this, &Actor::AttackerMissed);

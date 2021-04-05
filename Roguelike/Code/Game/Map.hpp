@@ -312,9 +312,6 @@ public:
 
     Pathfinder* GetPathfinder() const noexcept;
 
-    const Texture* DebugGetTileIndexTexture() const noexcept;
-    const Texture* DebugGetEntityIndexTexture() const noexcept;
-
     std::unique_ptr<MapGenerator> _map_generator{};
 
 protected:
@@ -330,10 +327,6 @@ private:
     void LoadFeaturesForMap(const XMLElement& elem);
     void LoadItemsForMap(const XMLElement& elem);
 
-    void GenerateTileIndexTexture() noexcept;
-    void GenerateEntityIndexTexture() noexcept;
-    void UpdateTileIndexTexture() noexcept;
-    void UpdateEntityIndexTexture() noexcept;
     void UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds);
     void UpdateActorAI(TimeUtils::FPSeconds deltaSeconds);
     void UpdateEntities(TimeUtils::FPSeconds deltaSeconds);
@@ -354,8 +347,6 @@ private:
     std::vector<Actor*> _actors{};
     std::vector<Feature*> _features{};
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
-    std::unique_ptr<Texture> _tile_index_texture{};
-    std::unique_ptr<Texture> _entity_index_texture{};
 
     float _camera_speed = 1.0f;
     mutable std::size_t _debug_tiles_in_view_count{};

@@ -1637,16 +1637,6 @@ void Game::ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity) {
     ImGui::Text(ss.str().c_str());
 }
 
-void Game::ShowTileIndexInspectorUI() {
-    const auto* tex = _map->DebugGetTileIndexTexture();
-    ShowImageWithZoomedToolTip(tex, 5.0f);
-}
-
-void Game::ShowEntityIndexInspectorUI() {
-    const auto* tex = _map->DebugGetEntityIndexTexture();
-    ShowImageWithZoomedToolTip(tex, 5.0f);
-}
-
 void Game::ShowImageWithZoomedToolTip(const Texture* tex, const float zoomLevel /*= 4.0f*/) {
     const auto pos = ImGui::GetCursorScreenPos();
     const auto dims = Vector2{Vector3{tex->GetDimensions()}};

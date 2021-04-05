@@ -124,7 +124,6 @@ private:
 
 #ifdef PROFILE_BUILD
     void ShowDebugUI();
-    void ShowIndexImageDebugger();
     void ShowDebuggerWindow();
 
     std::vector<Tile*> DebugGetTilesFromMouse();
@@ -145,9 +144,6 @@ private:
     void ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity);
 
     void ShowFeatureInspectorUI();
-
-    void ShowTileIndexInspectorUI();
-    void ShowEntityIndexInspectorUI();
     void ShowImageWithZoomedToolTip(const  Texture* tex, const float zoomLevel = 4.0f);
 #endif
 
