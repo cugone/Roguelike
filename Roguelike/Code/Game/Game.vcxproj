@@ -243,6 +243,10 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="..\..\Run_x64\Data\Materials\Tile.material" />
+    <None Include="..\..\Run_x64\Data\ShaderPrograms\Fullscreen_PS.cso" />
+    <None Include="..\..\Run_x64\Data\ShaderPrograms\Fullscreen_VS.cso" />
+    <None Include="..\..\Run_x64\Data\ShaderPrograms\Tile_PS.cso" />
+    <None Include="..\..\Run_x64\Data\ShaderPrograms\Tile_VS.cso" />
     <None Include="..\..\Run_x64\Data\Shaders\Fullscreen.shader">
       <SubType>Designer</SubType>
     </None>
