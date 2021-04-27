@@ -40,7 +40,7 @@ ps_in_t VertexFunction(vs_in_t input_vertex) {
     float4 local = float4(input_vertex.position, 1.0f);
     float4 world = mul(local, g_MODEL);
     float4 view = mul(world, g_VIEW);
-    float4 clip = mul(world, g_PROJECTION);
+    float4 clip = mul(view, g_PROJECTION);
 
     output.position = clip;
     output.color = input_vertex.color;

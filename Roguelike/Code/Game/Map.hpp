@@ -157,48 +157,44 @@ public:
     //     The predicate shall return true on impact.
     //************************************
     template<typename Pr>
-    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& direction, float maxDistance, bool ignoreSelf, Pr&& predicate) const {
+    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& direction, float maxDistance, bool ignoreSelf, Pr predicate) const {
         const auto endPosition = startPosition + (direction * maxDistance);
-        auto currentTileCoords{IntVector2{startPosition}};
-        const auto endTileCoords{IntVector2{endPosition}};
+        IntVector2 currentTileCoords{startPosition};
+        IntVector2 endTileCoords{endPosition};
 
         const auto D = endPosition - startPosition;
 
-        const auto tDeltaX = [D]() {
-            if(!MathUtils::IsEquivalent(D.x, 0.0f)) {
-                return 1.0f / std::abs(D.x);
-            } else {
-                return (std::numeric_limits<float>::max)();
-            }
-        }();
-        
-        const auto tileStepX = [D]() -> int {
-            if(D.x > 0) {
-                return 1;
-            } else if(D.x < 0) {
-                return -1;
-            } else {
-                return 0;
-        }}(); //IIIL
+        float tDeltaX = (std::numeric_limits<float>::max)();
+        if(!MathUtils::IsEquivalent(D.x, 0.0f)) {
+            tDeltaX = 1.0f / std::abs(D.x);
+        }
+        int tileStepX = 0;
+        if(D.x > 0) {
+            tileStepX = 1;
+        }
+        if(D.x < 0) {
+            tileStepX = -1;
+        }
+        int offsetToLeadingEdgeX = (tileStepX + 1) / 2;
+        float firstVerticalIntersectionX = static_cast<float>(currentTileCoords.x + offsetToLeadingEdgeX);
+        float tOfNextXCrossing = std::abs(firstVerticalIntersectionX - startPosition.x) * tDeltaX;
 
-        const auto offsetToLeadingEdgeX = (tileStepX + 1) / 2;
-        const auto firstVerticalIntersectionX = static_cast<float>(currentTileCoords.x + offsetToLeadingEdgeX);
-        auto tOfNextXCrossing = std::abs(firstVerticalIntersectionX - startPosition.x) * tDeltaX;
+        float tDeltaY = (std::numeric_limits<float>::max)();
+        if(!MathUtils::IsEquivalent(D.y, 0.0f)) {
+            tDeltaY = 1.0f / std::abs(D.y);
+        }
+        int tileStepY = 0;
+        if(D.y > 0) {
+            tileStepY = 1;
+        }
+        if(D.y < 0) {
+            tileStepY = -1;
+        }
+        int offsetToLeadingEdgeY = (tileStepY + 1) / 2;
+        float firstVerticalIntersectionY = static_cast<float>(currentTileCoords.y + offsetToLeadingEdgeY);
+        float tOfNextYCrossing = std::abs(firstVerticalIntersectionY - startPosition.y) * tDeltaY;
 
-        const auto tDeltaY = [D]() {
-            if(!MathUtils::IsEquivalent(D.y, 0.0f)) {
-                return 1.0f / std::abs(D.y);
-            } else {
-                return (std::numeric_limits<float>::max)();
-            }
-        }();
-
-        const auto tileStepY = [D]()-> int { if(D.y > 0) { return 1; } else if(D.y < 0) { return -1; } else { return 0; }}(); //IIIL
-        const auto offsetToLeadingEdgeY = (tileStepY + 1) / 2;
-        const auto firstVerticalIntersectionY = static_cast<float>(currentTileCoords.y + offsetToLeadingEdgeY);
-        auto tOfNextYCrossing = std::abs(firstVerticalIntersectionY - startPosition.y) * tDeltaY;
-
-        Map::RaycastResult2D result{};
+        Map::RaycastResult2D result;
         if(!ignoreSelf && predicate(currentTileCoords)) {
             result.didImpact = true;
             result.impactFraction = 0.0f;
@@ -258,8 +254,10 @@ public:
     //     The predicate shall return true on impact.
     //************************************
     template<typename Pr>
-    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& endPosition, bool ignoreSelf, Pr&& predicate) const {
-        const auto [direction, length] = [endPosition, startPosition]()->std::pair<Vector2,float> { auto d = (endPosition - startPosition); auto l = d.Normalize(); return std::make_pair(d, l); }(); //IIIL
+    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& endPosition, bool ignoreSelf, Pr predicate) const {
+        const auto displacement = endPosition - startPosition;
+        const auto direction = displacement.GetNormalize();
+        float length = displacement.CalcLength();
         return Raycast(startPosition, direction, length, ignoreSelf, predicate);
     }
 
@@ -361,7 +359,6 @@ private:
     friend class XmlMapGenerator;
     friend class RoomsMapGenerator;
     friend class RoomsAndCorridorsMapGenerator;
-
 public:
     std::vector<Tile*> GetViewableTiles() const noexcept;
 };

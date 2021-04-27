@@ -7,11 +7,8 @@
 #include "Engine/Core/KerningFont.hpp"
 #include "Engine/Core/Utilities.hpp"
 
-#include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/Vector2.hpp"
 #include "Engine/Math/Vector4.hpp"
-
-#include "Engine/Profiling/ProfileLogScope.hpp"
 
 #include "Engine/Renderer/AnimatedSprite.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
@@ -213,7 +210,6 @@ void Game::Render_Title() const {
     const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
     const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
     const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
-    ui_camera.SetPosition(Vector2::ZERO);
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
 
@@ -239,7 +235,6 @@ void Game::Render_Loading() const {
     const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
     const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
     const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
-    ui_camera.SetPosition(Vector2::ZERO);
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
 
@@ -284,7 +279,6 @@ void Game::Render_Main() const {
     g_theRenderer->Draw(PrimitiveType::Triangles, vbo, 3);
 
     if(g_theApp->LostFocus()) {
-        g_theRenderer->SetModelMatrix(Matrix4::I);
         g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
         g_theRenderer->DrawQuad2D(Vector2::ZERO, Vector2::ONE, Rgba{0, 0, 0, 128});
     }
@@ -302,7 +296,7 @@ void Game::Render_Main() const {
     g_theRenderer->SetCamera(ui_camera);
 
     if(g_theApp->LostFocus()) {
-        g_theRenderer->SetModelMatrix(Matrix4::I);
+        g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_center));
         g_theRenderer->DrawTextLine(ingamefont, "PAUSED");
     }
 }
@@ -1029,9 +1023,13 @@ void Game::HandlePlayerKeyboardInput() {
         g_theInputSystem->IsKeyDown(KeyCode::NumPad2);
 
     const bool is_upright = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad9) || (is_right && is_up);
+    const bool is_upright_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad9) || (is_right_held && is_up_held);
     const bool is_upleft = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad7) || (is_left && is_up);
+    const bool is_upleft_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad7) || (is_left_held && is_up_held);
     const bool is_downright = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad3) || (is_right && is_down);
+    const bool is_downright_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad3) || (is_right_held && is_down_held);
     const bool is_downleft = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad1) || (is_left && is_down);
+    const bool is_downleft_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad1) || (is_left_held && is_down_held);
 
     const bool is_shift = g_theInputSystem->IsKeyDown(KeyCode::Shift);
     const bool is_rest = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad5)
@@ -1186,11 +1184,6 @@ void Game::HandleDebugKeyboardInput() {
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F2)) {
         g_theInputSystem->ToggleMouseRawInput();
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F3)) {
-        TextEntityDesc desc{};
-        desc.font = g_theRenderer->GetFont("System32");
-        _map->CreateTextEntityAt(_map->player->tile->GetCoords(), desc);
-    }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F4)) {
         g_theUISystem->ToggleImguiDemoWindow();
     }
@@ -1239,12 +1232,7 @@ void Game::HandleDebugMouseInput() {
 #ifdef PROFILE_BUILD
 
 void Game::ShowDebugUI() {
-    ShowDebuggerWindow();
-    ShowTextEntityDebugger();
-}
-
-void Game::ShowDebuggerWindow() {
-    ImGui::SetNextWindowSize(Vector2{350.0f, 500.0f}, ImGuiCond_Always);
+    ImGui::SetNextWindowSize(Vector2{ 350.0f, 500.0f }, ImGuiCond_Always);
     if(ImGui::Begin("Debugger", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ShowFrameInspectorUI();
         ShowWorldInspectorUI();
@@ -1252,21 +1240,6 @@ void Game::ShowDebuggerWindow() {
         ShowTileDebuggerUI();
         ShowFeatureDebuggerUI();
         ShowEntityDebuggerUI(); //Until Tables API is available on master, Entity debugger must be last!
-    }
-    ImGui::End();
-}
-
-void Game::ShowTextEntityDebugger() {
-    if(ImGui::Begin("Text Entity Debugger", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        if(const auto& entities = EntityText::GetEntityRegistry(); !entities.empty()) {
-            for(auto& e : entities) {
-                ImGui::Text(std::to_string(e->ttl.count()).c_str());
-                ImGui::SameLine();
-                ImGui::Text(e->text.c_str());
-            }
-        } else {
-            ImGui::Text("NONE");
-        }
     }
     ImGui::End();
 }
@@ -1531,10 +1504,10 @@ std::vector<Tile*> Game::DebugGetTilesFromCursor() {
     if(!current_cursor) {
         return {};
     }
-    const auto& cursor_pos = current_cursor->GetCoords();
+    const auto cursor_pos = current_cursor->GetCoords();
     if(_debug_has_picked_tile_with_click) {
         static std::vector<Tile*> picked_tiles{};
-        picked_tiles = _map->PickTilesFromWorldCoords(Vector2{cursor_pos});
+        picked_tiles = _map->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});
         if(picked_tiles.empty()) {
             return {};
         }
@@ -1550,7 +1523,7 @@ std::vector<Tile*> Game::DebugGetTilesFromCursor() {
         }
         return picked_tiles;
     }
-    return _map->PickTilesFromWorldCoords(Vector2{cursor_pos});
+    return _map->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});
 }
 
 void Game::ShowEntityInspectorUI() {
@@ -1653,26 +1626,6 @@ void Game::ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity) {
         }
     }
     ImGui::Text(ss.str().c_str());
-}
-
-void Game::ShowImageWithZoomedToolTip(const Texture* tex, const float zoomLevel /*= 4.0f*/) {
-    const auto pos = ImGui::GetCursorScreenPos();
-    const auto dims = Vector2{Vector3{tex->GetDimensions()}};
-    ImGui::Image(tex, Vector2::ONE * 100.0f, Vector2::ZERO, Vector2::ONE, Rgba::White, Rgba{255, 255, 255, 128});
-    auto& io = ImGui::GetIO();
-    if(ImGui::IsItemHovered()) {
-        ImGui::BeginTooltip();
-        const auto region_sz = 32.0f;
-        const auto region_x = std::clamp(io.MousePos.x - pos.x - region_sz * 0.5f, 0.0f, dims.x - region_sz);
-        const auto region_y = std::clamp(io.MousePos.y - pos.y - region_sz * 0.5f, 0.0f, dims.y - region_sz);
-        const auto zoom = zoomLevel;
-        ImGui::Text("Min: (%.2f, %.2f)", region_x, region_y);
-        ImGui::Text("Max: (%.2f, %.2f)", region_x + region_sz, region_y + region_sz);
-        const auto uv0 = Vector2{(region_x) / dims.x, (region_y) / dims.y};
-        const auto uv1 = Vector2{(region_x + region_sz) / dims.x, (region_y + region_sz) / dims.y};
-        ImGui::Image(tex, Vector2{region_sz * zoom, region_sz * zoom}, uv0, uv1, Rgba::White, Rgba{255, 255, 255, 128});
-        ImGui::EndTooltip();
-    }
 }
 
 #endif

@@ -124,8 +124,6 @@ private:
 
 #ifdef PROFILE_BUILD
     void ShowDebugUI();
-    void ShowDebuggerWindow();
-    void ShowTextEntityDebugger();
 
     std::vector<Tile*> DebugGetTilesFromMouse();
     std::vector<Tile*> DebugGetTilesFromCursor();
@@ -145,7 +143,6 @@ private:
     void ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity);
 
     void ShowFeatureInspectorUI();
-    void ShowImageWithZoomedToolTip(const  Texture* tex, const float zoomLevel = 4.0f);
 #endif
 
     const bool IsDebugWindowOpen() const noexcept;

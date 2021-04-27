@@ -30,12 +30,9 @@ Actor::Actor(Map* map, const XMLElement& elem) noexcept
 {
     this->map = map;
     this->layer = this->map->GetLayer(0);
-
     if(!LoadFromXml(elem)) {
         ERROR_AND_DIE("Actor failed to load.");
     }
-    this->sprite = def->GetSprite();
-    this->sprite->SetMaterial(g_theRenderer->GetMaterial("Tile"));
     OnDamage.Subscribe_method(this, &Actor::ApplyDamage);
     OnFight.Subscribe_method(this, &Actor::ResolveAttack);
     OnMiss.Subscribe_method(this, &Actor::AttackerMissed);
@@ -47,7 +44,6 @@ Actor::Actor(Map* map, EntityDefinition* definition) noexcept
     this->map = map;
     this->layer = this->map->GetLayer(0);
     sprite = def->GetSprite();
-    sprite->SetMaterial(g_theRenderer->GetMaterial("Tile"));
     OnDamage.Subscribe_method(this, &Actor::ApplyDamage);
     OnFight.Subscribe_method(this, &Actor::ResolveAttack);
     OnMiss.Subscribe_method(this, &Actor::AttackerMissed);
@@ -85,6 +81,7 @@ bool Actor::LoadFromXml(const XMLElement& elem) {
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
     def = EntityDefinition::GetEntityDefinitionByName(definitionName);
+    sprite = def->GetSprite();
     inventory = def->inventory;
     const auto behaviorName = DataUtils::ParseXmlAttribute(elem, "behavior", "none");
     this->SetBehavior(Behavior::IdFromName(behaviorName));

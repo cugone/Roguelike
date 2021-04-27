@@ -215,27 +215,27 @@ void Layer::SetModelViewProjectionBounds(Renderer& renderer) const {
     _map->cameraController.GetCamera().SetupView(leftBottom, rightTop, Vector2(0.0f, 1000.0f));
     renderer.SetCamera(_map->cameraController.GetCamera());
 
-    //Camera2D& base_camera = _map->cameraController.GetCamera();
-    //Camera2D shakyCam = _map->cameraController.GetCamera();
-    //const float shake = shakyCam.GetShake();
-    //const float shaky_angle = currentGraphicsOptions.MaxShakeAngle * shake * MathUtils::GetRandomFloatNegOneToOne();
-    //const float shaky_offsetX = currentGraphicsOptions.MaxShakeOffsetHorizontal * shake * MathUtils::GetRandomFloatNegOneToOne();
-    //const float shaky_offsetY = currentGraphicsOptions.MaxShakeOffsetVertical * shake * MathUtils::GetRandomFloatNegOneToOne();
-    //shakyCam.orientation_degrees = base_camera.orientation_degrees + shaky_angle;
-    //shakyCam.position = base_camera.position + Vector2{ shaky_offsetX, shaky_offsetY };
+    Camera2D& base_camera = _map->cameraController.GetCamera();
+    Camera2D shakyCam = _map->cameraController.GetCamera();
+    const float shake = shakyCam.GetShake();
+    const float shaky_angle = currentGraphicsOptions.MaxShakeAngle * shake * MathUtils::GetRandomFloatNegOneToOne();
+    const float shaky_offsetX = currentGraphicsOptions.MaxShakeOffsetHorizontal * shake * MathUtils::GetRandomFloatNegOneToOne();
+    const float shaky_offsetY = currentGraphicsOptions.MaxShakeOffsetVertical * shake * MathUtils::GetRandomFloatNegOneToOne();
+    shakyCam.orientation_degrees = base_camera.orientation_degrees + shaky_angle;
+    shakyCam.position = base_camera.position + Vector2{ shaky_offsetX, shaky_offsetY };
 
-    //const float cam_rotation_z = shakyCam.GetOrientation();
-    //const auto VRz = Matrix4::Create2DRotationDegreesMatrix(cam_rotation_z);
+    const float cam_rotation_z = shakyCam.GetOrientation();
+    const auto VRz = Matrix4::Create2DRotationDegreesMatrix(-cam_rotation_z);
 
-    //const Vector2 cam_pos = shakyCam.GetPosition();
-    //const auto Vt = Matrix4::CreateTranslationMatrix(-cam_pos);
-    //const auto v = Matrix4::MakeRT(VRz, Vt);
-    //renderer.SetViewMatrix(v);
+    const auto cam_pos = shakyCam.GetPosition();
+    const auto Vt = Matrix4::CreateTranslationMatrix(-cam_pos);
+    const auto v = Matrix4::MakeRT(Vt, VRz);
+    renderer.SetViewMatrix(v);
 
 }
 
 void Layer::RenderTiles(Renderer& renderer) const {
-    //renderer.SetModelMatrix(Matrix4::I);
+    renderer.SetModelMatrix(Matrix4::I);
     Mesh::Render(renderer, _mesh_builder);
 }
 
@@ -257,7 +257,26 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
     debug_visible_tiles_in_view_count = 0;
     const auto& viewableTiles = [this]() {
         const auto view_area = CalcCullBounds(_map->cameraController.GetCamera().GetPosition());
-        return _map->GetTilesInArea(view_area);
+        const auto dims = view_area.CalcDimensions();
+        const auto width = static_cast<int>(dims.x);
+        const auto height = static_cast<int>(dims.y);
+        std::vector<Tile*> results;
+        results.reserve(width * height);
+        for(int x = static_cast<int>(view_area.mins.x); x <= view_area.maxs.x; ++x) {
+            if(x >= tileDimensions.x || x < 0) {
+                continue;
+            }
+            for(int y = static_cast<int>(view_area.mins.y); y <= view_area.maxs.y; ++y) {
+                if(y >= tileDimensions.y || y < 0) {
+                    continue;
+                }
+                if(auto* tile = GetTile(x, y); tile && (tile->debug_canSee || tile->canSee || tile->haveSeen)) {
+                    results.push_back(tile);
+                }
+            }
+        }
+        results.shrink_to_fit();
+        return results;
     }();
     const auto& visibleTiles = _map->GetVisibleTilesWithinDistance(*_map->player->tile, _map->player->visibility);
     for(auto& tile : visibleTiles) {

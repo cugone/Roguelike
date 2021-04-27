@@ -83,5 +83,5 @@ void Cursor::AddVertsForCursor(Mesh::Builder& builder) const {
     builder.AddVertex(Vector3{vert_br, 0.0f});
 
     builder.AddIndicies(Mesh::Builder::Primitive::Quad);
-    builder.End(_def->GetSprite()->GetMaterial());
+    builder.End();
 }

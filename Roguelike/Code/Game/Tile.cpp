@@ -24,17 +24,17 @@ void Tile::AddVerts() const noexcept {
     if(actor) {
         actor->AddVerts();
     } else if(feature) {
-        //feature->AddVerts();
+        feature->AddVerts();
     } else if(HasInventory() && !inventory->empty()) {
-        //inventory->AddVerts(Vector2{_tile_coords}, layer);
+        inventory->AddVerts(Vector2{_tile_coords}, layer);
     }
     if(!canSee && haveSeen) {
-        //AddVertsForOverlay();
+        AddVertsForOverlay();
     }
 
     if(g_theGame->current_cursor; g_theGame->current_cursor->GetCoords() == _tile_coords) {
-        //auto& builder = layer->GetMeshBuilder();
-        //g_theGame->current_cursor->AddVertsForCursor(builder);
+        auto& builder = layer->GetMeshBuilder();
+        g_theGame->current_cursor->AddVertsForCursor(builder);
     }
 }
 
@@ -43,56 +43,56 @@ void Tile::Update(TimeUtils::FPSeconds deltaSeconds) {
 }
 
 void Tile::AddVertsForTile() const noexcept {
-    auto& builder = layer->GetMeshBuilder();
     const auto& sprite = _def->GetSprite();
+    const auto& coords = sprite->GetCurrentTexCoords();
+
+    const auto vert_left = _tile_coords.x + 0.0f;
+    const auto vert_right = _tile_coords.x + 1.0f;
+    const auto vert_top = _tile_coords.y + 0.0f;
+    const auto vert_bottom = _tile_coords.y + 1.0f;
+
+    const auto vert_bl = Vector2(vert_left, vert_bottom);
+    const auto vert_tl = Vector2(vert_left, vert_top);
+    const auto vert_tr = Vector2(vert_right, vert_top);
+    const auto vert_br = Vector2(vert_right, vert_bottom);
+
+    const auto tx_left = coords.mins.x;
+    const auto tx_right = coords.maxs.x;
+    const auto tx_top = coords.mins.y;
+    const auto tx_bottom = coords.maxs.y;
+
+    const auto tx_bl = Vector2(tx_left, tx_bottom);
+    const auto tx_tl = Vector2(tx_left, tx_top);
+    const auto tx_tr = Vector2(tx_right, tx_top);
+    const auto tx_br = Vector2(tx_right, tx_bottom);
+
+    const float z = static_cast<float>(layer->z_index);
+    const Rgba layer_color = layer->color;
+    auto& builder = layer->GetMeshBuilder();
+
+    const auto newColor = layer_color != color && color != Rgba::White ? color : layer_color;
+    const auto normal = -Vector3::Z_AXIS;
+
     builder.Begin(PrimitiveType::Triangles);
-    {
-        const auto vert_left = _tile_coords.x + 0.0f;
-        const auto vert_right = _tile_coords.x + 1.0f;
-        const auto vert_top = _tile_coords.y + 0.0f;
-        const auto vert_bottom = _tile_coords.y + 1.0f;
+    builder.SetColor(newColor);
+    builder.SetNormal(normal);
 
-        const auto vert_bl = Vector2(vert_left, vert_bottom);
-        const auto vert_tl = Vector2(vert_left, vert_top);
-        const auto vert_tr = Vector2(vert_right, vert_top);
-        const auto vert_br = Vector2(vert_right, vert_bottom);
+    builder.SetUV(tx_bl);
+    builder.AddVertex(Vector3{vert_bl, z});
+    
+    builder.SetUV(tx_tl);
+    builder.AddVertex(Vector3{vert_tl, z});
 
-        const auto coords = sprite->GetCurrentTexCoords();
-        const auto tx_left = coords.mins.x;
-        const auto tx_right = coords.maxs.x;
-        const auto tx_top = coords.mins.y;
-        const auto tx_bottom = coords.maxs.y;
+    builder.SetUV(tx_tr);
+    builder.AddVertex(Vector3{vert_tr, z});
 
-        const auto tx_bl = Vector2(tx_left, tx_bottom);
-        const auto tx_tl = Vector2(tx_left, tx_top);
-        const auto tx_tr = Vector2(tx_right, tx_top);
-        const auto tx_br = Vector2(tx_right, tx_bottom);
+    builder.SetUV(tx_br);
+    builder.AddVertex(Vector3{vert_br, z});
 
-        const float z = static_cast<float>(layer->z_index);
-        const Rgba layer_color = layer->color;
-        const auto newColor = layer_color != color && color != Rgba::White ? color : layer_color;
-        const auto normal = -Vector3::Z_AXIS;
+    builder.AddIndicies(Mesh::Builder::Primitive::Quad);
 
-        builder.Begin(PrimitiveType::Triangles);
-
-        builder.SetColor(newColor);
-        builder.SetNormal(normal);
-
-        builder.SetUV(tx_bl);
-        builder.AddVertex(Vector3{vert_bl, z});
-
-        builder.SetUV(tx_tl);
-        builder.AddVertex(Vector3{vert_tl, z});
-
-        builder.SetUV(tx_tr);
-        builder.AddVertex(Vector3{vert_tr, z});
-
-        builder.SetUV(tx_br);
-        builder.AddVertex(Vector3{vert_br, z});
-
-        builder.AddIndicies(Mesh::Builder::Primitive::Quad);
-    }
     builder.End(sprite->GetMaterial());
+
 }
 
 void Tile::DebugRender(Renderer& renderer) const {

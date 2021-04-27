@@ -291,18 +291,6 @@
     <None Include="..\..\Run_x64\Data\Shaders\Tile.shader">
       <Filter>Data\Shaders</Filter>
     </None>
-    <None Include="..\..\Run_x64\Data\ShaderPrograms\Fullscreen_PS.cso">
-      <Filter>Data\ShaderPrograms</Filter>
-    </None>
-    <None Include="..\..\Run_x64\Data\ShaderPrograms\Fullscreen_VS.cso">
-      <Filter>Data\ShaderPrograms</Filter>
-    </None>
-    <None Include="..\..\Run_x64\Data\ShaderPrograms\Tile_PS.cso">
-      <Filter>Data\ShaderPrograms</Filter>
-    </None>
-    <None Include="..\..\Run_x64\Data\ShaderPrograms\Tile_VS.cso">
-      <Filter>Data\ShaderPrograms</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\Run_x64\Data\ShaderPrograms\Fullscreen.hlsl">
