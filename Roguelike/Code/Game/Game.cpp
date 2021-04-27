@@ -7,8 +7,11 @@
 #include "Engine/Core/KerningFont.hpp"
 #include "Engine/Core/Utilities.hpp"
 
+#include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/Vector2.hpp"
 #include "Engine/Math/Vector4.hpp"
+
+#include "Engine/Profiling/ProfileLogScope.hpp"
 
 #include "Engine/Renderer/AnimatedSprite.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
@@ -210,6 +213,7 @@ void Game::Render_Title() const {
     const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
     const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
     const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
+    ui_camera.SetPosition(Vector2::ZERO);
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
 
@@ -235,6 +239,7 @@ void Game::Render_Loading() const {
     const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
     const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
     const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
+    ui_camera.SetPosition(Vector2::ZERO);
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
 
@@ -279,6 +284,7 @@ void Game::Render_Main() const {
     g_theRenderer->Draw(PrimitiveType::Triangles, vbo, 3);
 
     if(g_theApp->LostFocus()) {
+        g_theRenderer->SetModelMatrix(Matrix4::I);
         g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
         g_theRenderer->DrawQuad2D(Vector2::ZERO, Vector2::ONE, Rgba{0, 0, 0, 128});
     }
@@ -296,7 +302,7 @@ void Game::Render_Main() const {
     g_theRenderer->SetCamera(ui_camera);
 
     if(g_theApp->LostFocus()) {
-        g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_center));
+        g_theRenderer->SetModelMatrix(Matrix4::I);
         g_theRenderer->DrawTextLine(ingamefont, "PAUSED");
     }
 }
@@ -1180,6 +1186,11 @@ void Game::HandleDebugKeyboardInput() {
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F2)) {
         g_theInputSystem->ToggleMouseRawInput();
     }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F3)) {
+        TextEntityDesc desc{};
+        desc.font = g_theRenderer->GetFont("System32");
+        _map->CreateTextEntityAt(_map->player->tile->GetCoords(), desc);
+    }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F4)) {
         g_theUISystem->ToggleImguiDemoWindow();
     }
@@ -1229,7 +1240,7 @@ void Game::HandleDebugMouseInput() {
 
 void Game::ShowDebugUI() {
     ShowDebuggerWindow();
-    ShowIndexImageDebugger();
+    ShowTextEntityDebugger();
 }
 
 void Game::ShowDebuggerWindow() {
@@ -1245,10 +1256,17 @@ void Game::ShowDebuggerWindow() {
     ImGui::End();
 }
 
-void Game::ShowIndexImageDebugger() {
-    if(ImGui::Begin("Index Image Debugger", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ShowTileIndexInspectorUI();
-        ShowEntityIndexInspectorUI();
+void Game::ShowTextEntityDebugger() {
+    if(ImGui::Begin("Text Entity Debugger", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        if(const auto& entities = EntityText::GetEntityRegistry(); !entities.empty()) {
+            for(auto& e : entities) {
+                ImGui::Text(std::to_string(e->ttl.count()).c_str());
+                ImGui::SameLine();
+                ImGui::Text(e->text.c_str());
+            }
+        } else {
+            ImGui::Text("NONE");
+        }
     }
     ImGui::End();
 }

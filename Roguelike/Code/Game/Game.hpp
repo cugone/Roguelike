@@ -125,6 +125,7 @@ private:
 #ifdef PROFILE_BUILD
     void ShowDebugUI();
     void ShowDebuggerWindow();
+    void ShowTextEntityDebugger();
 
     std::vector<Tile*> DebugGetTilesFromMouse();
     std::vector<Tile*> DebugGetTilesFromCursor();

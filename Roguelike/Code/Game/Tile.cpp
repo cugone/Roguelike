@@ -21,21 +21,21 @@ Tile::Tile()
 
 void Tile::AddVerts() const noexcept {
     AddVertsForTile();
-    //if(actor) {
-    //    actor->AddVerts();
-    //} else if(feature) {
-    //    feature->AddVerts();
-    //} else if(HasInventory() && !inventory->empty()) {
-    //    inventory->AddVerts(Vector2{_tile_coords}, layer);
-    //}
-    //if(!canSee && haveSeen) {
-    //    AddVertsForOverlay();
-    //}
+    if(actor) {
+        actor->AddVerts();
+    } else if(feature) {
+        //feature->AddVerts();
+    } else if(HasInventory() && !inventory->empty()) {
+        //inventory->AddVerts(Vector2{_tile_coords}, layer);
+    }
+    if(!canSee && haveSeen) {
+        //AddVertsForOverlay();
+    }
 
-    //if(g_theGame->current_cursor; g_theGame->current_cursor->GetCoords() == _tile_coords) {
-    //    auto& builder = layer->GetMeshBuilder();
-    //    g_theGame->current_cursor->AddVertsForCursor(builder);
-    //}
+    if(g_theGame->current_cursor; g_theGame->current_cursor->GetCoords() == _tile_coords) {
+        //auto& builder = layer->GetMeshBuilder();
+        //g_theGame->current_cursor->AddVertsForCursor(builder);
+    }
 }
 
 void Tile::Update(TimeUtils::FPSeconds deltaSeconds) {

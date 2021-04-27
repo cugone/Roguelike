@@ -11,6 +11,7 @@
 class KerningFont;
 
 struct TextEntityDesc {
+    Map* map = nullptr;
     std::string text = "DAMAGE";
     Rgba color = Rgba::White;
     Vector2 position{ 0.0f, 0.0f };
@@ -30,6 +31,7 @@ public:
 
     static EntityText* CreateTextEntity(const TextEntityDesc& desc);
     static void ClearTextRegistry() noexcept;
+    static const std::vector<std::unique_ptr<EntityText>>& GetEntityRegistry() noexcept;
 
     EntityText() = default;
     explicit EntityText(const TextEntityDesc & desc) noexcept;
@@ -39,6 +41,8 @@ public:
     void Render() const;
     void EndFrame() override;
 
+    void AddVerts() noexcept override;
+    void AddVertsForSelf() noexcept override;
 protected:
 private:
 

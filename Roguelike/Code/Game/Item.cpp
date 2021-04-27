@@ -93,7 +93,7 @@ void Item::AddVerts(const Vector2& position, Layer* parent_layer) const {
 
     const auto color = Rgba::White;
 
-    const auto& coords = _sprite->GetCurrentTexCoords();
+    const auto coords = _sprite->GetCurrentTexCoords();
 
     const auto vert_left = position.x + 0.0f;
     const auto vert_right = position.x + 1.0f;

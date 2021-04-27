@@ -40,13 +40,14 @@ void Map::CreateTextEntity(const TextEntityDesc& desc) noexcept {
 }
 
 void Map::CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) noexcept {
-    const auto text_width = 1.0f / desc.font->CalculateTextWidth(desc.text);
-    const auto text_height = 1.0f / desc.font->CalculateTextHeight(desc.text);
+    const auto text_width = desc.font->CalculateTextWidth(desc.text);
+    const auto text_height = desc.font->CalculateTextHeight(desc.text);
     const auto text_half_width = text_width * 0.5f;
     const auto text_half_height = text_height * 0.5f;
     const auto text_center_offset = Vector2{text_half_width, text_half_height};
     const auto tile_center = Vector2(tileCoords) + Vector2{0.5f, 0.5f};
-    desc.position = _renderer.ConvertWorldToScreenCoords(cameraController.GetCamera(), tile_center - text_center_offset);
+    desc.position = WorldCoordsToScreenCoords(tile_center);
+    desc.map = this;
     CreateTextEntity(desc);
 }
 
@@ -235,6 +236,7 @@ Map::Map(Renderer& renderer, const XMLElement& elem) noexcept
 #else
     cameraController.SetZoomLevelRange(Vector2{8.0f, 16.0f});
 #endif
+    cameraController.SetPosition(Vector2::ZERO);// {player->tile->GetCoords()});
 }
 
 Map::~Map() noexcept {
@@ -256,9 +258,9 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
     UpdateLayers(deltaSeconds);
     UpdateTextEntities(deltaSeconds);
     UpdateEntities(deltaSeconds);
-    cameraController.TranslateTo(Vector2(player->tile->GetCoords()), deltaSeconds);
-    const auto clamped_camera_position = MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
-    cameraController.SetPosition(clamped_camera_position);
+    //cameraController.TranslateTo(Vector2(player->tile->GetCoords()), deltaSeconds);
+    //const auto clamped_camera_position = MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
+    //cameraController.SetPosition(clamped_camera_position);
 }
 
 void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
@@ -321,23 +323,22 @@ void Map::Render(Renderer& renderer) const {
         layer->Render(renderer);
     }
 
-    auto& ui_camera = g_theGame->ui_camera;
-
-    //2D View / HUD
-    const float ui_view_height = currentGraphicsOptions.WindowHeight;
-    const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
-    const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
-    const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
-    auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
-    auto ui_nearFar = Vector2{0.0f, 1.0f};
-    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, ui_camera.GetAspectRatio());
-    g_theRenderer->SetCamera(ui_camera);
-
-
     for(auto* entity : _text_entities) {
         entity->Render();
     }
+
+    //auto& ui_camera = g_theGame->ui_camera;
+
+    //2D View / HUD
+    //const float ui_view_height = currentGraphicsOptions.WindowHeight;
+    //const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
+    //const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
+    //const auto ui_view_half_extents = ui_view_extents * 0.5f;
+    //auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
+    //auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
+    //auto ui_nearFar = Vector2{0.0f, 1.0f};
+    //ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, ui_camera.GetAspectRatio());
+    //g_theRenderer->SetCamera(ui_camera);
 
 }
 
@@ -388,9 +389,9 @@ void Map::EndFrame() {
     for(auto& layer : _layers) {
         layer->EndFrame();
     }
-    //for(auto* entity : _text_entities) {
-    //    entity->EndFrame();
-    //}
+    for(auto* entity : _text_entities) {
+        entity->EndFrame();
+    }
     _entities.erase(std::remove_if(std::begin(_entities), std::end(_entities), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_entities));
     _text_entities.erase(std::remove_if(std::begin(_text_entities), std::end(_text_entities), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_text_entities));
     _actors.erase(std::remove_if(std::begin(_actors), std::end(_actors), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_actors));

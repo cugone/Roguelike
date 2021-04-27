@@ -85,7 +85,6 @@ bool Actor::LoadFromXml(const XMLElement& elem) {
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
     def = EntityDefinition::GetEntityDefinitionByName(definitionName);
-    sprite = def->GetSprite();
     inventory = def->inventory;
     const auto behaviorName = DataUtils::ParseXmlAttribute(elem, "behavior", "none");
     this->SetBehavior(Behavior::IdFromName(behaviorName));

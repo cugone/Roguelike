@@ -3,6 +3,7 @@
 #include "Engine/Core/KerningFont.hpp"
 
 #include "Game/GameCommon.hpp"
+#include "Game/Actor.hpp"
 
 #include <algorithm>
 
@@ -14,23 +15,25 @@ EntityText::EntityText(const TextEntityDesc& desc) noexcept
     , font{desc.font}
     , speed{desc.speed}
 {
+    map = desc.map;
     _screen_position = desc.position;
 }
 
 void EntityText::Update(TimeUtils::FPSeconds deltaSeconds) {
     _screen_position += Vector2{0.0f, -speed} * deltaSeconds.count();
-    color.a = static_cast<unsigned char>(255.0f * std::clamp(1.0f - (_currentLiveTime.count() / ttl.count()), 0.0f, 1.0f));
+    color.a = static_cast<char>(255.0f * MathUtils::Interpolate(1.0f, 0.0f, _currentLiveTime.count() / ttl.count()));
     _currentLiveTime += deltaSeconds;
     if(ttl < _currentLiveTime) {
         this->Entity::GetBaseStats().MultiplyStat(StatsID::Health, 0.0L);
     }
-    AddVertsForSelf();
 }
 
 void EntityText::Render() const {
+    //TODO: Fix screen coord calc
     const auto S = Matrix4::I;
     const auto R = Matrix4::I;
-    const auto T = Matrix4::CreateTranslationMatrix(_screen_position);
+    const auto pos = g_theRenderer->ConvertWorldToScreenCoords(Vector2{map->player->GetPosition()} + Vector2::ONE * 0.5f);
+    const auto T = Matrix4::CreateTranslationMatrix(pos);
     const auto M = Matrix4::MakeSRT(S, R, T);
     g_theRenderer->SetModelMatrix(M);
     g_theRenderer->DrawTextLine(font, text, color);
@@ -50,3 +53,14 @@ void EntityText::ClearTextRegistry() noexcept {
     s_registry.clear();
 }
 
+const std::vector<std::unique_ptr<EntityText>>& EntityText::GetEntityRegistry() noexcept {
+    return s_registry;
+}
+
+void EntityText::AddVerts() noexcept {
+    /* DO NOTHING */
+}
+
+void EntityText::AddVertsForSelf() noexcept {
+    /* DO NOTHING */
+}
