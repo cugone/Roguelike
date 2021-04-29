@@ -1544,10 +1544,16 @@ void Game::ShowEntityInspectorUI() {
                 _debug_has_picked_entity_with_click = false;
                 _debug_inspected_entity = nullptr;
             }
-            ImGui::Columns(2, "EntityInspectorColumns");
-            ShowEntityInspectorEntityColumnUI(cur_entity, cur_sprite);
-            ImGui::NextColumn();
-            ShowEntityInspectorInventoryColumnUI(cur_entity);
+            if(ImGui::BeginTable("EntityInspectorTable", 2, ImGuiTableFlags_Borders)) {
+                ImGui::TableSetupColumn("EntityInspectorTableEntityColumn");
+                ImGui::TableSetupColumn("EntityInspectorTableInventoryColumn");
+                //ImGui::TableHeadersRow(); //Commented out to hide header row.
+                ImGui::TableNextColumn();
+                ShowEntityInspectorEntityColumnUI(cur_entity, cur_sprite);
+                ImGui::TableNextColumn();
+                ShowEntityInspectorInventoryColumnUI(cur_entity);
+                ImGui::EndTable();
+            }
         }
     }
 }
