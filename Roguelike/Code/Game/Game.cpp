@@ -1179,7 +1179,9 @@ void Game::HandleDebugKeyboardInput() {
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F1)) {
         _show_debug_window = !_show_debug_window;
-        _show_debug_window ? g_theInputSystem->ShowMouseCursor() : g_theInputSystem->HideMouseCursor();
+        if(!g_theInputSystem->IsMouseCursorVisible()) {
+            g_theInputSystem->ShowMouseCursor();
+        }
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F2)) {
         g_theInputSystem->ToggleMouseRawInput();
