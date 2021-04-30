@@ -1165,7 +1165,7 @@ void Game::HandleDebugKeyboardInput() {
     if(g_theUISystem->WantsInputKeyboardCapture()) {
         return;
     }
-    if(!_show_debug_window && !g_theUISystem->IsImguiDemoWindowVisible()) {
+    if(!_show_debug_window && !g_theUISystem->IsAnyImguiDebugWindowVisible()) {
         g_theInputSystem->HideMouseCursor();
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::J)) {
@@ -1174,11 +1174,6 @@ void Game::HandleDebugKeyboardInput() {
         } else {
             g_theInputSystem->UnlockMouseFromViewport();
         }
-    }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F5)) {
-        static bool is_fullscreen = false;
-        is_fullscreen = !is_fullscreen;
-        g_theRenderer->SetFullscreen(is_fullscreen);
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F1)) {
         _show_debug_window = !_show_debug_window;
@@ -1191,6 +1186,14 @@ void Game::HandleDebugKeyboardInput() {
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F4)) {
         g_theUISystem->ToggleImguiDemoWindow();
+    }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F5)) {
+        static bool is_fullscreen = false;
+        is_fullscreen = !is_fullscreen;
+        g_theRenderer->SetFullscreen(is_fullscreen);
+    }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F6)) {
+        g_theUISystem->ToggleImguiMetricsWindow();
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F9)) {
         g_theRenderer->RequestScreenShot();
