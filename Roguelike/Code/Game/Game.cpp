@@ -1165,6 +1165,9 @@ void Game::HandleDebugKeyboardInput() {
     if(g_theUISystem->WantsInputKeyboardCapture()) {
         return;
     }
+    if(!_show_debug_window && !g_theUISystem->IsImguiDemoWindowVisible()) {
+        g_theInputSystem->HideMouseCursor();
+    }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::J)) {
         if(!g_theInputSystem->IsMouseLockedToViewport()) {
             g_theInputSystem->LockMouseToViewport(*g_theRenderer->GetOutput()->GetWindow());
