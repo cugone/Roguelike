@@ -1079,8 +1079,8 @@ void Game::HandlePlayerKeyboardInput() {
 }
 
 void Game::HandlePlayerMouseInput() {
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::H)) {
-        g_theInputSystem->ToggleMouseCursorVisibility();
+    if(g_theUISystem->WantsInputMouseCapture()) {
+        return;
     }
     static bool fade_out_done = false;
     static bool fade_in_done = false;
