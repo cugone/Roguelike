@@ -132,6 +132,7 @@ private:
     void ShowEntityDebuggerUI();
     void ShowFeatureDebuggerUI();
     void ShowEffectsDebuggerUI();
+    void ShowTextEntityDebuggerUI();
 
     void ShowEffectsUI();
     void ShowFrameInspectorUI();

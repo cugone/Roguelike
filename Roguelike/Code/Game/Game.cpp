@@ -1240,14 +1240,22 @@ void Game::HandleDebugMouseInput() {
 #ifdef PROFILE_BUILD
 
 void Game::ShowDebugUI() {
-    ImGui::SetNextWindowSize(Vector2{ 350.0f, 500.0f }, ImGuiCond_Always);
+    ImGui::SetNextWindowSize(Vector2{ 550.0f, 500.0f }, ImGuiCond_Always);
     if(ImGui::Begin("Debugger", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ShowFrameInspectorUI();
-        ShowWorldInspectorUI();
-        ShowEffectsDebuggerUI();
-        ShowTileDebuggerUI();
-        ShowFeatureDebuggerUI();
-        ShowEntityDebuggerUI(); //Until Tables API is available on master, Entity debugger must be last!
+        if(ImGui::BeginTable("DebuggerTable", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_SizingStretchProp)) {
+            ImGui::TableSetupColumn("DebuggerTableDebuggerColumn", ImGuiTableColumnFlags_NoHide);
+            ImGui::TableSetupColumn("DebuggerTableTextEntityColumn", ImGuiTableColumnFlags_NoHide);
+            ImGui::TableNextColumn();
+            ShowFrameInspectorUI();
+            ShowWorldInspectorUI();
+            ShowEffectsDebuggerUI();
+            ShowTileDebuggerUI();
+            ShowEntityDebuggerUI();
+            ShowFeatureDebuggerUI();
+            ImGui::TableNextColumn();
+            ShowTextEntityDebuggerUI();
+            ImGui::EndTable();
+        }
     }
     ImGui::End();
 }
@@ -1263,6 +1271,39 @@ void Game::ShowEffectsDebuggerUI() {
     _show_effects_debugger = ImGui::CollapsingHeader("Effects");
     if(_show_effects_debugger) {
         ShowEffectsUI();
+    }
+}
+
+void Game::ShowTextEntityDebuggerUI() {
+    if(const auto& textEntities = _map->GetTextEntities(); ImGui::BeginTable("TextEntityDebuggerTableEntities", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit)) {
+        ImGui::TableSetupColumn("Text", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Color", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Position", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Speed", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("TTL", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Font", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableHeadersRow();
+        if(!textEntities.empty()) {
+            for(const auto* e : textEntities) {
+                if(e == nullptr) {
+                    continue;
+                }
+                ImGui::TableNextRow(0, 20.0f);
+                ImGui::TableNextColumn();
+                ImGui::Text(e->text.c_str());
+                ImGui::TableNextColumn();
+                ImGui::Text(StringUtils::to_string(e->color).c_str());
+                ImGui::TableNextColumn();
+                ImGui::Text(StringUtils::to_string(e->GetScreenPosition()).c_str());
+                ImGui::TableNextColumn();
+                ImGui::Text(std::to_string(e->speed).c_str());
+                ImGui::TableNextColumn();
+                ImGui::Text(std::to_string(e->ttl.count()).c_str());
+                ImGui::TableNextColumn();
+                ImGui::Text(e->font->GetName().c_str());
+            }
+        }
+        ImGui::EndTable();
     }
 }
 
