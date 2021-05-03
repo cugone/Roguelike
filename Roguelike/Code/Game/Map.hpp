@@ -292,7 +292,8 @@ public:
     void KillEntity(Entity& e);
     void KillActor(Actor& a);
     void KillFeature(Feature& f);
-    std::vector<Entity*> GetEntities() const noexcept;
+    const std::vector<Entity*>& GetEntities() const noexcept;
+    const std::vector<EntityText*>& GetTextEntities() const noexcept;
 
     static inline constexpr std::size_t max_layers = 9u;
 

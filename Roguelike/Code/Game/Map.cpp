@@ -140,8 +140,12 @@ void Map::KillFeature(Feature& f) {
     f.tile->feature = nullptr;
 }
 
-std::vector<Entity*> Map::GetEntities() const noexcept {
+const std::vector<Entity*>& Map::GetEntities() const noexcept {
     return _entities;
+}
+
+const std::vector<EntityText*>& Map::GetTextEntities() const noexcept {
+    return _text_entities;
 }
 
 AABB2 Map::CalcWorldBounds() const {
