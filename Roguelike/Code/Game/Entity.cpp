@@ -165,7 +165,6 @@ void Entity::AddVertsForEquipment() const {
 
 void Entity::Fight(Entity& attacker, Entity& defender) {
     attacker.OnFight.Trigger(attacker, defender);
-    defender.OnFight.Trigger(attacker, defender);
 }
 
 void Entity::ResolveAttack(Entity& /*attacker*/, Entity& /*defender*/) {
