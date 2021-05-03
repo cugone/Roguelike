@@ -149,7 +149,7 @@ void Actor::ResolveAttack(Entity& attacker, Entity& defender) {
         if(aAtt < dDef) {
             result = 0L;
         }
-        const auto chance = std::floor((aLck + aLvl - dLvl) / 4.0f);
+        const auto chance = (std::floor((aLck + aLvl - dLvl) / 4.0f)) / 100.0f;
         bool crit = false;
         if(MathUtils::IsPercentChance(chance)) {
             result *= 2;
