@@ -150,10 +150,12 @@ void Actor::ResolveAttack(Entity& attacker, Entity& defender) {
             result = 0L;
         }
         const auto chance = std::floor((aLck + aLvl - dLvl) / 4.0f);
-        if(MathUtils::IsPercentChance(chance / 100.0f)) {
+        bool crit = false;
+        if(MathUtils::IsPercentChance(chance)) {
             result *= 2;
+            crit = true;
         }
-        defender.OnDamage.Trigger(damageType, result);
+        defender.OnDamage.Trigger(damageType, result, crit);
         break;
     }
     default:
@@ -161,7 +163,7 @@ void Actor::ResolveAttack(Entity& attacker, Entity& defender) {
     }
 }
 
-void Actor::ApplyDamage(DamageType type, long amount) {
+void Actor::ApplyDamage(DamageType type, long amount, bool crit) {
     switch(type) {
     case DamageType::None:
         break;
@@ -184,7 +186,7 @@ void Actor::ApplyDamage(DamageType type, long amount) {
     //Make damage text
     TextEntityDesc desc{};
     desc.font = g_theGame->ingamefont;
-    desc.color = Rgba::White;
+    desc.color = amount < 0 ? Rgba::Green : (crit ? Rgba::Yellow : Rgba::White);
     std::ostringstream ss;
     ss << std::fixed << std::setprecision(1) << amount;
     desc.text = ss.str();

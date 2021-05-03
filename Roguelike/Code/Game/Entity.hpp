@@ -71,7 +71,7 @@ public:
 
     Event<const IntVector2&, const IntVector2&> OnMove;
     Event<Entity&, Entity&> OnFight;
-    Event<DamageType, long> OnDamage;
+    Event<DamageType, long, bool> OnDamage;
     Event<> OnMiss;
     Event<> OnDestroy;
 
