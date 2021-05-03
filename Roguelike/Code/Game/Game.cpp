@@ -210,6 +210,7 @@ void Game::Render_Title() const {
     const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
     const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
     const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
+    ui_camera.SetPosition(Vector2::ZERO);
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
 
@@ -235,6 +236,7 @@ void Game::Render_Loading() const {
     const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
     const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
     const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
+    ui_camera.SetPosition(Vector2::ZERO);
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
 
