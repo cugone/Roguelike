@@ -1094,20 +1094,6 @@ void Game::HandlePlayerMouseInput() {
     if(g_theInputSystem->WasMouseWheelJustScrolledDown()) {
         requested_zoom_out = true;
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::MButton)) {
-        _map->FocusEntity(_map->player);
-    }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::RButton)) {
-        //g_theInputSystem->HideMouseCursor();
-    }
-    if(g_theInputSystem->IsKeyDown(KeyCode::RButton)) {
-        const auto mouseDelta = g_theInputSystem->GetMouseDelta();
-        _map->cameraController.Translate(_cam_speed * mouseDelta * g_theRenderer->GetGameFrameTime().count());
-    }
-    if(g_theInputSystem->WasKeyJustReleased(KeyCode::RButton)) {
-        //g_theInputSystem->ShowMouseCursor();
-    }
-    //g_theInputSystem->SetCursorToWindowCenter();
     if(requested_zoom_out) {
         SetFullscreenEffect(FullscreenEffect::FadeOut, [this]() {
             ZoomOut();
@@ -1234,6 +1220,11 @@ void Game::HandleDebugMouseInput() {
         if(_debug_has_picked_feature_with_click) {
             _debug_inspected_feature = picked_tiles[0]->feature;
             _debug_has_picked_feature_with_click = _debug_inspected_feature != nullptr;
+        }
+    }
+    if(g_theInputSystem->IsKeyDown(KeyCode::RButton)) {
+        if(const auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr) {
+            _map->player->SetPosition(tile->GetCoords());
         }
     }
 #endif
