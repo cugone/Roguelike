@@ -43,7 +43,15 @@ void EntityText::Render() const {
 }
 
 void EntityText::EndFrame() {
-    s_registry.erase(std::remove_if(std::begin(s_registry), std::end(s_registry), [](const auto& t)->bool { return !t || t->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(s_registry));
+    for(auto* e : this->map->GetTextEntities()) {
+        if(e != this) {
+            continue;
+        }
+        if(e->GetStats().GetStat(StatsID::Health) <= 0) {
+            e = nullptr;
+        }
+    }
+    s_registry.erase(std::remove_if(std::begin(s_registry), std::end(s_registry), [this](const auto& t)->bool { return (t.get() == this) && t->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(s_registry));
 }
 
 EntityText* EntityText::CreateTextEntity(const TextEntityDesc& desc) {
