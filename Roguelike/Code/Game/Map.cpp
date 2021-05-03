@@ -36,17 +36,14 @@
 
 void Map::CreateTextEntity(const TextEntityDesc& desc) noexcept {
     const auto text = EntityText::CreateTextEntity(desc);
+    text->map = this;
+    text->layer = this->GetLayer(0);
     _text_entities.push_back(text);
 }
 
 void Map::CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) noexcept {
-    const auto text_width = 1.0f / desc.font->CalculateTextWidth(desc.text);
-    const auto text_height = 1.0f / desc.font->CalculateTextHeight(desc.text);
-    const auto text_half_width = text_width * 0.5f;
-    const auto text_half_height = text_height * 0.5f;
-    const auto text_center_offset = Vector2{text_half_width, text_half_height};
     const auto tile_center = Vector2(tileCoords) + Vector2{0.5f, 0.5f};
-    desc.position = _renderer.ConvertWorldToScreenCoords(cameraController.GetCamera(), tile_center - text_center_offset);
+    desc.position = tile_center;
     CreateTextEntity(desc);
 }
 
@@ -325,9 +322,9 @@ void Map::Render(Renderer& renderer) const {
     auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
     auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
     auto ui_nearFar = Vector2{0.0f, 1.0f};
+    ui_camera.SetPosition(ui_view_half_extents);
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, ui_camera.GetAspectRatio());
     g_theRenderer->SetCamera(ui_camera);
-
 
     for(auto* entity : _text_entities) {
         entity->Render();
@@ -382,9 +379,9 @@ void Map::EndFrame() {
     for(auto& layer : _layers) {
         layer->EndFrame();
     }
-    //for(auto* entity : _text_entities) {
-    //    entity->EndFrame();
-    //}
+    for(auto& e : _text_entities) {
+        e->EndFrame();
+    }
     _entities.erase(std::remove_if(std::begin(_entities), std::end(_entities), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_entities));
     _text_entities.erase(std::remove_if(std::begin(_text_entities), std::end(_text_entities), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_text_entities));
     _actors.erase(std::remove_if(std::begin(_actors), std::end(_actors), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_actors));

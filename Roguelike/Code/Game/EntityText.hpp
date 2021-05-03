@@ -16,7 +16,7 @@ struct TextEntityDesc {
     Vector2 position{ 0.0f, 0.0f };
     TimeUtils::FPSeconds timeToLive{ 1.0f };
     KerningFont* font{};
-    float speed{20.0f};
+    float speed{1.0f};
 };
 
 class EntityText : public Entity {
@@ -25,7 +25,7 @@ public:
     TimeUtils::FPSeconds ttl{1.0f};
     Rgba color{Rgba::White};
     KerningFont* font{};
-    float speed{20.0f};
+    float speed{1.0f};
     
 
     static EntityText* CreateTextEntity(const TextEntityDesc& desc);

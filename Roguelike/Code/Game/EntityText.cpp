@@ -14,6 +14,7 @@ EntityText::EntityText(const TextEntityDesc& desc) noexcept
     , font{desc.font}
     , speed{desc.speed}
 {
+    _position = IntVector2{desc.position};
     _screen_position = desc.position;
 }
 
@@ -24,13 +25,18 @@ void EntityText::Update(TimeUtils::FPSeconds deltaSeconds) {
     if(ttl < _currentLiveTime) {
         this->Entity::GetBaseStats().MultiplyStat(StatsID::Health, 0.0L);
     }
-    AddVertsForSelf();
 }
 
 void EntityText::Render() const {
     const auto S = Matrix4::I;
     const auto R = Matrix4::I;
-    const auto T = Matrix4::CreateTranslationMatrix(_screen_position);
+    const auto worldCoords = _screen_position;
+    const auto screen_position = g_theRenderer->ConvertWorldToScreenCoords(map->cameraController.GetCamera(), worldCoords);
+    const auto text_width = font->CalculateTextWidth(text);
+    const auto text_height = font->CalculateTextHeight(text);
+    const auto text_half_extents = Vector2{text_width, text_height} * 0.5f;
+    const auto text_center = screen_position - text_half_extents;
+    const auto T = Matrix4::CreateTranslationMatrix(text_center);
     const auto M = Matrix4::MakeSRT(S, R, T);
     g_theRenderer->SetModelMatrix(M);
     g_theRenderer->DrawTextLine(font, text, color);
@@ -41,8 +47,9 @@ void EntityText::EndFrame() {
 }
 
 EntityText* EntityText::CreateTextEntity(const TextEntityDesc& desc) {
-    auto* ptr = new EntityText(desc);
-    s_registry.emplace_back(ptr);
+    auto newEntityText = std::make_unique<EntityText>(desc);
+    auto* ptr = newEntityText.get();
+    s_registry.emplace_back(std::move(newEntityText));
     return ptr;
 }
 
