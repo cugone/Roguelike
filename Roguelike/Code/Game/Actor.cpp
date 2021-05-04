@@ -172,11 +172,8 @@ void Actor::ApplyDamage(DamageType type, long amount, bool crit) {
         auto my_total_stats = GetStats();
         const auto new_health = my_total_stats.AdjustStat(StatsID::Health, -amount);
         if(new_health <= 0L) {
-            AdjustBaseStats(my_total_stats);
             OnDestroy.Trigger();
             map->KillEntity(*this);
-        } else {
-            AdjustBaseStats(my_total_stats);
         }
         break;
     }
