@@ -15,7 +15,7 @@ std::multimap<std::string, std::unique_ptr<Actor>> Actor::s_registry{};
 
 Actor* Actor::CreateActor(Map* map, const XMLElement& elem) {
     auto new_actor = std::make_unique<Actor>(map, elem);
-    auto new_actor_name = new_actor->name;
+    std::string new_actor_name = new_actor->name;
     auto ptr = new_actor.get();
     s_registry.emplace(new_actor_name, std::move(new_actor));
     return ptr;
@@ -243,7 +243,7 @@ std::vector<Item*> Actor::GetAllFeetEquipment() const {
 bool Actor::Move(const IntVector2& direction) {
     bool moved = false;
     if(CanMoveDiagonallyToNeighbor(direction)) {
-        const auto pos = GetPosition();
+        const auto& pos = GetPosition();
         const auto target_position = pos + direction;
         const auto test_tiles = map->GetTiles(target_position);
         if(test_tiles.empty()) {

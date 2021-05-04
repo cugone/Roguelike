@@ -69,8 +69,8 @@ std::vector<Tile*> Map::GetViewableTiles() const noexcept {
 
 std::vector<Tile*> Map::GetTilesInArea(const AABB2& bounds) const {
     const auto dims = bounds.CalcDimensions();
-    const auto width = static_cast<int>(dims.x);
-    const auto height = static_cast<int>(dims.y);
+    const auto width = static_cast<std::size_t>(dims.x);
+    const auto height = static_cast<std::size_t>(dims.y);
     std::vector<Tile*> results;
     results.reserve(width * height);
     for(int x = static_cast<int>(bounds.mins.x); x <= bounds.maxs.x; ++x) {
@@ -371,7 +371,7 @@ void Map::DebugRender(Renderer& renderer) const {
         renderer.DrawAABB2(bounds, Rgba::Orange, Rgba::NoAlpha);
     }
     if(g_theGame->_show_camera) {
-        const auto cam_pos = cameraController.GetCamera().GetPosition();
+        const auto& cam_pos = cameraController.GetCamera().GetPosition();
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
         renderer.DrawCircle2D(cam_pos, 0.5f, Rgba::Cyan);
         renderer.DrawAABB2(GetLayer(0)->CalcViewBounds(cam_pos), Rgba::Green, Rgba::NoAlpha);
@@ -608,7 +608,7 @@ Map::RaycastResult2D Map::StepAndSample(const Vector2& startPosition, const Vect
     auto endPosition = startPosition + (direction * maxDistance);
     const auto stepFrequency = 1.0f / sampleRate;
     const auto stepRate = direction * stepFrequency;
-    auto currentSamplePoint = startPosition;
+    Vector2 currentSamplePoint = startPosition;
     IntVector2 currentTileCoords{startPosition};
     IntVector2 endTileCoords{endPosition};
     RaycastResult2D result;

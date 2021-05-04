@@ -109,10 +109,10 @@ public:
         if(!layer0) {
             return {};
         }
-        const auto start_coords = startTile.GetCoords();
+        const auto& start_coords = startTile.GetCoords();
         std::vector<Tile*> results;
         for(auto& tile : *layer0) {
-            const auto end_coords = tile.GetCoords();
+            const auto& end_coords = tile.GetCoords();
             if(predicate(start_coords, end_coords) < distance) {
                 results.push_back(&tile);
             }
@@ -126,10 +126,10 @@ public:
         if(!layer0) {
             return {};
         }
-        const auto start_coords = startTile.GetCoords();
+        const auto& start_coords = startTile.GetCoords();
         std::vector<Tile*> results;
         for(auto& tile : *layer0) {
-            const auto end_coords = tile.GetCoords();
+            const auto& end_coords = tile.GetCoords();
             const bool pLessD = predicate(start_coords, end_coords) < distance;
             const bool dLessP = distance < predicate(start_coords, end_coords);
             if(!pLessD && !dLessP) {

@@ -330,7 +330,7 @@ Tile* Tile::GetDownNeighbor() const {
 
 std::vector<Tile*> Tile::GetNeighbors(const IntVector2& direction) const {
     if(const auto* my_map = [=]()->const Map* { return (layer ? layer->GetMap() : nullptr); }()) { //IIIL
-        const auto my_index = GetCoords();
+        const auto& my_index = GetCoords();
         const auto map_dims = my_map->CalcMaxDimensions();
         const bool is_x_not_valid = (my_index.x == 0 && direction.x < 0) || (my_index.x == map_dims.x && direction.x > 0);
         const bool is_y_not_valid = (my_index.y == 0 && direction.y < 0) || (my_index.y == map_dims.y && direction.y > 0);

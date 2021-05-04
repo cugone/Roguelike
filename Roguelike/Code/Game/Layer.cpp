@@ -227,7 +227,7 @@ void Layer::SetModelViewProjectionBounds(Renderer& renderer) const {
     const float cam_rotation_z = shakyCam.GetOrientation();
     const auto VRz = Matrix4::Create2DRotationDegreesMatrix(-cam_rotation_z);
 
-    const auto cam_pos = shakyCam.GetPosition();
+    const auto& cam_pos = shakyCam.GetPosition();
     const auto Vt = Matrix4::CreateTranslationMatrix(-cam_pos);
     const auto v = Matrix4::MakeRT(Vt, VRz);
     renderer.SetViewMatrix(v);
@@ -258,8 +258,8 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
     const auto& viewableTiles = [this]() {
         const auto view_area = CalcCullBounds(_map->cameraController.GetCamera().GetPosition());
         const auto dims = view_area.CalcDimensions();
-        const auto width = static_cast<int>(dims.x);
-        const auto height = static_cast<int>(dims.y);
+        const auto width = static_cast<std::size_t>(dims.x);
+        const auto height = static_cast<std::size_t>(dims.y);
         std::vector<Tile*> results;
         results.reserve(width * height);
         for(int x = static_cast<int>(view_area.mins.x); x <= view_area.maxs.x; ++x) {

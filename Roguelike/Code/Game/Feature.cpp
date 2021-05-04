@@ -37,7 +37,7 @@ bool Feature::LoadFromXml(const XMLElement& elem) {
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
 
     const auto featureName = DataUtils::ParseXmlAttribute(elem, "name", "");
-    auto definitionName = featureName;
+    std::string definitionName = featureName;
     const auto state_count = DataUtils::GetChildElementCount(elem, "state");
     
     if(!state_count) {

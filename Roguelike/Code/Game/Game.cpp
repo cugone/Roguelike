@@ -1112,7 +1112,7 @@ void Game::HandlePlayerMouseInput() {
 
 void Game::HandlePlayerControllerInput() {
     auto& controller = g_theInputSystem->GetXboxController(0);
-    auto rthumb = controller.GetRightThumbPosition();
+    Vector2 rthumb = controller.GetRightThumbPosition();
     rthumb.y *= currentGraphicsOptions.InvertMouseY ? 1.0f : -1.0f;
     _map->cameraController.Translate(_cam_speed * rthumb * g_theRenderer->GetGameFrameTime().count());
 
@@ -1546,7 +1546,6 @@ std::vector<Tile*> Game::DebugGetTilesFromCursor() {
     if(!current_cursor) {
         return {};
     }
-    const auto cursor_pos = current_cursor->GetCoords();
     if(_debug_has_picked_tile_with_click) {
         static std::vector<Tile*> picked_tiles{};
         picked_tiles = _map->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});

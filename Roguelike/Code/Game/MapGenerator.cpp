@@ -252,7 +252,7 @@ void RoomsMapGenerator::Generate() {
         }
     }
     for(auto& room : rooms) {
-        const auto room_floor_bounds = [&]() { auto bounds = room; bounds.AddPaddingToSides(-1.0f, -1.0f); return bounds; }();
+        const auto room_floor_bounds = [&]() { AABB2 bounds = room; bounds.AddPaddingToSides(-1.0f, -1.0f); return bounds; }();
         const auto roomFloorTiles = _map->GetTilesInArea(room_floor_bounds);
         for(auto& tile : roomFloorTiles) {
             if(tile) {
@@ -388,9 +388,9 @@ void RoomsAndCorridorsMapGenerator::Generate() {
 
 void RoomsAndCorridorsMapGenerator::GenerateCorridors() noexcept {
     const auto roomCount = rooms.size();
-    for(int i = 0; i < roomCount; ++i) {
-        const auto r1 = rooms[i % roomCount];
-        const auto r2 = rooms[(i + 1) % roomCount];
+    for(auto i = std::size_t{0u}; i < roomCount; ++i) {
+        const auto& r1 = rooms[i % roomCount];
+        const auto& r2 = rooms[(i + 1u) % roomCount];
         const auto r1pos = r1.CalcCenter();
         const auto r1dims = r1.CalcDimensions();
         const auto r2pos = r2.CalcCenter();
@@ -406,7 +406,7 @@ void RoomsAndCorridorsMapGenerator::GenerateCorridors() noexcept {
     }
     //Fill areas of conjoined rooms
     for(auto& room : rooms) {
-        const auto room_floor_bounds = [&]() { auto bounds = room; bounds.AddPaddingToSides(-1.0f, -1.0f); return bounds; }();
+        const auto room_floor_bounds = [&]() { AABB2 bounds = room; bounds.AddPaddingToSides(-1.0f, -1.0f); return bounds; }();
         const auto roomFloorTiles = _map->GetTilesInArea(room_floor_bounds);
         for(auto& tile : roomFloorTiles) {
             if(tile) {
@@ -520,21 +520,24 @@ bool RoomsAndCorridorsMapGenerator::GenerateExitAndEntrance() noexcept {
     IntVector2 end{};
     std::set<std::pair<int, int>> closed_set{};
     do {
-        const int roomCount = static_cast<int>(rooms.size());
-        if(closed_set.size() >= (roomCount * roomCount) - roomCount) {
-            rooms.clear();
-            return false;
+        {
+            const std::size_t roomCount = rooms.size();
+            if(closed_set.size() >= (roomCount * roomCount) - roomCount) {
+                rooms.clear();
+                return false;
+            }
         }
         auto up_id = 0;
         auto down_id = 0;
         {
             bool needs_restart = false;
             do {
-                const auto room_id_with_down = MathUtils::GetRandomIntLessThan(roomCount);
-                const auto room_id_with_up = [roomCount, room_id_with_down]()->int {
-                    auto result = MathUtils::GetRandomIntLessThan(roomCount);
+                const auto roomCountAsInt = static_cast<int>(rooms.size());
+                const auto room_id_with_down = MathUtils::GetRandomIntLessThan(roomCountAsInt);
+                const auto room_id_with_up = [roomCountAsInt, room_id_with_down]()->int {
+                    auto result = MathUtils::GetRandomIntLessThan(roomCountAsInt);
                     while(result == room_id_with_down) {
-                        result = MathUtils::GetRandomIntLessThan(roomCount);
+                        result = MathUtils::GetRandomIntLessThan(roomCountAsInt);
                     }
                     return result;
                 }();
@@ -548,8 +551,8 @@ bool RoomsAndCorridorsMapGenerator::GenerateExitAndEntrance() noexcept {
         }
         closed_set.insert(std::make_pair(down_id, up_id));
         closed_set.insert(std::make_pair(up_id, down_id));
-        const auto room_with_exit = rooms[down_id];
-        const auto room_with_entrance = rooms[up_id];
+        const auto& room_with_exit = rooms[down_id];
+        const auto& room_with_entrance = rooms[up_id];
         const auto exit_loc = IntVector2{room_with_exit.mins + Vector2::ONE};
         const auto enter_loc = IntVector2{room_with_entrance.mins + Vector2::ONE};
         start = enter_loc;

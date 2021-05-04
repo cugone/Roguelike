@@ -60,8 +60,8 @@ void PursueBehavior::Act(Actor* actor) noexcept {
         const auto vb = Vector2{b} + Vector2{0.5f, 0.5f};
         return MathUtils::CalcDistance(va, vb);
     };
-    const auto my_loc = actor->GetPosition();
-    const auto target_loc = GetTarget()->GetPosition();
+    const auto& my_loc = actor->GetPosition();
+    const auto& target_loc = GetTarget()->GetPosition();
     pather->AStar(my_loc, target_loc, viable, h, d);
     const auto path = pather->GetResult();
     for(auto& node : path) {
