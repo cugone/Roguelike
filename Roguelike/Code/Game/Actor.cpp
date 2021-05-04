@@ -188,7 +188,7 @@ void Actor::ApplyDamage(DamageType type, long amount, bool crit) {
     desc.font = g_theGame->ingamefont;
     desc.color = amount < 0 ? Rgba::Green : (crit ? Rgba::Yellow : Rgba::White);
     std::ostringstream ss;
-    ss << std::fixed << std::setprecision(1) << amount;
+    ss << std::fixed << std::setprecision(1) << std::abs(amount);
     desc.text = ss.str();
     map->CreateTextEntityAt(tile->GetCoords(), desc);
 }
