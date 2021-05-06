@@ -60,12 +60,12 @@ Stats Stats::operator-() {
     return result;
 }
 
-Stats::Stats(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "stats", "", "", "level,health,attack,defense,speed,accuracy,evasion,luck,experience");
+Stats::Stats(const a2de::XMLElement& elem) {
+    a2de::DataUtils::ValidateXmlElement(elem, "stats", "", "", "level,health,attack,defense,speed,accuracy,evasion,luck,experience");
     if(auto* xml_level = elem.FirstChildElement("level")) {
         auto id = StatsID::Level;
         auto default_value = GetStat(id);
-        auto value = DataUtils::ParseXmlElementText(*xml_level, default_value);
+        auto value = a2de::DataUtils::ParseXmlElementText(*xml_level, default_value);
         SetStat(id, value);
     } else {
         auto value = 1L;
@@ -74,7 +74,7 @@ Stats::Stats(const XMLElement& elem) {
     if(auto* xml_health = elem.FirstChildElement("health")) {
         auto id = StatsID::Health;
         auto default_value = GetStat(id);
-        auto value = DataUtils::ParseXmlElementText(*xml_health, default_value);
+        auto value = a2de::DataUtils::ParseXmlElementText(*xml_health, default_value);
         SetStat(id, value);
         SetStat(StatsID::Health_Max, value);
     } else {
@@ -85,31 +85,31 @@ Stats::Stats(const XMLElement& elem) {
     if(auto* xml_attack = elem.FirstChildElement("attack")) {
         auto id = StatsID::Attack;
         auto default_value = GetStat(id);
-        auto value = DataUtils::ParseXmlElementText(*xml_attack, default_value);
+        auto value = a2de::DataUtils::ParseXmlElementText(*xml_attack, default_value);
         SetStat(id, value);
     }
     if(auto* xml_defense = elem.FirstChildElement("defense")) {
         auto id = StatsID::Defense;
         auto default_value = GetStat(id);
-        auto value = DataUtils::ParseXmlElementText(*xml_defense, default_value);
+        auto value = a2de::DataUtils::ParseXmlElementText(*xml_defense, default_value);
         SetStat(id, value);
     }
     if(auto* xml_speed = elem.FirstChildElement("speed")) {
         auto id = StatsID::Speed;
         auto default_value = GetStat(id);
-        auto value = DataUtils::ParseXmlElementText(*xml_speed, default_value);
+        auto value = a2de::DataUtils::ParseXmlElementText(*xml_speed, default_value);
         SetStat(id, value);
     }
     if(auto* xml_evasion = elem.FirstChildElement("evasion")) {
         auto id = StatsID::Evasion;
         auto default_value = GetStat(id);
-        auto value = DataUtils::ParseXmlElementText(*xml_evasion, default_value);
+        auto value = a2de::DataUtils::ParseXmlElementText(*xml_evasion, default_value);
         SetStat(id, value);
     }
     if(auto* xml_luck = elem.FirstChildElement("luck")) {
         auto id = StatsID::Luck;
         auto default_value = GetStat(id);
-        auto value = DataUtils::ParseXmlElementText(*xml_luck, default_value);
+        auto value = a2de::DataUtils::ParseXmlElementText(*xml_luck, default_value);
         SetStat(id, value);
     } else {
         auto value = 5L;
@@ -118,7 +118,7 @@ Stats::Stats(const XMLElement& elem) {
     if(auto* xml_experience = elem.FirstChildElement("experience")) {
         auto id = StatsID::Experience;
         auto default_value = GetStat(id);
-        auto value = DataUtils::ParseXmlElementText(*xml_experience, default_value);
+        auto value = a2de::DataUtils::ParseXmlElementText(*xml_experience, default_value);
         SetStat(id, value);
     }
 }

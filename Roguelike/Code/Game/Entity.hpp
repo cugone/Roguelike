@@ -10,11 +10,15 @@
 #include "Game/Inventory.hpp"
 #include "Game/Stats.hpp"
 
+namespace a2de {
+    class AnimatedSprite;
+}
+
 class Map;
 class Layer;
 class Tile;
-class AnimatedSprite;
 class EntityDefinition;
+
 
 enum class Faction {
     None
@@ -33,10 +37,10 @@ public:
     virtual ~Entity() = 0;
 
     Entity(EntityDefinition* definition) noexcept;
-    Entity(const XMLElement& elem) noexcept;
+    Entity(const a2de::XMLElement& elem) noexcept;
 
     virtual void BeginFrame();
-    virtual void Update(TimeUtils::FPSeconds deltaSeconds);
+    virtual void Update(a2de::TimeUtils::FPSeconds deltaSeconds);
     virtual void EndFrame();
 
     static void Fight(Entity& attacker, Entity& defender);
@@ -45,9 +49,9 @@ public:
     bool IsNotVisible() const;
     bool IsInvisible() const;
 
-    virtual void SetPosition(const IntVector2& position);
-    const IntVector2& GetPosition() const;
-    const Vector2& GetScreenPosition() const;
+    virtual void SetPosition(const a2de::IntVector2& position);
+    const a2de::IntVector2& GetPosition() const;
+    const a2de::Vector2& GetScreenPosition() const;
 
     Stats GetStats() const;
     void AdjustBaseStats(Stats adjustments);
@@ -64,16 +68,16 @@ public:
     Layer* layer = nullptr;
     Tile* tile = nullptr;
     EntityDefinition* def = nullptr;
-    AnimatedSprite* sprite = nullptr;
+    a2de::AnimatedSprite* sprite = nullptr;
     Inventory inventory{};
-    Rgba color{Rgba::White};
+    a2de::Rgba color{a2de::Rgba::White};
     std::string name{"UNKNOWN ENTITY"};
 
-    Event<const IntVector2&, const IntVector2&> OnMove;
-    Event<Entity&, Entity&> OnFight;
-    Event<DamageType, long, bool> OnDamage;
-    Event<> OnMiss;
-    Event<> OnDestroy;
+    a2de::Event<const a2de::IntVector2&, const a2de::IntVector2&> OnMove;
+    a2de::Event<Entity&, Entity&> OnFight;
+    a2de::Event<DamageType, long, bool> OnDamage;
+    a2de::Event<> OnMiss;
+    a2de::Event<> OnDestroy;
 
 protected:
     virtual void ResolveAttack(Entity& attacker, Entity& defender);
@@ -81,13 +85,13 @@ protected:
     const Stats& GetBaseStats() const noexcept;
     Stats& GetBaseStats() noexcept;
 
-    Vector2 _screen_position{};
-    IntVector2 _position{};
+    a2de::Vector2 _screen_position{};
+    a2de::IntVector2 _position{};
     Faction _faction{Faction::None};
 
 private:
-    void LoadFromXml(const XMLElement& elem);
-    std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
+    void LoadFromXml(const a2de::XMLElement& elem);
+    std::string ParseEntityDefinitionName(const a2de::XMLElement& xml_definition) const;
     
     void AddVertsForEquipment() const;
     void AddVertsForCapeEquipment() const;

@@ -6,10 +6,12 @@
 #include <memory>
 #include <string>
 
-class AnimatedSprite;
-class Renderer;
-class SpriteSheet;
-class Texture;
+namespace a2de {
+    class AnimatedSprite;
+    class Renderer;
+    class SpriteSheet;
+    class Texture;
+}
 
 class CursorDefinition {
 public:
@@ -21,7 +23,7 @@ public:
     ~CursorDefinition() = default;
 
     static const std::vector<std::unique_ptr<CursorDefinition>>& GetLoadedDefinitions();
-    static void CreateCursorDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
+    static void CreateCursorDefinition(a2de::Renderer& renderer, const a2de::XMLElement& elem, std::weak_ptr<a2de::SpriteSheet> sheet);
     static void DestroyCursorDefinitions();
 
     static CursorDefinition* GetCursorDefinitionByName(const std::string& name);
@@ -31,28 +33,28 @@ public:
     int frame_length = 0;
     bool is_animated = false;
 
-    const Texture* GetTexture() const;
-    Texture* GetTexture();
-    const SpriteSheet* GetSheet() const;
-    SpriteSheet* GetSheet();
-    const AnimatedSprite* GetSprite() const;
-    AnimatedSprite* GetSprite();
-    IntVector2 GetIndexCoords() const;
+    const a2de::Texture* GetTexture() const;
+    a2de::Texture* GetTexture();
+    const a2de::SpriteSheet* GetSheet() const;
+    a2de::SpriteSheet* GetSheet();
+    const a2de::AnimatedSprite* GetSprite() const;
+    a2de::AnimatedSprite* GetSprite();
+    a2de::IntVector2 GetIndexCoords() const;
     int GetIndex() const;
 
-    CursorDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
+    CursorDefinition(a2de::Renderer& renderer, const a2de::XMLElement& elem, std::weak_ptr<a2de::SpriteSheet> sheet);
 
 protected:
 private:
-    bool LoadFromXml(const XMLElement& elem);
+    bool LoadFromXml(const a2de::XMLElement& elem);
     void SetIndex(int index);
     void SetIndex(int x, int y);
-    void SetIndex(const IntVector2& indexCoords);
+    void SetIndex(const a2de::IntVector2& indexCoords);
 
     static std::vector<std::unique_ptr<CursorDefinition>> s_registry;
-    Renderer& _renderer;
-    std::weak_ptr<SpriteSheet> _sheet{};
-    std::unique_ptr<AnimatedSprite> _sprite{};
-    IntVector2 _index{};
+    a2de::Renderer& _renderer;
+    std::weak_ptr<a2de::SpriteSheet> _sheet{};
+    std::unique_ptr<a2de::AnimatedSprite> _sprite{};
+    a2de::IntVector2 _index{};
 
 };

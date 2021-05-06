@@ -34,7 +34,7 @@ void PursueBehavior::InitializePathfinding() {
     auto* target = GetTarget();
     if(target) {
         pather = target->map->GetPathfinder();
-        const auto dims = IntVector2{target->map->CalcMaxDimensions()};
+        const auto dims = a2de::IntVector2{target->map->CalcMaxDimensions()};
         const auto w = dims.x;
         const auto h = dims.y;
         pather->Initialize(w, h);
@@ -47,29 +47,29 @@ void PursueBehavior::SetTarget(Actor* target) noexcept {
 }
 
 void PursueBehavior::Act(Actor* actor) noexcept {
-    const auto viable = [this, actor](const IntVector2& a)->bool {
-        const auto coords = IntVector3{a, 0};
+    const auto viable = [this, actor](const a2de::IntVector2& a)->bool {
+        const auto coords = a2de::IntVector3{a, 0};
         const auto* map = actor->map;
         return map->IsTilePassable(coords);
     };
-    const auto h = [](const IntVector2& a, const IntVector2& b) {
-        return MathUtils::CalculateManhattanDistance(a, b);
+    const auto h = [](const a2de::IntVector2& a, const a2de::IntVector2& b) {
+        return a2de::MathUtils::CalculateManhattanDistance(a, b);
     };
-    const auto d = [this](const IntVector2& a, const IntVector2& b) {
-        const auto va = Vector2{a} + Vector2{0.5f, 0.5f};
-        const auto vb = Vector2{b} + Vector2{0.5f, 0.5f};
-        return MathUtils::CalcDistance(va, vb);
+    const auto d = [this](const a2de::IntVector2& a, const a2de::IntVector2& b) {
+        const auto va = a2de::Vector2{a} + a2de::Vector2{0.5f, 0.5f};
+        const auto vb = a2de::Vector2{b} + a2de::Vector2{0.5f, 0.5f};
+        return a2de::MathUtils::CalcDistance(va, vb);
     };
     const auto& my_loc = actor->GetPosition();
     const auto& target_loc = GetTarget()->GetPosition();
     pather->AStar(my_loc, target_loc, viable, h, d);
     const auto path = pather->GetResult();
     for(auto& node : path) {
-        const auto coords = IntVector3{node->coords, 0};
+        const auto coords = a2de::IntVector3{node->coords, 0};
         const auto* map = actor->map;
         auto* tile = map->GetTile(coords);
         if(tile) {
-            tile->color = Rgba::White;
+            tile->color = a2de::Rgba::White;
         }
     }
 

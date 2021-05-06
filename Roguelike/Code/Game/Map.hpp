@@ -20,12 +20,15 @@
 #include <stack>
 #include <vector>
 
+namespace a2de {
+    class Material;
+    class Renderer;
+    class SpriteSheet;
+}
+
 class Entity;
 class Actor;
-class Material;
-class Renderer;
 class TileDefinition;
-class SpriteSheet;
 class MapGenerator;
 class Pathfinder;
 
@@ -34,15 +37,15 @@ public:
 
     struct RaycastResult2D {
         bool didImpact{false};
-        Vector2 impactPosition{};
-        std::set<IntVector2> impactTileCoords{};
+        a2de::Vector2 impactPosition{};
+        std::set<a2de::IntVector2> impactTileCoords{};
         float impactFraction{1.0f};
-        Vector2 impactSurfaceNormal{};
+        a2de::Vector2 impactSurfaceNormal{};
     };
 
 
     Map() noexcept = default;
-    explicit Map(Renderer& renderer, const XMLElement& elem) noexcept;
+    explicit Map(a2de::Renderer& renderer, const a2de::XMLElement& elem) noexcept;
     Map(const Map& other) = default;
     Map(Map&& other) = default;
     Map& operator=(const Map& other) = default;
@@ -50,54 +53,54 @@ public:
     ~Map() noexcept;
 
     void BeginFrame();
-    void Update(TimeUtils::FPSeconds deltaSeconds);
-    void UpdateLayers(TimeUtils::FPSeconds deltaSeconds);
+    void Update(a2de::TimeUtils::FPSeconds deltaSeconds);
+    void UpdateLayers(a2de::TimeUtils::FPSeconds deltaSeconds);
     void SetPriorityLayer(std::size_t i);
-    void Render(Renderer& renderer) const;
-    void DebugRender(Renderer& renderer) const;
+    void Render(a2de::Renderer& renderer) const;
+    void DebugRender(a2de::Renderer& renderer) const;
     void EndFrame();
 
-    bool IsTileInArea(const AABB2& bounds, const IntVector2& tileCoords) const;
-    bool IsTileInArea(const AABB2& bounds, const IntVector3& tileCoords) const;
-    bool IsTileInArea(const AABB2& bounds, const Tile* tile) const;
-    bool IsTileInView(const IntVector2& tileCoords) const;
-    bool IsTileInView(const IntVector3& tileCoords) const;
+    bool IsTileInArea(const a2de::AABB2& bounds, const a2de::IntVector2& tileCoords) const;
+    bool IsTileInArea(const a2de::AABB2& bounds, const a2de::IntVector3& tileCoords) const;
+    bool IsTileInArea(const a2de::AABB2& bounds, const Tile* tile) const;
+    bool IsTileInView(const a2de::IntVector2& tileCoords) const;
+    bool IsTileInView(const a2de::IntVector3& tileCoords) const;
     bool IsTileInView(const Tile* tile) const;
     bool IsEntityInView(Entity* entity) const;
 
-    bool IsTileOpaque(const IntVector2& tileCoords) const;
-    bool IsTileOpaque(const IntVector3& tileCoords) const;
+    bool IsTileOpaque(const a2de::IntVector2& tileCoords) const;
+    bool IsTileOpaque(const a2de::IntVector3& tileCoords) const;
     bool IsTileOpaque(Tile* tile) const;
 
-    bool IsTileSolid(const IntVector2& tileCoords) const;
-    bool IsTileSolid(const IntVector3& tileCoords) const;
+    bool IsTileSolid(const a2de::IntVector2& tileCoords) const;
+    bool IsTileSolid(const a2de::IntVector3& tileCoords) const;
     bool IsTileSolid(Tile* tile) const;
 
-    bool IsTileOpaqueOrSolid(const IntVector2& tileCoords) const;
-    bool IsTileOpaqueOrSolid(const IntVector3& tileCoords) const;
+    bool IsTileOpaqueOrSolid(const a2de::IntVector2& tileCoords) const;
+    bool IsTileOpaqueOrSolid(const a2de::IntVector3& tileCoords) const;
     bool IsTileOpaqueOrSolid(Tile* tile) const;
 
-    bool IsTileVisible(const IntVector2& tileCoords) const;
-    bool IsTileVisible(const IntVector3& tileCoords) const;
+    bool IsTileVisible(const a2de::IntVector2& tileCoords) const;
+    bool IsTileVisible(const a2de::IntVector3& tileCoords) const;
     bool IsTileVisible(const Tile* tile) const;
 
-    bool IsTilePassable(const IntVector2& tileCoords) const;
-    bool IsTilePassable(const IntVector3& tileCoords) const;
+    bool IsTilePassable(const a2de::IntVector2& tileCoords) const;
+    bool IsTilePassable(const a2de::IntVector3& tileCoords) const;
     bool IsTilePassable(const Tile* tile) const;
 
     void ZoomOut() noexcept;
     void ZoomIn() noexcept;
 
-    void FocusTileAt(const IntVector3& position);
+    void FocusTileAt(const a2de::IntVector3& position);
     void FocusEntity(const Entity* entity);
 
-    RaycastResult2D HasLineOfSight(const Vector2& startPosition, const Vector2& endPosition) const;
-    RaycastResult2D HasLineOfSight(const Vector2& startPosition, const Vector2& direction, float maxDistance) const;
+    RaycastResult2D HasLineOfSight(const a2de::Vector2& startPosition, const a2de::Vector2& endPosition) const;
+    RaycastResult2D HasLineOfSight(const a2de::Vector2& startPosition, const a2de::Vector2& direction, float maxDistance) const;
     bool IsTileWithinDistance(const Tile& startTile, unsigned int manhattanDist) const;
 
     bool IsTileWithinDistance(const Tile& startTile, float dist) const;
 
-    std::vector<Tile*> GetTilesInArea(const AABB2& bounds) const;
+    std::vector<Tile*> GetTilesInArea(const a2de::AABB2& bounds) const;
     std::vector<Tile*> GetTilesWithinDistance(const Tile& startTile, unsigned int manhattanDist) const;
     std::vector<Tile*> GetTilesWithinDistance(const Tile& startTile, float dist) const;
     std::vector<Tile*> GetVisibleTilesWithinDistance(const Tile& startTile, float dist) const;
@@ -140,8 +143,8 @@ public:
     }
 
 
-    RaycastResult2D StepAndSample(const Vector2& startPosition, const Vector2& endPosition, float sampleRate) const;
-    RaycastResult2D StepAndSample(const Vector2& startPosition, const Vector2& direction, float maxDistance, float sampleRate) const;
+    RaycastResult2D StepAndSample(const a2de::Vector2& startPosition, const a2de::Vector2& endPosition, float sampleRate) const;
+    RaycastResult2D StepAndSample(const a2de::Vector2& startPosition, const a2de::Vector2& direction, float maxDistance, float sampleRate) const;
 
 
     //************************************
@@ -157,15 +160,15 @@ public:
     //     The predicate shall return true on impact.
     //************************************
     template<typename Pr>
-    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& direction, float maxDistance, bool ignoreSelf, Pr predicate) const {
+    RaycastResult2D Raycast(const a2de::Vector2& startPosition, const a2de::Vector2& direction, float maxDistance, bool ignoreSelf, Pr predicate) const {
         const auto endPosition = startPosition + (direction * maxDistance);
-        IntVector2 currentTileCoords{startPosition};
-        IntVector2 endTileCoords{endPosition};
+        a2de::IntVector2 currentTileCoords{startPosition};
+        a2de::IntVector2 endTileCoords{endPosition};
 
         const auto D = endPosition - startPosition;
 
         float tDeltaX = (std::numeric_limits<float>::max)();
-        if(!MathUtils::IsEquivalent(D.x, 0.0f)) {
+        if(!a2de::MathUtils::IsEquivalent(D.x, 0.0f)) {
             tDeltaX = 1.0f / std::abs(D.x);
         }
         int tileStepX = 0;
@@ -180,7 +183,7 @@ public:
         float tOfNextXCrossing = std::abs(firstVerticalIntersectionX - startPosition.x) * tDeltaX;
 
         float tDeltaY = (std::numeric_limits<float>::max)();
-        if(!MathUtils::IsEquivalent(D.y, 0.0f)) {
+        if(!a2de::MathUtils::IsEquivalent(D.y, 0.0f)) {
             tDeltaY = 1.0f / std::abs(D.y);
         }
         int tileStepY = 0;
@@ -217,7 +220,7 @@ public:
                     result.impactFraction = tOfNextXCrossing;
                     result.impactPosition = startPosition + (D * result.impactFraction);
                     result.impactTileCoords.insert(currentTileCoords);
-                    result.impactSurfaceNormal = Vector2(static_cast<float>(-tileStepX), 0.0f);
+                    result.impactSurfaceNormal = a2de::Vector2(static_cast<float>(-tileStepX), 0.0f);
                     return result;
                 }
                 tOfNextXCrossing += tDeltaX;
@@ -232,7 +235,7 @@ public:
                     result.impactFraction = tOfNextYCrossing;
                     result.impactPosition = startPosition + (D * result.impactFraction);
                     result.impactTileCoords.insert(currentTileCoords);
-                    result.impactSurfaceNormal = Vector2(0.0f, static_cast<float>(-tileStepY));
+                    result.impactSurfaceNormal = a2de::Vector2(0.0f, static_cast<float>(-tileStepY));
                     return result;
                 }
                 tOfNextYCrossing += tDeltaY;
@@ -254,39 +257,39 @@ public:
     //     The predicate shall return true on impact.
     //************************************
     template<typename Pr>
-    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& endPosition, bool ignoreSelf, Pr predicate) const {
+    RaycastResult2D Raycast(const a2de::Vector2& startPosition, const a2de::Vector2& endPosition, bool ignoreSelf, Pr predicate) const {
         const auto displacement = endPosition - startPosition;
         const auto direction = displacement.GetNormalize();
         float length = displacement.CalcLength();
         return Raycast(startPosition, direction, length, ignoreSelf, predicate);
     }
 
-    AABB2 CalcWorldBounds() const;
-    AABB2 CalcCameraBounds() const;
-    Vector2 CalcMaxDimensions() const;
-    Material* GetTileMaterial() const;
-    void SetTileMaterial(Material* material);
+    a2de::AABB2 CalcWorldBounds() const;
+    a2de::AABB2 CalcCameraBounds() const;
+    a2de::Vector2 CalcMaxDimensions() const;
+    a2de::Material* GetTileMaterial() const;
+    void SetTileMaterial(a2de::Material* material);
     void ResetTileMaterial();
     std::size_t GetLayerCount() const;
     Layer* GetLayer(std::size_t index) const;
-    std::vector<Tile*> GetTiles(const IntVector2& location) const;
+    std::vector<Tile*> GetTiles(const a2de::IntVector2& location) const;
     std::vector<Tile*> GetTiles(int x, int y) const;
-    std::vector<Tile*> PickTilesFromWorldCoords(const Vector2& worldCoords) const;
-    std::vector<Tile*> PickTilesFromMouseCoords(const Vector2& mouseCoords) const;
-    Vector2 WorldCoordsToScreenCoords(const Vector2& worldCoords) const;
-    Vector2 ScreenCoordsToWorldCoords(const Vector2& screenCoords) const;
-    IntVector2 TileCoordsFromWorldCoords(const Vector2& worldCoords) const;
+    std::vector<Tile*> PickTilesFromWorldCoords(const a2de::Vector2& worldCoords) const;
+    std::vector<Tile*> PickTilesFromMouseCoords(const a2de::Vector2& mouseCoords) const;
+    a2de::Vector2 WorldCoordsToScreenCoords(const a2de::Vector2& worldCoords) const;
+    a2de::Vector2 ScreenCoordsToWorldCoords(const a2de::Vector2& screenCoords) const;
+    a2de::IntVector2 TileCoordsFromWorldCoords(const a2de::Vector2& worldCoords) const;
 
-    Tile* GetTile(const IntVector3& locationAndLayerIndex) const;
+    Tile* GetTile(const a2de::IntVector3& locationAndLayerIndex) const;
     Tile* GetTile(int x, int y, int z) const;
-    Tile* PickTileFromWorldCoords(const Vector2& worldCoords, int layerIndex) const;
-    Tile* PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) const;
+    Tile* PickTileFromWorldCoords(const a2de::Vector2& worldCoords, int layerIndex) const;
+    Tile* PickTileFromMouseCoords(const a2de::Vector2& mouseCoords, int layerIndex) const;
 
     bool MoveOrAttack(Actor* actor, Tile* tile);
 
-    void SetDebugGridColor(const Rgba& gridColor);
+    void SetDebugGridColor(const a2de::Rgba& gridColor);
 
-    OrthographicCameraController cameraController{};
+    a2de::OrthographicCameraController cameraController{};
     Actor* player = nullptr;
 
     void KillEntity(Entity& e);
@@ -298,7 +301,7 @@ public:
     static inline constexpr std::size_t max_layers = 9u;
 
     void CreateTextEntity(const TextEntityDesc& desc) noexcept;
-    void CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) noexcept;
+    void CreateTextEntityAt(const a2de::IntVector2& tileCoords, TextEntityDesc desc) noexcept;
 
     template<typename F>
     void ShakeCamera(F&& f) noexcept {
@@ -308,7 +311,7 @@ public:
     std::size_t DebugTilesInViewCount() const;
     std::size_t DebugVisibleTilesInViewCount() const;
 
-    void GenerateMap(const XMLElement& elem) noexcept;
+    void GenerateMap(const a2de::XMLElement& elem) noexcept;
     void RegenerateMap() noexcept;
 
     Pathfinder* GetPathfinder() const noexcept;
@@ -317,37 +320,37 @@ public:
 
 protected:
 private:
-    bool LoadFromXML(const XMLElement& elem);
-    void LoadNameForMap(const XMLElement& elem);
-    void LoadMaterialsForMap(const XMLElement& elem);
-    void LoadGenerator(const XMLElement& elem);
-    void CreateGeneratorFromTypename(const XMLElement& elem);
-    void LoadTileDefinitionsForMap(const XMLElement& elem);
+    bool LoadFromXML(const a2de::XMLElement& elem);
+    void LoadNameForMap(const a2de::XMLElement& elem);
+    void LoadMaterialsForMap(const a2de::XMLElement& elem);
+    void LoadGenerator(const a2de::XMLElement& elem);
+    void CreateGeneratorFromTypename(const a2de::XMLElement& elem);
+    void LoadTileDefinitionsForMap(const a2de::XMLElement& elem);
     void LoadTileDefinitionsFromFile(const std::filesystem::path& src);
-    void LoadActorsForMap(const XMLElement& elem);
-    void LoadFeaturesForMap(const XMLElement& elem);
-    void LoadItemsForMap(const XMLElement& elem);
+    void LoadActorsForMap(const a2de::XMLElement& elem);
+    void LoadFeaturesForMap(const a2de::XMLElement& elem);
+    void LoadItemsForMap(const a2de::XMLElement& elem);
 
-    void UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds);
-    void UpdateActorAI(TimeUtils::FPSeconds deltaSeconds);
-    void UpdateEntities(TimeUtils::FPSeconds deltaSeconds);
+    void UpdateTextEntities(a2de::TimeUtils::FPSeconds deltaSeconds);
+    void UpdateActorAI(a2de::TimeUtils::FPSeconds deltaSeconds);
+    void UpdateEntities(a2de::TimeUtils::FPSeconds deltaSeconds);
 
     void BringLayerToFront(std::size_t i);
 
-    void ShakeCamera(const IntVector2& from, const IntVector2& to) noexcept;
+    void ShakeCamera(const a2de::IntVector2& from, const a2de::IntVector2& to) noexcept;
 
     std::string _name{};
     std::vector<std::unique_ptr<Layer>> _layers{};
-    Renderer& _renderer;
-    const XMLElement& _root_xml_element;
-    Material* _default_tileMaterial{};
-    Material* _current_tileMaterial{};
+    a2de::Renderer& _renderer;
+    const a2de::XMLElement& _root_xml_element;
+    a2de::Material* _default_tileMaterial{};
+    a2de::Material* _current_tileMaterial{};
     std::unique_ptr<Pathfinder> _pathfinder{};
     std::vector<Entity*> _entities{};
     std::vector<EntityText*> _text_entities{};
     std::vector<Actor*> _actors{};
     std::vector<Feature*> _features{};
-    std::shared_ptr<SpriteSheet> _tileset_sheet{};
+    std::shared_ptr<a2de::SpriteSheet> _tileset_sheet{};
 
     float _camera_speed = 1.0f;
     mutable std::size_t _debug_tiles_in_view_count{};

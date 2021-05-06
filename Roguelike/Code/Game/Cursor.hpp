@@ -10,10 +10,13 @@
 
 #include <vector>
 
+namespace a2de {
+    class Renderer;
+}
+
 class CursorDefinition;
 class Entity;
 class Layer;
-class Renderer;
 
 class Cursor {
 public:
@@ -26,23 +29,23 @@ public:
 
     explicit Cursor(CursorDefinition& def);
 
-    void Update(TimeUtils::FPSeconds deltaSeconds);
+    void Update(a2de::TimeUtils::FPSeconds deltaSeconds);
 
-    AABB2 GetBounds() const;
+    a2de::AABB2 GetBounds() const;
     const CursorDefinition* GetDefinition() const;
     CursorDefinition* GetDefinition();
 
     void SetCoords(int x, int y);
-    void SetCoords(const IntVector2& coords);
-    const IntVector2& GetCoords() const;
+    void SetCoords(const a2de::IntVector2& coords);
+    const a2de::IntVector2& GetCoords() const;
 
-    Rgba color = Rgba::White;
+    a2de::Rgba color = a2de::Rgba::White;
 
-    void AddVertsForCursor(Mesh::Builder& builder) const;
+    void AddVertsForCursor(a2de::Mesh::Builder& builder) const;
 
 protected:
 private:
 
     CursorDefinition* _def{};
-    IntVector2 _tile_coords{};
+    a2de::IntVector2 _tile_coords{};
 };

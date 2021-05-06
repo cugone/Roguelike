@@ -75,7 +75,7 @@ void Game::Initialize() {
     if(!g_theConfig->AppendFromFile("Data/Config/options.dat")) {
         g_theFileLogger->LogWarnLine("options file not found at Data/Config/options.dat");
     }
-    _consoleCommands = Console::CommandList(g_theConsole);
+    _consoleCommands = a2de::Console::CommandList(g_theConsole);
     CreateFullscreenConstantBuffer();
     g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
     g_theRenderer->RegisterFontsFromFolder(std::string{"Data/Fonts"});
@@ -87,7 +87,7 @@ void Game::Initialize() {
 }
 
 void Game::CreateFullscreenConstantBuffer() {
-    _fullscreen_cb = std::unique_ptr<ConstantBuffer>(g_theRenderer->CreateConstantBuffer(&_fullscreen_data, sizeof(_fullscreen_data)));
+    _fullscreen_cb = std::unique_ptr<a2de::ConstantBuffer>(g_theRenderer->CreateConstantBuffer(&_fullscreen_data, sizeof(_fullscreen_data)));
     _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
@@ -155,8 +155,8 @@ void Game::BeginFrame_Main() {
     _map->BeginFrame();
 }
 
-void Game::Update_Title(TimeUtils::FPSeconds /*deltaSeconds*/) {
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::Esc)) {
+void Game::Update_Title(a2de::TimeUtils::FPSeconds /*deltaSeconds*/) {
+    if(g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::Esc)) {
         g_theApp->SetIsQuitting(true);
         return;
     }
@@ -165,8 +165,8 @@ void Game::Update_Title(TimeUtils::FPSeconds /*deltaSeconds*/) {
     }
 }
 
-void Game::Update_Loading(TimeUtils::FPSeconds /*deltaSeconds*/) {
-    static Stopwatch text_blinker{ TimeUtils::FPSeconds{0.33f} };
+void Game::Update_Loading(a2de::TimeUtils::FPSeconds /*deltaSeconds*/) {
+    static a2de::Stopwatch text_blinker{a2de::TimeUtils::FPSeconds{0.33f} };
     if(text_blinker.CheckAndReset()) {
         _text_alpha = 1.0f - _text_alpha;
         _text_alpha = std::clamp(_text_alpha, 0.0f, 1.0f);
@@ -177,13 +177,13 @@ void Game::Update_Loading(TimeUtils::FPSeconds /*deltaSeconds*/) {
     }
 }
 
-void Game::Update_Main(TimeUtils::FPSeconds deltaSeconds) {
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::Esc)) {
+void Game::Update_Main(a2de::TimeUtils::FPSeconds deltaSeconds) {
+    if(g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::Esc)) {
         ChangeGameState(GameState::Title);
         return;
     }
     if(g_theApp->LostFocus()) {
-        deltaSeconds = TimeUtils::FPSeconds::zero();
+        deltaSeconds = a2de::TimeUtils::FPSeconds::zero();
     }
     g_theRenderer->UpdateGameTime(deltaSeconds);
     HandleDebugInput();
@@ -197,7 +197,7 @@ void Game::Render_Title() const {
 
     g_theRenderer->ResetModelViewProjection();
     g_theRenderer->SetRenderTarget();
-    g_theRenderer->ClearColor(Rgba::Black);
+    g_theRenderer->ClearColor(a2de::Rgba::Black);
     g_theRenderer->ClearDepthStencilBuffer();
 
     g_theRenderer->SetViewportAsPercent();
@@ -205,16 +205,16 @@ void Game::Render_Title() const {
     //2D View / HUD
     const float ui_view_height = currentGraphicsOptions.WindowHeight;
     const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
-    const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
+    const auto ui_view_extents = a2de::Vector2{ ui_view_width, ui_view_height };
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
-    const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
-    const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
-    ui_camera.SetPosition(Vector2::ZERO);
-    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
+    const auto ui_leftBottom = a2de::Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
+    const auto ui_rightTop = a2de::Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
+    const auto ui_nearFar = a2de::Vector2{ 0.0f, 1.0f };
+    ui_camera.SetPosition(a2de::Vector2::ZERO);
+    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, a2de::MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
 
-    g_theRenderer->SetModelMatrix(Matrix4::I);
+    g_theRenderer->SetModelMatrix(a2de::Matrix4::I);
     g_theRenderer->DrawTextLine(ingamefont, "RogueLike");
 
 }
@@ -223,7 +223,7 @@ void Game::Render_Loading() const {
 
     g_theRenderer->ResetModelViewProjection();
     g_theRenderer->SetRenderTarget();
-    g_theRenderer->ClearColor(Rgba::Black);
+    g_theRenderer->ClearColor(a2de::Rgba::Black);
     g_theRenderer->ClearDepthStencilBuffer();
 
     g_theRenderer->SetViewportAsPercent();
@@ -231,22 +231,22 @@ void Game::Render_Loading() const {
     //2D View / HUD
     const float ui_view_height = currentGraphicsOptions.WindowHeight;
     const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
-    const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
+    const auto ui_view_extents = a2de::Vector2{ ui_view_width, ui_view_height };
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
-    const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
-    const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
-    ui_camera.SetPosition(Vector2::ZERO);
-    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
+    const auto ui_leftBottom = a2de::Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
+    const auto ui_rightTop = a2de::Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
+    const auto ui_nearFar = a2de::Vector2{ 0.0f, 1.0f };
+    ui_camera.SetPosition(a2de::Vector2::ZERO);
+    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, a2de::MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
 
-    g_theRenderer->SetModelMatrix(Matrix4::I);
+    g_theRenderer->SetModelMatrix(a2de::Matrix4::I);
     g_theRenderer->DrawTextLine(ingamefont, "LOADING");
     if(_done_loading) {
         const std::string text = "Press Any Key";
         static const auto text_length = ingamefont->CalculateTextWidth(text);
-        g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(Vector2{ text_length * -0.25f, ingamefont->GetLineHeight() }));
-        g_theRenderer->DrawTextLine(ingamefont, text, Rgba{255, 255, 255, static_cast<unsigned char>(255.0f * _text_alpha)});
+        g_theRenderer->SetModelMatrix(a2de::Matrix4::CreateTranslationMatrix(a2de::Vector2{ text_length * -0.25f, ingamefont->GetLineHeight() }));
+        g_theRenderer->DrawTextLine(ingamefont, text, a2de::Rgba{255, 255, 255, static_cast<unsigned char>(255.0f * _text_alpha)});
     }
 
 }
@@ -255,7 +255,7 @@ void Game::Render_Main() const {
 
     g_theRenderer->ResetModelViewProjection();
     g_theRenderer->SetRenderTarget(g_theRenderer->GetFullscreenTexture());
-    g_theRenderer->ClearColor(Rgba::Black);
+    g_theRenderer->ClearColor(a2de::Rgba::Black);
     g_theRenderer->ClearDepthStencilBuffer();
 
     g_theRenderer->SetViewportAsPercent();
@@ -268,37 +268,37 @@ void Game::Render_Main() const {
 
     g_theRenderer->ResetModelViewProjection();
     g_theRenderer->SetRenderTargetsToBackBuffer();
-    g_theRenderer->ClearColor(Rgba::NoAlpha);
+    g_theRenderer->ClearColor(a2de::Rgba::NoAlpha);
     g_theRenderer->ClearDepthStencilBuffer();
     g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("Fullscreen"));
     g_theRenderer->SetConstantBuffer(3, _fullscreen_cb.get());
-    std::vector<Vertex3D> vbo =
+    std::vector<a2de::Vertex3D> vbo =
     {
-        Vertex3D{Vector3::ZERO}
-        ,Vertex3D{Vector3{3.0f, 0.0f, 0.0f}}
-        ,Vertex3D{Vector3{0.0f, 3.0f, 0.0f}}
+        a2de::Vertex3D{a2de::Vector3::ZERO}
+        ,a2de::Vertex3D{a2de::Vector3{3.0f, 0.0f, 0.0f}}
+        ,a2de::Vertex3D{a2de::Vector3{0.0f, 3.0f, 0.0f}}
     };
-    g_theRenderer->Draw(PrimitiveType::Triangles, vbo, 3);
+    g_theRenderer->Draw(a2de::PrimitiveType::Triangles, vbo, 3);
 
     if(g_theApp->LostFocus()) {
         g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
-        g_theRenderer->DrawQuad2D(Vector2::ZERO, Vector2::ONE, Rgba{0, 0, 0, 128});
+        g_theRenderer->DrawQuad2D(a2de::Vector2::ZERO, a2de::Vector2::ONE, a2de::Rgba{0, 0, 0, 128});
     }
 
     //2D View / HUD
     const float ui_view_height = currentGraphicsOptions.WindowHeight;
     const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
-    const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
+    const auto ui_view_extents = a2de::Vector2{ui_view_width, ui_view_height};
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    const auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
-    const auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
-    const auto ui_center = Vector2::ZERO;
-    const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
-    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
+    const auto ui_leftBottom = a2de::Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
+    const auto ui_rightTop = a2de::Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
+    const auto ui_center = a2de::Vector2::ZERO;
+    const auto ui_nearFar = a2de::Vector2{ 0.0f, 1.0f };
+    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, a2de::MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
 
     if(g_theApp->LostFocus()) {
-        g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_center));
+        g_theRenderer->SetModelMatrix(a2de::Matrix4::CreateTranslationMatrix(ui_center));
         g_theRenderer->DrawTextLine(ingamefont, "PAUSED");
     }
 }
@@ -322,8 +322,8 @@ void Game::SetFullscreenEffect(FullscreenEffect effect, const std::function<void
 
 void Game::RequestScreenShot() const noexcept {
     namespace FS = std::filesystem;
-    const auto folder = FileUtils::GetKnownFolderPath(FileUtils::KnownPathID::GameData) / FS::path{"Screenshots/"};
-    const auto screenshot_count = FileUtils::CountFilesInFolders(folder);
+    const auto folder = a2de::FileUtils::GetKnownFolderPath(a2de::FileUtils::KnownPathID::GameData) / FS::path{"Screenshots/"};
+    const auto screenshot_count = a2de::FileUtils::CountFilesInFolders(folder);
     const auto filepath = folder / FS::path{"Screenshot_" + std::to_string(screenshot_count + 1) + ".png"};
     g_theRenderer->RequestScreenShot(filepath);
 }
@@ -334,9 +334,9 @@ void Game::EndFrame_Loading() {
             _skip_frame = false;
             return;
         }
-        Utils::DoOnce(
+        a2de::Utils::DoOnce(
             [this]() {
-                g_theJobSystem->Run(JobType::Generic, [this](void* ud)->void { LoadData(ud); }, nullptr);
+                g_theJobSystem->Run(a2de::JobType::Generic, [this](void* ud)->void { LoadData(ud); }, nullptr);
             }
             , _reset_loading_flag);
     } else {
@@ -347,7 +347,7 @@ void Game::EndFrame_Loading() {
 
 void Game::RegisterCommands() {
     {
-        Console::Command moveto{};
+        a2de::Console::Command moveto{};
         moveto.command_name = "move_to";
         moveto.help_text_short = "Move towards tile";
         moveto.help_text_long = "move_to: Moves towards the highlighted tile";
@@ -361,12 +361,12 @@ void Game::RegisterCommands() {
         _consoleCommands.AddCommand(moveto);
     }
     {
-        Console::Command setvis{};
+        a2de::Console::Command setvis{};
         setvis.command_name = "set_visibility";
         setvis.help_text_short = "Sets the player's visibility range";
         setvis.help_text_long = "set_visibility [distance]: Sets the player's visibility distance in tiles.";
         setvis.command_function = [this](const std::string& args) {
-            ArgumentParser p(args);
+            a2de::ArgumentParser p(args);
             if(_map) {
                 float value = 2.0f;
                 if(!(p >> value)) {
@@ -378,12 +378,12 @@ void Game::RegisterCommands() {
         _consoleCommands.AddCommand(setvis);
     }
     {
-        Console::Command showalltiles{};
+        a2de::Console::Command showalltiles{};
         showalltiles.command_name = "showalltiles";
         showalltiles.help_text_short = "Makes every tile visible.";
         showalltiles.help_text_long = "showalltiles [0/1/true/false]: Enables or disables showing every tile. Toggles if no argument.";
         showalltiles.command_function = [this](const std::string& args) {
-            ArgumentParser p(args);
+            a2de::ArgumentParser p(args);
             if(_map) {
                 static bool value{false};
                 if(!(p >> value)) {
@@ -402,7 +402,7 @@ void Game::RegisterCommands() {
         _consoleCommands.AddCommand(showalltiles);
     }
     {
-        Console::Command cleartilevis{};
+        a2de::Console::Command cleartilevis{};
         cleartilevis.command_name = "clear_visibility";
         cleartilevis.help_text_short = "Clears all tile visibility.";
         cleartilevis.help_text_long = "clear_tile_vis: Sets every tile's visibility flags to false.";
@@ -419,12 +419,12 @@ void Game::RegisterCommands() {
         _consoleCommands.AddCommand(cleartilevis);
     }
     {
-        Console::Command color{};
+        a2de::Console::Command color{};
         color.command_name = "set_color";
         color.help_text_short = "Sets entity's color value.";
         color.help_text_long = "set_color [color_value]: Sets an entity's color value. No value returns it to White.";
         color.command_function = [this](const std::string& args) {
-            ArgumentParser p{args};
+            a2de::ArgumentParser p{args};
             Entity* entity = nullptr;
             if(_debug_inspected_entity) {
                 entity = _debug_inspected_entity;
@@ -443,21 +443,21 @@ void Game::RegisterCommands() {
             }
             std::string color_str{};
             if(!(p >> color_str)) {
-                entity->color = Rgba::White;
+                entity->color = a2de::Rgba::White;
                 return;
             }
-            entity->color = Rgba(color_str);
+            entity->color = a2de::Rgba(color_str);
         };
         _consoleCommands.AddCommand(color);
     }
 
     {
-        Console::Command set_state{};
+        a2de::Console::Command set_state{};
         set_state.command_name = "set_state";
         set_state.help_text_short = "Sets the state of a feature.";
         set_state.help_text_long = "set_state [name]: Sets the highlighted or selected feature state to [name].";
         set_state.command_function = [this](const std::string& args) {
-            ArgumentParser p{args};
+            a2de::ArgumentParser p{args};
             std::string name{};
             if(!(p >> name)) {
                 g_theConsole->ErrorMsg("No state name provided.");
@@ -483,12 +483,12 @@ void Game::RegisterCommands() {
     }
 
     {
-        Console::Command give{};
+        a2de::Console::Command give{};
         give.command_name = "give";
         give.help_text_short = "Gives object to entity.";
         give.help_text_long = "give item [count]: adds 1 or [count] item(s) to selected entity's inventory.";
         give.command_function = [this](const std::string& args) {
-            ArgumentParser p{args};
+            a2de::ArgumentParser p{args};
             std::string item_name{};
             if(!(p >> item_name)) {
                 g_theConsole->ErrorMsg("No item name provided.");
@@ -529,12 +529,12 @@ void Game::RegisterCommands() {
     }
 
     {
-        Console::Command equip{};
+        a2de::Console::Command equip{};
         equip.command_name = "equip";
         equip.help_text_short = "Equips/Unequips an item in an actor's inventory.";
         equip.help_text_long = "equip item: Equips or Unequips an item from/to selected actor.";
         equip.command_function = [this](const std::string& args) {
-            ArgumentParser p{args};
+            a2de::ArgumentParser p{args};
             std::string item_name{};
             if(!(p >> item_name)) {
                 return;
@@ -572,18 +572,18 @@ void Game::RegisterCommands() {
     }
 
     {
-        Console::Command list{};
+        a2de::Console::Command list{};
         list.command_name = "list";
         list.help_text_short = "list [items|actors|features|all]";
         list.help_text_long = "lists all entities of specified type or all.";
         list.command_function = [this, list](const std::string& args) {
-            ArgumentParser p{args};
+            a2de::ArgumentParser p{args};
             std::string subcommand{};
             if(!(p >> subcommand)) {
                 g_theConsole->PrintMsg(list.help_text_short);
                 return;
             }
-            subcommand = StringUtils::ToLowerCase(StringUtils::TrimWhitespace(subcommand));
+            subcommand = a2de::StringUtils::ToLowerCase(a2de::StringUtils::TrimWhitespace(subcommand));
             const auto all_item_names = [=]()->std::vector<std::string> {
                 std::vector<std::string> names{};
                 names.reserve(Item::s_registry.size());
@@ -684,8 +684,8 @@ void Game::LoadUI() {
 
 void Game::LoadMaps() {
     auto str_path = std::string{ "Data/Definitions/Map00.xml" };
-    if(FileUtils::IsSafeReadPath(str_path)) {
-        if(auto str_buffer = FileUtils::ReadStringBufferFromFile(str_path)) {
+    if(a2de::FileUtils::IsSafeReadPath(str_path)) {
+        if(auto str_buffer = a2de::FileUtils::ReadStringBufferFromFile(str_path)) {
             tinyxml2::XMLDocument xml_doc;
             xml_doc.Parse(str_buffer->c_str(), str_buffer->size());
             _map = std::make_unique<Map>(*g_theRenderer, *xml_doc.RootElement());
@@ -721,12 +721,12 @@ void Game::LoadCursorDefinitionsFromFile(const std::filesystem::path& src) {
         ERROR_AND_DIE(ss.c_str());
     }
     if(auto* xml_root = doc.RootElement()) {
-        DataUtils::ValidateXmlElement(*xml_root, "UI", "spritesheet", "", "cursors,overlays");
+        a2de::DataUtils::ValidateXmlElement(*xml_root, "UI", "spritesheet", "", "cursors,overlays");
         auto* xml_spritesheet = xml_root->FirstChildElement("spritesheet");
         _cursor_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet);
         if(auto* xml_cursors = xml_root->FirstChildElement("cursors")) {
-            DataUtils::ForEachChildElement(*xml_cursors, "cursor",
-                [this](const XMLElement& elem) {
+            a2de::DataUtils::ForEachChildElement(*xml_cursors, "cursor",
+                [this](const a2de::XMLElement& elem) {
                     CursorDefinition::CreateCursorDefinition(*g_theRenderer, elem, _cursor_sheet);
                 });
         }
@@ -746,10 +746,10 @@ void Game::LoadEntitiesFromFile(const std::filesystem::path& src) {
         ERROR_AND_DIE(ss.c_str());
     }
     if(auto* xml_entities_root = doc.RootElement()) {
-        DataUtils::ValidateXmlElement(*xml_entities_root, "entities", "definitions,entity", "");
+        a2de::DataUtils::ValidateXmlElement(*xml_entities_root, "entities", "definitions,entity", "");
         if(auto* xml_definitions = xml_entities_root->FirstChildElement("definitions")) {
-            DataUtils::ValidateXmlElement(*xml_definitions, "definitions", "", "src");
-            const auto definitions_src = DataUtils::ParseXmlAttribute(*xml_definitions, "src", std::string{});
+            a2de::DataUtils::ValidateXmlElement(*xml_definitions, "definitions", "", "src");
+            const auto definitions_src = a2de::DataUtils::ParseXmlAttribute(*xml_definitions, "src", std::string{});
             if(definitions_src.empty()) {
                 ERROR_AND_DIE("Entity definitions source is empty.");
             }
@@ -775,11 +775,11 @@ void Game::LoadEntityDefinitionsFromFile(const std::filesystem::path& src) {
         ERROR_AND_DIE(ss.c_str());
     }
     if(auto* xml_root = doc.RootElement()) {
-        DataUtils::ValidateXmlElement(*xml_root, "entityDefinitions", "spritesheet,entityDefinition", "");
+        a2de::DataUtils::ValidateXmlElement(*xml_root, "entityDefinitions", "spritesheet,entityDefinition", "");
         auto* xml_spritesheet = xml_root->FirstChildElement("spritesheet");
         _entity_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet);
-        DataUtils::ForEachChildElement(*xml_root, "entityDefinition",
-            [this](const XMLElement& elem) {
+        a2de::DataUtils::ForEachChildElement(*xml_root, "entityDefinition",
+            [this](const a2de::XMLElement& elem) {
             EntityDefinition::CreateEntityDefinition(*g_theRenderer, elem, _entity_sheet);
         });
     }
@@ -798,10 +798,10 @@ void Game::LoadItemsFromFile(const std::filesystem::path& src) {
         ERROR_AND_DIE(ss.c_str());
     }
     if(auto* xml_item_root = doc.RootElement()) {
-        DataUtils::ValidateXmlElement(*xml_item_root, "items", "spritesheet,item", "");
+        a2de::DataUtils::ValidateXmlElement(*xml_item_root, "items", "spritesheet,item", "");
         auto* xml_item_sheet = xml_item_root->FirstChildElement("spritesheet");
         _item_sheet = g_theRenderer->CreateSpriteSheet(*xml_item_sheet);
-        DataUtils::ForEachChildElement(*xml_item_root, "item", [this](const XMLElement& elem) {
+        a2de::DataUtils::ForEachChildElement(*xml_item_root, "item", [this](const a2de::XMLElement& elem) {
             ItemBuilder builder(elem, _item_sheet);
             builder.Build();
         });
@@ -822,7 +822,7 @@ void Game::BeginFrame() {
     }
 }
 
-void Game::Update(TimeUtils::FPSeconds deltaSeconds) {
+void Game::Update(a2de::TimeUtils::FPSeconds deltaSeconds) {
     switch(_currentGameState) {
     case GameState::Title:   Update_Title(deltaSeconds); break;
     case GameState::Loading: Update_Loading(deltaSeconds); break;
@@ -831,8 +831,8 @@ void Game::Update(TimeUtils::FPSeconds deltaSeconds) {
     }
 }
 
-bool Game::DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
-    static TimeUtils::FPSeconds curFadeTime{};
+bool Game::DoFadeIn(const a2de::Rgba& color, a2de::TimeUtils::FPSeconds fadeTime) {
+    static a2de::TimeUtils::FPSeconds curFadeTime{};
     if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::FadeIn)) {
         _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeIn);
         curFadeTime = curFadeTime.zero();
@@ -850,8 +850,8 @@ bool Game::DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
     return _fullscreen_data.fadePercent == 1.0f;
 }
 
-bool Game::DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
-    static TimeUtils::FPSeconds curFadeTime{};
+bool Game::DoFadeOut(const a2de::Rgba& color, a2de::TimeUtils::FPSeconds fadeTime) {
+    static a2de::TimeUtils::FPSeconds curFadeTime{};
     if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::FadeOut)) {
         _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeOut);
         curFadeTime = curFadeTime.zero();
@@ -870,7 +870,7 @@ bool Game::DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
 }
 
 void Game::DoLumosity(float brightnessPower /*= 2.4f*/) {
-    static TimeUtils::FPSeconds curFadeTime{};
+    static a2de::TimeUtils::FPSeconds curFadeTime{};
     if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::Lumosity)) {
         _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Lumosity);
         curFadeTime = curFadeTime.zero();
@@ -880,8 +880,8 @@ void Game::DoLumosity(float brightnessPower /*= 2.4f*/) {
     _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
-void Game::DoCircularGradient(float radius, const Rgba& color) {
-    static TimeUtils::FPSeconds curFadeTime{};
+void Game::DoCircularGradient(float radius, const a2de::Rgba& color) {
+    static a2de::TimeUtils::FPSeconds curFadeTime{};
     if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::CircularGradient)) {
         _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::CircularGradient);
         curFadeTime = curFadeTime.zero();
@@ -893,7 +893,7 @@ void Game::DoCircularGradient(float radius, const Rgba& color) {
 }
 
 void Game::DoSepia() {
-    static TimeUtils::FPSeconds curFadeTime{};
+    static a2de::TimeUtils::FPSeconds curFadeTime{};
     if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::Sepia)) {
         _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::Sepia);
         curFadeTime = curFadeTime.zero();
@@ -903,7 +903,7 @@ void Game::DoSepia() {
 }
 
 void Game::DoSquareBlur() {
-    static TimeUtils::FPSeconds curFadeTime{};
+    static a2de::TimeUtils::FPSeconds curFadeTime{};
     if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::SquareBlur)) {
         _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::SquareBlur);
         curFadeTime = curFadeTime.zero();
@@ -913,10 +913,10 @@ void Game::DoSquareBlur() {
 }
 
 void Game::StopFullscreenEffect() {
-    static TimeUtils::FPSeconds curFadeTime{};
+    static a2de::TimeUtils::FPSeconds curFadeTime{};
     _fullscreen_data.effectIndex = -1;
     _fullscreen_data.fadePercent = 0.0f;
-    _fullscreen_data.fadeColor = Rgba::Black.GetRgbaAsFloats();
+    _fullscreen_data.fadeColor = a2de::Rgba::Black.GetRgbaAsFloats();
     _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
@@ -996,58 +996,58 @@ void Game::HandlePlayerInput() {
 }
 
 void Game::HandlePlayerKeyboardInput() {
-    const bool is_right = g_theInputSystem->WasKeyJustPressed(KeyCode::D) ||
-        g_theInputSystem->WasKeyJustPressed(KeyCode::Right) ||
-        g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad6);
-    const bool is_right_held = g_theInputSystem->IsKeyDown(KeyCode::D) ||
-        g_theInputSystem->IsKeyDown(KeyCode::Right) ||
-        g_theInputSystem->IsKeyDown(KeyCode::NumPad6);
+    const bool is_right = g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::D) ||
+        g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::Right) ||
+        g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::NumPad6);
+    const bool is_right_held = g_theInputSystem->IsKeyDown(a2de::KeyCode::D) ||
+        g_theInputSystem->IsKeyDown(a2de::KeyCode::Right) ||
+        g_theInputSystem->IsKeyDown(a2de::KeyCode::NumPad6);
 
-    const bool is_left = g_theInputSystem->WasKeyJustPressed(KeyCode::A) ||
-        g_theInputSystem->WasKeyJustPressed(KeyCode::Left) ||
-        g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad4);
-    const bool is_left_held = g_theInputSystem->IsKeyDown(KeyCode::A) ||
-        g_theInputSystem->IsKeyDown(KeyCode::Left) ||
-        g_theInputSystem->IsKeyDown(KeyCode::NumPad4);
+    const bool is_left = g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::A) ||
+        g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::Left) ||
+        g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::NumPad4);
+    const bool is_left_held = g_theInputSystem->IsKeyDown(a2de::KeyCode::A) ||
+        g_theInputSystem->IsKeyDown(a2de::KeyCode::Left) ||
+        g_theInputSystem->IsKeyDown(a2de::KeyCode::NumPad4);
 
-    const bool is_up = g_theInputSystem->WasKeyJustPressed(KeyCode::W) ||
-        g_theInputSystem->WasKeyJustPressed(KeyCode::Up) ||
-        g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad8);
-    const bool is_up_held = g_theInputSystem->IsKeyDown(KeyCode::W) ||
-        g_theInputSystem->IsKeyDown(KeyCode::Up) ||
-        g_theInputSystem->IsKeyDown(KeyCode::NumPad8);
+    const bool is_up = g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::W) ||
+        g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::Up) ||
+        g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::NumPad8);
+    const bool is_up_held = g_theInputSystem->IsKeyDown(a2de::KeyCode::W) ||
+        g_theInputSystem->IsKeyDown(a2de::KeyCode::Up) ||
+        g_theInputSystem->IsKeyDown(a2de::KeyCode::NumPad8);
 
-    const bool is_down = g_theInputSystem->WasKeyJustPressed(KeyCode::S) ||
-        g_theInputSystem->WasKeyJustPressed(KeyCode::Down) ||
-        g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad2);
-    const bool is_down_held = g_theInputSystem->IsKeyDown(KeyCode::S) ||
-        g_theInputSystem->IsKeyDown(KeyCode::Down) ||
-        g_theInputSystem->IsKeyDown(KeyCode::NumPad2);
+    const bool is_down = g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::S) ||
+        g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::Down) ||
+        g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::NumPad2);
+    const bool is_down_held = g_theInputSystem->IsKeyDown(a2de::KeyCode::S) ||
+        g_theInputSystem->IsKeyDown(a2de::KeyCode::Down) ||
+        g_theInputSystem->IsKeyDown(a2de::KeyCode::NumPad2);
 
-    const bool is_upright = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad9) || (is_right && is_up);
-    const bool is_upright_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad9) || (is_right_held && is_up_held);
-    const bool is_upleft = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad7) || (is_left && is_up);
-    const bool is_upleft_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad7) || (is_left_held && is_up_held);
-    const bool is_downright = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad3) || (is_right && is_down);
-    const bool is_downright_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad3) || (is_right_held && is_down_held);
-    const bool is_downleft = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad1) || (is_left && is_down);
-    const bool is_downleft_held = g_theInputSystem->IsKeyDown(KeyCode::NumPad1) || (is_left_held && is_down_held);
+    const bool is_upright = g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::NumPad9) || (is_right && is_up);
+    const bool is_upright_held = g_theInputSystem->IsKeyDown(a2de::KeyCode::NumPad9) || (is_right_held && is_up_held);
+    const bool is_upleft = g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::NumPad7) || (is_left && is_up);
+    const bool is_upleft_held = g_theInputSystem->IsKeyDown(a2de::KeyCode::NumPad7) || (is_left_held && is_up_held);
+    const bool is_downright = g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::NumPad3) || (is_right && is_down);
+    const bool is_downright_held = g_theInputSystem->IsKeyDown(a2de::KeyCode::NumPad3) || (is_right_held && is_down_held);
+    const bool is_downleft = g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::NumPad1) || (is_left && is_down);
+    const bool is_downleft_held = g_theInputSystem->IsKeyDown(a2de::KeyCode::NumPad1) || (is_left_held && is_down_held);
 
-    const bool is_shift = g_theInputSystem->IsKeyDown(KeyCode::Shift);
-    const bool is_rest = g_theInputSystem->WasKeyJustPressed(KeyCode::NumPad5)
-        || g_theInputSystem->WasKeyJustPressed(KeyCode::Z);
+    const bool is_shift = g_theInputSystem->IsKeyDown(a2de::KeyCode::Shift);
+    const bool is_rest = g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::NumPad5)
+        || g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::Z);
 
     if(is_shift) {
         if(is_right_held) {
-            _map->cameraController.Translate(Vector2::X_AXIS);
+            _map->cameraController.Translate(a2de::Vector2::X_AXIS);
         } else if(is_left_held) {
-            _map->cameraController.Translate(-Vector2::X_AXIS);
+            _map->cameraController.Translate(-a2de::Vector2::X_AXIS);
         }
 
         if(is_up_held) {
-            _map->cameraController.Translate(-Vector2::Y_AXIS);
+            _map->cameraController.Translate(-a2de::Vector2::Y_AXIS);
         } else if(is_down_held) {
-            _map->cameraController.Translate(Vector2::Y_AXIS);
+            _map->cameraController.Translate(a2de::Vector2::Y_AXIS);
         }
         return;
     }
@@ -1112,11 +1112,11 @@ void Game::HandlePlayerMouseInput() {
 
 void Game::HandlePlayerControllerInput() {
     auto& controller = g_theInputSystem->GetXboxController(0);
-    Vector2 rthumb = controller.GetRightThumbPosition();
+    a2de::Vector2 rthumb = controller.GetRightThumbPosition();
     rthumb.y *= currentGraphicsOptions.InvertMouseY ? 1.0f : -1.0f;
     _map->cameraController.Translate(_cam_speed * rthumb * g_theRenderer->GetGameFrameTime().count());
 
-    if(controller.WasButtonJustPressed(XboxController::Button::RightThumb)) {
+    if(controller.WasButtonJustPressed(a2de::XboxController::Button::RightThumb)) {
         _map->FocusEntity(_map->player);
     }
 
@@ -1156,45 +1156,45 @@ void Game::HandleDebugKeyboardInput() {
     if(!_show_debug_window && !g_theUISystem->IsAnyImguiDebugWindowVisible()) {
         g_theInputSystem->HideMouseCursor();
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::J)) {
+    if(g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::J)) {
         if(!g_theInputSystem->IsMouseLockedToViewport()) {
             g_theInputSystem->LockMouseToViewport(*g_theRenderer->GetOutput()->GetWindow());
         } else {
             g_theInputSystem->UnlockMouseFromViewport();
         }
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F1)) {
+    if(g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::F1)) {
         _show_debug_window = !_show_debug_window;
         if(!g_theInputSystem->IsMouseCursorVisible()) {
             g_theInputSystem->ShowMouseCursor();
         }
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F2)) {
+    if(g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::F2)) {
         g_theInputSystem->ToggleMouseRawInput();
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F4)) {
+    if(g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::F4)) {
         g_theUISystem->ToggleImguiDemoWindow();
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F5)) {
+    if(g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::F5)) {
         static bool is_fullscreen = false;
         is_fullscreen = !is_fullscreen;
         g_theRenderer->SetFullscreen(is_fullscreen);
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F6)) {
+    if(g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::F6)) {
         g_theUISystem->ToggleImguiMetricsWindow();
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::F9)) {
+    if(g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::F9)) {
         g_theRenderer->RequestScreenShot();
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::P)) {
-        _map->SetPriorityLayer(static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(static_cast<int>(_map->GetLayerCount()))));
+    if(g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::P)) {
+        _map->SetPriorityLayer(static_cast<std::size_t>(a2de::MathUtils::GetRandomIntLessThan(static_cast<int>(_map->GetLayerCount()))));
     }
 
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::G)) {
+    if(g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::G)) {
         _map->RegenerateMap();
     }
 
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::B)) {
+    if(g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::B)) {
         _map->ShakeCamera([]()->float { const auto t = g_theRenderer->GetGameTime().count(); return std::cos(t) * std::sin(t); });
     }
 #endif
@@ -1205,7 +1205,7 @@ void Game::HandleDebugMouseInput() {
     if(g_theUISystem->WantsInputMouseCapture()) {
         return;
     }
-    if(g_theInputSystem->WasKeyJustPressed(KeyCode::LButton)) {
+    if(g_theInputSystem->WasKeyJustPressed(a2de::KeyCode::LButton)) {
         const auto& picked_tiles = DebugGetTilesFromCursor();
         _debug_has_picked_tile_with_click = _show_tile_debugger && !picked_tiles.empty();
         _debug_has_picked_entity_with_click = _show_entity_debugger && !picked_tiles.empty();
@@ -1222,7 +1222,7 @@ void Game::HandleDebugMouseInput() {
             _debug_has_picked_feature_with_click = _debug_inspected_feature != nullptr;
         }
     }
-    if(g_theInputSystem->IsKeyDown(KeyCode::RButton)) {
+    if(g_theInputSystem->IsKeyDown(a2de::KeyCode::RButton)) {
         if(const auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr) {
             _map->player->SetPosition(tile->GetCoords());
         }
@@ -1233,7 +1233,7 @@ void Game::HandleDebugMouseInput() {
 #ifdef PROFILE_BUILD
 
 void Game::ShowDebugUI() {
-    ImGui::SetNextWindowSize(Vector2{ 550.0f, 500.0f }, ImGuiCond_Always);
+    ImGui::SetNextWindowSize(a2de::Vector2{ 550.0f, 500.0f }, ImGuiCond_Always);
     if(ImGui::Begin("Debugger", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         if(ImGui::BeginTable("DebuggerTable", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_SizingStretchProp)) {
             ImGui::TableSetupColumn("DebuggerTableDebuggerColumn", ImGuiTableColumnFlags_NoHide);
@@ -1285,9 +1285,9 @@ void Game::ShowTextEntityDebuggerUI() {
                 ImGui::TableNextColumn();
                 ImGui::Text(e->text.c_str());
                 ImGui::TableNextColumn();
-                ImGui::Text(StringUtils::to_string(e->color).c_str());
+                ImGui::Text(a2de::StringUtils::to_string(e->color).c_str());
                 ImGui::TableNextColumn();
-                ImGui::Text(StringUtils::to_string(e->GetScreenPosition()).c_str());
+                ImGui::Text(a2de::StringUtils::to_string(e->GetScreenPosition()).c_str());
                 ImGui::TableNextColumn();
                 ImGui::Text(std::to_string(e->speed).c_str());
                 ImGui::TableNextColumn();
@@ -1352,14 +1352,14 @@ void Game::ShowEffectsUI() {
         ImGui::Text("Effect: Fade In");
         (void)ImGui::ColorEdit4("Fade In Color##Picker", _fadeIn_color, ImGuiColorEditFlags_NoLabel); //I don't care if the value changed.
         if(ImGui::InputFloat("Fade In Time (s)", &_debug_fadeInTime)) {
-            _fadeInTime = TimeUtils::FPSeconds{ _debug_fadeInTime };
+            _fadeInTime = a2de::TimeUtils::FPSeconds{ _debug_fadeInTime };
         }
         break;
     case FullscreenEffect::FadeOut:
         ImGui::Text("Effect: Fade Out");
         (void)ImGui::ColorEdit4("Fade Out Color##Picker", _fadeOut_color, ImGuiColorEditFlags_NoLabel); //I don't care if the value changed.
         if(ImGui::InputFloat("Fade Out Time (s)", &_debug_fadeOutTime)) {
-            _fadeOutTime = TimeUtils::FPSeconds{ _debug_fadeOutTime };
+            _fadeOutTime = a2de::TimeUtils::FPSeconds{ _debug_fadeOutTime };
         }
         break;
     case FullscreenEffect::Lumosity:
@@ -1479,8 +1479,8 @@ void Game::ShowTileInspectorUI() {
             const auto* cur_def = cur_tile ? cur_tile->GetDefinition() : TileDefinition::GetTileDefinitionByName("void");
             if(const auto* cur_sprite = cur_def->GetSprite()) {
                 const auto tex_coords = cur_sprite->GetCurrentTexCoords();
-                const auto dims = Vector2::ONE * 100.0f;
-                ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                const auto dims = a2de::Vector2::ONE * 100.0f;
+                ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, a2de::Rgba::White, a2de::Rgba::NoAlpha);
                 if(!i || (i % tiles_per_row) < tiles_per_row - 1) {
                     ImGui::SameLine();
                 }
@@ -1491,8 +1491,8 @@ void Game::ShowTileInspectorUI() {
             const auto* cur_def = TileDefinition::GetTileDefinitionByName("void");
             if(const auto* cur_sprite = cur_def->GetSprite()) {
                 const auto tex_coords = cur_sprite->GetCurrentTexCoords();
-                const auto dims = Vector2::ONE * 100.0f;
-                ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                const auto dims = a2de::Vector2::ONE * 100.0f;
+                ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, a2de::Rgba::White, a2de::Rgba::NoAlpha);
                 if(!i || (i % tiles_per_row) < tiles_per_row - 1) {
                     ImGui::SameLine();
                 }
@@ -1505,8 +1505,8 @@ void Game::ShowTileInspectorUI() {
             const auto* cur_def = cur_tile ? cur_tile->GetDefinition() : TileDefinition::GetTileDefinitionByName("void");
             if(const auto* cur_sprite = cur_def->GetSprite()) {
                 const auto tex_coords = cur_sprite->GetCurrentTexCoords();
-                const auto dims = Vector2::ONE * 100.0f;
-                ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                const auto dims = a2de::Vector2::ONE * 100.0f;
+                ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, a2de::Rgba::White, a2de::Rgba::NoAlpha);
                 if(!i || (i % tiles_per_row) < tiles_per_row - 1) {
                     ImGui::SameLine();
                 }
@@ -1548,7 +1548,7 @@ std::vector<Tile*> Game::DebugGetTilesFromCursor() {
     }
     if(_debug_has_picked_tile_with_click) {
         static std::vector<Tile*> picked_tiles{};
-        picked_tiles = _map->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});
+        picked_tiles = _map->PickTilesFromWorldCoords(a2de::Vector2{current_cursor->GetCoords()});
         if(picked_tiles.empty()) {
             return {};
         }
@@ -1564,7 +1564,7 @@ std::vector<Tile*> Game::DebugGetTilesFromCursor() {
         }
         return picked_tiles;
     }
-    return _map->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});
+    return _map->PickTilesFromWorldCoords(a2de::Vector2{current_cursor->GetCoords()});
 }
 
 void Game::ShowEntityInspectorUI() {
@@ -1618,14 +1618,14 @@ void Game::ShowFeatureInspectorUI() {
                 _debug_inspected_feature = nullptr;
             }
             const auto tex_coords = cur_sprite->GetCurrentTexCoords();
-            const auto dims = Vector2::ONE * 100.0f;
-            ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+            const auto dims = a2de::Vector2::ONE * 100.0f;
+            ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, a2de::Rgba::White, a2de::Rgba::NoAlpha);
             if(const auto* actor = dynamic_cast<const Actor*>(cur_entity)) {
                 for(const auto& eq : actor->GetEquipment()) {
                     if(eq) {
                         const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
                         ImGui::SameLine(8.0f);
-                        ImGui::Image(cur_sprite->GetTexture(), dims, eq_coords.mins, eq_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                        ImGui::Image(cur_sprite->GetTexture(), dims, eq_coords.mins, eq_coords.maxs, a2de::Rgba::White, a2de::Rgba::NoAlpha);
                     }
                 }
             }
@@ -1634,21 +1634,21 @@ void Game::ShowFeatureInspectorUI() {
 }
 
 
-void Game::ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const AnimatedSprite* cur_sprite) {
+void Game::ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const a2de::AnimatedSprite* cur_sprite) {
     std::ostringstream ss;
     ss << "Name: " << cur_entity->name;
     ss << "\nInvisible: " << (cur_entity->def->is_invisible ? "true" : "false");
     ss << "\nAnimated: " << (cur_entity->def->is_animated ? "true" : "false");
     ImGui::Text(ss.str().c_str());
     const auto tex_coords = cur_sprite->GetCurrentTexCoords();
-    const auto dims = Vector2::ONE * 100.0f;
-    ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+    const auto dims = a2de::Vector2::ONE * 100.0f;
+    ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, a2de::Rgba::White, a2de::Rgba::NoAlpha);
     if(const auto* actor = dynamic_cast<const Actor*>(cur_entity)) {
         for(const auto& eq : actor->GetEquipment()) {
             if(eq) {
                 const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
                 ImGui::SameLine(8.0f);
-                ImGui::Image(cur_sprite->GetTexture(), dims, eq_coords.mins, eq_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                ImGui::Image(cur_sprite->GetTexture(), dims, eq_coords.mins, eq_coords.maxs, a2de::Rgba::White, a2de::Rgba::NoAlpha);
             }
         }
     }

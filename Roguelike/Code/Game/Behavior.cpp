@@ -21,7 +21,7 @@ Actor* Behavior::GetTarget() const noexcept {
 }
 
 void Behavior::SetName(const std::string& name) noexcept {
-    _name = StringUtils::ToLowerCase(name);
+    _name = a2de::StringUtils::ToLowerCase(name);
 }
 
 const std::string& Behavior::GetName() const noexcept {
@@ -44,7 +44,7 @@ std::string Behavior::NameFromId(BehaviorID id) {
 }
 
 BehaviorID Behavior::IdFromName(std::string name) {
-    name = StringUtils::ToLowerCase(name);
+    name = a2de::StringUtils::ToLowerCase(name);
     if(name == "none") {
         return BehaviorID::None;
     } else if(name == "wander") {
@@ -58,14 +58,14 @@ BehaviorID Behavior::IdFromName(std::string name) {
     }
 }
 
-std::shared_ptr<Behavior> Behavior::Create(const XMLElement& element) noexcept {
-    DataUtils::ValidateXmlElement(element, "behavior", "", "name");
-    const std::string name = DataUtils::ParseXmlAttribute(element, "name", "");
+std::shared_ptr<Behavior> Behavior::Create(const a2de::XMLElement& element) noexcept {
+    a2de::DataUtils::ValidateXmlElement(element, "behavior", "", "name");
+    const std::string name = a2de::DataUtils::ParseXmlAttribute(element, "name", "");
     return Behavior::Create(name);
 }
 
 std::shared_ptr<Behavior> Behavior::Create(std::string name) noexcept {
-    name = StringUtils::ToLowerCase(name);
+    name = a2de::StringUtils::ToLowerCase(name);
     if(name == "wander") {
         return std::make_shared<WanderBehavior>();
     } else if(name == "flee") {

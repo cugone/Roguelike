@@ -34,8 +34,8 @@ void FleeBehavior::Act(Actor* actor) noexcept {
     Tile* target_tile = my_tile;
     for(; y < 2; ++y) {
         for(; x < 2; ++x) {
-            if(const auto cur_tile = my_tile->GetNeighbor(IntVector3(x, y, 0))) {
-                const auto calc_distance = MathUtils::CalculateManhattanDistance(cur_tile->GetCoords(), player_tile->GetCoords());
+            if(const auto cur_tile = my_tile->GetNeighbor(a2de::IntVector3(x, y, 0))) {
+                const auto calc_distance = a2de::MathUtils::CalculateManhattanDistance(cur_tile->GetCoords(), player_tile->GetCoords());
                 if(max_distance < calc_distance) {
                     max_distance = calc_distance;
                     target_tile = cur_tile;

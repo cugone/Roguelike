@@ -25,7 +25,7 @@ public:
         Node* parent{nullptr};
         float f = std::numeric_limits<float>::infinity();
         float g = std::numeric_limits<float>::infinity();
-        IntVector2 coords = IntVector2::ZERO;
+        a2de::IntVector2 coords = a2de::IntVector2::ZERO;
         bool visited = false;
     };
 
@@ -34,7 +34,7 @@ public:
     void ResetNavMap() noexcept;
 
     template<typename Viability, typename Heuristic, typename DistanceFunc>
-    uint8_t AStar(const IntVector2& start, const IntVector2& goal, Viability&& viable, Heuristic&& h, DistanceFunc&& distance) {
+    uint8_t AStar(const a2de::IntVector2& start, const a2de::IntVector2& goal, Viability&& viable, Heuristic&& h, DistanceFunc&& distance) {
         auto* initial = GetNode(start);
         if(!initial) {
             return PATHFINDING_INVALID_INITIAL_NODE;
@@ -154,21 +154,21 @@ public:
     }
 
     template<typename Viability, typename DistanceFunc>
-    uint8_t Dijkstra(const IntVector2& start, const IntVector2& goal, Viability&& viable, DistanceFunc&& distance) {
-        return AStar(start, goal, viable, [](const IntVector2&, const IntVector2&)->int { return 0; }, distance);
+    uint8_t Dijkstra(const a2de::IntVector2& start, const a2de::IntVector2& goal, Viability&& viable, DistanceFunc&& distance) {
+        return AStar(start, goal, viable, [](const a2de::IntVector2&, const a2de::IntVector2&)->int { return 0; }, distance);
     }
 
 protected:
 private:
     const Pathfinder::Node* GetNode(int x, int y) const noexcept;
     Pathfinder::Node* GetNode(int x, int y) noexcept;
-    const Pathfinder::Node* GetNode(const IntVector2& pos) const noexcept;
-    Pathfinder::Node* GetNode(const IntVector2& pos) noexcept;
+    const Pathfinder::Node* GetNode(const a2de::IntVector2& pos) const noexcept;
+    Pathfinder::Node* GetNode(const a2de::IntVector2& pos) noexcept;
     const std::array<const Pathfinder::Node*, 8> GetNeighbors(int x, int y) const noexcept;
     void SetNeighbors(int x, int y) noexcept;
 
     std::vector<const Node*> _path{};
     std::vector<Node> _navMap{};
-    IntVector2 _dimensions{};
+    a2de::IntVector2 _dimensions{};
     static inline bool already_initialized{false};
 };

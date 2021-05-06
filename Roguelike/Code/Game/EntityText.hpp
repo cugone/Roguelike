@@ -8,23 +8,25 @@
 #include <vector>
 #include <memory>
 
-class KerningFont;
+namespace a2de {
+    class KerningFont;
+}
 
 struct TextEntityDesc {
     std::string text = "DAMAGE";
-    Rgba color = Rgba::White;
-    Vector2 position{ 0.0f, 0.0f };
-    TimeUtils::FPSeconds timeToLive{ 1.0f };
-    KerningFont* font{};
+    a2de::Rgba color = a2de::Rgba::White;
+    a2de::Vector2 position{ 0.0f, 0.0f };
+    a2de::TimeUtils::FPSeconds timeToLive{ 1.0f };
+    a2de::KerningFont* font{};
     float speed{1.0f};
 };
 
 class EntityText : public Entity {
 public:
     std::string text{};
-    TimeUtils::FPSeconds ttl{1.0f};
-    Rgba color{Rgba::White};
-    KerningFont* font{};
+    a2de::TimeUtils::FPSeconds ttl{1.0f};
+    a2de::Rgba color{a2de::Rgba::White};
+    a2de::KerningFont* font{};
     float speed{1.0f};
     
 
@@ -35,7 +37,7 @@ public:
     explicit EntityText(const TextEntityDesc & desc) noexcept;
     virtual ~EntityText() = default;
 
-    void Update(TimeUtils::FPSeconds deltaSeconds) override;
+    void Update(a2de::TimeUtils::FPSeconds deltaSeconds) override;
     void Render() const;
     void EndFrame() override;
 
@@ -43,5 +45,5 @@ protected:
 private:
 
     static inline std::vector<std::unique_ptr<EntityText>> s_registry{};
-    TimeUtils::FPSeconds _currentLiveTime{};
+    a2de::TimeUtils::FPSeconds _currentLiveTime{};
 };

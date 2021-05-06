@@ -10,10 +10,13 @@
 
 #include "Game/Tile.hpp"
 
-class Image;
+namespace a2de {
+    class Image;
+    class Renderer;
+    class Vector3;
+}
+
 class Map;
-class Renderer;
-class Vector3;
 
 class Layer {
 public:
@@ -30,9 +33,9 @@ public:
     };
 
     Layer() = default;
-    explicit Layer(Map* map, const IntVector2& dimensions);
-    explicit Layer(Map* map, const XMLElement& elem);
-    explicit Layer(Map* map, const Image& img);
+    explicit Layer(Map* map, const a2de::IntVector2& dimensions);
+    explicit Layer(Map* map, const a2de::XMLElement& elem);
+    explicit Layer(Map* map, const a2de::Image& img);
     Layer(const Layer& other) = default;
     Layer(Layer&& other) = default;
     Layer& operator=(const Layer& other) = default;
@@ -40,15 +43,15 @@ public:
     ~Layer() = default;
 
     void BeginFrame();
-    void Update(TimeUtils::FPSeconds deltaSeconds);
-    void Render(Renderer& renderer) const;
-    void DebugRender(Renderer& renderer) const;
+    void Update(a2de::TimeUtils::FPSeconds deltaSeconds);
+    void Render(a2de::Renderer& renderer) const;
+    void DebugRender(a2de::Renderer& renderer) const;
     void EndFrame();
 
-    AABB2 CalcOrthoBounds() const;
-    AABB2 CalcViewBounds(const Vector2& cam_pos) const;
-    AABB2 CalcCullBounds(const Vector2& cam_pos) const;
-    AABB2 CalcCullBoundsFromOrthoBounds() const;
+    a2de::AABB2 CalcOrthoBounds() const;
+    a2de::AABB2 CalcViewBounds(const a2de::Vector2& cam_pos) const;
+    a2de::AABB2 CalcCullBounds(const a2de::Vector2& cam_pos) const;
+    a2de::AABB2 CalcCullBoundsFromOrthoBounds() const;
 
     const Map* GetMap() const;
     Map* GetMap();
@@ -56,14 +59,14 @@ public:
     Tile* GetTile(std::size_t index);
 
     Tile* GetNeighbor(const NeighborDirection& direction);
-    Tile* GetNeighbor(const IntVector2& direction);
+    Tile* GetNeighbor(const a2de::IntVector2& direction);
 
     void DirtyMesh() noexcept;
 
     int z_index{ 0 };
-    IntVector2 tileDimensions{1, 1};
-    Rgba color{ Rgba::White };
-    Rgba debug_grid_color{Rgba::Red};
+    a2de::IntVector2 tileDimensions{1, 1};
+    a2de::Rgba color{a2de::Rgba::White };
+    a2de::Rgba debug_grid_color{a2de::Rgba::Red};
     std::size_t debug_tiles_in_view_count{};
     std::size_t debug_visible_tiles_in_view_count{};
 
@@ -76,24 +79,24 @@ public:
     std::vector<Tile>::iterator begin() noexcept;
     std::vector<Tile>::iterator end() noexcept;
 
-    const Mesh::Builder& GetMeshBuilder() const noexcept;
-    Mesh::Builder& GetMeshBuilder() noexcept;
+    const a2de::Mesh::Builder& GetMeshBuilder() const noexcept;
+    a2de::Mesh::Builder& GetMeshBuilder() noexcept;
 
 protected:
 private:
-    bool LoadFromXml(const XMLElement& elem);
-    bool LoadFromImage(const Image& img);
+    bool LoadFromXml(const a2de::XMLElement& elem);
+    bool LoadFromImage(const a2de::Image& img);
     void InitializeTiles(const std::size_t row_count, const std::size_t max_row_length, const std::vector<std::string>& glyph_strings);
     std::size_t NormalizeLayerRows(std::vector<std::string>& glyph_strings);
-    void SetModelViewProjectionBounds(Renderer& renderer) const;
-    void RenderTiles(Renderer& renderer) const;
-    void DebugRenderTiles(Renderer& renderer) const;
+    void SetModelViewProjectionBounds(a2de::Renderer& renderer) const;
+    void RenderTiles(a2de::Renderer& renderer) const;
+    void DebugRenderTiles(a2de::Renderer& renderer) const;
 
-    void UpdateTiles(TimeUtils::FPSeconds deltaSeconds);
+    void UpdateTiles(a2de::TimeUtils::FPSeconds deltaSeconds);
 
     std::vector<Tile> _tiles{};
     Map* _map = nullptr;
-    Mesh::Builder _mesh_builder{};
+    a2de::Mesh::Builder _mesh_builder{};
     bool meshDirty = true;
     bool meshNeedsRebuild = true;
 };

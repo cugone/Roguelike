@@ -13,7 +13,7 @@ class Behavior;
 class Actor : public Entity {
 public:
 
-    static Actor* CreateActor(Map* map, const XMLElement& elem);
+    static Actor* CreateActor(Map* map, const a2de::XMLElement& elem);
     static void ClearActorRegistry() noexcept;
 
     Actor() = default;
@@ -24,7 +24,7 @@ public:
     virtual ~Actor() = default;
 
     Actor(Map* map, EntityDefinition* definition) noexcept;
-    Actor(Map* map, const XMLElement& elem) noexcept;
+    Actor(Map* map, const a2de::XMLElement& elem) noexcept;
 
     bool Acted() const;
     void Act(bool value);
@@ -33,7 +33,7 @@ public:
 
     void Rest();
     bool MoveTo(Tile* destination);
-    bool Move(const IntVector2& direction);
+    bool Move(const a2de::IntVector2& direction);
     bool MoveNorth();
     bool MoveNorthEast();
     bool MoveEast();
@@ -49,7 +49,7 @@ public:
 
     const std::vector<Item*>& GetEquipment() const noexcept;
 
-    virtual void SetPosition(const IntVector2& position) override;
+    virtual void SetPosition(const a2de::IntVector2& position) override;
 
     float visibility = 7.0f;
 
@@ -58,13 +58,13 @@ public:
 
 protected:
 private:
-    bool LoadFromXml(const XMLElement& elem);
+    bool LoadFromXml(const a2de::XMLElement& elem);
 
     virtual void ResolveAttack(Entity& attacker, Entity& defender) override;
     void ApplyDamage(DamageType type, long amount, bool crit);
     void AttackerMissed();
 
-    bool CanMoveDiagonallyToNeighbor(const IntVector2& direction) const;
+    bool CanMoveDiagonallyToNeighbor(const a2de::IntVector2& direction) const;
 
     std::vector<Item*> GetAllEquipmentOfType(const EquipSlot& slot) const;
     std::vector<Item*> GetAllCapeEquipment() const;

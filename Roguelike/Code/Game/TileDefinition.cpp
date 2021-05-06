@@ -11,7 +11,7 @@
 
 std::map<std::string, std::unique_ptr<TileDefinition>> TileDefinition::s_registry{};
 
-TileDefinition* TileDefinition::CreateTileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
+TileDefinition* TileDefinition::CreateTileDefinition(a2de::Renderer& renderer, const a2de::XMLElement& elem, std::weak_ptr<a2de::SpriteSheet> sheet) {
     auto new_def = std::make_unique<TileDefinition>(renderer, elem, sheet);
     auto* new_def_ptr = new_def.get();
     std::string new_def_name = new_def->name;
@@ -44,34 +44,34 @@ void TileDefinition::ClearTileRegistry() {
     s_registry.clear();
 }
 
-const Texture* TileDefinition::GetTexture() const {
+const a2de::Texture* TileDefinition::GetTexture() const {
     return GetSheet()->GetTexture();
 }
 
-Texture* TileDefinition::GetTexture() {
-    return const_cast<Texture*>(static_cast<const TileDefinition&>(*this).GetTexture());
+a2de::Texture* TileDefinition::GetTexture() {
+    return const_cast<a2de::Texture*>(static_cast<const TileDefinition&>(*this).GetTexture());
 }
 
-const SpriteSheet* TileDefinition::GetSheet() const {
+const a2de::SpriteSheet* TileDefinition::GetSheet() const {
     if(!_sheet.expired()) {
         return _sheet.lock().get();
     }
     return nullptr;
 }
 
-SpriteSheet* TileDefinition::GetSheet() {
-    return const_cast<SpriteSheet*>(static_cast<const TileDefinition&>(*this).GetSheet());
+a2de::SpriteSheet* TileDefinition::GetSheet() {
+    return const_cast<a2de::SpriteSheet*>(static_cast<const TileDefinition&>(*this).GetSheet());
 }
 
-const AnimatedSprite* TileDefinition::GetSprite() const {
+const a2de::AnimatedSprite* TileDefinition::GetSprite() const {
     return _sprite.get();
 }
 
-AnimatedSprite* TileDefinition::GetSprite() {
+a2de::AnimatedSprite* TileDefinition::GetSprite() {
     return _sprite.get();
 }
 
-IntVector2 TileDefinition::GetIndexCoords() const {
+a2de::IntVector2 TileDefinition::GetIndexCoords() const {
     return _index;
 }
 
@@ -82,7 +82,7 @@ int TileDefinition::GetIndex() const {
     return -1;
 }
 
-TileDefinition::TileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet)
+TileDefinition::TileDefinition(a2de::Renderer& renderer, const a2de::XMLElement& elem, std::weak_ptr<a2de::SpriteSheet> sheet)
     : _renderer(renderer)
     , _sheet(sheet)
 {
@@ -91,42 +91,43 @@ TileDefinition::TileDefinition(Renderer& renderer, const XMLElement& elem, std::
     }
 }
 
- bool TileDefinition::LoadFromXml(const XMLElement& elem) {
+//TODO: Fix extraneous leading space
+ bool TileDefinition::LoadFromXml(const a2de::XMLElement& elem) {
 
-     DataUtils::ValidateXmlElement(elem, "tileDefinition", "glyph", "name,index", "opaque,solid,visible,invisible,allowDiagonalMovement,animation,offset");
+     a2de::DataUtils::ValidateXmlElement(elem, "tileDefinition", "glyph", "name,index", "opaque,solid,visible,invisible,allowDiagonalMovement,animation,offset");
 
-     name = DataUtils::ParseXmlAttribute(elem, "name", name);
+     name = a2de::DataUtils::ParseXmlAttribute(elem, "name", name);
      if(auto xml_randomOffset = elem.FirstChildElement("offset")) {
-         _random_index_offset = DataUtils::ParseXmlAttribute(*xml_randomOffset, "value", _random_index_offset);
+         _random_index_offset = a2de::DataUtils::ParseXmlAttribute(*xml_randomOffset, "value", _random_index_offset);
      }
-     _index = DataUtils::ParseXmlAttribute(elem, "index", _index);
+     _index = a2de::DataUtils::ParseXmlAttribute(elem, "index", _index);
      AddOffsetToIndex(_random_index_offset);
 
      auto xml_glyph = elem.FirstChildElement("glyph");
-     glyph = DataUtils::ParseXmlAttribute(*xml_glyph, "value", glyph);
+     glyph = a2de::DataUtils::ParseXmlAttribute(*xml_glyph, "value", glyph);
 
      if(auto xml_opaque = elem.FirstChildElement("opaque")) {
          is_opaque = true;
-         is_opaque = DataUtils::ParseXmlAttribute(*xml_opaque, "value", is_opaque);
+         is_opaque = a2de::DataUtils::ParseXmlAttribute(*xml_opaque, "value", is_opaque);
      }
 
      if(auto xml_solid = elem.FirstChildElement("solid")) {
          is_solid = true;
-         is_solid = DataUtils::ParseXmlAttribute(*xml_solid, "value", is_solid);
+         is_solid = a2de::DataUtils::ParseXmlAttribute(*xml_solid, "value", is_solid);
      }
 
      if(auto xml_visible = elem.FirstChildElement("visible")) {
          is_visible = true;
-         is_visible = DataUtils::ParseXmlAttribute(*xml_visible, "value", is_visible);
+         is_visible = a2de::DataUtils::ParseXmlAttribute(*xml_visible, "value", is_visible);
      }
      if(auto xml_invisible = elem.FirstChildElement("invisible")) {
          is_visible = false;
-         is_visible = DataUtils::ParseXmlAttribute(*xml_invisible, "value", is_visible);
+         is_visible = a2de::DataUtils::ParseXmlAttribute(*xml_invisible, "value", is_visible);
      }
 
      if(auto xml_diag = elem.FirstChildElement("allowDiagonalMovement")) {
          allow_diagonal_movement = true;
-         allow_diagonal_movement = DataUtils::ParseXmlAttribute(*xml_diag, "value", allow_diagonal_movement);
+         allow_diagonal_movement = a2de::DataUtils::ParseXmlAttribute(*xml_diag, "value", allow_diagonal_movement);
      }
 
      if(auto xml_animation = elem.FirstChildElement("animation")) {
@@ -138,7 +139,7 @@ TileDefinition::TileDefinition(Renderer& renderer, const XMLElement& elem, std::
      return true;
  }
 
- void TileDefinition::SetIndex(const IntVector2& indexCoords) {
+ void TileDefinition::SetIndex(const a2de::IntVector2& indexCoords) {
      _index = indexCoords;
  }
 
@@ -152,7 +153,7 @@ TileDefinition::TileDefinition(Renderer& renderer, const XMLElement& elem, std::
  }
 
  void TileDefinition::SetIndex(int x, int y) {
-     SetIndex(IntVector2{ x, y });
+     SetIndex(a2de::IntVector2{ x, y });
  }
 
  void TileDefinition::AddOffsetToIndex(int offset) {

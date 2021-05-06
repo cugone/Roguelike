@@ -1,17 +1,17 @@
 #include "Game/Pathfinder.hpp"
 
 void Pathfinder::Initialize(int width, int height) noexcept {
-    if(already_initialized && _dimensions == IntVector2{width, height}) {
+    if(already_initialized && _dimensions == a2de::IntVector2{width, height}) {
         return;
     }
-    _dimensions = IntVector2{width, height};
+    _dimensions = a2de::IntVector2{width, height};
     const auto area = width * height;
     _path.clear();
     _navMap.resize(area);
     for(auto x = 0; x < width; ++x) {
         for(auto y = 0; y < height; ++y) {
-            auto* node = GetNode(IntVector2{x, y});
-            node->coords = IntVector2{x, y};
+            auto* node = GetNode(a2de::IntVector2{x, y});
+            node->coords = a2de::IntVector2{x, y};
             SetNeighbors(x, y);
         }
     }
@@ -30,14 +30,14 @@ void Pathfinder::ResetNavMap() noexcept {
 }
 
 const Pathfinder::Node* Pathfinder::GetNode(int x, int y) const noexcept {
-    return GetNode(IntVector2{x, y});
+    return GetNode(a2de::IntVector2{x, y});
 }
 
 Pathfinder::Node* Pathfinder::GetNode(int x, int y) noexcept {
-    return GetNode(IntVector2{x, y});
+    return GetNode(a2de::IntVector2{x, y});
 }
 
-const Pathfinder::Node* Pathfinder::GetNode(const IntVector2& pos) const noexcept {
+const Pathfinder::Node* Pathfinder::GetNode(const a2de::IntVector2& pos) const noexcept {
     if(pos.x < 0 || pos.y < 0) {
         return nullptr;
     }
@@ -46,7 +46,7 @@ const Pathfinder::Node* Pathfinder::GetNode(const IntVector2& pos) const noexcep
     return &_navMap[index];
 }
 
-Pathfinder::Node* Pathfinder::GetNode(const IntVector2& pos) noexcept {
+Pathfinder::Node* Pathfinder::GetNode(const a2de::IntVector2& pos) noexcept {
     return const_cast<Pathfinder::Node*>(static_cast<const Pathfinder&>(*this).GetNode(pos));
 }
 

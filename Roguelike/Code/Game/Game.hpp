@@ -16,15 +16,17 @@
 
 #include <memory>
 
-class KerningFont;
+namespace a2de {
+    class KerningFont;
+}
 
 struct fullscreen_cb_t {
     int effectIndex = -1;
     float fadePercent = 0.0f;
     float lumosityBrightness = 1.2f;
     float gradiantRadius = 0.5f;
-    Vector4 fadeColor{};
-    Vector4 gradiantColor = Rgba::White.GetRgbaAsFloats();
+    a2de::Vector4 fadeColor{};
+    a2de::Vector4 gradiantColor = a2de::Rgba::White.GetRgbaAsFloats();
 };
 
 enum class FullscreenEffect {
@@ -64,7 +66,7 @@ public:
 
     void Initialize();
     void BeginFrame();
-    void Update(TimeUtils::FPSeconds deltaSeconds);
+    void Update(a2de::TimeUtils::FPSeconds deltaSeconds);
     void Render() const;
     void EndFrame();
 
@@ -73,10 +75,10 @@ public:
     void SetCurrentCursorByName(const std::string& name) noexcept;
     void SetCurrentCursorById(CursorId id) noexcept;
 
-    KerningFont* ingamefont{};
+    a2de::KerningFont* ingamefont{};
     Cursor* current_cursor{};
     CursorId current_cursorId{};
-    mutable Camera2D ui_camera{};
+    mutable a2de::Camera2D ui_camera{};
 protected:
 private:
 
@@ -92,9 +94,9 @@ private:
     void BeginFrame_Loading();
     void BeginFrame_Main();
 
-    void Update_Title(TimeUtils::FPSeconds deltaSeconds);
-    void Update_Loading(TimeUtils::FPSeconds deltaSeconds);
-    void Update_Main(TimeUtils::FPSeconds deltaSeconds);
+    void Update_Title(a2de::TimeUtils::FPSeconds deltaSeconds);
+    void Update_Loading(a2de::TimeUtils::FPSeconds deltaSeconds);
+    void Update_Main(a2de::TimeUtils::FPSeconds deltaSeconds);
 
     void Render_Title() const;
     void Render_Loading() const;
@@ -140,7 +142,7 @@ private:
     void ShowTileInspectorUI();
 
     void ShowEntityInspectorUI();
-    void ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const AnimatedSprite* cur_sprite);
+    void ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const a2de::AnimatedSprite* cur_sprite);
     void ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity);
 
     void ShowFeatureInspectorUI();
@@ -161,10 +163,10 @@ private:
 
     void RequestScreenShot() const noexcept;
     void UpdateFullscreenEffect(const FullscreenEffect& effect);
-    bool DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime);
-    bool DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime);
+    bool DoFadeIn(const a2de::Rgba& color, a2de::TimeUtils::FPSeconds fadeTime);
+    bool DoFadeOut(const a2de::Rgba& color, a2de::TimeUtils::FPSeconds fadeTime);
     void DoLumosity(float brightnessPower = 2.4f);
-    void DoCircularGradient(float radius, const Rgba& color);
+    void DoCircularGradient(float radius, const a2de::Rgba& color);
     void DoSepia();
     void DoSquareBlur();
     void StopFullscreenEffect();
@@ -176,15 +178,15 @@ private:
     void LoadData(void* user_data);
 
     std::unique_ptr<Map> _map{nullptr};
-    Rgba _grid_color{Rgba::Red};
-    Rgba _debug_gradientColor{Rgba::White};
+    a2de::Rgba _grid_color{a2de::Rgba::Red};
+    a2de::Rgba _debug_gradientColor{a2de::Rgba::White};
     std::vector<Tile*> _debug_inspected_tiles{};
     Entity* _debug_inspected_entity = nullptr;
     Feature* _debug_inspected_feature = nullptr;
-    std::shared_ptr<SpriteSheet> _cursor_sheet{};
-    std::shared_ptr<SpriteSheet> _entity_sheet{};
-    std::shared_ptr<SpriteSheet> _item_sheet{};
-    std::unique_ptr<UI::Widget> _widgetLoading{};
+    std::shared_ptr<a2de::SpriteSheet> _cursor_sheet{};
+    std::shared_ptr<a2de::SpriteSheet> _entity_sheet{};
+    std::shared_ptr<a2de::SpriteSheet> _item_sheet{};
+    std::unique_ptr<a2de::UI::Widget> _widgetLoading{};
     std::vector<Cursor> _cursors{};
     float _cam_speed = 5.0f;
     float _max_shake_angle = 0.0f;
@@ -195,15 +197,15 @@ private:
     float _debug_fadeOutInTime = 1.0f;
     float _debug_gradientRadius = 0.5f;
     float _text_alpha = 1.0f;
-    std::unique_ptr<class ConstantBuffer> _fullscreen_cb = nullptr;
+    std::unique_ptr<class a2de::ConstantBuffer> _fullscreen_cb = nullptr;
     fullscreen_cb_t _fullscreen_data = fullscreen_cb_t{};
     FullscreenEffect _current_fs_effect = FullscreenEffect::None;
     std::function<void()> _fullscreen_callback{};
-    Rgba _fadeIn_color = Rgba::Black;
-    Rgba _fadeOut_color = Rgba::Black;
-    TimeUtils::FPSeconds _fadeInTime{1.0f};
-    TimeUtils::FPSeconds _fadeOutTime{1.0f};
-    Console::CommandList _consoleCommands;
+    a2de::Rgba _fadeIn_color = a2de::Rgba::Black;
+    a2de::Rgba _fadeOut_color = a2de::Rgba::Black;
+    a2de::TimeUtils::FPSeconds _fadeInTime{1.0f};
+    a2de::TimeUtils::FPSeconds _fadeOutTime{1.0f};
+    a2de::Console::CommandList _consoleCommands;
     GameState _currentGameState = GameState::Title;
     GameState _nextGameState = GameState::Title;
     std::condition_variable _loading_signal{};

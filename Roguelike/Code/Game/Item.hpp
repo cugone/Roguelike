@@ -13,10 +13,13 @@
 #include <string>
 #include <vector>
 
-class AnimatedSprite;
-class Inventory;
+namespace a2de {
+    class AnimatedSprite;
+    class Inventory;
+    class Layer;
+}
+
 class ItemBuilder;
-class Layer;
 
 //Also represents render order.
 enum class EquipSlot {
@@ -51,8 +54,8 @@ public:
 
     explicit Item(ItemBuilder& builder) noexcept;
 
-    void Update(TimeUtils::FPSeconds deltaSeconds, const Vector2& position, Layer* parent_layer);
-    void AddVerts(const Vector2& position, Layer* parent_layer) const;
+    void Update(a2de::TimeUtils::FPSeconds deltaSeconds, const a2de::Vector2& position, Layer* parent_layer);
+    void AddVerts(const a2de::Vector2& position, Layer* parent_layer) const;
 
     const Inventory& GetInventory() const noexcept;
     Inventory& GetInventory() noexcept;
@@ -62,8 +65,8 @@ public:
 
     static Item* GetItem(const std::string& name);
 
-    const AnimatedSprite* GetSprite() const;
-    AnimatedSprite* GetSprite();
+    const a2de::AnimatedSprite* GetSprite() const;
+    a2de::AnimatedSprite* GetSprite();
 
     std::string GetName() const noexcept;
     std::string GetFriendlyName() const noexcept;
@@ -85,7 +88,7 @@ protected:
 private:
     std::string _name{};
     std::string _friendly_name{};
-    std::unique_ptr<AnimatedSprite> _sprite{};
+    std::unique_ptr<a2de::AnimatedSprite> _sprite{};
     Inventory* _parent_inventory{};
     Inventory _my_inventory{};
     Stats _stat_modifiers{0};
@@ -105,27 +108,27 @@ public:
     ItemBuilder& operator=(ItemBuilder&& other) noexcept = default;
     ~ItemBuilder() = default;
 
-    explicit ItemBuilder(const XMLElement& elem, std::weak_ptr<SpriteSheet> itemSheet) noexcept;
+    explicit ItemBuilder(const a2de::XMLElement& elem, std::weak_ptr<a2de::SpriteSheet> itemSheet) noexcept;
     ItemBuilder& Name(const std::string& name) noexcept;
     ItemBuilder& FriendlyName(const std::string& friendlyName) noexcept;
     ItemBuilder& Slot(const EquipSlot& slot) noexcept;
     ItemBuilder& MinimumStats(const Stats& stats) noexcept;
     ItemBuilder& MaximumStats(const Stats& stats) noexcept;
     ItemBuilder& ParentInventory(const Inventory& parentInventory) noexcept;
-    ItemBuilder& AnimateSprite(std::unique_ptr<AnimatedSprite> sprite) noexcept;
+    ItemBuilder& AnimateSprite(std::unique_ptr<a2de::AnimatedSprite> sprite) noexcept;
     ItemBuilder& MaxStackSize(std::size_t maximumStackSize) noexcept;
 
 protected:
 private:
 
-    void LoadFromXml(const XMLElement& elem, std::weak_ptr<SpriteSheet> itemSheet) noexcept;
+    void LoadFromXml(const a2de::XMLElement& elem, std::weak_ptr<a2de::SpriteSheet> itemSheet) noexcept;
 
     Inventory _parent_inventory{};
     EquipSlot _slot{};
     Stats _min_stats{};
     Stats _max_stats{};
-    std::unique_ptr<AnimatedSprite> _sprite{};
-    std::weak_ptr<SpriteSheet> _itemSheet{};
+    std::unique_ptr<a2de::AnimatedSprite> _sprite{};
+    std::weak_ptr<a2de::SpriteSheet> _itemSheet{};
     std::string _name{};
     std::string _friendly_name{};
     std::size_t _max_stack_size{ 1 };

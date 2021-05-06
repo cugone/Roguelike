@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <numeric>
 
-Layer::Layer(Map* map, const XMLElement& elem)
+Layer::Layer(Map* map, const a2de::XMLElement& elem)
     : _map(map)
 {
     if(!LoadFromXml(elem)) {
@@ -22,7 +22,7 @@ Layer::Layer(Map* map, const XMLElement& elem)
     }
 }
 
-Layer::Layer(Map* map, const Image& img)
+Layer::Layer(Map* map, const a2de::Image& img)
     : _map(map)
 {
     if(!LoadFromImage(img)) {
@@ -30,7 +30,7 @@ Layer::Layer(Map* map, const Image& img)
     }
 }
 
-Layer::Layer(Map* map, const IntVector2& dimensions)
+Layer::Layer(Map* map, const a2de::IntVector2& dimensions)
 : _map(map)
 , tileDimensions(dimensions)
 {
@@ -40,7 +40,7 @@ Layer::Layer(Map* map, const IntVector2& dimensions)
     int x = 0;
     int y = 0;
     for(auto& tile : _tiles) {
-        tile.color = Rgba::White;
+        tile.color = a2de::Rgba::White;
         tile.layer = this;
         tile.SetCoords(x++, y);
         if(x == layer_width) {
@@ -56,29 +56,29 @@ Layer::Layer(Map* map, const IntVector2& dimensions)
 Tile* Layer::GetNeighbor(const NeighborDirection& direction) {
     switch(direction) {
     case NeighborDirection::Self:
-        return GetNeighbor(IntVector2::ZERO);
+        return GetNeighbor(a2de::IntVector2::ZERO);
     case NeighborDirection::East:
-        return GetNeighbor(IntVector2::X_AXIS);
+        return GetNeighbor(a2de::IntVector2::X_AXIS);
     case NeighborDirection::NorthEast:
-        return GetNeighbor(IntVector2{ 1, -1 });
+        return GetNeighbor(a2de::IntVector2{1, -1});
     case NeighborDirection::North:
-        return GetNeighbor(-IntVector2::Y_AXIS);
+        return GetNeighbor(-a2de::IntVector2::Y_AXIS);
     case NeighborDirection::NorthWest:
-        return GetNeighbor(-IntVector2::XY_AXIS);
+        return GetNeighbor(-a2de::IntVector2::XY_AXIS);
     case NeighborDirection::West:
-        return GetNeighbor(-IntVector2::X_AXIS);
+        return GetNeighbor(-a2de::IntVector2::X_AXIS);
     case NeighborDirection::SouthWest:
-        return GetNeighbor(IntVector2{ -1, 1 });
+        return GetNeighbor(a2de::IntVector2{-1, 1});
     case NeighborDirection::South:
-        return GetNeighbor(IntVector2::Y_AXIS);
+        return GetNeighbor(a2de::IntVector2::Y_AXIS);
     case NeighborDirection::SouthEast:
-        return GetNeighbor(IntVector2::XY_AXIS);
+        return GetNeighbor(a2de::IntVector2::XY_AXIS);
     default:
         return nullptr;
     }
 }
 
-Tile* Layer::GetNeighbor(const IntVector2& direction) {
+Tile* Layer::GetNeighbor(const a2de::IntVector2& direction) {
     return GetTile(direction.x, direction.y);
 }
 
@@ -119,23 +119,23 @@ std::vector<Tile>::iterator Layer::end() noexcept {
     return _tiles.end();
 }
 
-const Mesh::Builder& Layer::GetMeshBuilder() const noexcept {
+const a2de::Mesh::Builder& Layer::GetMeshBuilder() const noexcept {
     return _mesh_builder;
 }
 
-Mesh::Builder& Layer::GetMeshBuilder() noexcept {
-    return const_cast<Mesh::Builder&>(static_cast<const Layer&>(*this).GetMeshBuilder());
+a2de::Mesh::Builder& Layer::GetMeshBuilder() noexcept {
+    return const_cast<a2de::Mesh::Builder&>(static_cast<const Layer&>(*this).GetMeshBuilder());
 }
 
-bool Layer::LoadFromXml(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "layer", "row", "");
-    std::size_t row_count = DataUtils::GetChildElementCount(elem, "row");
+bool Layer::LoadFromXml(const a2de::XMLElement& elem) {
+    a2de::DataUtils::ValidateXmlElement(elem, "layer", "row", "");
+    std::size_t row_count = a2de::DataUtils::GetChildElementCount(elem, "row");
     std::vector<std::string> glyph_strings;
     glyph_strings.reserve(row_count);
-    DataUtils::ForEachChildElement(elem, "row",
-    [this, &glyph_strings](const XMLElement& elem) {
-        DataUtils::ValidateXmlElement(elem, "row", "", "glyphs");
-        auto glyph_str = DataUtils::ParseXmlAttribute(elem, "glyphs", std::string{});
+    a2de::DataUtils::ForEachChildElement(elem, "row",
+    [this, &glyph_strings](const a2de::XMLElement& elem) {
+        a2de::DataUtils::ValidateXmlElement(elem, "row", "", "glyphs");
+        auto glyph_str = a2de::DataUtils::ParseXmlAttribute(elem, "glyphs", std::string{});
         glyph_strings.push_back(glyph_str);
     });
     auto max_row_length = NormalizeLayerRows(glyph_strings);
@@ -143,7 +143,7 @@ bool Layer::LoadFromXml(const XMLElement& elem) {
     return true;
 }
 
-bool Layer::LoadFromImage(const Image& img) {
+bool Layer::LoadFromImage(const a2de::Image& img) {
     tileDimensions = img.GetDimensions();
     const auto layer_width = tileDimensions.x;
     const auto layer_height = tileDimensions.y;
@@ -151,7 +151,7 @@ bool Layer::LoadFromImage(const Image& img) {
     int tile_x = 0;
     int tile_y = 0;
     for(auto& t : _tiles) {
-        t.color = img.GetTexel(IntVector2{tile_x, tile_y});
+        t.color = img.GetTexel(a2de::IntVector2{tile_x, tile_y});
         t.SetCoords(tile_x++, tile_y);
         tile_x %= layer_width;
         if(tile_x == 0) {
@@ -204,55 +204,55 @@ std::size_t Layer::NormalizeLayerRows(std::vector<std::string>& glyph_strings) {
     return max_row_length;
 }
 
-void Layer::SetModelViewProjectionBounds(Renderer& renderer) const {
+void Layer::SetModelViewProjectionBounds(a2de::Renderer& renderer) const {
 
     const auto ortho_bounds = CalcOrthoBounds();
 
-    renderer.SetModelMatrix(Matrix4::I);
-    renderer.SetViewMatrix(Matrix4::I);
-    const auto leftBottom = Vector2{ ortho_bounds.mins.x, ortho_bounds.maxs.y };
-    const auto rightTop = Vector2{ ortho_bounds.maxs.x, ortho_bounds.mins.y };
-    _map->cameraController.GetCamera().SetupView(leftBottom, rightTop, Vector2(0.0f, 1000.0f));
+    renderer.SetModelMatrix(a2de::Matrix4::I);
+    renderer.SetViewMatrix(a2de::Matrix4::I);
+    const auto leftBottom = a2de::Vector2{ ortho_bounds.mins.x, ortho_bounds.maxs.y };
+    const auto rightTop = a2de::Vector2{ ortho_bounds.maxs.x, ortho_bounds.mins.y };
+    _map->cameraController.GetCamera().SetupView(leftBottom, rightTop, a2de::Vector2(0.0f, 1000.0f));
     renderer.SetCamera(_map->cameraController.GetCamera());
 
-    Camera2D& base_camera = _map->cameraController.GetCamera();
-    Camera2D shakyCam = _map->cameraController.GetCamera();
+    a2de::Camera2D& base_camera = _map->cameraController.GetCamera();
+    a2de::Camera2D shakyCam = _map->cameraController.GetCamera();
     const float shake = shakyCam.GetShake();
-    const float shaky_angle = currentGraphicsOptions.MaxShakeAngle * shake * MathUtils::GetRandomFloatNegOneToOne();
-    const float shaky_offsetX = currentGraphicsOptions.MaxShakeOffsetHorizontal * shake * MathUtils::GetRandomFloatNegOneToOne();
-    const float shaky_offsetY = currentGraphicsOptions.MaxShakeOffsetVertical * shake * MathUtils::GetRandomFloatNegOneToOne();
+    const float shaky_angle = currentGraphicsOptions.MaxShakeAngle * shake * a2de::MathUtils::GetRandomFloatNegOneToOne();
+    const float shaky_offsetX = currentGraphicsOptions.MaxShakeOffsetHorizontal * shake * a2de::MathUtils::GetRandomFloatNegOneToOne();
+    const float shaky_offsetY = currentGraphicsOptions.MaxShakeOffsetVertical * shake * a2de::MathUtils::GetRandomFloatNegOneToOne();
     shakyCam.orientation_degrees = base_camera.orientation_degrees + shaky_angle;
-    shakyCam.position = base_camera.position + Vector2{ shaky_offsetX, shaky_offsetY };
+    shakyCam.position = base_camera.position + a2de::Vector2{ shaky_offsetX, shaky_offsetY };
 
     const float cam_rotation_z = shakyCam.GetOrientation();
-    const auto VRz = Matrix4::Create2DRotationDegreesMatrix(-cam_rotation_z);
+    const auto VRz = a2de::Matrix4::Create2DRotationDegreesMatrix(-cam_rotation_z);
 
     const auto& cam_pos = shakyCam.GetPosition();
-    const auto Vt = Matrix4::CreateTranslationMatrix(-cam_pos);
-    const auto v = Matrix4::MakeRT(Vt, VRz);
+    const auto Vt = a2de::Matrix4::CreateTranslationMatrix(-cam_pos);
+    const auto v = a2de::Matrix4::MakeRT(Vt, VRz);
     renderer.SetViewMatrix(v);
 
 }
 
-void Layer::RenderTiles(Renderer& renderer) const {
-    renderer.SetModelMatrix(Matrix4::I);
-    Mesh::Render(renderer, _mesh_builder);
+void Layer::RenderTiles(a2de::Renderer& renderer) const {
+    renderer.SetModelMatrix(a2de::Matrix4::I);
+    a2de::Mesh::Render(renderer, _mesh_builder);
 }
 
-void Layer::DebugRenderTiles(Renderer& renderer) const {
-    renderer.SetModelMatrix(Matrix4::I);
+void Layer::DebugRenderTiles(a2de::Renderer& renderer) const {
+    renderer.SetModelMatrix(a2de::Matrix4::I);
 
-    AABB2 cullbounds = CalcCullBounds(_map->cameraController.GetCamera().position);
+    a2de::AABB2 cullbounds = CalcCullBounds(_map->cameraController.GetCamera().position);
 
     for(auto& t : _tiles) {
-        AABB2 tile_bounds = t.GetBounds();
-        if(MathUtils::DoAABBsOverlap(cullbounds, tile_bounds)) {
+        a2de::AABB2 tile_bounds = t.GetBounds();
+        if(a2de::MathUtils::DoAABBsOverlap(cullbounds, tile_bounds)) {
             t.DebugRender(renderer);
         }
     }
 }
 
-void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
+void Layer::UpdateTiles(a2de::TimeUtils::FPSeconds deltaSeconds) {
     debug_tiles_in_view_count = 0;
     debug_visible_tiles_in_view_count = 0;
     const auto& viewableTiles = [this]() {
@@ -311,16 +311,16 @@ void Layer::BeginFrame() {
     }
 }
 
-void Layer::Update(TimeUtils::FPSeconds deltaSeconds) {
+void Layer::Update(a2de::TimeUtils::FPSeconds deltaSeconds) {
     UpdateTiles(deltaSeconds);
 }
 
-void Layer::Render(Renderer& renderer) const {
+void Layer::Render(a2de::Renderer& renderer) const {
     SetModelViewProjectionBounds(renderer);
     RenderTiles(renderer);
 }
 
-void Layer::DebugRender(Renderer& renderer) const {
+void Layer::DebugRender(a2de::Renderer& renderer) const {
     SetModelViewProjectionBounds(renderer);
     DebugRenderTiles(renderer);
 }
@@ -332,28 +332,28 @@ void Layer::EndFrame() {
     }
 }
 
-AABB2 Layer::CalcOrthoBounds() const {
+a2de::AABB2 Layer::CalcOrthoBounds() const {
     float half_view_height = this->GetMap()->cameraController.GetCamera().GetViewHeight() * 0.5f;
     float half_view_width = half_view_height * _map->cameraController.GetAspectRatio();
-    auto ortho_mins = Vector2{ -half_view_width, -half_view_height };
-    auto ortho_maxs = Vector2{ half_view_width, half_view_height };
-    return AABB2{ ortho_mins, ortho_maxs };
+    auto ortho_mins = a2de::Vector2{ -half_view_width, -half_view_height };
+    auto ortho_maxs = a2de::Vector2{ half_view_width, half_view_height };
+    return a2de::AABB2{ ortho_mins, ortho_maxs };
 }
 
-AABB2 Layer::CalcViewBounds(const Vector2& cam_pos) const {
+a2de::AABB2 Layer::CalcViewBounds(const a2de::Vector2& cam_pos) const {
     auto view_bounds = CalcOrthoBounds();
     view_bounds.Translate(cam_pos);
     return view_bounds;
 }
 
-AABB2 Layer::CalcCullBounds(const Vector2& cam_pos) const {
-    AABB2 cullBounds = CalcViewBounds(cam_pos);
+a2de::AABB2 Layer::CalcCullBounds(const a2de::Vector2& cam_pos) const {
+    auto cullBounds = CalcViewBounds(cam_pos);
     cullBounds.AddPaddingToSides(1.0f, 1.0f);
     return cullBounds;
 }
 
-AABB2 Layer::CalcCullBoundsFromOrthoBounds() const {
-    AABB2 cullBounds = CalcOrthoBounds();
+a2de::AABB2 Layer::CalcCullBoundsFromOrthoBounds() const {
+    auto cullBounds = CalcOrthoBounds();
     cullBounds.AddPaddingToSides(1.0f, 1.0f);
     return cullBounds;
 }
