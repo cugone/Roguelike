@@ -17,7 +17,7 @@ struct TextEntityDesc {
     a2de::Rgba color = a2de::Rgba::White;
     a2de::Vector2 position{ 0.0f, 0.0f };
     a2de::TimeUtils::FPSeconds timeToLive{ 1.0f };
-    a2de::KerningFont* font{};
+    a2de::KerningFont* font{nullptr};
     float speed{1.0f};
 };
 
