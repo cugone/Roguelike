@@ -307,7 +307,7 @@ void ItemBuilder::LoadFromXml(const a2de::XMLElement& elem, std::weak_ptr<a2de::
         MinimumStats(Stats(*xml_minstats));
         MaximumStats(Stats(*xml_minstats));
         if(auto* xml_maxstats = xml_minstats->NextSiblingElement("stats")) {
-            MaximumStats(Stats(*xml_minstats));
+            MaximumStats(Stats(*xml_maxstats));
         }
     }
     if(a2de::DataUtils::HasAttribute(elem, "index")) {
