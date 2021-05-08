@@ -253,6 +253,12 @@ void Map::Update(a2de::TimeUtils::FPSeconds deltaSeconds) {
     cameraController.TranslateTo(a2de::Vector2(player->tile->GetCoords()), deltaSeconds);
     const auto clamped_camera_position = a2de::MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
     cameraController.SetPosition(clamped_camera_position);
+    _should_render_stat_window.first = false;
+    _should_render_stat_window.second = g_theInputSystem->GetMouseCoords();
+    if(auto* tile = this->PickTileFromMouseCoords(_should_render_stat_window.second, 0); tile != nullptr && tile->actor != nullptr) {
+        _should_render_stat_window.first = true;
+        _should_render_stat_window.second = g_theRenderer->ConvertWorldToScreenCoords(a2de::Vector2{tile->GetCoords()});// +a2de::Vector2{2.0f, 0.5f});
+    }
 }
 
 void Map::UpdateLayers(a2de::TimeUtils::FPSeconds deltaSeconds) {
@@ -332,6 +338,14 @@ void Map::Render(a2de::Renderer& renderer) const {
 
     for(auto* entity : _text_entities) {
         entity->Render();
+    }
+
+    if(_should_render_stat_window.first) {
+        g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+        a2de::AABB2 bounds{};
+        bounds.maxs = a2de::Vector2{64.0f, 64.0f} * cameraController.GetAspectRatio();
+        bounds.Translate(_should_render_stat_window.second);
+        g_theRenderer->DrawAABB2(bounds, a2de::Rgba::Blue, a2de::Rgba{50, 50, 50, 128}, a2de::Vector2{4.0f, 4.0f});
     }
 
 }

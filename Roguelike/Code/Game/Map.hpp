@@ -356,6 +356,7 @@ private:
     mutable std::size_t _debug_tiles_in_view_count{};
     mutable std::size_t _debug_visible_tiles_in_view_count{};
     static inline unsigned long long default_map_index = 0ull;
+    std::pair<bool, a2de::Vector2> _should_render_stat_window{false, a2de::Vector2{}};
 
     friend class MapGenerator;
     friend class HeightMapGenerator;
