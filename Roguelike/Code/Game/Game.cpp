@@ -294,6 +294,7 @@ void Game::Render_Main() const {
     const auto ui_rightTop = a2de::Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
     const auto ui_center = a2de::Vector2::ZERO;
     const auto ui_nearFar = a2de::Vector2{ 0.0f, 1.0f };
+    ui_camera.SetPosition(ui_center);
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, a2de::MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
 
