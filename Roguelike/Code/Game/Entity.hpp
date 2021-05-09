@@ -60,6 +60,7 @@ public:
     Faction GetFaction() const noexcept;
     void SetFaction(const Faction& faction) noexcept;
     Faction JoinFaction(const Faction& faction) noexcept;
+    a2de::Rgba GetFactionAsColor() const noexcept;
 
     virtual void AddVerts() noexcept;
     virtual void AddVertsForSelf() noexcept;

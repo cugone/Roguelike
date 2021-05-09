@@ -220,3 +220,13 @@ Faction Entity::JoinFaction(const Faction& faction) noexcept {
     SetFaction(faction);
     return _faction;
 }
+
+a2de::Rgba Entity::GetFactionAsColor() const noexcept {
+    switch(_faction) {
+    case Faction::None: return a2de::Rgba::Gray;
+    case Faction::Player: return a2de::Rgba::Green;
+    case Faction::Enemy: return a2de::Rgba::Red;
+    case Faction::Neutral: return a2de::Rgba::Blue;
+    default: return a2de::Rgba::Pink;
+    }
+}
