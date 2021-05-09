@@ -253,11 +253,9 @@ void Map::Update(a2de::TimeUtils::FPSeconds deltaSeconds) {
     cameraController.TranslateTo(a2de::Vector2(player->tile->GetCoords()), deltaSeconds);
     const auto clamped_camera_position = a2de::MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
     cameraController.SetPosition(clamped_camera_position);
-    _should_render_stat_window.first = false;
-    _should_render_stat_window.second = g_theInputSystem->GetMouseCoords();
-    if(auto* tile = this->PickTileFromMouseCoords(_should_render_stat_window.second, 0); tile != nullptr && tile->actor != nullptr) {
-        _should_render_stat_window.first = true;
-        _should_render_stat_window.second = g_theRenderer->ConvertWorldToScreenCoords(a2de::Vector2{tile->GetCoords()});// +a2de::Vector2{2.0f, 0.5f});
+    _should_render_stat_window = false;
+    if(auto* tile = this->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr && tile->actor != nullptr) {
+        _should_render_stat_window = true;
     }
 }
 
@@ -290,6 +288,48 @@ void Map::UpdateActorAI(a2de::TimeUtils::FPSeconds /*deltaSeconds*/) {
             }
         }
     }
+}
+
+void Map::RenderStatsBlock(Actor* actor) const noexcept {
+    if(!actor) {
+        return;
+    }
+    const auto& stats = actor->GetStats();
+    g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+    
+    const auto text = [&]()->std::string {
+        std::ostringstream ss{};
+        ss << "Lvl: " << stats.GetStat(StatsID::Level) << '\n';
+        ss << "HP: " << stats.GetStat(StatsID::Health) << '\n';
+        ss << "Max HP: " << stats.GetStat(StatsID::Health_Max) << '\n';
+        ss << "XP: " << stats.GetStat(StatsID::Experience) << '\n';
+        ss << "Atk: " << stats.GetStat(StatsID::Attack) << '\n';
+        ss << "Def: " << stats.GetStat(StatsID::Defense) << '\n';
+        ss << "Spd: " << stats.GetStat(StatsID::Speed) << '\n';
+        ss << "Eva: " << stats.GetStat(StatsID::Evasion) << '\n';
+        ss << "Lck: " << stats.GetStat(StatsID::Luck);
+        return ss.str();
+    }();
+    const auto text_height = g_theGame->ingamefont->CalculateTextHeight(text);
+    const auto text_width = g_theGame->ingamefont->CalculateTextWidth(text);
+    a2de::AABB2 bounds{};
+    const auto dims_w = text_width;
+    const auto dims_h = text_height;
+    const auto bottom_right = a2de::Vector2{dims_w, dims_h};
+    const auto element_padding = a2de::Vector2{2.0f, -5.0f};
+    const auto margin_padding = a2de::Vector2{0.0f, 0.0f};
+    const auto border_padding = a2de::Vector2{2.0f, 2.0f};
+    const auto padding = element_padding + margin_padding + border_padding;
+    bounds.StretchToIncludePoint(bottom_right);
+    bounds.Translate(a2de::Vector2{50.0f, 50.0f});
+    const auto text_position = bounds.mins + padding;
+    g_theRenderer->DrawAABB2(bounds, actor->GetFactionAsColor(), a2de::Rgba{50, 50, 50, 128}, border_padding);
+    auto S = a2de::Matrix4::I;
+    auto R = a2de::Matrix4::I;
+    auto T = a2de::Matrix4::CreateTranslationMatrix(text_position);
+    auto M = a2de::Matrix4::MakeSRT(S, R, T);
+    g_theRenderer->SetModelMatrix(M);
+    g_theRenderer->DrawMultilineText(g_theGame->ingamefont, text);
 }
 
 void Map::SetPriorityLayer(std::size_t i) {
@@ -340,12 +380,10 @@ void Map::Render(a2de::Renderer& renderer) const {
         entity->Render();
     }
 
-    if(_should_render_stat_window.first) {
-        g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
-        a2de::AABB2 bounds{};
-        bounds.maxs = a2de::Vector2{64.0f, 64.0f} * cameraController.GetAspectRatio();
-        bounds.Translate(_should_render_stat_window.second);
-        g_theRenderer->DrawAABB2(bounds, a2de::Rgba::Blue, a2de::Rgba{50, 50, 50, 128}, a2de::Vector2{4.0f, 4.0f});
+    if(_should_render_stat_window) {
+        if(const auto* tile = this->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr) {
+            RenderStatsBlock(tile->actor);
+        }
     }
 
 }
