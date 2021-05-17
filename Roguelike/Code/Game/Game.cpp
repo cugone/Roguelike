@@ -243,12 +243,11 @@ void Game::Render_Loading() const {
     g_theRenderer->SetModelMatrix(Matrix4::I);
     g_theRenderer->DrawTextLine(ingamefont, "LOADING");
     if(_done_loading) {
-        const std::string text = "Press Any Key";
+        static const std::string text = "Press Any Key";
         static const auto text_length = ingamefont->CalculateTextWidth(text);
         g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(Vector2{ text_length * -0.25f, ingamefont->GetLineHeight() }));
         g_theRenderer->DrawTextLine(ingamefont, text, Rgba{255, 255, 255, static_cast<unsigned char>(255.0f * _text_alpha)});
     }
-
 }
 
 void Game::Render_Main() const {
