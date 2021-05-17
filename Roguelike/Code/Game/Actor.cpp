@@ -13,7 +13,7 @@
 
 std::multimap<std::string, std::unique_ptr<Actor>> Actor::s_registry{};
 
-Actor* Actor::CreateActor(Map* map, const a2de::XMLElement& elem) {
+Actor* Actor::CreateActor(Map* map, const XMLElement& elem) {
     auto new_actor = std::make_unique<Actor>(map, elem);
     std::string new_actor_name = new_actor->name;
     auto ptr = new_actor.get();
@@ -25,7 +25,7 @@ void Actor::ClearActorRegistry() noexcept {
     s_registry.clear();
 }
 
-Actor::Actor(Map* map, const a2de::XMLElement& elem) noexcept
+Actor::Actor(Map* map, const XMLElement& elem) noexcept
     : Entity()
 {
     this->map = map;
@@ -76,14 +76,14 @@ bool Actor::MoveTo(Tile* destination) {
     return false;
 }
 
-bool Actor::LoadFromXml(const a2de::XMLElement& elem) {
-    a2de::DataUtils::ValidateXmlElement(elem, "actor", "", "name,lookAndFeel", "", "position,behavior");
-    name = a2de::DataUtils::ParseXmlAttribute(elem, "name", name);
-    const auto definitionName = a2de::DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
+bool Actor::LoadFromXml(const XMLElement& elem) {
+    DataUtils::ValidateXmlElement(elem, "actor", "", "name,lookAndFeel", "", "position,behavior");
+    name = DataUtils::ParseXmlAttribute(elem, "name", name);
+    const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
     def = EntityDefinition::GetEntityDefinitionByName(definitionName);
     sprite = def->GetSprite();
     inventory = def->inventory;
-    const auto behaviorName = a2de::DataUtils::ParseXmlAttribute(elem, "behavior", "none");
+    const auto behaviorName = DataUtils::ParseXmlAttribute(elem, "behavior", "none");
     this->SetBehavior(Behavior::IdFromName(behaviorName));
     _equipment = def->equipment;
     for(const auto& e : _equipment) {
@@ -91,13 +91,13 @@ bool Actor::LoadFromXml(const a2de::XMLElement& elem) {
             AdjustStatModifiers(e->GetStatModifiers());
         }
     }
-    if(a2de::DataUtils::HasAttribute(elem, "position")) {
-        SetPosition(a2de::DataUtils::ParseXmlAttribute(elem, "position", a2de::IntVector2::ZERO));
+    if(DataUtils::HasAttribute(elem, "position")) {
+        SetPosition(DataUtils::ParseXmlAttribute(elem, "position", IntVector2::ZERO));
     }
     return true;
 }
 
-bool Actor::CanMoveDiagonallyToNeighbor(const a2de::IntVector2& direction) const {
+bool Actor::CanMoveDiagonallyToNeighbor(const IntVector2& direction) const {
     const auto& pos = GetPosition();
     const auto target = pos + direction;
     if(pos.x == target.x || pos.y == target.y) {
@@ -151,7 +151,7 @@ void Actor::ResolveAttack(Entity& attacker, Entity& defender) {
         }
         const auto chance = (std::floor((aLck + aLvl - dLvl) / 4.0f)) / 100.0f;
         bool crit = false;
-        if(a2de::MathUtils::IsPercentChance(chance)) {
+        if(MathUtils::IsPercentChance(chance)) {
             result *= 2;
             crit = true;
         }
@@ -183,7 +183,7 @@ void Actor::ApplyDamage(DamageType type, long amount, bool crit) {
     //Make damage text
     TextEntityDesc desc{};
     desc.font = g_theGame->ingamefont;
-    desc.color = amount < 0 ? a2de::Rgba::Green : (crit ? a2de::Rgba::Yellow : a2de::Rgba::White);
+    desc.color = amount < 0 ? Rgba::Green : (crit ? Rgba::Yellow : Rgba::White);
     std::ostringstream ss;
     ss << std::fixed << std::setprecision(1) << std::abs(amount);
     desc.text = ss.str();
@@ -193,7 +193,7 @@ void Actor::ApplyDamage(DamageType type, long amount, bool crit) {
 void Actor::AttackerMissed() {
     TextEntityDesc desc{};
     desc.font = g_theGame->ingamefont;
-    desc.color = a2de::Rgba::White;
+    desc.color = Rgba::White;
     desc.text = "MISS";
     map->CreateTextEntityAt(tile->GetCoords(), desc);
 }
@@ -240,7 +240,7 @@ std::vector<Item*> Actor::GetAllFeetEquipment() const {
     return GetAllEquipmentOfType(EquipSlot::Feet);
 }
 
-bool Actor::Move(const a2de::IntVector2& direction) {
+bool Actor::Move(const IntVector2& direction) {
     bool moved = false;
     if(CanMoveDiagonallyToNeighbor(direction)) {
         const auto& pos = GetPosition();
@@ -263,35 +263,35 @@ bool Actor::Move(const a2de::IntVector2& direction) {
 }
 
 bool Actor::MoveNorth() {
-    return Move(a2de::IntVector2{ 0,-1 });
+    return Move(IntVector2{ 0,-1 });
 }
 
 bool Actor::MoveNorthEast() {
-    return Move(a2de::IntVector2{ 1,-1 });
+    return Move(IntVector2{ 1,-1 });
 }
 
 bool Actor::MoveEast() {
-    return Move(a2de::IntVector2{ 1,0 });
+    return Move(IntVector2{ 1,0 });
 }
 
 bool Actor::MoveSouthEast() {
-    return Move(a2de::IntVector2{ 1,1 });
+    return Move(IntVector2{ 1,1 });
 }
 
 bool Actor::MoveSouth() {
-    return Move(a2de::IntVector2{ 0,1 });
+    return Move(IntVector2{ 0,1 });
 }
 
 bool Actor::MoveSouthWest() {
-    return Move(a2de::IntVector2{ -1,1 });
+    return Move(IntVector2{ -1,1 });
 }
 
 bool Actor::MoveWest() {
-    return Move(a2de::IntVector2{ -1,0 });
+    return Move(IntVector2{ -1,0 });
 }
 
 bool Actor::MoveNorthWest() {
-    return Move(a2de::IntVector2{ -1,-1 });
+    return Move(IntVector2{ -1,-1 });
 }
 
 Item* Actor::IsEquipped(const EquipSlot& slot) {
@@ -323,7 +323,7 @@ const std::vector<Item*>& Actor::GetEquipment() const noexcept {
     return _equipment;
 }
 
-void Actor::SetPosition(const a2de::IntVector2& position) {
+void Actor::SetPosition(const IntVector2& position) {
     if(auto* cur_tile = map->GetTile(_position.x, _position.y, layer->z_index)) {
         cur_tile->actor = nullptr;
         Entity::SetPosition(position);

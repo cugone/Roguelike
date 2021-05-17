@@ -35,9 +35,9 @@ public:
     Inventory& operator=(Inventory&& other) = default;
     ~Inventory() = default;
 
-    explicit Inventory(const a2de::XMLElement& elem) noexcept;
+    explicit Inventory(const XMLElement& elem) noexcept;
 
-    void AddVerts(const a2de::Vector2& position, Layer* layer) const noexcept;
+    void AddVerts(const Vector2& position, Layer* layer) const noexcept;
 
     Item* HasItem(Item* item) const noexcept;
     Item* HasItem(const std::string& name) const noexcept;
@@ -85,6 +85,6 @@ public:
 
 protected:
 private:
-    void LoadFromXml(const a2de::XMLElement& elem);
+    void LoadFromXml(const XMLElement& elem);
     
 }; //End Inventory

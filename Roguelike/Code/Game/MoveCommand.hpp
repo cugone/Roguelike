@@ -6,10 +6,10 @@
 
 class MoveCommand : public ActorCommand {
 public:
-    MoveCommand(Actor* actor, const a2de::IntVector2& direction) : ActorCommand(actor), _direction(direction) {};
+    MoveCommand(Actor* actor, const IntVector2& direction) : ActorCommand(actor), _direction(direction) {};
     virtual ~MoveCommand() = default;
     virtual void execute() override;
 protected:
 private:
-    a2de::IntVector2 _direction;
+    IntVector2 _direction;
 };

@@ -42,7 +42,7 @@ public:
     Stats& operator=(Stats&& rrhs) = default;
     ~Stats() = default;
 
-    explicit Stats(const a2de::XMLElement& elem);
+    explicit Stats(const XMLElement& elem);
 
     auto GetStat(const StatsID& id) const noexcept -> decltype(_stats)::value_type;
     void SetStat(const StatsID& id, decltype(_stats)::value_type value) noexcept;

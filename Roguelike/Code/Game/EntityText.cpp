@@ -14,12 +14,12 @@ EntityText::EntityText(const TextEntityDesc& desc) noexcept
     , font{desc.font}
     , speed{desc.speed}
 {
-    _position = a2de::IntVector2{desc.position};
+    _position = IntVector2{desc.position};
     _screen_position = desc.position;
 }
 
-void EntityText::Update(a2de::TimeUtils::FPSeconds deltaSeconds) {
-    _screen_position += a2de::Vector2{0.0f, -speed} * deltaSeconds.count();
+void EntityText::Update(TimeUtils::FPSeconds deltaSeconds) {
+    _screen_position += Vector2{0.0f, -speed} * deltaSeconds.count();
     color.a = static_cast<unsigned char>(255.0f * std::clamp(1.0f - (_currentLiveTime.count() / ttl.count()), 0.0f, 1.0f));
     _currentLiveTime += deltaSeconds;
     if(ttl < _currentLiveTime) {
@@ -28,16 +28,16 @@ void EntityText::Update(a2de::TimeUtils::FPSeconds deltaSeconds) {
 }
 
 void EntityText::Render() const {
-    const auto S = a2de::Matrix4::I;
-    const auto R = a2de::Matrix4::I;
+    const auto S = Matrix4::I;
+    const auto R = Matrix4::I;
     const auto worldCoords = _screen_position;
     const auto screen_position = g_theRenderer->ConvertWorldToScreenCoords(map->cameraController.GetCamera(), worldCoords);
     const auto text_width = font->CalculateTextWidth(text);
     const auto text_height = font->CalculateTextHeight(text);
-    const auto text_half_extents = a2de::Vector2{text_width, text_height} * 0.5f;
+    const auto text_half_extents = Vector2{text_width, text_height} * 0.5f;
     const auto text_center = screen_position - text_half_extents;
-    const auto T = a2de::Matrix4::CreateTranslationMatrix(text_center);
-    const auto M = a2de::Matrix4::MakeSRT(S, R, T);
+    const auto T = Matrix4::CreateTranslationMatrix(text_center);
+    const auto M = Matrix4::MakeSRT(S, R, T);
     g_theRenderer->SetModelMatrix(M);
     g_theRenderer->DrawTextLine(font, text, color);
 }

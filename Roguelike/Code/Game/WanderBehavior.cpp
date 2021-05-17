@@ -22,7 +22,7 @@ WanderBehavior::WanderBehavior() noexcept
 }
 
 void WanderBehavior::Act(Actor* actor) noexcept {
-    const auto direction = a2de::MathUtils::GetRandomIntLessThan(9);
+    const auto direction = MathUtils::GetRandomIntLessThan(9);
     switch(direction) {
     case 0:
     {

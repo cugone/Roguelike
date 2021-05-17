@@ -15,7 +15,7 @@ const std::vector<std::unique_ptr<CursorDefinition>>& CursorDefinition::GetLoade
     return s_registry;
 }
 
-void CursorDefinition::CreateCursorDefinition(a2de::Renderer& renderer, const a2de::XMLElement& elem, std::weak_ptr<a2de::SpriteSheet> sheet) {
+void CursorDefinition::CreateCursorDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
     s_registry.emplace_back(std::move(std::make_unique<CursorDefinition>(renderer, elem, sheet)));
 }
 
@@ -35,34 +35,34 @@ void CursorDefinition::ClearCursorRegistry() {
     s_registry.clear();
 }
 
-const a2de::Texture* CursorDefinition::GetTexture() const {
+const Texture* CursorDefinition::GetTexture() const {
     return GetSheet()->GetTexture();
 }
 
-a2de::Texture* CursorDefinition::GetTexture() {
-    return const_cast<a2de::Texture*>(static_cast<const CursorDefinition&>(*this).GetTexture());
+Texture* CursorDefinition::GetTexture() {
+    return const_cast<Texture*>(static_cast<const CursorDefinition&>(*this).GetTexture());
 }
 
-const a2de::SpriteSheet* CursorDefinition::GetSheet() const {
+const SpriteSheet* CursorDefinition::GetSheet() const {
     if(!_sheet.expired()) {
         return _sheet.lock().get();
     }
     return nullptr;
 }
 
-a2de::SpriteSheet* CursorDefinition::GetSheet() {
-    return const_cast<a2de::SpriteSheet*>(static_cast<const CursorDefinition&>(*this).GetSheet());
+SpriteSheet* CursorDefinition::GetSheet() {
+    return const_cast<SpriteSheet*>(static_cast<const CursorDefinition&>(*this).GetSheet());
 }
 
-const a2de::AnimatedSprite* CursorDefinition::GetSprite() const {
+const AnimatedSprite* CursorDefinition::GetSprite() const {
     return _sprite.get();
 }
 
-a2de::AnimatedSprite* CursorDefinition::GetSprite() {
+AnimatedSprite* CursorDefinition::GetSprite() {
     return _sprite.get();
 }
 
-a2de::IntVector2 CursorDefinition::GetIndexCoords() const {
+IntVector2 CursorDefinition::GetIndexCoords() const {
     return _index;
 }
 
@@ -73,7 +73,7 @@ int CursorDefinition::GetIndex() const {
     return -1;
 }
 
-CursorDefinition::CursorDefinition(a2de::Renderer& renderer, const a2de::XMLElement& elem, std::weak_ptr<a2de::SpriteSheet> sheet)
+CursorDefinition::CursorDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet)
     : _renderer(renderer)
     , _sheet(sheet)
 {
@@ -82,12 +82,12 @@ CursorDefinition::CursorDefinition(a2de::Renderer& renderer, const a2de::XMLElem
     }
 }
 
-bool CursorDefinition::LoadFromXml(const a2de::XMLElement& elem) {
+bool CursorDefinition::LoadFromXml(const XMLElement& elem) {
 
-    a2de::DataUtils::ValidateXmlElement(elem, "cursor", "", "name,index", "animation");
+    DataUtils::ValidateXmlElement(elem, "cursor", "", "name,index", "animation");
 
-    name = a2de::DataUtils::ParseXmlAttribute(elem, "name", name);
-    _index = a2de::DataUtils::ParseXmlAttribute(elem, "index", _index);
+    name = DataUtils::ParseXmlAttribute(elem, "name", name);
+    _index = DataUtils::ParseXmlAttribute(elem, "index", _index);
 
     if(auto xml_animation = elem.FirstChildElement("animation")) {
         is_animated = true;
@@ -108,10 +108,10 @@ void CursorDefinition::SetIndex(int index) {
 }
 
 void CursorDefinition::SetIndex(int x, int y) {
-    SetIndex(a2de::IntVector2{x, y});
+    SetIndex(IntVector2{x, y});
 }
 
-void CursorDefinition::SetIndex(const a2de::IntVector2& indexCoords) {
+void CursorDefinition::SetIndex(const IntVector2& indexCoords) {
     _index = indexCoords;
 }
 

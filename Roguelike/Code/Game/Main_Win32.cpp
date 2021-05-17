@@ -29,7 +29,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 void Initialize(HINSTANCE hInstance, PWSTR pCmdLine) {
     UNUSED(hInstance);
-    auto cmdString = a2de::StringUtils::ConvertUnicodeToMultiByte(std::wstring(pCmdLine ? pCmdLine : L""));
+    auto cmdString = StringUtils::ConvertUnicodeToMultiByte(std::wstring(pCmdLine ? pCmdLine : L""));
     g_theApp = new App(cmdString);
     g_theApp->Initialize();
 }

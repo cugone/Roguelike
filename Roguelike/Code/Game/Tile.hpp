@@ -11,11 +11,8 @@
 #include <array>
 #include <vector>
 
-namespace a2de {
-    class Renderer;
-    class AnimatedSprite;
-}
-
+class Renderer;
+class AnimatedSprite;
 class TileDefinition;
 class Entity;
 class Actor;
@@ -31,14 +28,14 @@ public:
     Tile& operator=(Tile&& other) = default;
     ~Tile() = default;
 
-    void Update(a2de::TimeUtils::FPSeconds deltaSeconds);
+    void Update(TimeUtils::FPSeconds deltaSeconds);
 
-    void DebugRender(a2de::Renderer& renderer) const;
+    void DebugRender(Renderer& renderer) const;
 
     void ChangeTypeFromName(const std::string& name);
     void ChangeTypeFromGlyph(char glyph);
 
-    a2de::AABB2 GetBounds() const;
+    AABB2 GetBounds() const;
     const TileDefinition* GetDefinition() const;
     TileDefinition* GetDefinition();
 
@@ -57,12 +54,12 @@ public:
     Item* AddItem(const std::string& name) noexcept;
 
     void SetCoords(int x, int y);
-    void SetCoords(const a2de::IntVector2& coords);
-    const a2de::IntVector2& GetCoords() const;
+    void SetCoords(const IntVector2& coords);
+    const IntVector2& GetCoords() const;
     int GetIndexFromCoords() const noexcept;
 
     std::array<Tile*, 8> GetNeighbors() const;
-    Tile* GetNeighbor(const a2de::IntVector3& directionAndLayerOffset) const;
+    Tile* GetNeighbor(const IntVector3& directionAndLayerOffset) const;
     Tile* GetNorthNeighbor() const;
     Tile* GetNorthEastNeighbor() const;
     Tile* GetEastNeighbor() const;
@@ -74,7 +71,7 @@ public:
     Tile* GetUpNeighbor() const;
     Tile* GetDownNeighbor() const;
 
-    std::vector<Tile*> GetNeighbors(const a2de::IntVector2& direction) const;
+    std::vector<Tile*> GetNeighbors(const IntVector2& direction) const;
     std::vector<Tile*> GetNorthNeighbors() const;
     std::vector<Tile*> GetNorthEastNeighbors() const;
     std::vector<Tile*> GetEastNeighbors() const;
@@ -89,9 +86,9 @@ public:
 
     void AddVerts() const noexcept;
 
-    a2de::Rgba debugRaycastColor = a2de::Rgba::Red;
-    a2de::Rgba highlightColor = a2de::Rgba::White;
-    a2de::Rgba color = a2de::Rgba::White;
+    Rgba debugRaycastColor = Rgba::Red;
+    Rgba highlightColor = Rgba::White;
+    Rgba color = Rgba::White;
     Actor* actor{};
     Feature* feature{};
     Layer* layer{};
@@ -103,9 +100,9 @@ protected:
 private:
     void AddVertsForTile() const noexcept;
     void AddVertsForOverlay() const noexcept;
-    a2de::AABB2 GetCoordsForOverlay(std::string overlayName) const;
-    a2de::AnimatedSprite* GetSpriteForOverlay(std::string overlayName) const;
+    AABB2 GetCoordsForOverlay(std::string overlayName) const;
+    AnimatedSprite* GetSpriteForOverlay(std::string overlayName) const;
 
     TileDefinition* _def{};
-    a2de::IntVector2 _tile_coords{};
+    IntVector2 _tile_coords{};
 };

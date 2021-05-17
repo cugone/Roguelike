@@ -16,10 +16,10 @@ public:
     Feature& operator=(Feature&& other) = default;
     virtual ~Feature() = default;
 
-    static Feature* CreateFeature(Map* map, const a2de::XMLElement& elem);
+    static Feature* CreateFeature(Map* map, const XMLElement& elem);
     static void ClearFeatureRegistry();
 
-    Feature(Map* map, const a2de::XMLElement& elem) noexcept;
+    Feature(Map* map, const XMLElement& elem) noexcept;
 
     bool IsTransparent() const noexcept;
     bool IsSolid() const noexcept;
@@ -28,14 +28,14 @@ public:
     bool IsNotVisible() const;
     bool IsInvisible() const;
 
-    virtual void SetPosition(const a2de::IntVector2& position) override;
+    virtual void SetPosition(const IntVector2& position) override;
     void SetState(const std::string& stateName);
 
 protected:
     virtual void ResolveAttack(Entity& attacker, Entity& defender) override;
 
 private:
-    bool LoadFromXml(const a2de::XMLElement& elem);
+    bool LoadFromXml(const XMLElement& elem);
 
     TileDefinition* _tile_def{};
     std::vector<std::string> _states{};

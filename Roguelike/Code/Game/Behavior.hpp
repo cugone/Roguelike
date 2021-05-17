@@ -21,7 +21,7 @@ public:
     static std::string NameFromId(BehaviorID id);
     static BehaviorID IdFromName(std::string name);
 
-    static std::shared_ptr<Behavior> Create(const a2de::XMLElement& element) noexcept;
+    static std::shared_ptr<Behavior> Create(const XMLElement& element) noexcept;
     static std::shared_ptr<Behavior> Create(std::string name) noexcept;
 
     virtual void Act(Actor* actor) noexcept = 0;

@@ -31,7 +31,7 @@ EngineMessage GetEngineMessageFromWindowsParams(HWND hwnd, UINT uMsg, WPARAM wPa
     EngineMessage msg{};
     msg.hWnd = hwnd;
     msg.nativeMessage = uMsg;
-    msg.wmMessageCode = a2de::EngineSubsystem::GetWindowsSystemMessageFromUintMessage(uMsg);
+    msg.wmMessageCode = EngineSubsystem::GetWindowsSystemMessageFromUintMessage(uMsg);
     msg.wparam = wParam;
     msg.lparam = lParam;
     return msg;
@@ -45,15 +45,15 @@ bool CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 
 App::App(const std::string& cmdString)
-    : a2de::EngineSubsystem()
-    , _theJobSystem{std::make_unique<a2de::JobSystem>(-1, static_cast<std::size_t>(a2de::JobType::Max), new std::condition_variable)}
-    , _theFileLogger{std::make_unique<a2de::FileLogger>(*_theJobSystem.get(), "game")}
-    , _theConfig{ std::make_unique<a2de::Config>(a2de::KeyValueParser{cmdString}) }
-    , _theRenderer{std::make_unique<a2de::Renderer>(*_theJobSystem.get(), *_theFileLogger.get(), *_theConfig.get()) }
-    , _theConsole{ std::make_unique<a2de::Console>(*_theFileLogger.get(), *_theRenderer.get()) }
-    , _theInputSystem{ std::make_unique<a2de::InputSystem>(*_theFileLogger.get(), *_theRenderer.get()) }
-    , _theUI{std::make_unique<a2de::UISystem>(*_theFileLogger.get(), *_theRenderer.get(), *_theInputSystem.get())}
-    , _theAudioSystem{ std::make_unique<a2de::AudioSystem>(*_theFileLogger.get()) }
+    : EngineSubsystem()
+    , _theJobSystem{std::make_unique<JobSystem>(-1, static_cast<std::size_t>(JobType::Max), new std::condition_variable)}
+    , _theFileLogger{std::make_unique<FileLogger>(*_theJobSystem.get(), "game")}
+    , _theConfig{ std::make_unique<Config>(KeyValueParser{cmdString}) }
+    , _theRenderer{std::make_unique<Renderer>(*_theJobSystem.get(), *_theFileLogger.get(), *_theConfig.get()) }
+    , _theConsole{ std::make_unique<Console>(*_theFileLogger.get(), *_theRenderer.get()) }
+    , _theInputSystem{ std::make_unique<InputSystem>(*_theFileLogger.get(), *_theRenderer.get()) }
+    , _theUI{std::make_unique<UISystem>(*_theFileLogger.get(), *_theRenderer.get(), *_theInputSystem.get())}
+    , _theAudioSystem{ std::make_unique<AudioSystem>(*_theFileLogger.get()) }
     , _theGame{std::make_unique<Game>()}
 {
     SetupEngineSystemPointers();
@@ -112,7 +112,7 @@ void App::BeginFrame() {
     g_theRenderer->BeginFrame();
 }
 
-void App::Update(a2de::TimeUtils::FPSeconds deltaSeconds) {
+void App::Update(TimeUtils::FPSeconds deltaSeconds) {
     g_theUISystem->Update(deltaSeconds);
     g_theInputSystem->Update(deltaSeconds);
     g_theConsole->Update(deltaSeconds);
@@ -142,22 +142,22 @@ void App::EndFrame() {
 bool App::ProcessSystemMessage(const EngineMessage& msg) noexcept {
 
     switch(msg.wmMessageCode) {
-    case a2de::WindowsSystemMessage::Window_Close:
+    case WindowsSystemMessage::Window_Close:
     {
         SetIsQuitting(true);
         return true;
     }
-    case a2de::WindowsSystemMessage::Window_Quit:
+    case WindowsSystemMessage::Window_Quit:
     {
         SetIsQuitting(true);
         return true;
     }
-    case a2de::WindowsSystemMessage::Window_Destroy:
+    case WindowsSystemMessage::Window_Destroy:
     {
         ::PostQuitMessage(0);
         return true;
     }
-    case a2de::WindowsSystemMessage::Window_ActivateApp:
+    case WindowsSystemMessage::Window_ActivateApp:
     {
         WPARAM wp = msg.wparam;
         bool losing_focus = wp == FALSE;
@@ -172,7 +172,7 @@ bool App::ProcessSystemMessage(const EngineMessage& msg) noexcept {
         }
         return true;
     }
-    case a2de::WindowsSystemMessage::Keyboard_Activate:
+    case WindowsSystemMessage::Keyboard_Activate:
     {
         WPARAM wp = msg.wparam;
         auto active_type = LOWORD(wp);
@@ -190,7 +190,7 @@ bool App::ProcessSystemMessage(const EngineMessage& msg) noexcept {
             return false;
         }
     }
-    //case a2de::WindowsSystemMessage::Window_Size:
+    //case WindowsSystemMessage::Window_Size:
     //{
     //    LPARAM lp = msg.lparam;
     //    const auto w = HIWORD(lp);
@@ -212,28 +212,28 @@ void App::SetIsQuitting(bool value) {
 }
 
 void App::RunFrame() {
-    using namespace a2de::TimeUtils;
+    using namespace TimeUtils;
 
     RunMessagePump();
 
     BeginFrame();
 
-    static FPSeconds previousFrameTime = a2de::TimeUtils::GetCurrentTimeElapsed();
-    FPSeconds currentFrameTime = a2de::TimeUtils::GetCurrentTimeElapsed();
+    static FPSeconds previousFrameTime = TimeUtils::GetCurrentTimeElapsed();
+    FPSeconds currentFrameTime = TimeUtils::GetCurrentTimeElapsed();
     FPSeconds deltaSeconds = (currentFrameTime - previousFrameTime);
     previousFrameTime = currentFrameTime;
 
     Update(deltaSeconds);
     Render();
     EndFrame();
-    a2de::Memory::tick();
+    Memory::tick();
 }
 
 void App::LogSystemDescription() const {
-    auto system = a2de::System::GetSystemDesc();
+    auto system = System::GetSystemDesc();
     std::ostringstream ss;
     ss << std::right << std::setfill('-') << std::setw(60) << '\n';
-    ss << a2de::StringUtils::to_string(system);
+    ss << StringUtils::to_string(system);
     ss << std::right << std::setfill('-') << std::setw(60) << '\n';
     g_theFileLogger->LogLineAndFlush(ss.str());
 }

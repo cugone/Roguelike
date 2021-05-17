@@ -10,13 +10,13 @@
 
 std::map<std::string, std::unique_ptr<EntityDefinition>> EntityDefinition::s_registry;
 
-void EntityDefinition::CreateEntityDefinition(a2de::Renderer& renderer, const a2de::XMLElement& elem) {
+void EntityDefinition::CreateEntityDefinition(Renderer& renderer, const XMLElement& elem) {
     auto new_def = std::make_unique<EntityDefinition>(renderer, elem);
     auto new_def_name = new_def->name;
     s_registry.try_emplace(new_def_name, std::move(new_def));
 }
 
-void EntityDefinition::CreateEntityDefinition(a2de::Renderer& renderer, const a2de::XMLElement& elem, std::shared_ptr<a2de::SpriteSheet> sheet) {
+void EntityDefinition::CreateEntityDefinition(Renderer& renderer, const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet) {
     auto new_def = std::make_unique<EntityDefinition>(renderer, elem, sheet);
     auto new_def_name = new_def->name;
     s_registry.try_emplace(new_def_name, std::move(new_def));
@@ -43,7 +43,7 @@ std::vector<std::string> EntityDefinition::GetAllEntityDefinitionNames() {
     return result;
 }
 
-EntityDefinition::EntityDefinition(a2de::Renderer& renderer, const a2de::XMLElement& elem)
+EntityDefinition::EntityDefinition(Renderer& renderer, const XMLElement& elem)
     : _renderer(renderer)
 {
     if(!LoadFromXml(elem)) {
@@ -51,7 +51,7 @@ EntityDefinition::EntityDefinition(a2de::Renderer& renderer, const a2de::XMLElem
     }
 }
 
-EntityDefinition::EntityDefinition(a2de::Renderer& renderer, const a2de::XMLElement& elem, std::shared_ptr<a2de::SpriteSheet> sheet)
+EntityDefinition::EntityDefinition(Renderer& renderer, const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet)
     : _renderer(renderer)
     , _sheet(sheet)
 {
@@ -72,11 +72,11 @@ void EntityDefinition::SetBaseStats(const Stats& newBaseStats) noexcept {
     _base_stats = newBaseStats;
 }
 
-const a2de::AnimatedSprite* EntityDefinition::GetSprite() const {
+const AnimatedSprite* EntityDefinition::GetSprite() const {
     return _sprite.get();
 }
 
-a2de::AnimatedSprite* EntityDefinition::GetSprite() {
+AnimatedSprite* EntityDefinition::GetSprite() {
     return _sprite.get();
 }
 
@@ -84,7 +84,7 @@ bool EntityDefinition::HasAttachPoint(const AttachPoint& attachpoint) {
     return _valid_offsets[static_cast<std::size_t>(attachpoint)];
 }
 
-a2de::Vector2 EntityDefinition::GetAttachPoint(const AttachPoint& attachpoint) {
+Vector2 EntityDefinition::GetAttachPoint(const AttachPoint& attachpoint) {
     if(HasAttachPoint(attachpoint)) {
         return attach_point_offsets[static_cast<std::size_t>(attachpoint)];
     }
@@ -95,11 +95,11 @@ const std::vector<std::shared_ptr<class Behavior>>& EntityDefinition::GetAvailab
     return _available_behaviors;
 }
 
-bool EntityDefinition::LoadFromXml(const a2de::XMLElement& elem) {
-    a2de::DataUtils::ValidateXmlElement(elem, "entityDefinition", "", "name,index", "animation,attachPoints,inventory,stats,equipment,behaviors");
+bool EntityDefinition::LoadFromXml(const XMLElement& elem) {
+    DataUtils::ValidateXmlElement(elem, "entityDefinition", "", "name,index", "animation,attachPoints,inventory,stats,equipment,behaviors");
 
-    name = a2de::DataUtils::ParseXmlAttribute(elem, "name", name);
-    _index = a2de::DataUtils::ParseXmlAttribute(elem, "index", a2de::IntVector2::ZERO);
+    name = DataUtils::ParseXmlAttribute(elem, "name", name);
+    _index = DataUtils::ParseXmlAttribute(elem, "index", IntVector2::ZERO);
     LoadStats(elem);
     LoadAnimation(elem);
     LoadAttachPoints(elem);
@@ -109,25 +109,25 @@ bool EntityDefinition::LoadFromXml(const a2de::XMLElement& elem) {
     return true;
 }
 
-void EntityDefinition::LoadStats(const a2de::XMLElement& elem) {
+void EntityDefinition::LoadStats(const XMLElement& elem) {
     if(auto* xml_stats = elem.FirstChildElement("stats")) {
         _base_stats = Stats(*xml_stats);
     }
 }
 
-void EntityDefinition::LoadInventory(const a2de::XMLElement& elem) {
+void EntityDefinition::LoadInventory(const XMLElement& elem) {
     if(auto* xml_inventory = elem.FirstChildElement("inventory")) {
         Inventory(*xml_inventory).TransferAll(inventory);
     }
 }
 
-void EntityDefinition::LoadEquipment(const a2de::XMLElement& elem) {
+void EntityDefinition::LoadEquipment(const XMLElement& elem) {
     if (auto* xml_equipment = elem.FirstChildElement("equipment")) {
-        a2de::DataUtils::ValidateXmlElement(*xml_equipment, "equipment", "", "", "cape,hair,head,body,larm,rarm,legs,feet");
-        a2de::DataUtils::ForEachChildElement(*xml_equipment, "",
-        [this](const a2de::XMLElement& elem) {
+        DataUtils::ValidateXmlElement(*xml_equipment, "equipment", "", "", "cape,hair,head,body,larm,rarm,legs,feet");
+        DataUtils::ForEachChildElement(*xml_equipment, "",
+        [this](const XMLElement& elem) {
                 auto slotname = std::string{elem.Name() ? elem.Name() : ""};
-                auto itemname = a2de::DataUtils::ParseXmlAttribute(elem, "name", "");
+                auto itemname = DataUtils::ParseXmlAttribute(elem, "name", "");
                 auto slot_id = EquipSlotFromString(slotname);
                 auto slot = static_cast<std::size_t>(slot_id);
                 auto item = inventory.GetItem(itemname);
@@ -136,58 +136,58 @@ void EntityDefinition::LoadEquipment(const a2de::XMLElement& elem) {
     }
 }
 
-void EntityDefinition::LoadBehaviors(const a2de::XMLElement& elem) {
+void EntityDefinition::LoadBehaviors(const XMLElement& elem) {
     if(auto* xml_behaviors = elem.FirstChildElement("behaviors")) {
-        a2de::DataUtils::ValidateXmlElement(*xml_behaviors, "behaviors", "behavior", "");
-        const auto behavior_count = a2de::DataUtils::GetChildElementCount(*xml_behaviors, "behavior");
+        DataUtils::ValidateXmlElement(*xml_behaviors, "behaviors", "behavior", "");
+        const auto behavior_count = DataUtils::GetChildElementCount(*xml_behaviors, "behavior");
         _available_behaviors.reserve(behavior_count);
-        a2de::DataUtils::ForEachChildElement(*xml_behaviors, "behavior",
-        [this](const a2de::XMLElement& elem) {
+        DataUtils::ForEachChildElement(*xml_behaviors, "behavior",
+        [this](const XMLElement& elem) {
             _available_behaviors.emplace_back(Behavior::Create(elem));
         });
     }
 }
 
-void EntityDefinition::LoadAttachPoints(const a2de::XMLElement &elem) {
+void EntityDefinition::LoadAttachPoints(const XMLElement &elem) {
     if(auto* xml_attachPoints = elem.FirstChildElement("attachPoints")) {
-        a2de::DataUtils::ValidateXmlElement(*xml_attachPoints, "attachPoints", "", "", "cape,hair,head,body,larm,rarm,legs,feet");
+        DataUtils::ValidateXmlElement(*xml_attachPoints, "attachPoints", "", "", "cape,hair,head,body,larm,rarm,legs,feet");
         attach_point_offsets.resize(static_cast<std::size_t>(AttachPoint::Max));
         if(auto* xml_attachPoint_hair = xml_attachPoints->FirstChildElement("hair")) {
-            a2de::DataUtils::ValidateXmlElement(*xml_attachPoint_hair, "hair", "", "offset");
-            attach_point_offsets[0] = a2de::DataUtils::ParseXmlAttribute(*xml_attachPoint_hair, "offset", attach_point_offsets[0]);
+            DataUtils::ValidateXmlElement(*xml_attachPoint_hair, "hair", "", "offset");
+            attach_point_offsets[0] = DataUtils::ParseXmlAttribute(*xml_attachPoint_hair, "offset", attach_point_offsets[0]);
         }
         if(auto* xml_attachPoint_head = xml_attachPoints->FirstChildElement("head")) {
-            a2de::DataUtils::ValidateXmlElement(*xml_attachPoint_head, "head", "", "offset");
-            attach_point_offsets[1] = a2de::DataUtils::ParseXmlAttribute(*xml_attachPoint_head, "offset", attach_point_offsets[1]);
+            DataUtils::ValidateXmlElement(*xml_attachPoint_head, "head", "", "offset");
+            attach_point_offsets[1] = DataUtils::ParseXmlAttribute(*xml_attachPoint_head, "offset", attach_point_offsets[1]);
         }
         if(auto* xml_attachPoint_body = xml_attachPoints->FirstChildElement("body")) {
-            a2de::DataUtils::ValidateXmlElement(*xml_attachPoint_body, "body", "", "offset");
-            attach_point_offsets[2] = a2de::DataUtils::ParseXmlAttribute(*xml_attachPoint_body, "offset", attach_point_offsets[2]);
+            DataUtils::ValidateXmlElement(*xml_attachPoint_body, "body", "", "offset");
+            attach_point_offsets[2] = DataUtils::ParseXmlAttribute(*xml_attachPoint_body, "offset", attach_point_offsets[2]);
         }
         if(auto* xml_attachPoint_larm = xml_attachPoints->FirstChildElement("larm")) {
-            a2de::DataUtils::ValidateXmlElement(*xml_attachPoint_larm, "larm", "", "offset");
-            attach_point_offsets[3] = a2de::DataUtils::ParseXmlAttribute(*xml_attachPoint_larm, "offset", attach_point_offsets[3]);
+            DataUtils::ValidateXmlElement(*xml_attachPoint_larm, "larm", "", "offset");
+            attach_point_offsets[3] = DataUtils::ParseXmlAttribute(*xml_attachPoint_larm, "offset", attach_point_offsets[3]);
         }
         if(auto* xml_attachPoint_rarm = xml_attachPoints->FirstChildElement("rarm")) {
-            a2de::DataUtils::ValidateXmlElement(*xml_attachPoint_rarm, "rarm", "", "offset");
-            attach_point_offsets[4] = a2de::DataUtils::ParseXmlAttribute(*xml_attachPoint_rarm, "offset", attach_point_offsets[4]);
+            DataUtils::ValidateXmlElement(*xml_attachPoint_rarm, "rarm", "", "offset");
+            attach_point_offsets[4] = DataUtils::ParseXmlAttribute(*xml_attachPoint_rarm, "offset", attach_point_offsets[4]);
         }
         if(auto* xml_attachPoint_legs = xml_attachPoints->FirstChildElement("legs")) {
-            a2de::DataUtils::ValidateXmlElement(*xml_attachPoint_legs, "legs", "", "offset");
-            attach_point_offsets[5] = a2de::DataUtils::ParseXmlAttribute(*xml_attachPoint_legs, "offset", attach_point_offsets[5]);
+            DataUtils::ValidateXmlElement(*xml_attachPoint_legs, "legs", "", "offset");
+            attach_point_offsets[5] = DataUtils::ParseXmlAttribute(*xml_attachPoint_legs, "offset", attach_point_offsets[5]);
         }
         if(auto* xml_attachPoint_feet = xml_attachPoints->FirstChildElement("feet")) {
-            a2de::DataUtils::ValidateXmlElement(*xml_attachPoint_feet, "feet", "", "offset");
-            attach_point_offsets[6] = a2de::DataUtils::ParseXmlAttribute(*xml_attachPoint_feet, "offset", attach_point_offsets[6]);
+            DataUtils::ValidateXmlElement(*xml_attachPoint_feet, "feet", "", "offset");
+            attach_point_offsets[6] = DataUtils::ParseXmlAttribute(*xml_attachPoint_feet, "offset", attach_point_offsets[6]);
         }
         if(auto* xml_attachPoint_cape = xml_attachPoints->FirstChildElement("cape")) {
-            a2de::DataUtils::ValidateXmlElement(*xml_attachPoint_cape, "cape", "", "offset");
-            attach_point_offsets[7] = a2de::DataUtils::ParseXmlAttribute(*xml_attachPoint_cape, "offset", attach_point_offsets[7]);
+            DataUtils::ValidateXmlElement(*xml_attachPoint_cape, "cape", "", "offset");
+            attach_point_offsets[7] = DataUtils::ParseXmlAttribute(*xml_attachPoint_cape, "offset", attach_point_offsets[7]);
         }
     }
 }
 
-void EntityDefinition::LoadAnimation(const a2de::XMLElement &elem) {
+void EntityDefinition::LoadAnimation(const XMLElement &elem) {
     if(auto* xml_animation = elem.FirstChildElement("animation")) {
         is_animated = true;
         _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, *xml_animation));

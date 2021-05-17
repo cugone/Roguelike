@@ -9,12 +9,12 @@
 
 #include <utility>
 
-Inventory::Inventory(const a2de::XMLElement& elem) noexcept
+Inventory::Inventory(const XMLElement& elem) noexcept
 {
     LoadFromXml(elem);
 }
 
-void Inventory::AddVerts(const a2de::Vector2& position, Layer* layer) const noexcept {
+void Inventory::AddVerts(const Vector2& position, Layer* layer) const noexcept {
     if(!empty()) {
         if(size() > 1) {
             if(const auto* item = Item::GetItem("chest")) {
@@ -40,7 +40,7 @@ Item* Inventory::HasItem(Item* item) const noexcept {
 }
 
 Item* Inventory::HasItem(const std::string& name) const noexcept {
-    auto found_iter = std::find_if(std::begin(_items), std::end(_items), [&name](const Item* item) { return a2de::StringUtils::ToLowerCase(item->GetName()) == a2de::StringUtils::ToLowerCase(name); });
+    auto found_iter = std::find_if(std::begin(_items), std::end(_items), [&name](const Item* item) { return StringUtils::ToLowerCase(item->GetName()) == StringUtils::ToLowerCase(name); });
     if(found_iter != std::end(_items)) {
         return *found_iter;
     }
@@ -238,11 +238,11 @@ Inventory::const_reverse_iterator Inventory::crend() const noexcept {
 }
 
 
-void Inventory::LoadFromXml(const a2de::XMLElement& elem) {
-    a2de::DataUtils::ValidateXmlElement(elem, "inventory", "item", "");
-    a2de::DataUtils::ForEachChildElement(elem, "item",
-    [this](const a2de::XMLElement& elem) {
-        auto item_name = a2de::DataUtils::ParseXmlAttribute(elem, "name", "");
+void Inventory::LoadFromXml(const XMLElement& elem) {
+    DataUtils::ValidateXmlElement(elem, "inventory", "item", "");
+    DataUtils::ForEachChildElement(elem, "item",
+    [this](const XMLElement& elem) {
+        auto item_name = DataUtils::ParseXmlAttribute(elem, "name", "");
         if(auto item = Item::GetItem(item_name)) {
             _items.emplace_back(item);
         }
