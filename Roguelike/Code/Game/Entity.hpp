@@ -19,9 +19,9 @@ class EntityDefinition;
 
 enum class Faction {
     None
-    ,Player
-    ,Enemy
-    ,Neutral
+    , Player
+    , Enemy
+    , Neutral
 };
 
 class Entity {
@@ -90,11 +90,11 @@ protected:
 private:
     void LoadFromXml(const XMLElement& elem);
     std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
-    
+
     void AddVertsForEquipment() const;
     void AddVertsForCapeEquipment() const;
 
     Stats stats{1,1,1};
     Stats stat_modifiers{};
-    
+
 };

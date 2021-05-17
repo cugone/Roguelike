@@ -31,8 +31,8 @@ Layer::Layer(Map* map, const Image& img)
 }
 
 Layer::Layer(Map* map, const IntVector2& dimensions)
-: _map(map)
-, tileDimensions(dimensions)
+    : _map(map)
+    , tileDimensions(dimensions)
 {
     const auto layer_width = tileDimensions.x;
     const auto layer_height = tileDimensions.y;
@@ -133,11 +133,11 @@ bool Layer::LoadFromXml(const XMLElement& elem) {
     std::vector<std::string> glyph_strings;
     glyph_strings.reserve(row_count);
     DataUtils::ForEachChildElement(elem, "row",
-    [this, &glyph_strings](const XMLElement& elem) {
-        DataUtils::ValidateXmlElement(elem, "row", "", "glyphs");
-        auto glyph_str = DataUtils::ParseXmlAttribute(elem, "glyphs", std::string{});
-        glyph_strings.push_back(glyph_str);
-    });
+        [this, &glyph_strings](const XMLElement& elem) {
+            DataUtils::ValidateXmlElement(elem, "row", "", "glyphs");
+            auto glyph_str = DataUtils::ParseXmlAttribute(elem, "glyphs", std::string{});
+            glyph_strings.push_back(glyph_str);
+        });
     auto max_row_length = NormalizeLayerRows(glyph_strings);
     InitializeTiles(max_row_length, row_count, glyph_strings);
     return true;
@@ -184,8 +184,8 @@ void Layer::InitializeTiles(const std::size_t layer_width, const std::size_t lay
 std::size_t Layer::NormalizeLayerRows(std::vector<std::string>& glyph_strings) {
     const auto longest_element = std::max_element(std::begin(glyph_strings), std::end(glyph_strings),
         [](const std::string& a, const std::string& b)->bool {
-        return a.size() < b.size();
-    });
+            return a.size() < b.size();
+        });
     const auto max_row_length = longest_element->size();
     for(auto& str : glyph_strings) {
         if(str.empty()) {
@@ -210,8 +210,8 @@ void Layer::SetModelViewProjectionBounds(Renderer& renderer) const {
 
     renderer.SetModelMatrix(Matrix4::I);
     renderer.SetViewMatrix(Matrix4::I);
-    const auto leftBottom = Vector2{ ortho_bounds.mins.x, ortho_bounds.maxs.y };
-    const auto rightTop = Vector2{ ortho_bounds.maxs.x, ortho_bounds.mins.y };
+    const auto leftBottom = Vector2{ortho_bounds.mins.x, ortho_bounds.maxs.y};
+    const auto rightTop = Vector2{ortho_bounds.maxs.x, ortho_bounds.mins.y};
     _map->cameraController.GetCamera().SetupView(leftBottom, rightTop, Vector2(0.0f, 1000.0f));
     renderer.SetCamera(_map->cameraController.GetCamera());
 
@@ -222,7 +222,7 @@ void Layer::SetModelViewProjectionBounds(Renderer& renderer) const {
     const float shaky_offsetX = currentGraphicsOptions.MaxShakeOffsetHorizontal * shake * MathUtils::GetRandomFloatNegOneToOne();
     const float shaky_offsetY = currentGraphicsOptions.MaxShakeOffsetVertical * shake * MathUtils::GetRandomFloatNegOneToOne();
     shakyCam.orientation_degrees = base_camera.orientation_degrees + shaky_angle;
-    shakyCam.position = base_camera.position + Vector2{ shaky_offsetX, shaky_offsetY };
+    shakyCam.position = base_camera.position + Vector2{shaky_offsetX, shaky_offsetY};
 
     const float cam_rotation_z = shakyCam.GetOrientation();
     const auto VRz = Matrix4::Create2DRotationDegreesMatrix(-cam_rotation_z);
@@ -335,9 +335,9 @@ void Layer::EndFrame() {
 AABB2 Layer::CalcOrthoBounds() const {
     float half_view_height = this->GetMap()->cameraController.GetCamera().GetViewHeight() * 0.5f;
     float half_view_width = half_view_height * _map->cameraController.GetAspectRatio();
-    auto ortho_mins = Vector2{ -half_view_width, -half_view_height };
-    auto ortho_maxs = Vector2{ half_view_width, half_view_height };
-    return AABB2{ ortho_mins, ortho_maxs };
+    auto ortho_mins = Vector2{-half_view_width, -half_view_height};
+    auto ortho_maxs = Vector2{half_view_width, half_view_height};
+    return AABB2{ortho_mins, ortho_maxs};
 }
 
 AABB2 Layer::CalcViewBounds(const Vector2& cam_pos) const {

@@ -19,7 +19,7 @@ EntityText::EntityText(const TextEntityDesc& desc) noexcept
 }
 
 void EntityText::Update(TimeUtils::FPSeconds deltaSeconds) {
-    _screen_position += Vector2{0.0f, -speed} * deltaSeconds.count();
+    _screen_position += Vector2{0.0f, -speed} *deltaSeconds.count();
     color.a = static_cast<unsigned char>(255.0f * std::clamp(1.0f - (_currentLiveTime.count() / ttl.count()), 0.0f, 1.0f));
     _currentLiveTime += deltaSeconds;
     if(ttl < _currentLiveTime) {
@@ -34,7 +34,7 @@ void EntityText::Render() const {
     const auto screen_position = g_theRenderer->ConvertWorldToScreenCoords(map->cameraController.GetCamera(), worldCoords);
     const auto text_width = font->CalculateTextWidth(text);
     const auto text_height = font->CalculateTextHeight(text);
-    const auto text_half_extents = Vector2{text_width, text_height} * 0.5f;
+    const auto text_half_extents = Vector2{text_width, text_height} *0.5f;
     const auto text_center = screen_position - text_half_extents;
     const auto T = Matrix4::CreateTranslationMatrix(text_center);
     const auto M = Matrix4::MakeSRT(S, R, T);

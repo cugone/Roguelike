@@ -7,7 +7,7 @@
 #include "Game/PursueBehavior.hpp"
 
 Behavior::Behavior(Actor* target)
-: _target(target)
+    : _target(target)
 {
     /* DO NOTHING */
 }

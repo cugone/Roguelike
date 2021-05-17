@@ -128,7 +128,7 @@ private:
     std::weak_ptr<SpriteSheet> _itemSheet{};
     std::string _name{};
     std::string _friendly_name{};
-    std::size_t _max_stack_size{ 1 };
+    std::size_t _max_stack_size{1};
 
     friend class Item;
 

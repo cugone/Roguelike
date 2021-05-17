@@ -62,5 +62,5 @@ private:
     std::unique_ptr<AnimatedSprite> _sprite{};
     IntVector2 _index{};
     int _random_index_offset = 0;
-    
+
 };

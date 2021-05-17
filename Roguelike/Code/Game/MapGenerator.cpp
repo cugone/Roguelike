@@ -29,7 +29,7 @@ void MapGenerator::LoadLayers(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "layers", "layer", "");
     std::size_t layer_count = DataUtils::GetChildElementCount(elem, "layer");
     if(layer_count > _map->max_layers) {
-        const auto ss = std::string{"Layer count of map "} +_map->_name + " is greater than the maximum allowed (" + std::to_string(_map->max_layers) + ")."
+        const auto ss = std::string{"Layer count of map "} + _map->_name + " is greater than the maximum allowed (" + std::to_string(_map->max_layers) + ")."
             "\nOnly the first " + std::to_string(_map->max_layers) + " layers will be used.";
         g_theFileLogger->LogLine(ss);
     }
@@ -179,7 +179,7 @@ void MazeMapGenerator::Generate(Map* map, const XMLElement& elem) {
 }
 
 RoomsMapGenerator::RoomsMapGenerator(Map* map, const XMLElement& elem) noexcept
-: MazeMapGenerator(map, elem)
+    : MazeMapGenerator(map, elem)
 {
     /* DO NOTHING */
 }
@@ -331,7 +331,7 @@ void RoomsAndCorridorsMapGenerator::LoadItems(const XMLElement& elem) {
             if(auto* tile = _map->GetTile(IntVector3(pos, 0))) {
                 tile->AddItem(Item::GetItem(name));
             }
-        });
+            });
     }
 }
 

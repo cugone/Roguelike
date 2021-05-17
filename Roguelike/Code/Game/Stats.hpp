@@ -5,25 +5,29 @@
 #include <array>
 #include <utility>
 
+// clang-format off
+
 enum class DamageType {
     None
-    ,Physical
+    , Physical
 };
 
 enum class StatsID {
     First_
-    ,Level = First_
-    ,Health
-    ,Health_Max
-    ,Attack
-    ,Defense
-    ,Speed
-    ,Evasion
-    ,Luck
-    ,Experience
+    , Level = First_
+    , Health
+    , Health_Max
+    , Attack
+    , Defense
+    , Speed
+    , Evasion
+    , Luck
+    , Experience
     , Max
     , Last_ = Max
 };
+
+// clang-format on
 
 StatsID& operator++(StatsID& a);
 StatsID operator++(StatsID& a, int);
@@ -54,7 +58,7 @@ public:
     Stats operator-(const Stats& b) const;
     Stats& operator-=(const Stats& b);
     Stats operator-();
-    
+
 protected:
 private:
 

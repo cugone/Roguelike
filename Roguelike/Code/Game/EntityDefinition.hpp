@@ -21,15 +21,15 @@ public:
 
     enum class AttachPoint {
         None
-        ,Hair
-        ,Head
-        ,Body
-        ,LeftArm
-        ,RightArm
-        ,Legs
-        ,Feet
-        ,Cape
-        ,Max
+        , Hair
+        , Head
+        , Body
+        , LeftArm
+        , RightArm
+        , Legs
+        , Feet
+        , Cape
+        , Max
     };
 
     static void CreateEntityDefinition(Renderer& renderer, const XMLElement& elem);
@@ -69,8 +69,8 @@ public:
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);
-    void LoadAnimation(const XMLElement &elem);
-    void LoadAttachPoints(const XMLElement &elem);
+    void LoadAnimation(const XMLElement& elem);
+    void LoadAttachPoints(const XMLElement& elem);
     void LoadStats(const XMLElement& elem);
     void LoadInventory(const XMLElement& elem);
     void LoadEquipment(const XMLElement& elem);

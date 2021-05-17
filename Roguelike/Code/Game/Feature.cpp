@@ -58,13 +58,13 @@ bool Feature::LoadFromXml(const XMLElement& elem) {
         initialState = featureName + "." + initialState;
         _tile_def = TileDefinition::GetTileDefinitionByName(valid_initialState ? initialState : _states[0]);
     }
-    
+
     sprite = _tile_def->GetSprite();
-    
+
     if(DataUtils::HasAttribute(elem, "position")) {
         SetPosition(DataUtils::ParseXmlAttribute(elem, "position", IntVector2::ZERO));
     }
-    
+
     return true;
 }
 

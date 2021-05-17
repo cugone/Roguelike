@@ -164,7 +164,7 @@ AABB2 Map::CalcCameraBounds() const {
 std::vector<Tile*> Map::PickTilesFromWorldCoords(const Vector2& worldCoords) const {
     auto world_bounds = CalcWorldBounds();
     if(MathUtils::IsPointInside(world_bounds, worldCoords)) {
-        return GetTiles(IntVector2{ worldCoords });
+        return GetTiles(IntVector2{worldCoords});
     }
     return {};
 }
@@ -172,7 +172,7 @@ std::vector<Tile*> Map::PickTilesFromWorldCoords(const Vector2& worldCoords) con
 Tile* Map::PickTileFromWorldCoords(const Vector2& worldCoords, int layerIndex) const {
     auto world_bounds = CalcWorldBounds();
     if(MathUtils::IsPointInside(world_bounds, worldCoords)) {
-        return GetTile(IntVector3{ worldCoords, layerIndex });
+        return GetTile(IntVector3{worldCoords, layerIndex});
     }
     return nullptr;
 }
@@ -296,7 +296,7 @@ void Map::RenderStatsBlock(Actor* actor) const noexcept {
     }
     const auto& stats = actor->GetStats();
     g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
-    
+
     const auto text = [&]()->std::string {
         std::ostringstream ss{};
         ss << "Lvl: " << stats.GetStat(StatsID::Level) << '\n';
@@ -462,7 +462,7 @@ bool Map::IsTileInArea(const AABB2& bounds, const Tile* tile) const {
 }
 
 bool Map::IsTileInView(const IntVector2& tileCoords) const {
-    return IsTileInView(IntVector3{ tileCoords, 0 });
+    return IsTileInView(IntVector3{tileCoords, 0});
 }
 
 bool Map::IsTileInView(const IntVector3& tileCoords) const {
@@ -483,7 +483,7 @@ bool Map::IsEntityInView(Entity* entity) const {
 }
 
 bool Map::IsTileSolid(const IntVector2& tileCoords) const {
-    return IsTileSolid(IntVector3{ tileCoords, 0});
+    return IsTileSolid(IntVector3{tileCoords, 0});
 }
 
 
@@ -560,7 +560,7 @@ bool Map::IsTilePassable(const Tile* tile) const {
 
 void Map::FocusTileAt(const IntVector3& position) {
     if(GetTile(position)) {
-        cameraController.SetPosition(Vector2{IntVector2{position.x, position.y} });
+        cameraController.SetPosition(Vector2{IntVector2{position.x, position.y}});
     }
 }
 
@@ -672,7 +672,7 @@ Map::RaycastResult2D Map::StepAndSample(const Vector2& startPosition, const Vect
         result.impactSurfaceNormal = -direction;
         return result;
     }
-    
+
     while(true) {
         result.impactTileCoords.insert(currentTileCoords);
         currentSamplePoint += stepRate;
@@ -703,7 +703,7 @@ Map::RaycastResult2D Map::StepAndSample(const Vector2& startPosition, const Vect
 }
 
 Vector2 Map::CalcMaxDimensions() const {
-    Vector2 results{ 1.0f, 1.0f };
+    Vector2 results{1.0f, 1.0f};
     std::for_each(std::begin(_layers), std::end(_layers), [&results](const auto& layer) {
         const auto& cur_layer_dimensions = layer->tileDimensions;
         if(results.x < cur_layer_dimensions.x) {
@@ -712,7 +712,7 @@ Vector2 Map::CalcMaxDimensions() const {
         if(results.y < cur_layer_dimensions.y) {
             results.y = static_cast<float>(cur_layer_dimensions.y);
         }
-    });
+        });
     return results;
 }
 
@@ -750,7 +750,7 @@ Tile* Map::GetTile(const IntVector3& locationAndLayerIndex) const {
 //TODO: std::optional return
 std::vector<Tile*> Map::GetTiles(int x, int y) const {
     std::vector<Tile*> results{};
-    for(auto i = std::size_t{ 0 }; i < GetLayerCount(); ++i) {
+    for(auto i = std::size_t{0}; i < GetLayerCount(); ++i) {
         if(auto* cur_layer = GetLayer(i)) {
             results.push_back(cur_layer->GetTile(x, y));
         }
@@ -792,7 +792,7 @@ void Map::LoadNameForMap(const XMLElement& elem) {
 void Map::LoadMaterialsForMap(const XMLElement& elem) {
     if(auto xml_material = elem.FirstChildElement("material")) {
         DataUtils::ValidateXmlElement(*xml_material, "material", "", "name");
-        auto src = DataUtils::ParseXmlAttribute(*xml_material, "name", std::string{ "__invalid" });
+        auto src = DataUtils::ParseXmlAttribute(*xml_material, "name", std::string{"__invalid"});
         _default_tileMaterial = g_theRenderer->GetMaterial(src);
         _current_tileMaterial = _default_tileMaterial;
     }
@@ -834,7 +834,7 @@ void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
 void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
     if(!FS::exists(src)) {
-        const auto ss = std::string{"Entities file at "} +src.string() + " could not be found.";
+        const auto ss = std::string{"Entities file at "} + src.string() + " could not be found.";
         ERROR_AND_DIE(ss.c_str());
     }
     tinyxml2::XMLDocument doc;
@@ -851,7 +851,7 @@ void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
                     [this](const XMLElement& elem) {
                         auto* def = TileDefinition::CreateTileDefinition(*g_theRenderer, elem, _tileset_sheet);
                         def->GetSprite()->SetMaterial(_current_tileMaterial);
-                });
+                    });
             }
         }
     }
@@ -862,20 +862,20 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
         DataUtils::ValidateXmlElement(*xml_actors, "actors", "actor", "");
         DataUtils::ForEachChildElement(*xml_actors, "actor",
             [this](const XMLElement& elem) {
-            auto* actor = Actor::CreateActor(this, elem);
-            auto actor_name = StringUtils::ToLowerCase(actor->name);
-            bool is_player = actor_name == "player";
-            if(player && is_player) {
-                ERROR_AND_DIE("Map failed to load. Multiplayer not yet supported.");
-            }
-            actor->SetFaction(Faction::Enemy);
-            if(is_player) {
-                player = actor;
-                player->SetFaction(Faction::Player);
-            }
-            _entities.push_back(actor);
-            _actors.push_back(actor);
-        });
+                auto* actor = Actor::CreateActor(this, elem);
+                auto actor_name = StringUtils::ToLowerCase(actor->name);
+                bool is_player = actor_name == "player";
+                if(player && is_player) {
+                    ERROR_AND_DIE("Map failed to load. Multiplayer not yet supported.");
+                }
+                actor->SetFaction(Faction::Enemy);
+                if(is_player) {
+                    player = actor;
+                    player->SetFaction(Faction::Player);
+                }
+                _entities.push_back(actor);
+                _actors.push_back(actor);
+            });
     }
 }
 
@@ -884,10 +884,10 @@ void Map::LoadFeaturesForMap(const XMLElement& elem) {
         DataUtils::ValidateXmlElement(*xml_features, "features", "feature", "");
         DataUtils::ForEachChildElement(*xml_features, "feature",
             [this](const XMLElement& elem) {
-            auto* feature = Feature::CreateFeature(this, elem);
-            _entities.push_back(feature);
-            _features.push_back(feature);
-        });
+                auto* feature = Feature::CreateFeature(this, elem);
+                _entities.push_back(feature);
+                _features.push_back(feature);
+            });
     }
 }
 
@@ -906,6 +906,6 @@ void Map::LoadItemsForMap(const XMLElement& elem) {
                 ss << "Invalid tile " << pos << " for item \"" << name << "\" placement.";
                 g_theFileLogger->LogLineAndFlush(ss.str());
             }
-        });
+            });
     }
 }

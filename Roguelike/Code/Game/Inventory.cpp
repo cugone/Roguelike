@@ -85,7 +85,7 @@ Item* Inventory::AddItem(const std::string& name) noexcept {
         item_in_inventory->IncrementCount();
         return item_in_inventory;
     } else {
-        if (auto* item_in_registry = Item::GetItem(name)) {
+        if(auto* item_in_registry = Item::GetItem(name)) {
             _items.push_back(item_in_registry);
             _items.back()->IncrementCount();
             return _items.back();
@@ -241,10 +241,10 @@ Inventory::const_reverse_iterator Inventory::crend() const noexcept {
 void Inventory::LoadFromXml(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "inventory", "item", "");
     DataUtils::ForEachChildElement(elem, "item",
-    [this](const XMLElement& elem) {
-        auto item_name = DataUtils::ParseXmlAttribute(elem, "name", "");
-        if(auto item = Item::GetItem(item_name)) {
-            _items.emplace_back(item);
-        }
-    });
+        [this](const XMLElement& elem) {
+            auto item_name = DataUtils::ParseXmlAttribute(elem, "name", "");
+            if(auto item = Item::GetItem(item_name)) {
+                _items.emplace_back(item);
+            }
+        });
 }

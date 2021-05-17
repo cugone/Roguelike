@@ -29,28 +29,28 @@ struct fullscreen_cb_t {
 
 enum class FullscreenEffect {
     None = -1
-    ,FadeIn
-    ,FadeOut
-    ,Lumosity
-    ,Sepia
-    ,CircularGradient
-    ,SquareBlur
+    , FadeIn
+    , FadeOut
+    , Lumosity
+    , Sepia
+    , CircularGradient
+    , SquareBlur
 };
 
 enum class GameState {
     Title
-    ,Loading
-    ,Main
+    , Loading
+    , Main
 };
 
 enum class CursorId {
     First_
-    ,Green_Box = First_
-    ,Question
-    ,Red_Crosshair_Box
-    ,Yellow_Corner_Box
-    ,Last_
-    ,Max = Last_
+    , Green_Box = First_
+    , Question
+    , Red_Crosshair_Box
+    , Yellow_Corner_Box
+    , Last_
+    , Max = Last_
 };
 
 class Game {
@@ -99,7 +99,7 @@ private:
     void Render_Title() const;
     void Render_Loading() const;
     void Render_Main() const;
-    
+
     void EndFrame_Title();
     void EndFrame_Loading();
     void EndFrame_Main();

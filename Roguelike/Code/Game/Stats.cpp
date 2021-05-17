@@ -135,7 +135,7 @@ Stats::Stats(std::initializer_list<decltype(_stats)::value_type> l) {
     }
 }
 
-auto Stats::GetStat(const StatsID& id) const noexcept -> decltype(_stats)::value_type {
+auto Stats::GetStat(const StatsID& id) const noexcept -> decltype(_stats)::value_type{
     return _stats[static_cast<std::size_t>(id)];
 }
 

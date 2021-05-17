@@ -87,7 +87,7 @@ bool Actor::LoadFromXml(const XMLElement& elem) {
     this->SetBehavior(Behavior::IdFromName(behaviorName));
     _equipment = def->equipment;
     for(const auto& e : _equipment) {
-        if (e) {
+        if(e) {
             AdjustStatModifiers(e->GetStatModifiers());
         }
     }
@@ -263,35 +263,35 @@ bool Actor::Move(const IntVector2& direction) {
 }
 
 bool Actor::MoveNorth() {
-    return Move(IntVector2{ 0,-1 });
+    return Move(IntVector2{0,-1});
 }
 
 bool Actor::MoveNorthEast() {
-    return Move(IntVector2{ 1,-1 });
+    return Move(IntVector2{1,-1});
 }
 
 bool Actor::MoveEast() {
-    return Move(IntVector2{ 1,0 });
+    return Move(IntVector2{1,0});
 }
 
 bool Actor::MoveSouthEast() {
-    return Move(IntVector2{ 1,1 });
+    return Move(IntVector2{1,1});
 }
 
 bool Actor::MoveSouth() {
-    return Move(IntVector2{ 0,1 });
+    return Move(IntVector2{0,1});
 }
 
 bool Actor::MoveSouthWest() {
-    return Move(IntVector2{ -1,1 });
+    return Move(IntVector2{-1,1});
 }
 
 bool Actor::MoveWest() {
-    return Move(IntVector2{ -1,0 });
+    return Move(IntVector2{-1,0});
 }
 
 bool Actor::MoveNorthWest() {
-    return Move(IntVector2{ -1,-1 });
+    return Move(IntVector2{-1,-1});
 }
 
 Item* Actor::IsEquipped(const EquipSlot& slot) {

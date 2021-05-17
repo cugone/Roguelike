@@ -69,7 +69,7 @@ Item::Item(ItemBuilder& builder) noexcept
     , _slot(builder._slot)
     , _max_stack_size(builder._max_stack_size)
 {
-    if (_friendly_name.empty()) {
+    if(_friendly_name.empty()) {
         _friendly_name = _name;
         _friendly_name = StringUtils::ReplaceAll(_friendly_name, "_", " ");
     }
@@ -221,7 +221,7 @@ std::size_t Item::DecrementCount() noexcept {
 }
 
 void Item::AdjustCount(long long amount) noexcept {
-    if (amount < 0 && _stack_size <= static_cast<std::size_t>(-amount)) {
+    if(amount < 0 && _stack_size <= static_cast<std::size_t>(-amount)) {
         _stack_size = 0u;
     } else {
         _stack_size += static_cast<std::size_t>(amount);

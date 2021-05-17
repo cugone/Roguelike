@@ -60,9 +60,9 @@ public:
 
     void DirtyMesh() noexcept;
 
-    int z_index{ 0 };
+    int z_index{0};
     IntVector2 tileDimensions{1, 1};
-    Rgba color{Rgba::White };
+    Rgba color{Rgba::White};
     Rgba debug_grid_color{Rgba::Red};
     std::size_t debug_tiles_in_view_count{};
     std::size_t debug_visible_tiles_in_view_count{};

@@ -82,7 +82,7 @@ public:
                 return false;
             }
             const auto n_idx = neighbor->coords.y * _dimensions.x + neighbor->coords.x; 0 > n_idx || n_idx >= _dimensions.x * _dimensions.y;
-            const auto is_inside_map = n_idx < _dimensions.x * _dimensions.y;
+            const auto is_inside_map = n_idx < _dimensions.x* _dimensions.y;
             return is_inside_map;
         };
         openSet.push(initial);

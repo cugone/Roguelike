@@ -79,7 +79,7 @@ void Tile::AddVertsForTile() const noexcept {
 
     builder.SetUV(tx_bl);
     builder.AddVertex(Vector3{vert_bl, z});
-    
+
     builder.SetUV(tx_tl);
     builder.AddVertex(Vector3{vert_tl, z});
 
@@ -189,7 +189,7 @@ void Tile::ChangeTypeFromGlyph(char glyph) {
 }
 
 AABB2 Tile::GetBounds() const {
-    return {Vector2(_tile_coords), Vector2(_tile_coords + IntVector2::ONE) };
+    return {Vector2(_tile_coords), Vector2(_tile_coords + IntVector2::ONE)};
 }
 
 const TileDefinition* Tile::GetDefinition() const {
@@ -247,7 +247,7 @@ Item* Tile::AddItem(const std::string& name) noexcept {
 }
 
 void Tile::SetCoords(int x, int y) {
-    SetCoords(IntVector2{ x, y });
+    SetCoords(IntVector2{x, y});
 }
 
 void Tile::SetCoords(const IntVector2& coords) {
@@ -272,7 +272,7 @@ Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) const {
             return layer->GetMap();
         }
         return nullptr;
-    }()) { //IIIL
+        }()) { //IIIL
         const auto my_index = IntVector3(GetCoords(), layer->z_index);
         const auto map_dims = IntVector3(my_map->CalcMaxDimensions(), my_map->max_layers - 1);
         const bool is_x_not_valid = (my_index.x == 0 && directionAndLayerOffset.x < 0) || (my_index.x == map_dims.x && directionAndLayerOffset.x > 0);
@@ -345,8 +345,8 @@ std::vector<Tile*> Tile::GetNeighbors(const IntVector2& direction) const {
 }
 
 std::array<Tile*, 8> Tile::GetNeighbors() const {
-    return { GetNorthWestNeighbor(), GetNorthNeighbor(), GetNorthEastNeighbor(), GetEastNeighbor(),
-             GetSouthEastNeighbor(), GetSouthNeighbor(), GetSouthWestNeighbor(), GetWestNeighbor() };
+    return {GetNorthWestNeighbor(), GetNorthNeighbor(), GetNorthEastNeighbor(), GetEastNeighbor(),
+             GetSouthEastNeighbor(), GetSouthNeighbor(), GetSouthWestNeighbor(), GetWestNeighbor()};
 }
 
 std::vector<Tile*> Tile::GetNorthNeighbors() const {
@@ -370,7 +370,7 @@ std::vector<Tile*> Tile::GetSouthNeighbors() const {
 }
 
 std::vector<Tile*> Tile::GetSouthWestNeighbors() const {
-    return GetNeighbors(IntVector2{ -1,1 });
+    return GetNeighbors(IntVector2{-1,1});
 }
 
 std::vector<Tile*> Tile::GetWestNeighbors() const {
@@ -378,7 +378,7 @@ std::vector<Tile*> Tile::GetWestNeighbors() const {
 }
 
 std::vector<Tile*> Tile::GetNorthWestNeighbors() const {
-    return GetNeighbors(IntVector2{ -1,-1 });
+    return GetNeighbors(IntVector2{-1,-1});
 }
 
 

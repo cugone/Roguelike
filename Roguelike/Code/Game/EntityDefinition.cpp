@@ -122,17 +122,17 @@ void EntityDefinition::LoadInventory(const XMLElement& elem) {
 }
 
 void EntityDefinition::LoadEquipment(const XMLElement& elem) {
-    if (auto* xml_equipment = elem.FirstChildElement("equipment")) {
+    if(auto* xml_equipment = elem.FirstChildElement("equipment")) {
         DataUtils::ValidateXmlElement(*xml_equipment, "equipment", "", "", "cape,hair,head,body,larm,rarm,legs,feet");
         DataUtils::ForEachChildElement(*xml_equipment, "",
-        [this](const XMLElement& elem) {
+            [this](const XMLElement& elem) {
                 auto slotname = std::string{elem.Name() ? elem.Name() : ""};
                 auto itemname = DataUtils::ParseXmlAttribute(elem, "name", "");
                 auto slot_id = EquipSlotFromString(slotname);
                 auto slot = static_cast<std::size_t>(slot_id);
                 auto item = inventory.GetItem(itemname);
                 equipment[slot] = item;
-        });
+            });
     }
 }
 
@@ -142,13 +142,13 @@ void EntityDefinition::LoadBehaviors(const XMLElement& elem) {
         const auto behavior_count = DataUtils::GetChildElementCount(*xml_behaviors, "behavior");
         _available_behaviors.reserve(behavior_count);
         DataUtils::ForEachChildElement(*xml_behaviors, "behavior",
-        [this](const XMLElement& elem) {
-            _available_behaviors.emplace_back(Behavior::Create(elem));
-        });
+            [this](const XMLElement& elem) {
+                _available_behaviors.emplace_back(Behavior::Create(elem));
+            });
     }
 }
 
-void EntityDefinition::LoadAttachPoints(const XMLElement &elem) {
+void EntityDefinition::LoadAttachPoints(const XMLElement& elem) {
     if(auto* xml_attachPoints = elem.FirstChildElement("attachPoints")) {
         DataUtils::ValidateXmlElement(*xml_attachPoints, "attachPoints", "", "", "cape,hair,head,body,larm,rarm,legs,feet");
         attach_point_offsets.resize(static_cast<std::size_t>(AttachPoint::Max));
@@ -187,7 +187,7 @@ void EntityDefinition::LoadAttachPoints(const XMLElement &elem) {
     }
 }
 
-void EntityDefinition::LoadAnimation(const XMLElement &elem) {
+void EntityDefinition::LoadAnimation(const XMLElement& elem) {
     if(auto* xml_animation = elem.FirstChildElement("animation")) {
         is_animated = true;
         _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, *xml_animation));

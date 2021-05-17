@@ -86,5 +86,5 @@ public:
 protected:
 private:
     void LoadFromXml(const XMLElement& elem);
-    
+
 }; //End Inventory

@@ -38,25 +38,25 @@
 #include <string>
 
 Game::Game()
-:_debug_has_picked_entity_with_click{0}
-,_debug_has_picked_feature_with_click{0}
-,_debug_has_picked_tile_with_click{0}
-,_player_requested_wait{0}
-,_debug_render{0}
-,_show_grid{0}
-,_show_debug_window{0}
-,_show_raycasts{0}
-,_show_world_bounds{0}
-,_show_camera_bounds{0}
-,_show_tile_debugger{0}
-,_show_effects_debugger{0}
-,_show_entity_debugger{0}
-,_show_feature_debugger{0}
-,_show_all_entities{0}
-,_show_camera{0}
-,_show_room_bounds{0}
-,_done_loading{0}
-,_reset_loading_flag{0}
+    :_debug_has_picked_entity_with_click{0}
+    , _debug_has_picked_feature_with_click{0}
+    , _debug_has_picked_tile_with_click{0}
+    , _player_requested_wait{0}
+    , _debug_render{0}
+    , _show_grid{0}
+    , _show_debug_window{0}
+    , _show_raycasts{0}
+    , _show_world_bounds{0}
+    , _show_camera_bounds{0}
+    , _show_tile_debugger{0}
+    , _show_effects_debugger{0}
+    , _show_entity_debugger{0}
+    , _show_feature_debugger{0}
+    , _show_all_entities{0}
+    , _show_camera{0}
+    , _show_room_bounds{0}
+    , _done_loading{0}
+    , _reset_loading_flag{0}
 {
     /* DO NOTHING */
 }
@@ -77,7 +77,7 @@ void Game::Initialize() {
     }
     _consoleCommands = Console::CommandList(g_theConsole);
     CreateFullscreenConstantBuffer();
-    g_theRenderer->RegisterMaterialsFromFolder(std::string{ "Data/Materials" });
+    g_theRenderer->RegisterMaterialsFromFolder(std::string{"Data/Materials"});
     g_theRenderer->RegisterFontsFromFolder(std::string{"Data/Fonts"});
     ingamefont = g_theRenderer->GetFont("TrebuchetMS32");
 
@@ -166,7 +166,7 @@ void Game::Update_Title(TimeUtils::FPSeconds /*deltaSeconds*/) {
 }
 
 void Game::Update_Loading(TimeUtils::FPSeconds /*deltaSeconds*/) {
-    static Stopwatch text_blinker{TimeUtils::FPSeconds{0.33f} };
+    static Stopwatch text_blinker{TimeUtils::FPSeconds{0.33f}};
     if(text_blinker.CheckAndReset()) {
         _text_alpha = 1.0f - _text_alpha;
         _text_alpha = std::clamp(_text_alpha, 0.0f, 1.0f);
@@ -205,11 +205,11 @@ void Game::Render_Title() const {
     //2D View / HUD
     const float ui_view_height = currentGraphicsOptions.WindowHeight;
     const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
-    const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
+    const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
-    const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
-    const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
+    const auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
+    const auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
+    const auto ui_nearFar = Vector2{0.0f, 1.0f};
     ui_camera.SetPosition(Vector2::ZERO);
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
@@ -231,11 +231,11 @@ void Game::Render_Loading() const {
     //2D View / HUD
     const float ui_view_height = currentGraphicsOptions.WindowHeight;
     const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
-    const auto ui_view_extents = Vector2{ ui_view_width, ui_view_height };
+    const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    const auto ui_leftBottom = Vector2{ -ui_view_half_extents.x, ui_view_half_extents.y };
-    const auto ui_rightTop = Vector2{ ui_view_half_extents.x, -ui_view_half_extents.y };
-    const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
+    const auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
+    const auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
+    const auto ui_nearFar = Vector2{0.0f, 1.0f};
     ui_camera.SetPosition(Vector2::ZERO);
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
@@ -245,7 +245,7 @@ void Game::Render_Loading() const {
     if(_done_loading) {
         static const std::string text = "Press Any Key";
         static const auto text_length = ingamefont->CalculateTextWidth(text);
-        g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(Vector2{ text_length * -0.25f, ingamefont->GetLineHeight() }));
+        g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(Vector2{text_length * -0.25f, ingamefont->GetLineHeight()}));
         g_theRenderer->DrawTextLine(ingamefont, text, Rgba{255, 255, 255, static_cast<unsigned char>(255.0f * _text_alpha)});
     }
 }
@@ -292,7 +292,7 @@ void Game::Render_Main() const {
     const auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
     const auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
     const auto ui_center = Vector2::ZERO;
-    const auto ui_nearFar = Vector2{ 0.0f, 1.0f };
+    const auto ui_nearFar = Vector2{0.0f, 1.0f};
     ui_camera.SetPosition(ui_center);
     ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
     g_theRenderer->SetCamera(ui_camera);
@@ -338,7 +338,7 @@ void Game::EndFrame_Loading() {
             [this]() {
                 g_theJobSystem->Run(JobType::Generic, [this](void* ud)->void { LoadData(ud); }, nullptr);
             }
-            , _reset_loading_flag);
+        , _reset_loading_flag);
     } else {
         SetCurrentCursorById(CursorId::Green_Box);
         _map->cameraController.GetCamera().position = _map->CalcMaxDimensions() * 0.5f;
@@ -467,17 +467,17 @@ void Game::RegisterCommands() {
             if(_debug_inspected_feature) {
                 entity = _debug_inspected_feature;
             } else
-            if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-                entity = tile->feature;
-                if(!entity) {
-                    const auto ss = std::string{"Select a feature to set the state to \""} + name + "\".";
-                    g_theConsole->ErrorMsg(ss);
-                    return;
+                if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+                    entity = tile->feature;
+                    if(!entity) {
+                        const auto ss = std::string{"Select a feature to set the state to \""} + name + "\".";
+                        g_theConsole->ErrorMsg(ss);
+                        return;
+                    }
+                    if(auto* f = entity->tile->feature) {
+                        f->SetState(name);
+                    }
                 }
-                if(auto* f = entity->tile->feature) {
-                    f->SetState(name);
-                }
-            }
         };
         _consoleCommands.AddCommand(set_state);
     }
@@ -683,7 +683,7 @@ void Game::LoadUI() {
 }
 
 void Game::LoadMaps() {
-    auto str_path = std::string{ "Data/Definitions/Map00.xml" };
+    auto str_path = std::string{"Data/Definitions/Map00.xml"};
     if(FileUtils::IsSafeReadPath(str_path)) {
         if(auto str_buffer = FileUtils::ReadStringBufferFromFile(str_path)) {
             tinyxml2::XMLDocument xml_doc;
@@ -780,8 +780,8 @@ void Game::LoadEntityDefinitionsFromFile(const std::filesystem::path& src) {
         _entity_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet);
         DataUtils::ForEachChildElement(*xml_root, "entityDefinition",
             [this](const XMLElement& elem) {
-            EntityDefinition::CreateEntityDefinition(*g_theRenderer, elem, _entity_sheet);
-        });
+                EntityDefinition::CreateEntityDefinition(*g_theRenderer, elem, _entity_sheet);
+            });
     }
 }
 
@@ -794,7 +794,7 @@ void Game::LoadItemsFromFile(const std::filesystem::path& src) {
     tinyxml2::XMLDocument doc;
     auto xml_result = doc.LoadFile(src.string().c_str());
     if(xml_result != tinyxml2::XML_SUCCESS) {
-        const auto ss = std::string{"Item source file at "} +src.string() + " could not be loaded.";
+        const auto ss = std::string{"Item source file at "} + src.string() + " could not be loaded.";
         ERROR_AND_DIE(ss.c_str());
     }
     if(auto* xml_item_root = doc.RootElement()) {
@@ -804,7 +804,7 @@ void Game::LoadItemsFromFile(const std::filesystem::path& src) {
         DataUtils::ForEachChildElement(*xml_item_root, "item", [this](const XMLElement& elem) {
             ItemBuilder builder(elem, _item_sheet);
             builder.Build();
-        });
+            });
     }
 }
 
@@ -1098,15 +1098,15 @@ void Game::HandlePlayerMouseInput() {
         SetFullscreenEffect(FullscreenEffect::FadeOut, [this]() {
             ZoomOut();
             requested_zoom_out = false;
-            SetFullscreenEffect(FullscreenEffect::FadeIn, [](){});
-        });
+            SetFullscreenEffect(FullscreenEffect::FadeIn, []() {});
+            });
     }
     if(requested_zoom_in) {
         SetFullscreenEffect(FullscreenEffect::FadeOut, [this]() {
             ZoomIn();
             requested_zoom_in = false;
             SetFullscreenEffect(FullscreenEffect::FadeIn, []() {});
-        });
+            });
     }
 }
 
@@ -1233,7 +1233,7 @@ void Game::HandleDebugMouseInput() {
 #ifdef PROFILE_BUILD
 
 void Game::ShowDebugUI() {
-    ImGui::SetNextWindowSize(Vector2{ 550.0f, 500.0f }, ImGuiCond_Always);
+    ImGui::SetNextWindowSize(Vector2{550.0f, 500.0f}, ImGuiCond_Always);
     if(ImGui::Begin("Debugger", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         if(ImGui::BeginTable("DebuggerTable", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_SizingStretchProp)) {
             ImGui::TableSetupColumn("DebuggerTableDebuggerColumn", ImGuiTableColumnFlags_NoHide);
@@ -1352,14 +1352,14 @@ void Game::ShowEffectsUI() {
         ImGui::Text("Effect: Fade In");
         (void)ImGui::ColorEdit4("Fade In Color##Picker", _fadeIn_color, ImGuiColorEditFlags_NoLabel); //I don't care if the value changed.
         if(ImGui::InputFloat("Fade In Time (s)", &_debug_fadeInTime)) {
-            _fadeInTime = TimeUtils::FPSeconds{ _debug_fadeInTime };
+            _fadeInTime = TimeUtils::FPSeconds{_debug_fadeInTime};
         }
         break;
     case FullscreenEffect::FadeOut:
         ImGui::Text("Effect: Fade Out");
         (void)ImGui::ColorEdit4("Fade Out Color##Picker", _fadeOut_color, ImGuiColorEditFlags_NoLabel); //I don't care if the value changed.
         if(ImGui::InputFloat("Fade Out Time (s)", &_debug_fadeOutTime)) {
-            _fadeOutTime = TimeUtils::FPSeconds{ _debug_fadeOutTime };
+            _fadeOutTime = TimeUtils::FPSeconds{_debug_fadeOutTime};
         }
         break;
     case FullscreenEffect::Lumosity:
@@ -1471,8 +1471,8 @@ void Game::ShowTileInspectorUI() {
         _debug_has_picked_tile_with_click = false;
         _debug_inspected_tiles.clear();
     }
-    const auto max_layers = std::size_t{ 9u };
-    const auto tiles_per_row = std::size_t{ 3u };
+    const auto max_layers = std::size_t{9u};
+    const auto tiles_per_row = std::size_t{3u};
     if(_debug_has_picked_tile_with_click) {
         std::size_t i = 0u;
         for(const auto cur_tile : _debug_inspected_tiles) {
@@ -1501,7 +1501,7 @@ void Game::ShowTileInspectorUI() {
     } else {
         auto picked_count = picked_tiles.size();
         for(std::size_t i = 0; i < max_layers; ++i) {
-            const Tile *cur_tile = i < picked_count ? picked_tiles[i] : nullptr;
+            const Tile* cur_tile = i < picked_count ? picked_tiles[i] : nullptr;
             const auto* cur_def = cur_tile ? cur_tile->GetDefinition() : TileDefinition::GetTileDefinitionByName("void");
             if(const auto* cur_sprite = cur_def->GetSprite()) {
                 const auto tex_coords = cur_sprite->GetCurrentTexCoords();
