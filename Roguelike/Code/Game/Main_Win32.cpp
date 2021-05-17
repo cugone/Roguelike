@@ -8,9 +8,10 @@
 
 #include "Game/GameCommon.hpp"
 
-
+#if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable : 28251 )
+#endif
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow);
 void Initialize(HINSTANCE hInstance, PWSTR pCmdLine);
@@ -25,7 +26,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     Shutdown();
 }
 
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 void Initialize(HINSTANCE hInstance, PWSTR pCmdLine) {
     UNUSED(hInstance);
