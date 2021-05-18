@@ -38,6 +38,8 @@ std::string Behavior::NameFromId(BehaviorID id) {
         return std::string{"flee"};
     case BehaviorID::Pursue:
         return std::string{"pursue"};
+    case BehaviorID::Sleep:
+        return std::string{"sleep"};
     default:
         return std::string{"none"};
     }
@@ -53,6 +55,8 @@ BehaviorID Behavior::IdFromName(std::string name) {
         return BehaviorID::Flee;
     } else if(name == "pursue") {
         return BehaviorID::Pursue;
+    } else if(name == "sleep") {
+        return BehaviorID::Sleep;
     } else {
         return BehaviorID::None;
     }

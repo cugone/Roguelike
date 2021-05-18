@@ -186,6 +186,7 @@
     <ClCompile Include="Pathfinder.cpp" />
     <ClCompile Include="PursueBehavior.cpp" />
     <ClCompile Include="RestCommand.cpp" />
+    <ClCompile Include="SleepBehavior.cpp" />
     <ClCompile Include="Stats.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="TileDefinition.cpp" />
@@ -224,6 +225,7 @@
     <ClInclude Include="Pathfinder.hpp" />
     <ClInclude Include="PursueBehavior.hpp" />
     <ClInclude Include="RestCommand.hpp" />
+    <ClInclude Include="SleepBehavior.hpp" />
     <ClInclude Include="Stats.hpp" />
     <ClInclude Include="Tile.hpp" />
     <ClInclude Include="TileDefinition.hpp" />

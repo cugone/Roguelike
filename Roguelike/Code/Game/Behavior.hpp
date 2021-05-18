@@ -12,6 +12,7 @@ enum class BehaviorID {
     , Wander
     , Flee
     , Pursue
+    , Sleep
 };
 
 class Behavior {
