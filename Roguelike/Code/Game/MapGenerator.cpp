@@ -425,7 +425,7 @@ void RoomsAndCorridorsMapGenerator::MakeVerticalCorridor(const AABB2& from, cons
     const auto step = std::signbit(end - start) ? -1.0f : 1.0f;
     const auto x = from.CalcCenter().x;
     const auto can_be_corridor_wall = [&](const std::string& name) { return name != this->floorType; };
-    for(auto y = start; y < end; y += step) {
+    for(auto y = start; y <= end; y += step) {
         if(auto* tile = _map->GetTile(IntVector3{static_cast<int>(x), static_cast<int>(y), 0})) {
             tile->ChangeTypeFromName(floorType);
             const auto neighbors = tile->GetNeighbors();
@@ -447,7 +447,7 @@ void RoomsAndCorridorsMapGenerator::MakeHorizontalCorridor(const AABB2& from, co
     const auto step = std::signbit(end - start) ? -1.0f : 1.0f;
     const auto y = from.CalcCenter().y;
     const auto can_be_corridor_wall = [&](const std::string& name) { return name != this->floorType; };
-    for(auto x = start; x < end; x += step) {
+    for(auto x = start; x <= end; x += step) {
         if(auto* tile = _map->GetTile(IntVector3{static_cast<int>(x), static_cast<int>(y), 0})) {
             tile->ChangeTypeFromName(floorType);
             const auto neighbors = tile->GetNeighbors();
