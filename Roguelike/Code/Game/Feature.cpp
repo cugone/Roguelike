@@ -12,9 +12,10 @@ std::map<std::string, std::unique_ptr<Feature>> Feature::s_registry{};
 
 Feature* Feature::CreateFeature(Map* map, const XMLElement& elem) {
     auto new_feature = std::make_unique<Feature>(map, elem);
-    auto new_feature_name = new_feature->name;
+    std::string new_feature_name = new_feature->name;
+    auto* ptr = new_feature.get();
     s_registry.try_emplace(new_feature_name, std::move(new_feature));
-    return new_feature.get();
+    return ptr;
 }
 
 void Feature::ClearFeatureRegistry() {

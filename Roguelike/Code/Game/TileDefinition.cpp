@@ -54,7 +54,9 @@ Texture* TileDefinition::GetTexture() {
 
 const SpriteSheet* TileDefinition::GetSheet() const {
     if(!_sheet.expired()) {
-        return _sheet.lock().get();
+        auto shptr = _sheet.lock();
+        auto* ptr = shptr.get();
+        return ptr;
     }
     return nullptr;
 }
