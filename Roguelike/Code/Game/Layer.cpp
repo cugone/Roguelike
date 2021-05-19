@@ -12,6 +12,7 @@
 #include "Game/Actor.hpp"
 
 #include <algorithm>
+#include <iterator>
 #include <numeric>
 
 Layer::Layer(Map* map, const XMLElement& elem)
@@ -182,11 +183,13 @@ void Layer::InitializeTiles(const std::size_t layer_width, const std::size_t lay
 }
 
 std::size_t Layer::NormalizeLayerRows(std::vector<std::string>& glyph_strings) {
-    const auto longest_element = std::max_element(std::begin(glyph_strings), std::end(glyph_strings),
+    const auto longest_element = std::max_element(std::cbegin(glyph_strings), std::cend(glyph_strings),
         [](const std::string& a, const std::string& b)->bool {
             return a.size() < b.size();
         });
-    const auto max_row_length = longest_element->size();
+    const auto longest_row_id = std::size_t{1u} + std::distance(std::cbegin(glyph_strings), longest_element);
+    GUARANTEE_OR_DIE(!(Map::max_dimension < longest_element->size()), StringUtils::Stringf("Row %d exceeds maximum length of %d", longest_row_id, Map::max_dimension).c_str());
+    const auto max_row_length = (std::min)(longest_element->size(), static_cast<std::size_t>(Map::max_dimension));
     for(auto& str : glyph_strings) {
         if(str.empty()) {
             str.assign(max_row_length, ' ');

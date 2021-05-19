@@ -186,8 +186,8 @@ RoomsMapGenerator::RoomsMapGenerator(Map* map, const XMLElement& elem) noexcept
 
 void RoomsMapGenerator::Generate() {
     DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "minSize,maxSize", "count,floor,wall,default", "", "width,height");
-    const auto min_size = std::clamp([&]()->const int { const auto* xml_min = _xml_element.FirstChildElement("minSize"); int result = DataUtils::ParseXmlElementText(*xml_min, 1); if(result < 0) result = 1; return result; }(), 1, 100); //IIIL
-    const auto max_size = std::clamp([&]()->const int { const auto* xml_max = _xml_element.FirstChildElement("maxSize"); int result = DataUtils::ParseXmlElementText(*xml_max, 1); if(result < 0) result = 1; return result; }(), 1, 100); //IIIL
+    const auto min_size = std::clamp([&]()->const int { const auto* xml_min = _xml_element.FirstChildElement("minSize"); int result = DataUtils::ParseXmlElementText(*xml_min, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
+    const auto max_size = std::clamp([&]()->const int { const auto* xml_max = _xml_element.FirstChildElement("maxSize"); int result = DataUtils::ParseXmlElementText(*xml_max, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
     const int room_count = DataUtils::ParseXmlAttribute(_xml_element, "count", 1);
     const unsigned int width = DataUtils::ParseXmlAttribute(_xml_element, "width", 0u);
     const unsigned int height = DataUtils::ParseXmlAttribute(_xml_element, "height", 0u);
@@ -195,8 +195,8 @@ void RoomsMapGenerator::Generate() {
     for(int i = 0; i < room_count; ++i) {
         const auto w = MathUtils::GetRandomIntInRange(min_size, max_size);
         const auto h = MathUtils::GetRandomIntInRange(min_size, max_size);
-        const auto x = MathUtils::GetRandomIntInRange(w, 100 - 2 * w);
-        const auto y = MathUtils::GetRandomIntInRange(h, 100 - 2 * h);
+        const auto x = MathUtils::GetRandomIntInRange(w, Map::max_dimension - 2 * w);
+        const auto y = MathUtils::GetRandomIntInRange(h, Map::max_dimension - 2 * h);
         rooms.push_back(AABB2{Vector2{(float)x, (float)y}, (float)w, (float)h});
     }
     for(int i = 0; i < room_count - 1; ++i) {

@@ -31,7 +31,7 @@ class Pathfinder;
 
 class Map {
 public:
-
+    constexpr static inline int max_dimension = 255;
     struct RaycastResult2D {
         bool didImpact{false};
         Vector2 impactPosition{};
