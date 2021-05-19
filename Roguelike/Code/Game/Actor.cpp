@@ -344,6 +344,7 @@ void Actor::SetBehavior(BehaviorID id) {
     const auto is_available = found_iter != std::end(behaviors);
     if(is_available) {
         _active_behavior = found_iter->get();
+        _active_behavior->SetTarget(this->map->player);
     }
 }
 
