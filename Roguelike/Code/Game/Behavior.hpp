@@ -29,7 +29,7 @@ public:
     virtual float CalculateUtility() noexcept = 0;
     const std::string& GetName() const noexcept;
 
-    void SetTarget(Actor* target) noexcept;
+    virtual void SetTarget(Actor* target) noexcept;
     Actor* GetTarget() const noexcept;
 
 protected:

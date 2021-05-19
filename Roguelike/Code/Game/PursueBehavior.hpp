@@ -13,7 +13,7 @@ public:
 
     virtual ~PursueBehavior() = default;
 
-    void SetTarget(Actor* target) noexcept;
+    void SetTarget(Actor* target) noexcept override;
 
     void Act(Actor* actor) noexcept override;
     float CalculateUtility() noexcept override;
