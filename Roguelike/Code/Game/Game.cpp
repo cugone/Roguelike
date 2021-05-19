@@ -195,24 +195,9 @@ void Game::Update_Main(TimeUtils::FPSeconds deltaSeconds) {
 
 void Game::Render_Title() const {
 
-    g_theRenderer->ResetModelViewProjection();
-    g_theRenderer->SetRenderTarget();
-    g_theRenderer->ClearColor(Rgba::Black);
-    g_theRenderer->ClearDepthStencilBuffer();
+    g_theRenderer->BeginRender();
 
-    g_theRenderer->SetViewportAsPercent();
-
-    //2D View / HUD
-    const float ui_view_height = currentGraphicsOptions.WindowHeight;
-    const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
-    const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
-    const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    const auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
-    const auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
-    const auto ui_nearFar = Vector2{0.0f, 1.0f};
-    ui_camera.SetPosition(Vector2::ZERO);
-    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
-    g_theRenderer->SetCamera(ui_camera);
+    g_theRenderer->BeginHUDRender(ui_camera, Vector2::ZERO, currentGraphicsOptions.WindowHeight);
 
     g_theRenderer->SetModelMatrix(Matrix4::I);
     g_theRenderer->DrawTextLine(ingamefont, "RogueLike");
@@ -221,24 +206,9 @@ void Game::Render_Title() const {
 
 void Game::Render_Loading() const {
 
-    g_theRenderer->ResetModelViewProjection();
-    g_theRenderer->SetRenderTarget();
-    g_theRenderer->ClearColor(Rgba::Black);
-    g_theRenderer->ClearDepthStencilBuffer();
+    g_theRenderer->BeginRender();
 
-    g_theRenderer->SetViewportAsPercent();
-
-    //2D View / HUD
-    const float ui_view_height = currentGraphicsOptions.WindowHeight;
-    const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
-    const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
-    const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    const auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
-    const auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
-    const auto ui_nearFar = Vector2{0.0f, 1.0f};
-    ui_camera.SetPosition(Vector2::ZERO);
-    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
-    g_theRenderer->SetCamera(ui_camera);
+    g_theRenderer->BeginHUDRender(ui_camera, Vector2::ZERO, currentGraphicsOptions.WindowHeight);
 
     g_theRenderer->SetModelMatrix(Matrix4::I);
     g_theRenderer->DrawTextLine(ingamefont, "LOADING");
@@ -252,12 +222,7 @@ void Game::Render_Loading() const {
 
 void Game::Render_Main() const {
 
-    g_theRenderer->ResetModelViewProjection();
-    g_theRenderer->SetRenderTarget(g_theRenderer->GetFullscreenTexture());
-    g_theRenderer->ClearColor(Rgba::Black);
-    g_theRenderer->ClearDepthStencilBuffer();
-
-    g_theRenderer->SetViewportAsPercent();
+    g_theRenderer->BeginRender(g_theRenderer->GetFullscreenTexture());
 
     _map->Render(*g_theRenderer);
 
@@ -284,21 +249,10 @@ void Game::Render_Main() const {
         g_theRenderer->DrawQuad2D(Vector2::ZERO, Vector2::ONE, Rgba{0, 0, 0, 128});
     }
 
-    //2D View / HUD
-    const float ui_view_height = currentGraphicsOptions.WindowHeight;
-    const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
-    const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
-    const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    const auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
-    const auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
-    const auto ui_center = Vector2::ZERO;
-    const auto ui_nearFar = Vector2{0.0f, 1.0f};
-    ui_camera.SetPosition(ui_center);
-    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, MathUtils::M_16_BY_9_RATIO);
-    g_theRenderer->SetCamera(ui_camera);
+    g_theRenderer->BeginHUDRender(ui_camera, Vector2::ZERO, currentGraphicsOptions.WindowHeight);
 
     if(g_theApp->LostFocus()) {
-        g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(ui_center));
+        g_theRenderer->SetModelMatrix(Matrix4::I);
         g_theRenderer->DrawTextLine(ingamefont, "PAUSED");
     }
 }
