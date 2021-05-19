@@ -55,8 +55,11 @@ public:
 
     void SetCoords(int x, int y);
     void SetCoords(const IntVector2& coords);
-    const IntVector2& GetCoords() const;
+    const IntVector2 GetCoords() const;
     int GetIndexFromCoords() const noexcept;
+
+    uint32_t GetLightValue()const noexcept;
+    void SetLightValue(uint32_t newValue) noexcept;
 
     std::array<Tile*, 8> GetNeighbors() const;
     Tile* GetNeighbor(const IntVector3& directionAndLayerOffset) const;
@@ -104,5 +107,5 @@ private:
     AnimatedSprite* GetSpriteForOverlay(std::string overlayName) const;
 
     TileDefinition* _def{};
-    IntVector2 _tile_coords{};
+    uint32_t _coords_lightvalue{};
 };

@@ -13,6 +13,17 @@
 
 #include "Game/GameCommon.hpp"
 
+constexpr uint32_t tilecoords_mask       = 0b0000'0000'1111'1111'1111'1111'0000'0000;
+constexpr uint32_t tilecoords_light_mask = 0b0000'0000'0000'0000'0000'0000'1111'1111;
+constexpr uint32_t tilecoords_x_mask     = 0b0000'0000'0000'0000'1111'1111'0000'0000;
+constexpr uint32_t tilecoords_y_mask     = 0b0000'0000'1111'1111'0000'0000'0000'0000;
+constexpr uint32_t tilecoords_y_bits = 8;
+constexpr uint32_t tilecoords_x_bits = 8;
+constexpr uint32_t tilecoords_light_bits = 8;
+constexpr uint32_t tilecoords_y_offset = 16;
+constexpr uint32_t tilecoords_x_offset = 8;
+constexpr uint32_t tilecoords_light_offset = 0;
+
 Tile::Tile()
     : _def(TileDefinition::GetTileDefinitionByName("void"))
 {
@@ -26,13 +37,13 @@ void Tile::AddVerts() const noexcept {
     } else if(feature) {
         feature->AddVerts();
     } else if(HasInventory() && !inventory->empty()) {
-        inventory->AddVerts(Vector2{_tile_coords}, layer);
+        inventory->AddVerts(Vector2{GetCoords()}, layer);
     }
     if(!canSee && haveSeen) {
         AddVertsForOverlay();
     }
 
-    if(g_theGame->current_cursor; g_theGame->current_cursor->GetCoords() == _tile_coords) {
+    if(g_theGame->current_cursor; g_theGame->current_cursor->GetCoords() == GetCoords()) {
         auto& builder = layer->GetMeshBuilder();
         g_theGame->current_cursor->AddVertsForCursor(builder);
     }
@@ -46,10 +57,11 @@ void Tile::AddVertsForTile() const noexcept {
     const auto& sprite = _def->GetSprite();
     const auto& coords = sprite->GetCurrentTexCoords();
 
-    const auto vert_left = _tile_coords.x + 0.0f;
-    const auto vert_right = _tile_coords.x + 1.0f;
-    const auto vert_top = _tile_coords.y + 0.0f;
-    const auto vert_bottom = _tile_coords.y + 1.0f;
+    const auto tile_coords = GetCoords();
+    const auto vert_left = tile_coords.x + 0.0f;
+    const auto vert_right = tile_coords.x + 1.0f;
+    const auto vert_top = tile_coords.y + 0.0f;
+    const auto vert_bottom = tile_coords.y + 1.0f;
 
     const auto vert_bl = Vector2(vert_left, vert_bottom);
     const auto vert_tl = Vector2(vert_left, vert_top);
@@ -109,10 +121,11 @@ void Tile::AddVertsForOverlay() const noexcept {
     const auto overlayName = std::string{"blue"};
     const auto coords = GetCoordsForOverlay(overlayName);
 
-    const auto vert_left = _tile_coords.x + 0.0f;
-    const auto vert_right = _tile_coords.x + 1.0f;
-    const auto vert_top = _tile_coords.y + 0.0f;
-    const auto vert_bottom = _tile_coords.y + 1.0f;
+    const auto tile_coords = GetCoords();
+    const auto vert_left = tile_coords.x + 0.0f;
+    const auto vert_right = tile_coords.x + 1.0f;
+    const auto vert_top = tile_coords.y + 0.0f;
+    const auto vert_bottom = tile_coords.y + 1.0f;
 
     const auto vert_bl = Vector2(vert_left, vert_bottom);
     const auto vert_tl = Vector2(vert_left, vert_top);
@@ -189,7 +202,7 @@ void Tile::ChangeTypeFromGlyph(char glyph) {
 }
 
 AABB2 Tile::GetBounds() const {
-    return {Vector2(_tile_coords), Vector2(_tile_coords + IntVector2::ONE)};
+    return {Vector2(GetCoords()), Vector2(GetCoords() + IntVector2::ONE)};
 }
 
 const TileDefinition* Tile::GetDefinition() const {
@@ -251,15 +264,27 @@ void Tile::SetCoords(int x, int y) {
 }
 
 void Tile::SetCoords(const IntVector2& coords) {
-    _tile_coords = coords;
+    _coords_lightvalue = DataUtils::ShiftLeft(coords.y, tilecoords_y_offset) | DataUtils::ShiftLeft(coords.x, tilecoords_x_offset) | DataUtils::ShiftLeft(GetLightValue(), tilecoords_light_offset);
 }
 
-const IntVector2& Tile::GetCoords() const {
-    return _tile_coords;
+const IntVector2 Tile::GetCoords() const {
+    const int y = DataUtils::ShiftRight(_coords_lightvalue & tilecoords_y_mask, tilecoords_y_offset);
+    const int x = DataUtils::ShiftRight(_coords_lightvalue & tilecoords_x_mask, tilecoords_x_offset);
+    return IntVector2{x, y};
 }
 
 int Tile::GetIndexFromCoords() const noexcept {
-    return _tile_coords.y * layer->tileDimensions.x + _tile_coords.x;
+    const auto coords = GetCoords();
+    return coords.y * layer->tileDimensions.x + coords.x;
+}
+
+uint32_t Tile::GetLightValue() const noexcept {
+    return DataUtils::ShiftRight(_coords_lightvalue & tilecoords_light_mask, tilecoords_light_bits) & tilecoords_light_bits;
+}
+
+void Tile::SetLightValue(uint32_t newValue) noexcept {
+    _coords_lightvalue &= ~tilecoords_light_mask;
+    _coords_lightvalue |= (newValue & tilecoords_light_mask);
 }
 
 Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) const {
