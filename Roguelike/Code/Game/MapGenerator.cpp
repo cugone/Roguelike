@@ -138,6 +138,13 @@ XmlMapGenerator::XmlMapGenerator(Map* map, const XMLElement& elem) noexcept
 void XmlMapGenerator::Generate() {
     DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "layers", "");
     LoadLayersFromXml(_xml_element);
+    const auto map_dims = _map->CalcMaxDimensions();
+    const auto map_width = static_cast<int>(map_dims.x);
+    const auto map_height = static_cast<int>(map_dims.y);
+    _map->GetPathfinder()->Initialize(map_width, map_height);
+    LoadFeatures(_map->_root_xml_element);
+    LoadActors(_map->_root_xml_element);
+    LoadItems(_map->_root_xml_element);
 }
 
 void XmlMapGenerator::LoadLayersFromXml(const XMLElement& elem) {
