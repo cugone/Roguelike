@@ -277,6 +277,9 @@
     <Xml Include="..\..\Run_x64\Data\Definitions\UI.xml">
       <Filter>Data\Definitions</Filter>
     </Xml>
+    <Xml Include="..\..\Run_x64\Data\Definitions\Map01.xml">
+      <Filter>Data\Definitions</Filter>
+    </Xml>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Run_x64\Data\Materials\Tile.material">

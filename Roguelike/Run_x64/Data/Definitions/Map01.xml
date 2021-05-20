@@ -1,0 +1,25 @@
+<map name="Pathfinding Test">
+    <material name="Tile" />
+    <tiles src="Data/Definitions/Tiles.xml" />
+    <actors>
+        <actor name="player" lookAndFeel="human..male" position="[10,1]" />
+        <actor name="aerith" lookAndFeel="human..female" position="[8,8]" behavior="sleep" />
+        <actor name="aerith" lookAndFeel="human..female" position="[15,8]" behavior="sleep" />
+    </actors>
+    <mapGenerator>
+        <layers>
+            <layer>
+                <row glyphs="##########################" />
+                <row glyphs="#........................#" />
+                <row glyphs="#........................#" />
+                <row glyphs="#........................#" />
+                <row glyphs="#...##################...#" />
+                <row glyphs="#....................#...#" />
+                <row glyphs="#....................#...#" />
+                <row glyphs="#........................#" />
+                <row glyphs="#........................#" />
+                <row glyphs="##########################" />
+            </layer>
+        </layers>
+    </mapGenerator>
+</map>
