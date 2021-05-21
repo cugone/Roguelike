@@ -23,7 +23,12 @@
         <glyph value="." />
         <allowDiagonalMovement />
     </tileDefinition>
-    <tileDefinition name="stairsUp" index="[30,14]">
+    <tileDefinition name="entrance" index="[17,7]">
+        <glyph value="@" />
+        <opaque />
+        <allowDiagonalMovement />
+        <start />
+    </tileDefinition>
     <tileDefinition name="stairsUp" index="[6,8]">
         <glyph value="&gt;" />
         <opaque />
