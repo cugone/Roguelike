@@ -1044,8 +1044,6 @@ void Game::HandlePlayerMouseInput() {
     if(g_theUISystem->WantsInputMouseCapture()) {
         return;
     }
-    static bool fade_out_done = false;
-    static bool fade_in_done = false;
     static bool requested_zoom_out = false;
     static bool requested_zoom_in = false;
     if(g_theInputSystem->WasMouseWheelJustScrolledUp()) {
