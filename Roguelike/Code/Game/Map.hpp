@@ -314,7 +314,7 @@ public:
 
     template<typename F>
     void ShakeCamera(F&& f) noexcept {
-        cameraController.GetCamera().trauma = f();
+        cameraController.GetCamera().trauma = std::invoke(std::forward<F>(f));
     }
 
     std::size_t DebugTilesInViewCount() const;
