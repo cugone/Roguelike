@@ -176,6 +176,9 @@ private:
 
     void LoadData(void* user_data);
 
+    void MapEntered() noexcept;
+    void MapExited() noexcept;
+
     std::unique_ptr<Adventure> _adventure{nullptr};
     Rgba _grid_color{Rgba::Red};
     Rgba _debug_gradientColor{Rgba::White};
@@ -200,6 +203,8 @@ private:
     fullscreen_cb_t _fullscreen_data = fullscreen_cb_t{};
     FullscreenEffect _current_fs_effect = FullscreenEffect::None;
     std::function<void()> _fullscreen_callback{};
+    Event<> OnMapEnter;
+    Event<> OnMapExit;
     Rgba _fadeIn_color = Rgba::Black;
     Rgba _fadeOut_color = Rgba::Black;
     TimeUtils::FPSeconds _fadeInTime{1.0f};

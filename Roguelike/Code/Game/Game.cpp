@@ -75,6 +75,9 @@ void Game::Initialize() {
     if(!g_theConfig->AppendFromFile("Data/Config/options.dat")) {
         g_theFileLogger->LogWarnLine("options file not found at Data/Config/options.dat");
     }
+    OnMapExit.Subscribe_method(this, &Game::MapExited);
+    OnMapEnter.Subscribe_method(this, &Game::MapEntered);
+
     _consoleCommands = Console::CommandList(g_theConsole);
     CreateFullscreenConstantBuffer();
     g_theRenderer->RegisterMaterialsFromFolder(std::string{"Data/Materials"});
@@ -598,15 +601,44 @@ void Game::UnRegisterCommands() {
     g_theConsole->PopCommandList(_consoleCommands);
 }
 
+void Game::MapEntered() noexcept {
+    static bool requested_enter = false;
+    if(_adventure->currentMap->IsPlayerOnEntrance()) {
+        requested_enter = true;
+    }
+    if(requested_enter) {
+        _adventure->PreviousMap();
+        requested_enter = false;
+        //SetFullscreenEffect(FullscreenEffect::FadeOut, [this]() {
+        //    _adventure->PreviousMap();
+        //    SetFullscreenEffect(FullscreenEffect::FadeIn, []() {
+        //        requested_enter = false;
+        //    });
+        //});
+    }
+}
+
+void Game::MapExited() noexcept {
+    static bool requested_exit = false;
+    if(_adventure->currentMap->IsPlayerOnExit()) {
+        requested_exit = true;
+    }
+    if(requested_exit) {
+        _adventure->NextMap();
+        requested_exit = false;
+        //SetFullscreenEffect(FullscreenEffect::FadeOut, [this]() {
+        //    _adventure->NextMap();
+        //    SetFullscreenEffect(FullscreenEffect::FadeIn, []() {
+        //        requested_exit = false;
+        //        });
+        //});
+    }
+}
+
 void Game::EndFrame_Main() {
     _adventure->currentMap->EndFrame();
-
-    if(_adventure->currentMap->IsPlayerOnExit()) {
-        _adventure->NextMap();
-    } else if(_adventure->currentMap->IsPlayerOnEntrance()) {
-        _adventure->PreviousMap();
-    }
-
+    OnMapExit.Trigger();
+    OnMapEnter.Trigger();
 }
 
 void Game::ChangeGameState(const GameState& newState) {
