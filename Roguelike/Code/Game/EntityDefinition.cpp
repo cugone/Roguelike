@@ -46,20 +46,14 @@ std::vector<std::string> EntityDefinition::GetAllEntityDefinitionNames() {
 EntityDefinition::EntityDefinition(Renderer& renderer, const XMLElement& elem)
     : _renderer(renderer)
 {
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(!LoadFromXml(elem)) {
-        ERROR_AND_DIE("Entity Definition failed to load.");
-    }
+    GUARANTEE_OR_DIE(LoadFromXml(elem), "Entity Definition failed to load.");
 }
 
 EntityDefinition::EntityDefinition(Renderer& renderer, const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet)
     : _renderer(renderer)
     , _sheet(sheet)
 {
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(!LoadFromXml(elem)) {
-        ERROR_AND_DIE("Entity Definition failed to load.");
-    }
+    GUARANTEE_OR_DIE(LoadFromXml(elem), "Entity Definition failed to load.");
 }
 
 const Stats& EntityDefinition::GetBaseStats() const noexcept {

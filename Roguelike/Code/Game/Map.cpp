@@ -225,10 +225,7 @@ Map::Map(Renderer& renderer, const XMLElement& elem) noexcept
     , _root_xml_element(elem)
     , _pathfinder(std::make_unique<Pathfinder>())
 {
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(!LoadFromXML(elem)) {
-        ERROR_AND_DIE("Could not load map.");
-    }
+    GUARANTEE_OR_DIE(LoadFromXML(elem), "Could not load map.");
     cameraController = OrthographicCameraController(&_renderer, g_theInputSystem);
     cameraController.SetZoomLevelRange(Vector2{8.0f, 16.0f});
 }
@@ -867,28 +864,23 @@ void Map::CreateGeneratorFromTypename(const XMLElement& elem) {
 void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
     if(auto xml_tileset = elem.FirstChildElement("tiles")) {
         DataUtils::ValidateXmlElement(*xml_tileset, "tiles", "", "src");
-        //TODO: Convert to GUARENTEE_OR_DIE
-        if(const auto src = DataUtils::ParseXmlAttribute(*xml_tileset, "src", std::string{}); src.empty()) {
-            ERROR_AND_DIE("Map tiles source is empty.");
-        } else {
-            LoadTileDefinitionsFromFile(src);
-        }
+        const auto src = DataUtils::ParseXmlAttribute(*xml_tileset, "src", std::string{});
+        GUARANTEE_OR_DIE(!src.empty(), "Map tiles source is empty.");
+        LoadTileDefinitionsFromFile(src);
     }
 }
 
 void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(!FS::exists(src)) {
-        const auto ss = std::string{"Entities file at "} + src.string() + " could not be found.";
-        ERROR_AND_DIE(ss.c_str());
+    {
+        const auto error_msg = std::string{"Entities file at "} + src.string() + " could not be found.";
+        GUARANTEE_OR_DIE(FS::exists(src), error_msg.c_str());
     }
     tinyxml2::XMLDocument doc;
     auto xml_result = doc.LoadFile(src.string().c_str());
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(xml_result != tinyxml2::XML_SUCCESS) {
-        const auto ss = std::string("Map ") + _name + " failed to load. Tiles source file at " + src.string() + " could not be loaded.";
-        ERROR_AND_DIE(ss.c_str());
+    {
+        const auto error_msg = std::string("Map ") + _name + " failed to load. Tiles source file at " + src.string() + " could not be loaded.";
+        GUARANTEE_OR_DIE(xml_result == tinyxml2::XML_SUCCESS, error_msg.c_str());
     }
     if(auto xml_root = doc.RootElement()) {
         DataUtils::ValidateXmlElement(*xml_root, "tileDefinitions", "spritesheet,tileDefinition", "");
@@ -912,10 +904,7 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
                 auto* actor = Actor::CreateActor(this, elem);
                 auto actor_name = StringUtils::ToLowerCase(actor->name);
                 bool is_player = actor_name == "player";
-                //TODO: Convert to GUARENTEE_OR_DIE
-                if(player && is_player) {
-                    ERROR_AND_DIE("Map failed to load. Multiplayer not yet supported.");
-                }
+                GUARANTEE_OR_DIE(!(player && is_player), "Map failed to load. Multiplayer not yet supported.");
                 actor->SetFaction(Faction::Enemy);
                 if(is_player) {
                     player = actor;

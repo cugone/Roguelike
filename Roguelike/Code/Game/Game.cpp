@@ -673,17 +673,15 @@ void Game::LoadCursorsFromFile(const std::filesystem::path& src) {
 
 void Game::LoadCursorDefinitionsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(!FS::exists(src)) {
-        const auto ss = std::string{"Cursor Definitions file at "} + src.string() + " could not be found.";
-        ERROR_AND_DIE(ss.c_str());
+    {
+        const auto error_msg = std::string{"Cursor Definitions file at "} + src.string() + " could not be found.";
+        GUARANTEE_OR_DIE(FS::exists(src), error_msg.c_str());
     }
     tinyxml2::XMLDocument doc;
     auto xml_result = doc.LoadFile(src.string().c_str());
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(xml_result != tinyxml2::XML_SUCCESS) {
-        const auto ss = std::string{"Cursor Definitions at "} + src.string() + " failed to load.";
-        ERROR_AND_DIE(ss.c_str());
+    {
+        const auto error_msg = std::string{"Cursor Definitions at "} + src.string() + " failed to load.";
+        GUARANTEE_OR_DIE(xml_result == tinyxml2::XML_SUCCESS, error_msg.c_str());
     }
     if(auto* xml_root = doc.RootElement()) {
         DataUtils::ValidateXmlElement(*xml_root, "UI", "spritesheet", "", "cursors,overlays");
@@ -700,32 +698,25 @@ void Game::LoadCursorDefinitionsFromFile(const std::filesystem::path& src) {
 
 void Game::LoadEntitiesFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(!FS::exists(src)) {
-        const auto ss = std::string{"Entities file at "} + src.string() + " could not be found.";
-        ERROR_AND_DIE(ss.c_str());
+    {
+        const auto error_msg = std::string{"Entities file at "} + src.string() + " could not be found.";
+        GUARANTEE_OR_DIE(FS::exists(src), error_msg.c_str());
     }
     tinyxml2::XMLDocument doc;
     auto xml_result = doc.LoadFile(src.string().c_str());
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(xml_result != tinyxml2::XML_SUCCESS) {
-        const auto ss = std::string{"Entities source file at "} + src.string() + " could not be loaded.";
-        ERROR_AND_DIE(ss.c_str());
+    {
+        const auto error_msg = std::string{"Entities source file at "} + src.string() + " could not be loaded.";
+        GUARANTEE_OR_DIE(xml_result == tinyxml2::XML_SUCCESS, error_msg.c_str());
     }
+
     if(auto* xml_entities_root = doc.RootElement()) {
         DataUtils::ValidateXmlElement(*xml_entities_root, "entities", "definitions,entity", "");
         if(auto* xml_definitions = xml_entities_root->FirstChildElement("definitions")) {
             DataUtils::ValidateXmlElement(*xml_definitions, "definitions", "", "src");
             const auto definitions_src = DataUtils::ParseXmlAttribute(*xml_definitions, "src", std::string{});
-            //TODO: Convert to GUARENTEE_OR_DIE
-            if(definitions_src.empty()) {
-                ERROR_AND_DIE("Entity definitions source is empty.");
-            }
+            GUARANTEE_OR_DIE(!definitions_src.empty(), "Entity definitions source is empty.");
             FS::path def_src(definitions_src);
-            //TODO: Convert to GUARENTEE_OR_DIE
-            if(!FS::exists(def_src)) {
-                ERROR_AND_DIE("Entity definitions source not found.");
-            }
+            GUARANTEE_OR_DIE(FS::exists(def_src), "Entity definitions source not found.");
             LoadEntityDefinitionsFromFile(def_src);
         }
     }
@@ -733,17 +724,15 @@ void Game::LoadEntitiesFromFile(const std::filesystem::path& src) {
 
 void Game::LoadEntityDefinitionsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(!FS::exists(src)) {
-        const auto ss = std::string{"Entity Definitions file at "} + src.string() + " could not be found.";
-        ERROR_AND_DIE(ss.c_str());
+    {
+        const auto error_msg = std::string{"Entity Definitions file at "} + src.string() + " could not be found.";
+        GUARANTEE_OR_DIE(FS::exists(src), error_msg.c_str());
     }
     tinyxml2::XMLDocument doc;
     auto xml_result = doc.LoadFile(src.string().c_str());
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(xml_result != tinyxml2::XML_SUCCESS) {
-        const auto ss = std::string{"Entity Definitions at "} + src.string() + " failed to load.";
-        ERROR_AND_DIE(ss.c_str());
+    {
+        const auto error_msg = std::string{"Entity Definitions at "} + src.string() + " failed to load.";
+        GUARANTEE_OR_DIE(xml_result == tinyxml2::XML_SUCCESS, error_msg.c_str());
     }
     if(auto* xml_root = doc.RootElement()) {
         DataUtils::ValidateXmlElement(*xml_root, "entityDefinitions", "spritesheet,entityDefinition", "");
@@ -758,17 +747,15 @@ void Game::LoadEntityDefinitionsFromFile(const std::filesystem::path& src) {
 
 void Game::LoadItemsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(!FS::exists(src)) {
-        const auto ss = std::string{"Item file at "} + src.string() + " could not be found.";
-        ERROR_AND_DIE(ss.c_str());
+    {
+        const auto error_msg = std::string{"Item file at "} + src.string() + " could not be found.";
+        GUARANTEE_OR_DIE(FS::exists(src), error_msg.c_str());
     }
     tinyxml2::XMLDocument doc;
     auto xml_result = doc.LoadFile(src.string().c_str());
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(xml_result != tinyxml2::XML_SUCCESS) {
-        const auto ss = std::string{"Item source file at "} + src.string() + " could not be loaded.";
-        ERROR_AND_DIE(ss.c_str());
+    {
+        const auto error_msg = std::string{"Item source file at "} + src.string() + " could not be loaded.";
+        GUARANTEE_OR_DIE(xml_result == tinyxml2::XML_SUCCESS, error_msg.c_str());
     }
     if(auto* xml_item_root = doc.RootElement()) {
         DataUtils::ValidateXmlElement(*xml_item_root, "items", "spritesheet,item", "");

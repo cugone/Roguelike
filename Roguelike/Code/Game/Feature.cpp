@@ -27,10 +27,7 @@ Feature::Feature(Map* map, const XMLElement& elem) noexcept
 {
     this->map = map;
     this->layer = this->map->GetLayer(0);
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(!LoadFromXml(elem)) {
-        ERROR_AND_DIE("Feature failed to load.");
-    }
+    GUARANTEE_OR_DIE(LoadFromXml(elem), "Feature failed to load.");
     OnFight.Subscribe_method(this, &Feature::ResolveAttack);
 }
 

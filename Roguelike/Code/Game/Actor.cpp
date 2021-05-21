@@ -30,10 +30,7 @@ Actor::Actor(Map* map, const XMLElement& elem) noexcept
 {
     this->map = map;
     this->layer = this->map->GetLayer(0);
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(!LoadFromXml(elem)) {
-        ERROR_AND_DIE("Actor failed to load.");
-    }
+    GUARANTEE_OR_DIE(LoadFromXml(elem), "Actor failed to load.");
     OnDamage.Subscribe_method(this, &Actor::ApplyDamage);
     OnFight.Subscribe_method(this, &Actor::ResolveAttack);
     OnMiss.Subscribe_method(this, &Actor::AttackerMissed);

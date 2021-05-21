@@ -19,19 +19,13 @@
 Layer::Layer(Map* map, const XMLElement& elem)
     : _map(map)
 {
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(!LoadFromXml(elem)) {
-        ERROR_AND_DIE("Invalid Layer");
-    }
+    GUARANTEE_OR_DIE(LoadFromXml(elem), "Invalid Layer");
 }
 
 Layer::Layer(Map* map, const Image& img)
     : _map(map)
 {
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(!LoadFromImage(img)) {
-        ERROR_AND_DIE("Invalid Layer");
-    }
+    GUARANTEE_OR_DIE(LoadFromImage(img), "Invalid Layer");
 }
 
 Layer::Layer(Map* map, const IntVector2& dimensions)

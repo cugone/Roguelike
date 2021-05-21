@@ -79,10 +79,7 @@ CursorDefinition::CursorDefinition(Renderer& renderer, const XMLElement& elem, s
     : _renderer(renderer)
     , _sheet(sheet)
 {
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(!LoadFromXml(elem)) {
-        ERROR_AND_DIE("CursorDefinition failed to load.\n");
-    }
+    GUARANTEE_OR_DIE(LoadFromXml(elem), "CursorDefinition failed to load.\n");
 }
 
 bool CursorDefinition::LoadFromXml(const XMLElement& elem) {

@@ -106,10 +106,7 @@ void FileMapGenerator::Generate() {
 void FileMapGenerator::LoadLayersFromFile(const XMLElement& elem) {
     const auto xml_src = DataUtils::ParseXmlAttribute(elem, "src", "");
     if(auto src = FileUtils::ReadStringBufferFromFile(xml_src)) {
-        //TODO: Convert to GUARENTEE_OR_DIE
-        if(src.value().empty()) {
-            ERROR_AND_DIE("Loading Map from file with empty or invalid source attribute.");
-        }
+        GUARANTEE_OR_DIE(!src.value().empty(), "Loading Map from file with empty or invalid source attribute.");
         tinyxml2::XMLDocument doc;
         if(tinyxml2::XML_SUCCESS == doc.Parse(src.value().c_str(), src.value().size())) {
             auto* xml_layers = doc.RootElement();
@@ -297,10 +294,7 @@ void RoomsMapGenerator::LoadActors(const XMLElement& elem) {
                 auto* actor = Actor::CreateActor(_map, elem);
                 auto actor_name = StringUtils::ToLowerCase(actor->name);
                 bool is_player = actor_name == "player";
-                //TODO: Convert to GUARENTEE_OR_DIE
-                if(_map->player && is_player) {
-                    ERROR_AND_DIE("Map failed to load. Multiplayer not yet supported.");
-                }
+                GUARANTEE_OR_DIE(!(_map->player && is_player), "Map failed to load. Multiplayer not yet supported.");
                 actor->SetFaction(Faction::Enemy);
                 if(is_player) {
                     _map->player = actor;
@@ -352,10 +346,7 @@ void RoomsAndCorridorsMapGenerator::LoadActors(const XMLElement& elem) {
                 auto* actor = Actor::CreateActor(_map, elem);
                 auto actor_name = StringUtils::ToLowerCase(actor->name);
                 bool is_player = actor_name == "player";
-                //TODO: Convert to GUARENTEE_OR_DIE
-                if(_map->player && is_player) {
-                    ERROR_AND_DIE("Map failed to load. Multiplayer not yet supported.");
-                }
+                GUARANTEE_OR_DIE(!(_map->player && is_player), "Map failed to load. Multiplayer not yet supported.");
                 actor->SetFaction(Faction::Enemy);
                 if(is_player) {
                     _map->player = actor;

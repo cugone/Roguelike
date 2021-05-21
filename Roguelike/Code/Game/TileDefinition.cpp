@@ -101,10 +101,7 @@ TileDefinition::TileDefinition(Renderer& renderer, const XMLElement& elem, std::
     : _renderer(renderer)
     , _sheet(sheet)
 {
-    //TODO: Convert to GUARENTEE_OR_DIE
-    if(!LoadFromXml(elem)) {
-        ERROR_AND_DIE("TileDefinition failed to load.\n");
-    }
+    GUARANTEE_OR_DIE(LoadFromXml(elem), "TileDefinition failed to load.\n");
 }
 
 //TODO: Fix extraneous leading space
