@@ -22,3 +22,6 @@ extern AudioSystem* g_theAudioSystem;
 extern App* g_theApp;
 extern Game* g_theGame;
 extern EngineSubsystem* g_theSubsystemHead;
+
+constexpr int min_light_value = 0;
+constexpr int max_light_value = 15;

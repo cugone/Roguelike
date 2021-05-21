@@ -277,6 +277,7 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
                     continue;
                 }
                 if(auto* tile = GetTile(x, y); tile && (tile->debug_canSee || tile->canSee || tile->haveSeen)) {
+                    tile->CalculateLightValue();
                     results.push_back(tile);
                 }
             }

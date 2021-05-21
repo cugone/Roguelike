@@ -6,6 +6,9 @@
         <actor name="aerith" lookAndFeel="human..female" position="[8,8]" behavior="sleep" />
         <actor name="aerith" lookAndFeel="human..female" position="[15,8]" behavior="sleep" />
     </actors>
+    <features>
+        <feature name="glowstone" position="[12,5]" />
+    </features>
     <mapGenerator>
         <layers>
             <layer>

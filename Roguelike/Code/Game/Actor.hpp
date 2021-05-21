@@ -56,7 +56,10 @@ public:
     void SetBehavior(BehaviorID id);
     Behavior* GetCurrentBehavior() const noexcept;
 
+    void CalculateLightValue() noexcept override;
+
 protected:
+
 private:
     bool LoadFromXml(const XMLElement& elem);
 

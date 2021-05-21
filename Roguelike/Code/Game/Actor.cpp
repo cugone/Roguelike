@@ -9,6 +9,7 @@
 #include "Game/Map.hpp"
 
 #include <algorithm>
+#include <numeric>
 #include <sstream>
 
 std::multimap<std::string, std::unique_ptr<Actor>> Actor::s_registry{};
@@ -348,4 +349,16 @@ void Actor::SetBehavior(BehaviorID id) {
 
 Behavior* Actor::GetCurrentBehavior() const noexcept {
     return _active_behavior;
+}
+
+void Actor::CalculateLightValue() noexcept {
+    const auto tile_light = [this]()->uint32_t {
+        if(tile) {
+            return tile->GetLightValue();
+        }
+        return uint32_t{0u};
+    }();
+    //const auto acc_op = [](const uint32_t a, const Item* b) { return a + b->GetLightValue(); };
+    const auto value = tile_light + _self_illumination;// +std::accumulate(std::cbegin(_equipment), std::cend(_equipment), uint32_t{0u}, acc_op);
+    SetLightValue(value);
 }

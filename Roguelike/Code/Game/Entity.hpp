@@ -62,6 +62,10 @@ public:
     virtual void AddVerts() noexcept;
     virtual void AddVertsForSelf() noexcept;
 
+    virtual void CalculateLightValue() noexcept;
+    uint32_t GetLightValue() const noexcept;
+    void SetLightValue(uint32_t value) noexcept;
+
     Map* map = nullptr;
     Layer* layer = nullptr;
     Tile* tile = nullptr;
@@ -86,7 +90,8 @@ protected:
     Vector2 _screen_position{};
     IntVector2 _position{};
     Faction _faction{Faction::None};
-
+    uint32_t _light_value{};
+    uint32_t _self_illumination{};
 private:
     void LoadFromXml(const XMLElement& elem);
     std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;

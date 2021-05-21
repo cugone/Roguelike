@@ -31,13 +31,13 @@ constexpr uint8_t tile_flags_diag_bit     = 2;
 constexpr uint8_t tile_flags_out_bit      = 1;
 constexpr uint8_t tile_flags_in_bit       = 0;
 constexpr uint32_t tile_coords_mask       = 0b0000'0000'1111'1111'1111'1111'0000'0000;
-constexpr uint32_t tile_coords_light_mask = 0b0000'0000'0000'0000'0000'0000'1111'1111;
+constexpr uint32_t tile_coords_light_mask = 0b0000'0000'0000'0000'0000'0000'0000'1111;
 constexpr uint32_t tile_coords_x_mask     = 0b0000'0000'0000'0000'1111'1111'0000'0000;
 constexpr uint32_t tile_coords_y_mask     = 0b0000'0000'1111'1111'0000'0000'0000'0000;
 constexpr uint32_t tile_coords_y_bits = 8;
 constexpr uint32_t tile_coords_x_bits = 8;
 constexpr uint32_t tile_flags_bits = 8;
-constexpr uint32_t tile_coords_light_bits = 8;
+constexpr uint32_t tile_coords_light_bits = 4;
 constexpr uint32_t tile_flags_offset = 24;
 constexpr uint32_t tile_coords_y_offset = 16;
 constexpr uint32_t tile_coords_x_offset = 8;
@@ -46,7 +46,7 @@ constexpr uint32_t tile_coords_light_offset = 0;
 Tile::Tile()
     : _def(TileDefinition::GetTileDefinitionByName("void"))
 {
-    /* DO NOTHING */
+    SetLightValue(max_light_value);
 }
 
 void Tile::AddVerts() const noexcept {
@@ -99,9 +99,13 @@ void Tile::AddVertsForTile() const noexcept {
 
     const float z = static_cast<float>(layer->z_index);
     const Rgba layer_color = layer->color;
-    auto& builder = layer->GetMeshBuilder();
 
-    const auto newColor = layer_color != color && color != Rgba::White ? color : layer_color;
+    auto& builder = layer->GetMeshBuilder();
+    const auto newColor = [&]() {
+        auto clr = layer_color != color && color != Rgba::White ? color : layer_color;
+        clr.ScaleRGB(GetLightValue() / static_cast<float>(max_light_value));
+        return clr;
+    }(); //IIIL
     const auto normal = -Vector3::Z_AXIS;
 
     builder.Begin(PrimitiveType::Triangles);
@@ -208,6 +212,9 @@ void Tile::ChangeTypeFromName(const std::string& name) {
     }
     if(auto new_def = TileDefinition::GetTileDefinitionByName(name)) {
         _def = new_def;
+        if(layer) {
+            layer->DirtyMesh();
+        }
     }
 }
 
@@ -217,6 +224,9 @@ void Tile::ChangeTypeFromGlyph(char glyph) {
     }
     if(auto new_def = TileDefinition::GetTileDefinitionByGlyph(glyph)) {
         _def = new_def;
+        if(layer) {
+            layer->DirtyMesh();
+        }
     }
 }
 
@@ -321,13 +331,49 @@ int Tile::GetIndexFromCoords() const noexcept {
     return coords.y * layer->tileDimensions.x + coords.x;
 }
 
+void Tile::CalculateLightValue() noexcept {
+    const auto max_neighbor_value = GetMaxLightValueFromNeighbors();
+    const auto neighbor_value = max_neighbor_value > uint32_t{0u} ? max_neighbor_value - uint32_t{1u} : uint32_t{0u};
+    const auto feature_value = [this]() {
+        if(feature) {
+            feature->CalculateLightValue();
+            return feature->GetLightValue();
+        }
+        return uint32_t{0u};
+    }(); //IIIL
+    const auto actor_value = [this]() {
+        if(actor) {
+            actor->CalculateLightValue();
+            return actor->GetLightValue();
+        }
+        return uint32_t{0u};
+    }(); //IIIL
+    SetLightValue((std::max)(neighbor_value, (std::max)(feature_value, actor_value)));
+}
+
 uint32_t Tile::GetLightValue() const noexcept {
-    return DataUtils::ShiftRight(_flags_coords_lightvalue & tile_coords_light_mask, tile_coords_light_bits) & tile_coords_light_bits;
+    return DataUtils::ShiftRight(_flags_coords_lightvalue & tile_coords_light_mask, tile_coords_light_offset);
 }
 
 void Tile::SetLightValue(uint32_t newValue) noexcept {
+    const auto value_changed = GetLightValue() != newValue;
     _flags_coords_lightvalue &= ~tile_coords_light_mask;
     _flags_coords_lightvalue |= (newValue & tile_coords_light_mask);
+    if(value_changed && layer) {
+        layer->DirtyMesh();
+    }
+}
+
+void Tile::IncrementLightValue(int value /*= 1*/) noexcept {
+    int lv = GetLightValue();
+    lv = std::clamp(lv + value, min_light_value, max_light_value);
+    SetLightValue(lv);
+}
+
+void Tile::DecrementLightValue(int value /*= 1*/) noexcept {
+    int lv = GetLightValue();
+    lv = std::clamp(lv - value, min_light_value, max_light_value);
+    SetLightValue(lv);
 }
 
 Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) const {
@@ -394,6 +440,17 @@ Tile* Tile::GetUpNeighbor() const {
 
 Tile* Tile::GetDownNeighbor() const {
     return GetNeighbor(IntVector3{0,0,-1});
+}
+
+uint32_t Tile::GetMaxLightValueFromNeighbors() const noexcept {
+    const auto n = GetNeighbors();
+    const auto pred = [](const Tile* a, const Tile* b) {
+        const auto a_value = a ? a->GetLightValue() : uint32_t{0u};
+        const auto b_value = b ? b->GetLightValue() : uint32_t{0u};
+        return a_value < b_value;
+    };
+    const auto max_iter = std::max_element(std::cbegin(n), std::cend(n), pred);
+    return (*max_iter) != nullptr ? (*max_iter)->GetLightValue() : uint32_t{0u};
 }
 
 std::vector<Tile*> Tile::GetNeighbors(const IntVector2& direction) const {
@@ -467,4 +524,5 @@ void Tile::SetEntity(Entity* e) noexcept {
     if(auto* asFeature = dynamic_cast<Feature*>(e)) {
         feature = asFeature;
     }
+    layer->DirtyMesh();
 }

@@ -38,6 +38,7 @@ public:
     bool is_exit = false;
     bool allow_diagonal_movement = true;
     char glyph = ' ';
+    uint32_t light{};
     std::string name{};
     int frame_length = 0;
 

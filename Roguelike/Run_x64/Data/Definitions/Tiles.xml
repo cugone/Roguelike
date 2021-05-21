@@ -75,6 +75,15 @@
             <animationset startindex="[33,0]" framelength="8" duration="0.33" loop="true" />
         </animation>
     </tileDefinition>
+    <tileDefinition name="glowstone" index="[17,0]">
+        <glyph value="`" />
+        <allowDiagonalMovement />
+        <solid />
+        <animation name="glowstone">
+            <animationset startindex="[17,0]" framelength="3" duration="0.33" loop="true" />
+        </animation>
+        <light value="15" />
+    </tileDefinition>
     <tileDefinition name="dirt" index="[32,2]">
         <glyph value="_" />
         <allowDiagonalMovement />

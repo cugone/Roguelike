@@ -18,6 +18,8 @@ public:
 
     static Feature* CreateFeature(Map* map, const XMLElement& elem);
     static void ClearFeatureRegistry();
+    static Feature* GetFeatureByName(const std::string& name);
+    static Feature* GetFeatureByGlyph(const char glyph);
 
     Feature(Map* map, const XMLElement& elem) noexcept;
 
@@ -30,6 +32,10 @@ public:
 
     virtual void SetPosition(const IntVector2& position) override;
     void SetState(const std::string& stateName);
+
+    void CalculateLightValue() noexcept override;
+    void AddVertsForSelf() noexcept override;
+    void AddVerts() noexcept override;
 
 protected:
     virtual void ResolveAttack(Entity& attacker, Entity& defender) override;

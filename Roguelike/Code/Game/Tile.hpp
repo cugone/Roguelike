@@ -66,8 +66,11 @@ public:
     const IntVector2 GetCoords() const;
     int GetIndexFromCoords() const noexcept;
 
+    void CalculateLightValue() noexcept;
     uint32_t GetLightValue() const noexcept;
     void SetLightValue(uint32_t newValue) noexcept;
+    void IncrementLightValue(int value = 1) noexcept;
+    void DecrementLightValue(int value = 1) noexcept;
 
     std::array<Tile*, 8> GetNeighbors() const;
     Tile* GetNeighbor(const IntVector3& directionAndLayerOffset) const;
@@ -81,6 +84,8 @@ public:
     Tile* GetNorthWestNeighbor() const;
     Tile* GetUpNeighbor() const;
     Tile* GetDownNeighbor() const;
+
+    uint32_t GetMaxLightValueFromNeighbors() const noexcept;
 
     std::vector<Tile*> GetNeighbors(const IntVector2& direction) const;
     std::vector<Tile*> GetNorthNeighbors() const;

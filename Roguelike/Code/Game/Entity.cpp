@@ -15,11 +15,12 @@ Entity::~Entity() {
     /* DO NOTHING */
 }
 
-Entity::Entity() {
-    /* DO NOTHING */
-}
+Entity::Entity()
+: _self_illumination{max_light_value}
+{}
 
 Entity::Entity(const XMLElement& elem) noexcept
+: _self_illumination{max_light_value}
 {
     LoadFromXml(elem);
 }
@@ -29,6 +30,7 @@ Entity::Entity(EntityDefinition* definition) noexcept
     , sprite(def->GetSprite())
     , inventory(def->inventory)
     , stats(definition->GetBaseStats())
+    , _self_illumination{max_light_value}
 {
     /* DO NOTHING */
 }
@@ -77,7 +79,11 @@ void Entity::AddVertsForSelf() noexcept {
     const Rgba layer_color = layer->color;
 
     auto& builder = layer->GetMeshBuilder();
-    const auto newColor = layer_color != color && color != Rgba::White ? color : layer_color;
+    const auto newColor = [&]() {
+        auto clr = layer_color != color && color != Rgba::White ? color : layer_color;
+        clr.ScaleRGB(GetLightValue() / static_cast<float>(max_light_value));
+        return clr;
+    }(); //IIIL
     const auto normal = -Vector3::Z_AXIS;
 
     builder.Begin(PrimitiveType::Triangles);
@@ -99,6 +105,20 @@ void Entity::AddVertsForSelf() noexcept {
     builder.AddIndicies(Mesh::Builder::Primitive::Quad);
     builder.End(sprite->GetMaterial());
 
+}
+
+void Entity::CalculateLightValue() noexcept {
+    SetLightValue(_self_illumination);
+}
+
+uint32_t Entity::GetLightValue() const noexcept {
+    return _light_value;
+}
+
+void Entity::SetLightValue(uint32_t value) noexcept {
+    _light_value = value;
+    _light_value = std::clamp(_light_value + _self_illumination, uint32_t{0}, uint32_t{15});
+    layer->DirtyMesh();
 }
 
 void Entity::EndFrame() {

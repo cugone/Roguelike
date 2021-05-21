@@ -107,7 +107,7 @@ TileDefinition::TileDefinition(Renderer& renderer, const XMLElement& elem, std::
 //TODO: Fix extraneous leading space
 bool TileDefinition::LoadFromXml(const XMLElement& elem) {
 
-    DataUtils::ValidateXmlElement(elem, "tileDefinition", "glyph", "name,index", "opaque,solid,visible,invisible,allowDiagonalMovement,animation,offset,entrance,exit");
+    DataUtils::ValidateXmlElement(elem, "tileDefinition", "glyph", "name,index", "opaque,solid,visible,invisible,allowDiagonalMovement,animation,offset,entrance,exit,light");
 
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     if(auto xml_randomOffset = elem.FirstChildElement("offset")) {
@@ -153,6 +153,9 @@ bool TileDefinition::LoadFromXml(const XMLElement& elem) {
         is_exit = DataUtils::ParseXmlAttribute(*xml_exit, "value", is_exit);
     }
 
+    if(auto xml_light = elem.FirstChildElement("light")) {
+        light = DataUtils::ParseXmlAttribute(*xml_light, "value", light);
+    }
     if(auto xml_animation = elem.FirstChildElement("animation")) {
         is_animated = true;
         _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, *xml_animation));

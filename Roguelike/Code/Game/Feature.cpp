@@ -2,6 +2,7 @@
 
 #include "Engine/Core/ErrorWarningAssert.hpp"
 
+#include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
 #include "Game/TileDefinition.hpp"
 
@@ -20,6 +21,23 @@ Feature* Feature::CreateFeature(Map* map, const XMLElement& elem) {
 
 void Feature::ClearFeatureRegistry() {
     s_registry.clear();
+}
+
+Feature* Feature::GetFeatureByName(const std::string& name) {
+    auto found_iter = s_registry.find(name);
+    if(found_iter != std::end(s_registry)) {
+        return found_iter->second.get();
+    }
+    return nullptr;
+}
+
+Feature* Feature::GetFeatureByGlyph(const char glyph) {
+    for(const auto& feature : s_registry) {
+        if(feature.second->_tile_def->glyph == glyph) {
+            return feature.second.get();
+        }
+    }
+    return nullptr;
 }
 
 Feature::Feature(Map* map, const XMLElement& elem) noexcept
@@ -117,4 +135,70 @@ void Feature::ResolveAttack(Entity& attacker, Entity& defender) {
             defenderAsFeature->SetState("open");
         }
     }
+}
+
+void Feature::AddVerts() noexcept {
+    AddVertsForSelf();
+}
+
+void Feature::AddVertsForSelf() noexcept {
+    if(!sprite || IsInvisible()) {
+        return;
+    }
+    const auto& coords = sprite->GetCurrentTexCoords();
+
+    const auto vert_left = _position.x + 0.0f;
+    const auto vert_right = _position.x + 1.0f;
+    const auto vert_top = _position.y + 0.0f;
+    const auto vert_bottom = _position.y + 1.0f;
+
+    const auto vert_bl = Vector2(vert_left, vert_bottom);
+    const auto vert_tl = Vector2(vert_left, vert_top);
+    const auto vert_tr = Vector2(vert_right, vert_top);
+    const auto vert_br = Vector2(vert_right, vert_bottom);
+
+    const auto tx_left = coords.mins.x;
+    const auto tx_right = coords.maxs.x;
+    const auto tx_top = coords.mins.y;
+    const auto tx_bottom = coords.maxs.y;
+
+    const auto tx_bl = Vector2(tx_left, tx_bottom);
+    const auto tx_tl = Vector2(tx_left, tx_top);
+    const auto tx_tr = Vector2(tx_right, tx_top);
+    const auto tx_br = Vector2(tx_right, tx_bottom);
+
+    const float z = static_cast<float>(layer->z_index);
+    const Rgba layer_color = layer->color;
+
+    auto& builder = layer->GetMeshBuilder();
+    const auto newColor = [&]() {
+        auto clr = layer_color != color && color != Rgba::White ? color : layer_color;
+        clr.ScaleRGB(GetLightValue() / static_cast<float>(max_light_value));
+        return clr;
+    }(); //IIIL
+    const auto normal = -Vector3::Z_AXIS;
+
+    builder.Begin(PrimitiveType::Triangles);
+    builder.SetColor(newColor);
+    builder.SetNormal(normal);
+
+    builder.SetUV(tx_bl);
+    builder.AddVertex(Vector3{vert_bl, z});
+
+    builder.SetUV(tx_tl);
+    builder.AddVertex(Vector3{vert_tl, z});
+
+    builder.SetUV(tx_tr);
+    builder.AddVertex(Vector3{vert_tr, z});
+
+    builder.SetUV(tx_br);
+    builder.AddVertex(Vector3{vert_br, z});
+
+    builder.AddIndicies(Mesh::Builder::Primitive::Quad);
+    builder.End(sprite->GetMaterial());
+
+}
+
+void Feature::CalculateLightValue() noexcept {
+    SetLightValue(_tile_def->light);
 }
