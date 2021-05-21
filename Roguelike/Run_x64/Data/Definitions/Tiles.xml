@@ -80,6 +80,7 @@
         <animation name="flame">
             <animationset startindex="[33,0]" framelength="8" duration="0.33" loop="true" />
         </animation>
+        <light value="15" />
     </tileDefinition>
     <tileDefinition name="glowstone" index="[17,0]">
         <glyph value="`" />
@@ -93,5 +94,10 @@
     <tileDefinition name="dirt" index="[32,2]">
         <glyph value="_" />
         <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="torch" index="[34,60]">
+        <glyph value=";" />
+        <allowDiagonalMovement />
+        <light value="8" />
     </tileDefinition>
 </tileDefinitions>
