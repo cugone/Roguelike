@@ -1,9 +1,9 @@
 <items>
     <spritesheet src="Data/Images/Tileset.png" dimensions="[65,65]" />
-    <item name="chest" index="[26,28]">
+    <item name="chest" index="[28,28]">
         <equipslot>none</equipslot>
     </item>
-    <item name="red_robe" index="[29,53]">
+    <item name="red_robe" index="[31,53]">
         <equipslot>body</equipslot>
         <stats>
             <health>0</health>
@@ -15,7 +15,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="green_armor" index="[5,54]">
+    <item name="green_armor" index="[7,54]">
         <equipslot>body</equipslot>
         <stats>
             <health>0</health>
@@ -27,7 +27,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="black_armor" index="[6,54]">
+    <item name="black_armor" index="[8,54]">
         <equipslot>body</equipslot>
         <stats>
             <health>0</health>
@@ -39,7 +39,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="red_armor" index="[8,54]">
+    <item name="red_armor" index="[10,54]">
         <equipslot>body</equipslot>
         <stats>
             <health>0</health>
@@ -51,7 +51,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="blue_armor" index="[10,54]">
+    <item name="blue_armor" index="[12,54]">
         <equipslot>body</equipslot>
         <stats>
             <health>0</health>
@@ -63,7 +63,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="black_coat" index="[11,54]">
+    <item name="black_coat" index="[13,54]">
         <equipslot>body</equipslot>
         <stats>
             <health>0</health>
@@ -75,7 +75,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="red_coat" index="[12,52]">
+    <item name="red_coat" index="[14,52]">
         <equipslot>body</equipslot>
         <stats>
             <health>0</health>
@@ -87,7 +87,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="black_cape" index="[14,54]">
+    <item name="black_cape" index="[16,54]">
         <equipslot>cape</equipslot>
         <stats>
             <health>0</health>
@@ -99,7 +99,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="silver_armor" index="[15,54]">
+    <item name="silver_armor" index="[17,54]">
         <equipslot>body</equipslot>
         <stats>
             <health>0</health>
@@ -111,7 +111,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="gold_armor" index="[16,54]">
+    <item name="gold_armor" index="[18,54]">
         <equipslot>body</equipslot>
         <stats>
             <health>0</health>
@@ -123,7 +123,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="cutlass" index="[2,57]">
+    <item name="cutlass" index="[4,57]">
         <equipslot>larm</equipslot>
         <stats>
             <health>0</health>
@@ -135,7 +135,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="grey_shorts" index="[3,62]">
+    <item name="grey_shorts" index="[5,62]">
         <equipslot>legs</equipslot>
         <stats>
             <health>0</health>
@@ -147,7 +147,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="blue_shorts" index="[4,62]">
+    <item name="blue_shorts" index="[6,62]">
         <equipslot>legs</equipslot>
         <stats>
             <health>0</health>
@@ -159,7 +159,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="green_shorts" index="[5,62]">
+    <item name="green_shorts" index="[7,62]">
         <equipslot>legs</equipslot>
         <stats>
             <health>0</health>
@@ -171,7 +171,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="maroon_shorts" index="[6,62]">
+    <item name="maroon_shorts" index="[8,62]">
         <equipslot>legs</equipslot>
         <stats>
             <health>0</health>
@@ -183,7 +183,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="white_pants" index="[7,62]">
+    <item name="white_pants" index="[9,62]">
         <equipslot>legs</equipslot>
         <stats>
             <health>0</health>
@@ -195,7 +195,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="tan_shorts" index="[8,62]">
+    <item name="tan_shorts" index="[10,62]">
         <equipslot>legs</equipslot>
         <stats>
             <health>0</health>
@@ -207,7 +207,7 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="brown_shorts" index="[10,62]">
+    <item name="brown_shorts" index="[12,62]">
         <equipslot>legs</equipslot>
         <stats>
             <health>0</health>
@@ -219,6 +219,6 @@
             <experience>0</experience>
         </stats>
     </item>
-    <item name="key" maxstack="0" index="[36,28]" />
-    <item name="chest" index="[26,28]" />
+    <item name="key" maxstack="0" index="[38,28]" />
+    <item name="chest" index="[28,28]" />
 </items>

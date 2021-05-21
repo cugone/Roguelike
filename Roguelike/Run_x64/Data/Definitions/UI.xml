@@ -1,9 +1,9 @@
 <UI>
     <spritesheet src="Data/Images/Tileset.png" dimensions="[65,65]" />
     <cursors>
-        <cursor name="yellow_corner_box" index="[45,34]" />
-        <cursor name="green_box" index="[46,34]" />
-        <cursor name="red_crosshair_box" index="[47,34]" />
-        <cursor name="question" index="[48,34]" />
+        <cursor name="yellow_corner_box" index="[47,34]" />
+        <cursor name="green_box" index="[48,34]" />
+        <cursor name="red_crosshair_box" index="[49,34]" />
+        <cursor name="question" index="[50,34]" />
     </cursors>
 </UI>

@@ -1,12 +1,12 @@
 <tileDefinitions>
     <spritesheet src="Data/Images/Tileset.png" dimensions="[65,65]" />
-    <tileDefinition name="white_circle" index="[49,34]">
+    <tileDefinition name="white_circle" index="[51,34]">
         <glyph value=" " />
     </tileDefinition>
-    <tileDefinition name="white" index="[50,34]">
+    <tileDefinition name="white" index="[52,34]">
         <glyph value=" " />
     </tileDefinition>
-    <tileDefinition name="blue" index="[51,34]">
+    <tileDefinition name="blue" index="[53,34]">
         <glyph value=" " />
     </tileDefinition>    
     <tileDefinition name="void" index="[64,64]">
@@ -14,22 +14,23 @@
         <invisible />
         <allowDiagonalMovement />
     </tileDefinition>
-    <tileDefinition name="wall" index="[50,13]">
+    <tileDefinition name="wall" index="[52,13]">
         <glyph value="#" />
         <opaque />
         <solid />
     </tileDefinition>
-    <tileDefinition name="grass" index="[54,6]">
+    <tileDefinition name="grass" index="[56,6]">
         <glyph value="." />
         <allowDiagonalMovement />
     </tileDefinition>
     <tileDefinition name="stairsUp" index="[30,14]">
+    <tileDefinition name="stairsUp" index="[6,8]">
         <glyph value="&gt;" />
         <opaque />
         <allowDiagonalMovement />
         <entrance />
     </tileDefinition>
-    <tileDefinition name="stairsDown" index="[30,13]">
+    <tileDefinition name="stairsDown" index="[5,8]">
         <glyph value="&lt;" />
         <allowDiagonalMovement />
         <exit />
@@ -50,15 +51,15 @@
         <glyph value="^" />
         <allowDiagonalMovement />
     </tileDefinition>
-    <tileDefinition name="water.cyan" index="[52,16]">
+    <tileDefinition name="water.cyan" index="[54,16]">
         <glyph value="~" />
         <solid />
         <allowDiagonalMovement />
         <animation name="watercyanflow">
-            <animationset startindex="[52,16]" framelength="12" duration="36" loop="true" />
+            <animationset startindex="[54,16]" framelength="12" duration="36" loop="true" />
         </animation>
     </tileDefinition>
-    <tileDefinition name="ladderUp" index="[14,29]">
+    <tileDefinition name="ladderUp" index="[16,29]">
         <glyph value="/" />
         <allowDiagonalMovement />
         <entrance />
