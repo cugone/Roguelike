@@ -27,10 +27,12 @@
         <glyph value="&gt;" />
         <opaque />
         <allowDiagonalMovement />
+        <entrance />
     </tileDefinition>
     <tileDefinition name="stairsDown" index="[30,13]">
         <glyph value="&lt;" />
         <allowDiagonalMovement />
+        <exit />
     </tileDefinition>
     <tileDefinition name="door.closed" index="[2,1]">
         <glyph value="-" />
@@ -59,10 +61,12 @@
     <tileDefinition name="ladderUp" index="[14,29]">
         <glyph value="/" />
         <allowDiagonalMovement />
+        <entrance />
     </tileDefinition>
     <tileDefinition name="ladderDown" index="[0,0]">
         <glyph value="\" />
         <allowDiagonalMovement />
+        <exit />
     </tileDefinition>
     <tileDefinition name="flamePedestal" index="[33,0]">
         <glyph value="*" />

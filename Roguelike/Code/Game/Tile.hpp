@@ -49,6 +49,14 @@ public:
     bool IsSolid() const;
     bool IsPassable() const;
 
+    bool IsEntrance() const;
+    bool IsExit() const;
+
+    void SetEntrance() noexcept;
+    void SetExit() noexcept;
+    void ClearEntrance() noexcept;
+    void ClearExit() noexcept;
+
     bool HasInventory() const noexcept;
     Item* AddItem(Item* item) noexcept;
     Item* AddItem(const std::string& name) noexcept;
@@ -58,7 +66,7 @@ public:
     const IntVector2 GetCoords() const;
     int GetIndexFromCoords() const noexcept;
 
-    uint32_t GetLightValue()const noexcept;
+    uint32_t GetLightValue() const noexcept;
     void SetLightValue(uint32_t newValue) noexcept;
 
     std::array<Tile*, 8> GetNeighbors() const;
@@ -107,5 +115,5 @@ private:
     AnimatedSprite* GetSpriteForOverlay(std::string overlayName) const;
 
     TileDefinition* _def{};
-    uint32_t _coords_lightvalue{};
+    uint32_t _flags_coords_lightvalue{};
 };

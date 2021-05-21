@@ -92,7 +92,7 @@ void Game::CreateFullscreenConstantBuffer() {
 }
 
 void Game::OnEnter_Title() {
-    _map.reset(nullptr);
+    _adventure.reset(nullptr);
 }
 
 void Game::OnEnter_Loading() {
@@ -117,8 +117,8 @@ void Game::OnEnter_Loading() {
 
 void Game::OnEnter_Main() {
     RegisterCommands();
-    _map->FocusEntity(_map->player);
-    current_cursor->SetCoords(_map->player->tile->GetCoords());
+    _adventure->currentMap->FocusEntity(_adventure->currentMap->player);
+    current_cursor->SetCoords(_adventure->currentMap->player->tile->GetCoords());
     g_theInputSystem->LockMouseToWindowViewport();
 }
 
@@ -152,7 +152,7 @@ void Game::BeginFrame_Loading() {
 }
 
 void Game::BeginFrame_Main() {
-    _map->BeginFrame();
+    _adventure->currentMap->BeginFrame();
 }
 
 void Game::Update_Title(TimeUtils::FPSeconds /*deltaSeconds*/) {
@@ -190,7 +190,7 @@ void Game::Update_Main(TimeUtils::FPSeconds deltaSeconds) {
     HandlePlayerInput();
 
     UpdateFullscreenEffect(_current_fs_effect);
-    _map->Update(deltaSeconds);
+    _adventure->currentMap->Update(deltaSeconds);
 }
 
 void Game::Render_Title() const {
@@ -224,10 +224,10 @@ void Game::Render_Main() const {
 
     g_theRenderer->BeginRender(g_theRenderer->GetFullscreenTexture());
 
-    _map->Render(*g_theRenderer);
+    _adventure->currentMap->Render(*g_theRenderer);
 
     if(_debug_render) {
-        _map->DebugRender(*g_theRenderer);
+        _adventure->currentMap->DebugRender(*g_theRenderer);
     }
 
     g_theRenderer->ResetModelViewProjection();
@@ -295,7 +295,7 @@ void Game::EndFrame_Loading() {
         , _reset_loading_flag);
     } else {
         SetCurrentCursorById(CursorId::Green_Box);
-        _map->cameraController.GetCamera().position = _map->CalcMaxDimensions() * 0.5f;
+        _adventure->currentMap->cameraController.GetCamera().position = _adventure->currentMap->CalcMaxDimensions() * 0.5f;
     }
 }
 
@@ -306,9 +306,9 @@ void Game::RegisterCommands() {
         moveto.help_text_short = "Move towards tile";
         moveto.help_text_long = "move_to: Moves towards the highlighted tile";
         moveto.command_function = [this](const std::string& /*args*/) {
-            if(_map && _map->player) {
-                if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-                    _map->player->MoveTo(tile);
+            if(_adventure->currentMap && _adventure->currentMap->player) {
+                if(auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+                    _adventure->currentMap->player->MoveTo(tile);
                 }
             }
         };
@@ -321,12 +321,12 @@ void Game::RegisterCommands() {
         setvis.help_text_long = "set_visibility [distance]: Sets the player's visibility distance in tiles.";
         setvis.command_function = [this](const std::string& args) {
             ArgumentParser p(args);
-            if(_map) {
+            if(_adventure->currentMap) {
                 float value = 2.0f;
                 if(!(p >> value)) {
                     return;
                 }
-                _map->player->visibility = value;
+                _adventure->currentMap->player->visibility = value;
             }
         };
         _consoleCommands.AddCommand(setvis);
@@ -338,14 +338,14 @@ void Game::RegisterCommands() {
         showalltiles.help_text_long = "showalltiles [0/1/true/false]: Enables or disables showing every tile. Toggles if no argument.";
         showalltiles.command_function = [this](const std::string& args) {
             ArgumentParser p(args);
-            if(_map) {
+            if(_adventure->currentMap) {
                 static bool value{false};
                 if(!(p >> value)) {
                     value = !value;
                 }
-                const auto maxLayers = _map->GetLayerCount();
+                const auto maxLayers = _adventure->currentMap->GetLayerCount();
                 for(std::size_t layerIdx = 0u; layerIdx < maxLayers; ++layerIdx) {
-                    if(auto* layer = _map->GetLayer(layerIdx)) {
+                    if(auto* layer = _adventure->currentMap->GetLayer(layerIdx)) {
                         for(auto& tile : *layer) {
                             tile.debug_canSee = value;
                         }
@@ -361,9 +361,9 @@ void Game::RegisterCommands() {
         cleartilevis.help_text_short = "Clears all tile visibility.";
         cleartilevis.help_text_long = "clear_tile_vis: Sets every tile's visibility flags to false.";
         cleartilevis.command_function = [this](const std::string& /*args*/) {
-            if(_map) {
+            if(_adventure->currentMap) {
                 std::size_t layer_index{0u};
-                auto* layer = _map->GetLayer(layer_index++);
+                auto* layer = _adventure->currentMap->GetLayer(layer_index++);
                 for(auto& tile : *layer) {
                     tile.canSee = false;
                     tile.haveSeen = false;
@@ -383,7 +383,7 @@ void Game::RegisterCommands() {
             if(_debug_inspected_entity) {
                 entity = _debug_inspected_entity;
             }
-            if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+            if(auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
                 if(tile->actor) {
                     entity = tile->actor;
                 }
@@ -421,7 +421,7 @@ void Game::RegisterCommands() {
             if(_debug_inspected_feature) {
                 entity = _debug_inspected_feature;
             } else
-                if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+                if(auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
                     entity = tile->feature;
                     if(!entity) {
                         const auto ss = std::string{"Select a feature to set the state to \""} + name + "\".";
@@ -454,7 +454,7 @@ void Game::RegisterCommands() {
             if(_debug_inspected_entity) {
                 entity = _debug_inspected_entity;
             }
-            if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+            if(auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
                 if(auto* asActor = dynamic_cast<Actor*>(tile->actor)) {
                     entity = asActor;
                 }
@@ -497,7 +497,7 @@ void Game::RegisterCommands() {
             if(_debug_inspected_entity) {
                 entity = _debug_inspected_entity;
             }
-            if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+            if(auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
                 if(auto* asActor = dynamic_cast<Actor*>(tile->actor)) {
                     entity = asActor;
                 }
@@ -545,7 +545,7 @@ void Game::RegisterCommands() {
                 return names;
             }();
             const auto all_actor_names = [=]()->std::vector<std::string> {
-                const auto& entities = this->_map->GetEntities();
+                const auto& entities = this->_adventure->currentMap->GetEntities();
                 std::vector<std::string> names{};
                 names.reserve(entities.size());
                 std::for_each(std::cbegin(entities), std::cend(entities), [&](const Entity* e) { if(const Actor* a = dynamic_cast<const Actor*>(e)) names.push_back(a->name); });
@@ -599,7 +599,14 @@ void Game::UnRegisterCommands() {
 }
 
 void Game::EndFrame_Main() {
-    _map->EndFrame();
+    _adventure->currentMap->EndFrame();
+
+    if(_adventure->currentMap->IsPlayerOnExit()) {
+        _adventure->NextMap();
+    } else if(_adventure->currentMap->IsPlayerOnEntrance()) {
+        _adventure->PreviousMap();
+    }
+
 }
 
 void Game::ChangeGameState(const GameState& newState) {
@@ -637,12 +644,14 @@ void Game::LoadUI() {
 }
 
 void Game::LoadMaps() {
-    auto str_path = std::string{"Data/Definitions/Map00.xml"};
+    //auto str_path = std::string{"Data/Definitions/Map01.xml"};
+    auto str_path = std::string{"Data/Definitions/Adventure.xml"};
     if(FileUtils::IsSafeReadPath(str_path)) {
         if(auto str_buffer = FileUtils::ReadStringBufferFromFile(str_path)) {
             tinyxml2::XMLDocument xml_doc;
-            xml_doc.Parse(str_buffer->c_str(), str_buffer->size());
-            _map = std::make_unique<Map>(*g_theRenderer, *xml_doc.RootElement());
+            if(auto parse_result = xml_doc.Parse(str_buffer->c_str(), str_buffer->size()); parse_result == tinyxml2::XML_SUCCESS) {
+                _adventure = std::make_unique<Adventure>(*g_theRenderer, *xml_doc.RootElement());
+            }
         }
     }
 }
@@ -664,12 +673,14 @@ void Game::LoadCursorsFromFile(const std::filesystem::path& src) {
 
 void Game::LoadCursorDefinitionsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
+    //TODO: Convert to GUARENTEE_OR_DIE
     if(!FS::exists(src)) {
         const auto ss = std::string{"Cursor Definitions file at "} + src.string() + " could not be found.";
         ERROR_AND_DIE(ss.c_str());
     }
     tinyxml2::XMLDocument doc;
     auto xml_result = doc.LoadFile(src.string().c_str());
+    //TODO: Convert to GUARENTEE_OR_DIE
     if(xml_result != tinyxml2::XML_SUCCESS) {
         const auto ss = std::string{"Cursor Definitions at "} + src.string() + " failed to load.";
         ERROR_AND_DIE(ss.c_str());
@@ -689,12 +700,14 @@ void Game::LoadCursorDefinitionsFromFile(const std::filesystem::path& src) {
 
 void Game::LoadEntitiesFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
+    //TODO: Convert to GUARENTEE_OR_DIE
     if(!FS::exists(src)) {
         const auto ss = std::string{"Entities file at "} + src.string() + " could not be found.";
         ERROR_AND_DIE(ss.c_str());
     }
     tinyxml2::XMLDocument doc;
     auto xml_result = doc.LoadFile(src.string().c_str());
+    //TODO: Convert to GUARENTEE_OR_DIE
     if(xml_result != tinyxml2::XML_SUCCESS) {
         const auto ss = std::string{"Entities source file at "} + src.string() + " could not be loaded.";
         ERROR_AND_DIE(ss.c_str());
@@ -704,10 +717,12 @@ void Game::LoadEntitiesFromFile(const std::filesystem::path& src) {
         if(auto* xml_definitions = xml_entities_root->FirstChildElement("definitions")) {
             DataUtils::ValidateXmlElement(*xml_definitions, "definitions", "", "src");
             const auto definitions_src = DataUtils::ParseXmlAttribute(*xml_definitions, "src", std::string{});
+            //TODO: Convert to GUARENTEE_OR_DIE
             if(definitions_src.empty()) {
                 ERROR_AND_DIE("Entity definitions source is empty.");
             }
             FS::path def_src(definitions_src);
+            //TODO: Convert to GUARENTEE_OR_DIE
             if(!FS::exists(def_src)) {
                 ERROR_AND_DIE("Entity definitions source not found.");
             }
@@ -718,12 +733,14 @@ void Game::LoadEntitiesFromFile(const std::filesystem::path& src) {
 
 void Game::LoadEntityDefinitionsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
+    //TODO: Convert to GUARENTEE_OR_DIE
     if(!FS::exists(src)) {
         const auto ss = std::string{"Entity Definitions file at "} + src.string() + " could not be found.";
         ERROR_AND_DIE(ss.c_str());
     }
     tinyxml2::XMLDocument doc;
     auto xml_result = doc.LoadFile(src.string().c_str());
+    //TODO: Convert to GUARENTEE_OR_DIE
     if(xml_result != tinyxml2::XML_SUCCESS) {
         const auto ss = std::string{"Entity Definitions at "} + src.string() + " failed to load.";
         ERROR_AND_DIE(ss.c_str());
@@ -741,12 +758,14 @@ void Game::LoadEntityDefinitionsFromFile(const std::filesystem::path& src) {
 
 void Game::LoadItemsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
+    //TODO: Convert to GUARENTEE_OR_DIE
     if(!FS::exists(src)) {
         const auto ss = std::string{"Item file at "} + src.string() + " could not be found.";
         ERROR_AND_DIE(ss.c_str());
     }
     tinyxml2::XMLDocument doc;
     auto xml_result = doc.LoadFile(src.string().c_str());
+    //TODO: Convert to GUARENTEE_OR_DIE
     if(xml_result != tinyxml2::XML_SUCCESS) {
         const auto ss = std::string{"Item source file at "} + src.string() + " could not be loaded.";
         ERROR_AND_DIE(ss.c_str());
@@ -993,43 +1012,43 @@ void Game::HandlePlayerKeyboardInput() {
 
     if(is_shift) {
         if(is_right_held) {
-            _map->cameraController.Translate(Vector2::X_AXIS);
+            _adventure->currentMap->cameraController.Translate(Vector2::X_AXIS);
         } else if(is_left_held) {
-            _map->cameraController.Translate(-Vector2::X_AXIS);
+            _adventure->currentMap->cameraController.Translate(-Vector2::X_AXIS);
         }
 
         if(is_up_held) {
-            _map->cameraController.Translate(-Vector2::Y_AXIS);
+            _adventure->currentMap->cameraController.Translate(-Vector2::Y_AXIS);
         } else if(is_down_held) {
-            _map->cameraController.Translate(Vector2::Y_AXIS);
+            _adventure->currentMap->cameraController.Translate(Vector2::Y_AXIS);
         }
         return;
     }
 
-    auto player = _map->player;
+    auto player = _adventure->currentMap->player;
     if(is_rest) {
         player->Act();
         return;
     }
     if(is_upright) {
-        _map->MoveOrAttack(player, player->tile->GetNorthEastNeighbor());
+        _adventure->currentMap->MoveOrAttack(player, player->tile->GetNorthEastNeighbor());
     } else if(is_upleft) {
-        _map->MoveOrAttack(player, player->tile->GetNorthWestNeighbor());
+        _adventure->currentMap->MoveOrAttack(player, player->tile->GetNorthWestNeighbor());
     } else if(is_downright) {
-        _map->MoveOrAttack(player, player->tile->GetSouthEastNeighbor());
+        _adventure->currentMap->MoveOrAttack(player, player->tile->GetSouthEastNeighbor());
     } else if(is_downleft) {
-        _map->MoveOrAttack(player, player->tile->GetSouthWestNeighbor());
+        _adventure->currentMap->MoveOrAttack(player, player->tile->GetSouthWestNeighbor());
     } else {
         if(is_right) {
-            _map->MoveOrAttack(player, player->tile->GetEastNeighbor());
+            _adventure->currentMap->MoveOrAttack(player, player->tile->GetEastNeighbor());
         } else if(is_left) {
-            _map->MoveOrAttack(player, player->tile->GetWestNeighbor());
+            _adventure->currentMap->MoveOrAttack(player, player->tile->GetWestNeighbor());
         }
 
         if(is_up) {
-            _map->MoveOrAttack(player, player->tile->GetNorthNeighbor());
+            _adventure->currentMap->MoveOrAttack(player, player->tile->GetNorthNeighbor());
         } else if(is_down) {
-            _map->MoveOrAttack(player, player->tile->GetSouthNeighbor());
+            _adventure->currentMap->MoveOrAttack(player, player->tile->GetSouthNeighbor());
         }
     }
 }
@@ -1068,10 +1087,10 @@ void Game::HandlePlayerControllerInput() {
     auto& controller = g_theInputSystem->GetXboxController(0);
     Vector2 rthumb = controller.GetRightThumbPosition();
     rthumb.y *= currentGraphicsOptions.InvertMouseY ? 1.0f : -1.0f;
-    _map->cameraController.Translate(_cam_speed * rthumb * g_theRenderer->GetGameFrameTime().count());
+    _adventure->currentMap->cameraController.Translate(_cam_speed * rthumb * g_theRenderer->GetGameFrameTime().count());
 
     if(controller.WasButtonJustPressed(XboxController::Button::RightThumb)) {
-        _map->FocusEntity(_map->player);
+        _adventure->currentMap->FocusEntity(_adventure->currentMap->player);
     }
 
     auto ltrigger = controller.GetLeftTriggerPosition();
@@ -1085,11 +1104,11 @@ void Game::HandlePlayerControllerInput() {
 }
 
 void Game::ZoomOut() {
-    _map->ZoomOut();
+    _adventure->currentMap->ZoomOut();
 }
 
 void Game::ZoomIn() {
-    _map->ZoomIn();
+    _adventure->currentMap->ZoomIn();
 }
 
 void Game::HandleDebugInput() {
@@ -1141,15 +1160,15 @@ void Game::HandleDebugKeyboardInput() {
         g_theRenderer->RequestScreenShot();
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::P)) {
-        _map->SetPriorityLayer(static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(static_cast<int>(_map->GetLayerCount()))));
+        _adventure->currentMap->SetPriorityLayer(static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(static_cast<int>(_adventure->currentMap->GetLayerCount()))));
     }
 
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::G)) {
-        _map->RegenerateMap();
+        _adventure->currentMap->RegenerateMap();
     }
 
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::B)) {
-        _map->ShakeCamera([]()->float { const auto t = g_theRenderer->GetGameTime().count(); return std::cos(t) * std::sin(t); });
+        _adventure->currentMap->ShakeCamera([]()->float { const auto t = g_theRenderer->GetGameTime().count(); return std::cos(t) * std::sin(t); });
     }
 #endif
 }
@@ -1177,8 +1196,8 @@ void Game::HandleDebugMouseInput() {
         }
     }
     if(g_theInputSystem->IsKeyDown(KeyCode::RButton)) {
-        if(const auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr) {
-            _map->player->SetPosition(tile->GetCoords());
+        if(const auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr) {
+            _adventure->currentMap->player->SetPosition(tile->GetCoords());
         }
     }
 #endif
@@ -1222,7 +1241,7 @@ void Game::ShowEffectsDebuggerUI() {
 }
 
 void Game::ShowTextEntityDebuggerUI() {
-    if(const auto& textEntities = _map->GetTextEntities(); ImGui::BeginTable("TextEntityDebuggerTableEntities", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit)) {
+    if(const auto& textEntities = _adventure->currentMap->GetTextEntities(); ImGui::BeginTable("TextEntityDebuggerTableEntities", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit)) {
         ImGui::TableSetupColumn("Text", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Color", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Position", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed);
@@ -1377,10 +1396,10 @@ void Game::ShowFrameInspectorUI() {
 
 void Game::ShowWorldInspectorUI() {
     if(ImGui::CollapsingHeader("World")) {
-        ImGui::Text("View height: %.0f", _map->cameraController.GetCamera().GetViewHeight());
-        ImGui::Text("Camera: [%.1f,%.1f]", _map->cameraController.GetCamera().position.x, _map->cameraController.GetCamera().position.y);
-        ImGui::Text("Tiles in view: %llu", _map->DebugTilesInViewCount());
-        ImGui::Text("Tiles visible in view: %llu", _map->DebugVisibleTilesInViewCount());
+        ImGui::Text("View height: %.0f", _adventure->currentMap->cameraController.GetCamera().GetViewHeight());
+        ImGui::Text("Camera: [%.1f,%.1f]", _adventure->currentMap->cameraController.GetCamera().position.x, _adventure->currentMap->cameraController.GetCamera().position.y);
+        ImGui::Text("Tiles in view: %llu", _adventure->currentMap->DebugTilesInViewCount());
+        ImGui::Text("Tiles visible in view: %llu", _adventure->currentMap->DebugVisibleTilesInViewCount());
         static bool show_camera = false;
         ImGui::Checkbox("Show Camera", &show_camera);
         _show_camera = show_camera;
@@ -1389,7 +1408,7 @@ void Game::ShowWorldInspectorUI() {
         _show_grid = show_grid;
         ImGui::SameLine();
         if(ImGui::ColorEdit4("Grid Color##Picker", _grid_color, ImGuiColorEditFlags_NoLabel)) {
-            _map->SetDebugGridColor(_grid_color);
+            _adventure->currentMap->SetDebugGridColor(_grid_color);
         }
         static bool show_world_bounds = false;
         ImGui::Checkbox("World Bounds", &show_world_bounds);
@@ -1477,7 +1496,7 @@ std::vector<Tile*> Game::DebugGetTilesFromMouse() {
     const auto mouse_pos = g_theInputSystem->GetCursorWindowPosition(*g_theRenderer->GetOutput()->GetWindow());
     if(_debug_has_picked_tile_with_click) {
         static std::vector<Tile*> picked_tiles{};
-        picked_tiles = _map->PickTilesFromMouseCoords(mouse_pos);
+        picked_tiles = _adventure->currentMap->PickTilesFromMouseCoords(mouse_pos);
         if(picked_tiles.empty()) {
             return {};
         }
@@ -1493,7 +1512,7 @@ std::vector<Tile*> Game::DebugGetTilesFromMouse() {
         }
         return picked_tiles;
     }
-    return _map->PickTilesFromMouseCoords(mouse_pos);
+    return _adventure->currentMap->PickTilesFromMouseCoords(mouse_pos);
 }
 
 std::vector<Tile*> Game::DebugGetTilesFromCursor() {
@@ -1502,7 +1521,7 @@ std::vector<Tile*> Game::DebugGetTilesFromCursor() {
     }
     if(_debug_has_picked_tile_with_click) {
         static std::vector<Tile*> picked_tiles{};
-        picked_tiles = _map->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});
+        picked_tiles = _adventure->currentMap->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});
         if(picked_tiles.empty()) {
             return {};
         }
@@ -1518,7 +1537,7 @@ std::vector<Tile*> Game::DebugGetTilesFromCursor() {
         }
         return picked_tiles;
     }
-    return _map->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});
+    return _adventure->currentMap->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});
 }
 
 void Game::ShowEntityInspectorUI() {

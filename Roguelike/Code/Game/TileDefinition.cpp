@@ -11,6 +11,19 @@
 
 std::map<std::string, std::unique_ptr<TileDefinition>> TileDefinition::s_registry{};
 
+TileDefinition* TileDefinition::CreateOrGetTileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
+    auto new_def = std::make_unique<TileDefinition>(renderer, elem, sheet);
+    auto* new_def_ptr = new_def.get();
+    std::string new_def_name = new_def->name;
+    if(auto found = s_registry.find(new_def_name); found != std::end(s_registry)) {
+        new_def_ptr = found->second.get();
+        return new_def_ptr;
+    } else {
+        s_registry.try_emplace(new_def_name, std::move(new_def));
+    }
+    return new_def_ptr;
+}
+
 TileDefinition* TileDefinition::CreateTileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
     auto new_def = std::make_unique<TileDefinition>(renderer, elem, sheet);
     auto* new_def_ptr = new_def.get();
@@ -88,6 +101,7 @@ TileDefinition::TileDefinition(Renderer& renderer, const XMLElement& elem, std::
     : _renderer(renderer)
     , _sheet(sheet)
 {
+    //TODO: Convert to GUARENTEE_OR_DIE
     if(!LoadFromXml(elem)) {
         ERROR_AND_DIE("TileDefinition failed to load.\n");
     }
@@ -96,7 +110,7 @@ TileDefinition::TileDefinition(Renderer& renderer, const XMLElement& elem, std::
 //TODO: Fix extraneous leading space
 bool TileDefinition::LoadFromXml(const XMLElement& elem) {
 
-    DataUtils::ValidateXmlElement(elem, "tileDefinition", "glyph", "name,index", "opaque,solid,visible,invisible,allowDiagonalMovement,animation,offset");
+    DataUtils::ValidateXmlElement(elem, "tileDefinition", "glyph", "name,index", "opaque,solid,visible,invisible,allowDiagonalMovement,animation,offset,entrance,exit");
 
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     if(auto xml_randomOffset = elem.FirstChildElement("offset")) {
@@ -130,6 +144,16 @@ bool TileDefinition::LoadFromXml(const XMLElement& elem) {
     if(auto xml_diag = elem.FirstChildElement("allowDiagonalMovement")) {
         allow_diagonal_movement = true;
         allow_diagonal_movement = DataUtils::ParseXmlAttribute(*xml_diag, "value", allow_diagonal_movement);
+    }
+    
+    if(auto xml_enter = elem.FirstChildElement("entrance")) {
+        is_entrance = true;
+        is_entrance = DataUtils::ParseXmlAttribute(*xml_enter, "value", is_entrance);
+    }
+
+    if(auto xml_exit = elem.FirstChildElement("exit")) {
+        is_exit = true;
+        is_exit = DataUtils::ParseXmlAttribute(*xml_exit, "value", is_exit);
     }
 
     if(auto xml_animation = elem.FirstChildElement("animation")) {

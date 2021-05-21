@@ -30,6 +30,7 @@ Actor::Actor(Map* map, const XMLElement& elem) noexcept
 {
     this->map = map;
     this->layer = this->map->GetLayer(0);
+    //TODO: Convert to GUARENTEE_OR_DIE
     if(!LoadFromXml(elem)) {
         ERROR_AND_DIE("Actor failed to load.");
     }

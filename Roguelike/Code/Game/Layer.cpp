@@ -10,6 +10,7 @@
 #include "Game/GameConfig.hpp"
 #include "Game/Map.hpp"
 #include "Game/Actor.hpp"
+#include "Game/TileDefinition.hpp"
 
 #include <algorithm>
 #include <iterator>
@@ -18,6 +19,7 @@
 Layer::Layer(Map* map, const XMLElement& elem)
     : _map(map)
 {
+    //TODO: Convert to GUARENTEE_OR_DIE
     if(!LoadFromXml(elem)) {
         ERROR_AND_DIE("Invalid Layer");
     }
@@ -26,6 +28,7 @@ Layer::Layer(Map* map, const XMLElement& elem)
 Layer::Layer(Map* map, const Image& img)
     : _map(map)
 {
+    //TODO: Convert to GUARENTEE_OR_DIE
     if(!LoadFromImage(img)) {
         ERROR_AND_DIE("Invalid Layer");
     }
@@ -173,6 +176,12 @@ void Layer::InitializeTiles(const std::size_t layer_width, const std::size_t lay
             tile_iter->ChangeTypeFromGlyph(c);
             tile_iter->SetCoords(tile_x, tile_y);
             tile_iter->layer = this;
+            if(auto* def = tile_iter->GetDefinition(); def && def->is_entrance) {
+                tile_iter->SetEntrance();
+            }
+            if(auto* def = tile_iter->GetDefinition(); def && def->is_exit) {
+                tile_iter->SetExit();
+            }
             ++tile_iter;
             ++tile_x;
         }

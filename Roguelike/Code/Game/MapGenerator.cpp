@@ -106,6 +106,7 @@ void FileMapGenerator::Generate() {
 void FileMapGenerator::LoadLayersFromFile(const XMLElement& elem) {
     const auto xml_src = DataUtils::ParseXmlAttribute(elem, "src", "");
     if(auto src = FileUtils::ReadStringBufferFromFile(xml_src)) {
+        //TODO: Convert to GUARENTEE_OR_DIE
         if(src.value().empty()) {
             ERROR_AND_DIE("Loading Map from file with empty or invalid source attribute.");
         }
@@ -296,6 +297,7 @@ void RoomsMapGenerator::LoadActors(const XMLElement& elem) {
                 auto* actor = Actor::CreateActor(_map, elem);
                 auto actor_name = StringUtils::ToLowerCase(actor->name);
                 bool is_player = actor_name == "player";
+                //TODO: Convert to GUARENTEE_OR_DIE
                 if(_map->player && is_player) {
                     ERROR_AND_DIE("Map failed to load. Multiplayer not yet supported.");
                 }
@@ -350,6 +352,7 @@ void RoomsAndCorridorsMapGenerator::LoadActors(const XMLElement& elem) {
                 auto* actor = Actor::CreateActor(_map, elem);
                 auto actor_name = StringUtils::ToLowerCase(actor->name);
                 bool is_player = actor_name == "player";
+                //TODO: Convert to GUARENTEE_OR_DIE
                 if(_map->player && is_player) {
                     ERROR_AND_DIE("Map failed to load. Multiplayer not yet supported.");
                 }
@@ -487,16 +490,13 @@ bool RoomsAndCorridorsMapGenerator::VerifyExitIsReachable(const IntVector2& ente
 }
 
 void RoomsAndCorridorsMapGenerator::PlaceActors() noexcept {
-    const int room_count = static_cast<int>(rooms.size());
-    auto closed_set = std::vector<std::size_t>{};
-    closed_set.reserve(room_count);
+    auto open_set = std::vector<std::size_t>{};
+    open_set.resize(rooms.size());
+    std::iota(std::begin(open_set), std::end(open_set), std::size_t{0u});
     for(auto* actor : _map->_actors) {
         const auto room_idx = [&]() {
-            auto idx = static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(room_count));
-            while(std::find(std::begin(closed_set), std::end(closed_set), idx) != std::end(closed_set)) {
-                idx = static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(room_count));
-            }
-            closed_set.push_back(idx);
+            auto idx = open_set[static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(static_cast<int>(open_set.size())))];
+            open_set.erase(std::remove(std::begin(open_set), std::end(open_set), idx), std::end(open_set));
             return idx;
         }();
         actor->SetPosition(IntVector2{rooms[room_idx].CalcCenter()});
@@ -506,6 +506,8 @@ void RoomsAndCorridorsMapGenerator::PlaceActors() noexcept {
             }
         }
     }
+    //TODO: Determine enter/exit tile
+    //player->SetPosition(_map->GetTile());
 }
 
 void RoomsAndCorridorsMapGenerator::PlaceFeatures() noexcept {
@@ -567,10 +569,12 @@ bool RoomsAndCorridorsMapGenerator::GenerateExitAndEntrance() noexcept {
     } while(!VerifyExitIsReachable(start, end));
 
     if(auto* tile = _map->GetTile(IntVector3{start, 0})) {
-        tile->ChangeTypeFromName(stairsDownType);
+        tile->ChangeTypeFromName(stairsUpType);
+        tile->SetEntrance();
     }
     if(auto* tile = _map->GetTile(IntVector3{end, 0})) {
-        tile->ChangeTypeFromName(stairsUpType);
+        tile->ChangeTypeFromName(stairsDownType);
+        tile->SetExit();
     }
     return true;
 }

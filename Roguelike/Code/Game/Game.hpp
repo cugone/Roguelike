@@ -10,6 +10,7 @@
 #include "Engine/UI/UIPanel.hpp"
 #include "Engine/UI/UIWidget.hpp"
 
+#include "Game/Adventure.hpp"
 #include "Game/Cursor.hpp"
 #include "Game/Map.hpp"
 #include "Game/GameCommon.hpp"
@@ -175,7 +176,7 @@ private:
 
     void LoadData(void* user_data);
 
-    std::unique_ptr<Map> _map{nullptr};
+    std::unique_ptr<Adventure> _adventure{nullptr};
     Rgba _grid_color{Rgba::Red};
     Rgba _debug_gradientColor{Rgba::White};
     std::vector<Tile*> _debug_inspected_tiles{};

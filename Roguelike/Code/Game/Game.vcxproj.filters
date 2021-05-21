@@ -34,6 +34,9 @@
     <Filter Include="Data\Fonts">
       <UniqueIdentifier>{79e12bd4-68df-415b-a033-933a520b5a7c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data\Maps">
+      <UniqueIdentifier>{43faf59d-145e-4c43-b149-6cf96c9c4dc3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp">
@@ -142,6 +145,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="SleepBehavior.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Adventure.cpp">
       <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -257,11 +263,11 @@
     <ClInclude Include="SleepBehavior.hpp">
       <Filter>Game</Filter>
     </ClInclude>
+    <ClInclude Include="Adventure.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="..\..\Run_x64\Data\Definitions\Map00.xml">
-      <Filter>Data\Definitions</Filter>
-    </Xml>
     <Xml Include="..\..\Run_x64\Data\Definitions\Tiles.xml">
       <Filter>Data\Definitions</Filter>
     </Xml>
@@ -278,7 +284,13 @@
       <Filter>Data\Definitions</Filter>
     </Xml>
     <Xml Include="..\..\Run_x64\Data\Definitions\Map01.xml">
-      <Filter>Data\Definitions</Filter>
+      <Filter>Data\Maps</Filter>
+    </Xml>
+    <Xml Include="..\..\Run_x64\Data\Definitions\Map00.xml">
+      <Filter>Data\Maps</Filter>
+    </Xml>
+    <Xml Include="..\..\Run_x64\Data\Definitions\Adventure.xml">
+      <Filter>Data\Maps</Filter>
     </Xml>
   </ItemGroup>
   <ItemGroup>

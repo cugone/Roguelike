@@ -21,6 +21,7 @@ public:
     TileDefinition& operator=(TileDefinition&& other) = default;
     ~TileDefinition() = default;
 
+    static TileDefinition* CreateOrGetTileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
     static TileDefinition* CreateTileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
     static void DestroyTileDefinitions();
 
@@ -33,6 +34,8 @@ public:
     bool is_solid = false;
     bool is_animated = false;
     bool is_transparent = false;
+    bool is_entrance = false;
+    bool is_exit = false;
     bool allow_diagonal_movement = true;
     char glyph = ' ';
     std::string name{};

@@ -13,16 +13,35 @@
 
 #include "Game/GameCommon.hpp"
 
-constexpr uint32_t tilecoords_mask       = 0b0000'0000'1111'1111'1111'1111'0000'0000;
-constexpr uint32_t tilecoords_light_mask = 0b0000'0000'0000'0000'0000'0000'1111'1111;
-constexpr uint32_t tilecoords_x_mask     = 0b0000'0000'0000'0000'1111'1111'0000'0000;
-constexpr uint32_t tilecoords_y_mask     = 0b0000'0000'1111'1111'0000'0000'0000'0000;
-constexpr uint32_t tilecoords_y_bits = 8;
-constexpr uint32_t tilecoords_x_bits = 8;
-constexpr uint32_t tilecoords_light_bits = 8;
-constexpr uint32_t tilecoords_y_offset = 16;
-constexpr uint32_t tilecoords_x_offset = 8;
-constexpr uint32_t tilecoords_light_offset = 0;
+constexpr uint32_t tile_flags_mask        = 0b1111'1111'0000'0000'0000'0000'0000'0000;
+constexpr uint8_t tile_flags_anim_mask    = 0b1000'0000;
+constexpr uint8_t tile_flags_solid_mask   = 0b0100'0000;
+constexpr uint8_t tile_flags_vis_mask     = 0b0010'0000;
+constexpr uint8_t tile_flags_opaque_mask  = 0b0001'0000;
+constexpr uint8_t tile_flags_trans_mask   = 0b0000'1000;
+constexpr uint8_t tile_flags_diag_mask    = 0b0000'0100;
+constexpr uint8_t tile_flags_out_mask     = 0b0000'0010;
+constexpr uint8_t tile_flags_in_mask      = 0b0000'0001;
+constexpr uint8_t tile_flags_anim_bit     = 7;
+constexpr uint8_t tile_flags_solid_bit    = 6;
+constexpr uint8_t tile_flags_vis_bit      = 5;
+constexpr uint8_t tile_flags_opaque_bit   = 4;
+constexpr uint8_t tile_flags_trans_bit    = 3;
+constexpr uint8_t tile_flags_diag_bit     = 2;
+constexpr uint8_t tile_flags_out_bit      = 1;
+constexpr uint8_t tile_flags_in_bit       = 0;
+constexpr uint32_t tile_coords_mask       = 0b0000'0000'1111'1111'1111'1111'0000'0000;
+constexpr uint32_t tile_coords_light_mask = 0b0000'0000'0000'0000'0000'0000'1111'1111;
+constexpr uint32_t tile_coords_x_mask     = 0b0000'0000'0000'0000'1111'1111'0000'0000;
+constexpr uint32_t tile_coords_y_mask     = 0b0000'0000'1111'1111'0000'0000'0000'0000;
+constexpr uint32_t tile_coords_y_bits = 8;
+constexpr uint32_t tile_coords_x_bits = 8;
+constexpr uint32_t tile_flags_bits = 8;
+constexpr uint32_t tile_coords_light_bits = 8;
+constexpr uint32_t tile_flags_offset = 24;
+constexpr uint32_t tile_coords_y_offset = 16;
+constexpr uint32_t tile_coords_x_offset = 8;
+constexpr uint32_t tile_coords_light_offset = 0;
 
 Tile::Tile()
     : _def(TileDefinition::GetTileDefinitionByName("void"))
@@ -241,6 +260,30 @@ bool Tile::IsPassable() const {
     return !IsSolid();
 }
 
+void Tile::SetEntrance() noexcept {
+    _flags_coords_lightvalue |= DataUtils::ShiftLeft(1, tile_flags_offset + tile_flags_in_bit);
+}
+
+void Tile::SetExit() noexcept {
+    _flags_coords_lightvalue |= DataUtils::ShiftLeft(1, tile_flags_offset + tile_flags_out_bit);
+}
+
+void Tile::ClearEntrance() noexcept {
+    _flags_coords_lightvalue &= ~(DataUtils::ShiftLeft(1, tile_flags_offset + tile_flags_in_bit));
+}
+
+void Tile::ClearExit() noexcept {
+    _flags_coords_lightvalue &= ~(DataUtils::ShiftLeft(1, tile_flags_offset + tile_flags_out_bit));
+}
+
+bool Tile::IsEntrance() const {
+    return static_cast<uint8_t>(DataUtils::ShiftRight(_flags_coords_lightvalue & tile_flags_mask, tile_flags_offset)) & DataUtils::Bit(tile_flags_in_bit);
+}
+
+bool Tile::IsExit() const {
+    return static_cast<uint8_t>(DataUtils::ShiftRight(_flags_coords_lightvalue & tile_flags_mask, tile_flags_offset)) & DataUtils::Bit(tile_flags_out_bit);
+}
+
 bool Tile::HasInventory() const noexcept {
     return inventory != nullptr;
 }
@@ -264,12 +307,12 @@ void Tile::SetCoords(int x, int y) {
 }
 
 void Tile::SetCoords(const IntVector2& coords) {
-    _coords_lightvalue = DataUtils::ShiftLeft(coords.y, tilecoords_y_offset) | DataUtils::ShiftLeft(coords.x, tilecoords_x_offset) | DataUtils::ShiftLeft(GetLightValue(), tilecoords_light_offset);
+    _flags_coords_lightvalue = DataUtils::ShiftLeft(coords.y, tile_coords_y_offset) | DataUtils::ShiftLeft(coords.x, tile_coords_x_offset) | DataUtils::ShiftLeft(GetLightValue(), tile_coords_light_offset);
 }
 
 const IntVector2 Tile::GetCoords() const {
-    const int y = DataUtils::ShiftRight(_coords_lightvalue & tilecoords_y_mask, tilecoords_y_offset);
-    const int x = DataUtils::ShiftRight(_coords_lightvalue & tilecoords_x_mask, tilecoords_x_offset);
+    const int y = DataUtils::ShiftRight(_flags_coords_lightvalue & tile_coords_y_mask, tile_coords_y_offset);
+    const int x = DataUtils::ShiftRight(_flags_coords_lightvalue & tile_coords_x_mask, tile_coords_x_offset);
     return IntVector2{x, y};
 }
 
@@ -279,12 +322,12 @@ int Tile::GetIndexFromCoords() const noexcept {
 }
 
 uint32_t Tile::GetLightValue() const noexcept {
-    return DataUtils::ShiftRight(_coords_lightvalue & tilecoords_light_mask, tilecoords_light_bits) & tilecoords_light_bits;
+    return DataUtils::ShiftRight(_flags_coords_lightvalue & tile_coords_light_mask, tile_coords_light_bits) & tile_coords_light_bits;
 }
 
 void Tile::SetLightValue(uint32_t newValue) noexcept {
-    _coords_lightvalue &= ~tilecoords_light_mask;
-    _coords_lightvalue |= (newValue & tilecoords_light_mask);
+    _flags_coords_lightvalue &= ~tile_coords_light_mask;
+    _flags_coords_lightvalue |= (newValue & tile_coords_light_mask);
 }
 
 Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) const {

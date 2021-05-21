@@ -20,6 +20,7 @@
 #include <stack>
 #include <vector>
 
+class Adventure;
 class Material;
 class Renderer;
 class SpriteSheet;
@@ -57,6 +58,9 @@ public:
     void DebugRender(Renderer& renderer) const;
     void EndFrame();
 
+    bool IsPlayerOnExit() const noexcept;
+    bool IsPlayerOnEntrance() const noexcept;
+
     bool IsTileInArea(const AABB2& bounds, const IntVector2& tileCoords) const;
     bool IsTileInArea(const AABB2& bounds, const IntVector3& tileCoords) const;
     bool IsTileInArea(const AABB2& bounds, const Tile* tile) const;
@@ -84,6 +88,14 @@ public:
     bool IsTilePassable(const IntVector2& tileCoords) const;
     bool IsTilePassable(const IntVector3& tileCoords) const;
     bool IsTilePassable(const Tile* tile) const;
+
+    bool IsTileEntrance(const IntVector2& tileCoords) const;
+    bool IsTileEntrance(const IntVector3& tileCoords) const;
+    bool IsTileEntrance(const Tile* tile) const;
+    
+    bool IsTileExit(const IntVector2& tileCoords) const;
+    bool IsTileExit(const IntVector3& tileCoords) const;
+    bool IsTileExit(const Tile* tile) const;
 
     void ZoomOut() noexcept;
     void ZoomIn() noexcept;
@@ -317,6 +329,8 @@ public:
 
 protected:
 private:
+    void SetParentAdventure(Adventure* parent) noexcept;
+
     bool LoadFromXML(const XMLElement& elem);
     void LoadNameForMap(const XMLElement& elem);
     void LoadMaterialsForMap(const XMLElement& elem);
@@ -342,6 +356,7 @@ private:
     std::vector<std::unique_ptr<Layer>> _layers{};
     Renderer& _renderer;
     const XMLElement& _root_xml_element;
+    Adventure* _parent_adventure{};
     Material* _default_tileMaterial{};
     Material* _current_tileMaterial{};
     std::unique_ptr<Pathfinder> _pathfinder{};
@@ -363,6 +378,7 @@ private:
     friend class XmlMapGenerator;
     friend class RoomsMapGenerator;
     friend class RoomsAndCorridorsMapGenerator;
+    friend class Adventure;
 public:
     std::vector<Tile*> GetViewableTiles() const noexcept;
 };

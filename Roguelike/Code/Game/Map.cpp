@@ -16,6 +16,7 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 
+#include "Game/Adventure.hpp"
 #include "Game/Actor.hpp"
 #include "Game/Cursor.hpp"
 #include "Game/Entity.hpp"
@@ -224,6 +225,7 @@ Map::Map(Renderer& renderer, const XMLElement& elem) noexcept
     , _root_xml_element(elem)
     , _pathfinder(std::make_unique<Pathfinder>())
 {
+    //TODO: Convert to GUARENTEE_OR_DIE
     if(!LoadFromXML(elem)) {
         ERROR_AND_DIE("Could not load map.");
     }
@@ -446,6 +448,18 @@ void Map::EndFrame() {
 
 }
 
+bool Map::IsPlayerOnExit() const noexcept {
+    return player->tile->IsExit();
+}
+
+bool Map::IsPlayerOnEntrance() const noexcept {
+    return player->tile->IsEntrance();
+}
+
+void Map::SetParentAdventure(Adventure* parent) noexcept {
+    _parent_adventure = parent;
+}
+
 bool Map::IsTileInArea(const AABB2& bounds, const IntVector2& tileCoords) const {
     return IsTileInArea(bounds, IntVector3{tileCoords, 0});
 }
@@ -556,6 +570,36 @@ bool Map::IsTilePassable(const Tile* tile) const {
         return false;
     }
     return tile->IsPassable();
+}
+
+bool Map::IsTileEntrance(const IntVector2& tileCoords) const {
+    return IsTileEntrance(IntVector3{tileCoords, 0});
+}
+
+bool Map::IsTileEntrance(const IntVector3& tileCoords) const {
+    return IsTileEntrance(GetTile(tileCoords));
+}
+
+bool Map::IsTileEntrance(const Tile* tile) const {
+    if(!tile || tile->layer) {
+        return false;
+    }
+    return tile->IsEntrance();
+}
+
+bool Map::IsTileExit(const IntVector2& tileCoords) const {
+    return IsTileExit(IntVector3{tileCoords, 0});
+}
+
+bool Map::IsTileExit(const IntVector3& tileCoords) const {
+    return IsTileExit(GetTile(tileCoords));
+}
+
+bool Map::IsTileExit(const Tile* tile) const {
+    if(!tile || tile->layer) {
+        return false;
+    }
+    return tile->IsExit();
 }
 
 void Map::FocusTileAt(const IntVector3& position) {
@@ -823,6 +867,7 @@ void Map::CreateGeneratorFromTypename(const XMLElement& elem) {
 void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
     if(auto xml_tileset = elem.FirstChildElement("tiles")) {
         DataUtils::ValidateXmlElement(*xml_tileset, "tiles", "", "src");
+        //TODO: Convert to GUARENTEE_OR_DIE
         if(const auto src = DataUtils::ParseXmlAttribute(*xml_tileset, "src", std::string{}); src.empty()) {
             ERROR_AND_DIE("Map tiles source is empty.");
         } else {
@@ -833,12 +878,14 @@ void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
 
 void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
+    //TODO: Convert to GUARENTEE_OR_DIE
     if(!FS::exists(src)) {
         const auto ss = std::string{"Entities file at "} + src.string() + " could not be found.";
         ERROR_AND_DIE(ss.c_str());
     }
     tinyxml2::XMLDocument doc;
     auto xml_result = doc.LoadFile(src.string().c_str());
+    //TODO: Convert to GUARENTEE_OR_DIE
     if(xml_result != tinyxml2::XML_SUCCESS) {
         const auto ss = std::string("Map ") + _name + " failed to load. Tiles source file at " + src.string() + " could not be loaded.";
         ERROR_AND_DIE(ss.c_str());
@@ -849,7 +896,7 @@ void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
             if(_tileset_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet); _tileset_sheet) {
                 DataUtils::ForEachChildElement(*xml_root, "tileDefinition",
                     [this](const XMLElement& elem) {
-                        auto* def = TileDefinition::CreateTileDefinition(*g_theRenderer, elem, _tileset_sheet);
+                        auto* def = TileDefinition::CreateOrGetTileDefinition(*g_theRenderer, elem, _tileset_sheet);
                         def->GetSprite()->SetMaterial(_current_tileMaterial);
                     });
             }
@@ -865,6 +912,7 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
                 auto* actor = Actor::CreateActor(this, elem);
                 auto actor_name = StringUtils::ToLowerCase(actor->name);
                 bool is_player = actor_name == "player";
+                //TODO: Convert to GUARENTEE_OR_DIE
                 if(player && is_player) {
                     ERROR_AND_DIE("Map failed to load. Multiplayer not yet supported.");
                 }
