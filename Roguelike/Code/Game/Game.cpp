@@ -1217,6 +1217,11 @@ void Game::HandleDebugMouseInput() {
             _adventure->currentMap->player->SetPosition(tile->GetCoords());
         }
     }
+    if(g_theInputSystem->WasKeyJustPressed(KeyCode::MButton)) {
+        if(auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr) {
+            tile->SetEntity(Feature::GetFeatureByName("glowstone"));
+        }
+    }
 #endif
 }
 
