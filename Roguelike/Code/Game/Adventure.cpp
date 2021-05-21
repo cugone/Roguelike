@@ -5,6 +5,7 @@
 
 #include "Game/Actor.hpp"
 #include "Game/Map.hpp"
+#include "Game/Layer.hpp"
 #include "Game/Tile.hpp"
 
 #include <sstream>
@@ -22,7 +23,6 @@ void Adventure::NextMap() noexcept {
         ++_current_map_iter;
         currentMap = (*_current_map_iter).get();
         PlacePlayerNearEntrance();
-        return;
     }
 }
 
@@ -30,29 +30,70 @@ void Adventure::PreviousMap() noexcept {
     if(_current_map_iter != std::begin(_maps)) {
         --_current_map_iter;
         currentMap = (*_current_map_iter).get();
-        currentMap->player->SetPosition(currentMap->player->tile->GetEastNeighbor()->GetCoords());
+        PlacePlayerNearExit();
     }
 }
 
 void Adventure::PlacePlayerNearEntrance() noexcept {
     const auto* placement = [this]() -> const Tile* {
-        for(auto* tile : currentMap->player->tile->GetNeighbors()) {
-            if(tile->IsPassable()) {
-                return tile;
+        if(auto* layer = currentMap->player->layer; layer != nullptr) {
+            Tile* entrance_tile{nullptr};
+            for(auto& tile : (*layer)) {
+                if(tile.IsEntrance()) {
+                    entrance_tile = &tile;
+                    break;
+                }
+            }
+            if(entrance_tile) {
+                for(auto* tile : entrance_tile->GetNeighbors()) {
+                    if(tile->IsPassable()) {
+                        return tile;
+                    }
+                }
             }
         }
         return nullptr;
     }(); //IIIL
-    if(placement) {
-        currentMap->player->SetPosition(placement->GetCoords());
-    } else {
-        const auto error_str = [this]() {
+    {
+        const auto error_msg = [this]() {
             std::ostringstream ss{};
             ss << currentMap->_name << " has no valid entrance placement.\n";
             return ss.str();
         }(); //IIIL
-        ERROR_AND_DIE(error_str.c_str());
+        GUARANTEE_OR_DIE(placement, error_msg.c_str());
     }
+    currentMap->player->SetPosition(placement->GetCoords());
+}
+
+void Adventure::PlacePlayerNearExit() noexcept {
+    const auto* placement = [this]() -> const Tile* {
+        if(auto* layer = currentMap->player->layer; layer != nullptr) {
+            Tile* exit_tile{nullptr};
+            for(auto& tile : (*layer)) {
+                if(tile.IsExit()) {
+                    exit_tile = &tile;
+                    break;
+                }
+            }
+            if(exit_tile) {
+                for(auto* tile : exit_tile->GetNeighbors()) {
+                    if(tile->IsPassable()) {
+                        return tile;
+                    }
+                }
+            }
+        }
+        return nullptr;
+    }(); //IIIL
+    {
+        const auto error_msg = [this]() {
+            std::ostringstream ss{};
+            ss << currentMap->_name << " has no valid exit placement.\n";
+            return ss.str();
+        }(); //IIIL
+        GUARANTEE_OR_DIE(placement, error_msg.c_str());
+    }
+    currentMap->player->SetPosition(placement->GetCoords());
 }
 
 bool Adventure::LoadFromXml(const XMLElement& elem) noexcept {

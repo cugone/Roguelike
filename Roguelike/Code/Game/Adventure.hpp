@@ -28,6 +28,7 @@ protected:
 private:
     bool LoadFromXml(const XMLElement& elem) noexcept;
     void PlacePlayerNearEntrance() noexcept;
+    void PlacePlayerNearExit() noexcept;
 
     Renderer& _renderer;
     std::string _name{"UNKNOWN ADVENTURE"};
