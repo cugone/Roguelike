@@ -277,10 +277,8 @@ void RoomsMapGenerator::LoadItems(const XMLElement& elem) {
             if(auto* tile = _map->GetTile(IntVector3(pos, 0))) {
                 tile->AddItem(Item::GetItem(name));
             } else {
-                //TODO Add StringUtils::to_string(const IntVector2/3/4&);
-                std::ostringstream ss;
-                ss << "Invalid tile " << pos << " for item \"" << name << "\" placement.";
-                g_theFileLogger->LogLineAndFlush(ss.str());
+                const std::string error_msg{"Invalid tile " + StringUtils::to_string(pos) + " for item \"" + name + "\" placement."};
+                g_theFileLogger->LogLineAndFlush(error_msg);
             }
             });
     }
