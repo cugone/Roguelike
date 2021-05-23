@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 
+class Actor;
 class Map;
 class Renderer;
 
@@ -19,6 +20,7 @@ public:
 
     explicit Adventure(Renderer& renderer, const XMLElement& elem) noexcept;
 
+    Actor* player{};
     Map* currentMap{};
 
     void NextMap() noexcept;

@@ -16,12 +16,14 @@ Adventure::Adventure(Renderer& renderer, const XMLElement& elem) noexcept
     GUARANTEE_OR_DIE(LoadFromXml(elem), "Adventure failed to load.");
     _current_map_iter = std::begin(_maps);
     currentMap = (*_current_map_iter).get();
+    player = currentMap->player;
 }
 
 void Adventure::NextMap() noexcept {
     if(_current_map_iter != std::end(_maps) - 1) {
         ++_current_map_iter;
         currentMap = (*_current_map_iter).get();
+        currentMap->player = player;
         PlacePlayerNearEntrance();
     }
 }
@@ -30,6 +32,7 @@ void Adventure::PreviousMap() noexcept {
     if(_current_map_iter != std::begin(_maps)) {
         --_current_map_iter;
         currentMap = (*_current_map_iter).get();
+        currentMap->player = player;
         PlacePlayerNearExit();
     }
 }
