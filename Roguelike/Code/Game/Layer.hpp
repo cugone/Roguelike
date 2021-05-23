@@ -54,6 +54,7 @@ public:
     Map* GetMap();
     Tile* GetTile(std::size_t x, std::size_t y);
     Tile* GetTile(std::size_t index);
+    std::size_t GetTileIndex(std::size_t x, std::size_t y) noexcept;
 
     Tile* GetNeighbor(const NeighborDirection& direction);
     Tile* GetNeighbor(const IntVector2& direction);

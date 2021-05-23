@@ -21,6 +21,7 @@ class ItemBuilder;
 //Also represents render order.
 enum class EquipSlot {
     None
+    , Cape
     , Hair
     , Head
     , LeftArm
@@ -28,7 +29,6 @@ enum class EquipSlot {
     , Feet
     , Legs
     , Body
-    , Cape
     , Max
 };
 
@@ -80,6 +80,7 @@ public:
     void SetCount(std::size_t newCount) noexcept;
 
     const EquipSlot& GetEquipSlot() const;
+    const uint32_t GetLightValue() const noexcept;
 
 protected:
 private:
@@ -92,6 +93,7 @@ private:
     EquipSlot _slot{};
     std::size_t _stack_size = 0;
     std::size_t _max_stack_size = 1;
+    uint32_t _light_value{};
 }; //End Item
 
 class ItemBuilder {
@@ -114,6 +116,7 @@ public:
     ItemBuilder& ParentInventory(const Inventory& parentInventory) noexcept;
     ItemBuilder& AnimateSprite(std::unique_ptr<AnimatedSprite> sprite) noexcept;
     ItemBuilder& MaxStackSize(std::size_t maximumStackSize) noexcept;
+    ItemBuilder& LightValue(uint32_t value) noexcept;
 
 protected:
 private:
@@ -129,6 +132,7 @@ private:
     std::string _name{};
     std::string _friendly_name{};
     std::size_t _max_stack_size{1};
+    uint32_t _light_value{};
 
     friend class Item;
 

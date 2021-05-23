@@ -335,30 +335,6 @@ void Game::RegisterCommands() {
         _consoleCommands.AddCommand(setvis);
     }
     {
-        Console::Command showalltiles{};
-        showalltiles.command_name = "showalltiles";
-        showalltiles.help_text_short = "Makes every tile visible.";
-        showalltiles.help_text_long = "showalltiles [0/1/true/false]: Enables or disables showing every tile. Toggles if no argument.";
-        showalltiles.command_function = [this](const std::string& args) {
-            ArgumentParser p(args);
-            if(_adventure->currentMap) {
-                static bool value{false};
-                if(!(p >> value)) {
-                    value = !value;
-                }
-                const auto maxLayers = _adventure->currentMap->GetLayerCount();
-                for(std::size_t layerIdx = 0u; layerIdx < maxLayers; ++layerIdx) {
-                    if(auto* layer = _adventure->currentMap->GetLayer(layerIdx)) {
-                        for(auto& tile : *layer) {
-                            tile.debug_canSee = value;
-                        }
-                    }
-                }
-            }
-        };
-        _consoleCommands.AddCommand(showalltiles);
-    }
-    {
         Console::Command cleartilevis{};
         cleartilevis.command_name = "clear_visibility";
         cleartilevis.help_text_short = "Clears all tile visibility.";
@@ -1219,7 +1195,7 @@ void Game::HandleDebugMouseInput() {
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::MButton)) {
         if(auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr) {
-            tile->SetEntity(Feature::GetFeatureByName("glowstone"));
+            tile->SetEntity(Feature::GetFeatureByName("flamePedestal"));
         }
     }
 #endif
@@ -1230,20 +1206,12 @@ void Game::HandleDebugMouseInput() {
 void Game::ShowDebugUI() {
     ImGui::SetNextWindowSize(Vector2{550.0f, 500.0f}, ImGuiCond_Always);
     if(ImGui::Begin("Debugger", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        if(ImGui::BeginTable("DebuggerTable", 2, ImGuiTableFlags_BordersInner | ImGuiTableFlags_SizingStretchProp)) {
-            ImGui::TableSetupColumn("DebuggerTableDebuggerColumn", ImGuiTableColumnFlags_NoHide);
-            ImGui::TableSetupColumn("DebuggerTableTextEntityColumn", ImGuiTableColumnFlags_NoHide);
-            ImGui::TableNextColumn();
-            ShowFrameInspectorUI();
-            ShowWorldInspectorUI();
-            ShowEffectsDebuggerUI();
-            ShowTileDebuggerUI();
-            ShowEntityDebuggerUI();
-            ShowFeatureDebuggerUI();
-            ImGui::TableNextColumn();
-            ShowTextEntityDebuggerUI();
-            ImGui::EndTable();
-        }
+        ShowFrameInspectorUI();
+        ShowWorldInspectorUI();
+        ShowEffectsDebuggerUI();
+        ShowTileDebuggerUI();
+        ShowEntityDebuggerUI();
+        ShowFeatureDebuggerUI();
     }
     ImGui::End();
 }
@@ -1471,7 +1439,7 @@ void Game::ShowTileInspectorUI() {
     if(_debug_has_picked_tile_with_click) {
         std::size_t i = 0u;
         for(const auto cur_tile : _debug_inspected_tiles) {
-            const auto* cur_def = cur_tile ? cur_tile->GetDefinition() : TileDefinition::GetTileDefinitionByName("void");
+            const auto* cur_def = cur_tile ? TileDefinition::GetTileDefinitionByName(cur_tile->GetType()) : TileDefinition::GetTileDefinitionByName("void");
             if(const auto* cur_sprite = cur_def->GetSprite()) {
                 const auto tex_coords = cur_sprite->GetCurrentTexCoords();
                 const auto dims = Vector2::ONE * 100.0f;
@@ -1497,7 +1465,7 @@ void Game::ShowTileInspectorUI() {
         auto picked_count = picked_tiles.size();
         for(std::size_t i = 0; i < max_layers; ++i) {
             const Tile* cur_tile = i < picked_count ? picked_tiles[i] : nullptr;
-            const auto* cur_def = cur_tile ? cur_tile->GetDefinition() : TileDefinition::GetTileDefinitionByName("void");
+            const auto* cur_def = cur_tile ? TileDefinition::GetTileDefinitionByName(cur_tile->GetType()) : TileDefinition::GetTileDefinitionByName("void");
             if(const auto* cur_sprite = cur_def->GetSprite()) {
                 const auto tex_coords = cur_sprite->GetCurrentTexCoords();
                 const auto dims = Vector2::ONE * 100.0f;

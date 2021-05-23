@@ -42,6 +42,7 @@ public:
     std::string name{};
     int frame_length = 0;
 
+    uint32_t GetLightingBits() const noexcept;
     const Texture* GetTexture() const;
     Texture* GetTexture();
     const SpriteSheet* GetSheet() const;

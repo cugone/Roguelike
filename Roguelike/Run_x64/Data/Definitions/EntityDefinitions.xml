@@ -27,17 +27,20 @@
             <item name="red_coat" />
             <item name="white_pants" />
             <item name="cutlass" />
+            <item name="torch" />
         </inventory>
         <equipment>
             <cape name="black_cape" />
             <body name="red_coat" />
             <legs name="white_pants" />
             <larm name="cutlass" />
+            <rarm name="torch" />
         </equipment>
         <behaviors>
             <behavior name="wander" />
             <behavior name="flee" />
             <behavior name="pursue" />
+            <behavior name="sleep" />
         </behaviors>
     </entityDefinition>
     <entityDefinition name="human..female" index="[10,51]">

@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Engine/Core/DataUtils.hpp"
+#include "Engine/Core/ThreadSafeQueue.hpp"
 #include "Engine/Core/TimeUtils.hpp"
 #include "Engine/Core/OrthographicCameraController.hpp"
 
 #include "Engine/Math/Vector2.hpp"
-
 #include "Engine/Renderer/Camera2D.hpp"
 
 #include "Game/EntityDefinition.hpp"
@@ -53,6 +53,8 @@ public:
     void BeginFrame();
     void Update(TimeUtils::FPSeconds deltaSeconds);
     void UpdateLayers(TimeUtils::FPSeconds deltaSeconds);
+    void UpdateCursor(TimeUtils::FPSeconds deltaSeconds) noexcept;
+    void AddCursorToTopLayer() noexcept;
     void SetPriorityLayer(std::size_t i);
     void Render(Renderer& renderer) const;
     void DebugRender(Renderer& renderer) const;
@@ -114,6 +116,7 @@ public:
     std::vector<Tile*> GetTilesWithinDistance(const Tile& startTile, float dist) const;
     std::vector<Tile*> GetVisibleTilesWithinDistance(const Tile& startTile, float dist) const;
     std::vector<Tile*> GetVisibleTilesWithinDistance(const Tile& startTile, unsigned int manhattanDist) const;
+    std::vector<Tile*> GetViewableTiles() const noexcept;
 
     template<typename Pr>
     std::vector<Tile*> GetTilesWithinDistance(const Tile& startTile, float distance, Pr&& predicate) const {
@@ -324,6 +327,8 @@ public:
     void RegenerateMap() noexcept;
 
     Pathfinder* GetPathfinder() const noexcept;
+    
+    void DirtyTileLight(TileInfo& ti) noexcept;
 
     std::unique_ptr<MapGenerator> _map_generator{};
 
@@ -342,9 +347,15 @@ private:
     void LoadFeaturesForMap(const XMLElement& elem);
     void LoadItemsForMap(const XMLElement& elem);
 
+    void InitializeLighting(Layer* layer) noexcept;
+    void CalculateLighting(Layer* layer) noexcept;
+    void UpdateTileLighting(TileInfo& bi) noexcept;
+    void DirtyNeighborLighting(TileInfo& bi, const Layer::NeighborDirection& direction) noexcept;
+
     void UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds);
     void UpdateActorAI(TimeUtils::FPSeconds deltaSeconds);
     void UpdateEntities(TimeUtils::FPSeconds deltaSeconds);
+    void UpdateLighting(TimeUtils::FPSeconds deltaSeconds) noexcept;
 
     void RenderStatsBlock(Actor* actor) const noexcept;
 
@@ -354,6 +365,7 @@ private:
 
     std::string _name{};
     std::vector<std::unique_ptr<Layer>> _layers{};
+    ThreadSafeQueue<TileInfo> _lightingQueue{};
     Renderer& _renderer;
     const XMLElement& _root_xml_element;
     Adventure* _parent_adventure{};
@@ -379,6 +391,5 @@ private:
     friend class RoomsMapGenerator;
     friend class RoomsAndCorridorsMapGenerator;
     friend class Adventure;
-public:
-    std::vector<Tile*> GetViewableTiles() const noexcept;
+
 };

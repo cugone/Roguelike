@@ -312,6 +312,7 @@ void Actor::Equip(const EquipSlot& slot, Item* item) {
     if(current_equipment) {
         this->AdjustStatModifiers(current_equipment->GetStatModifiers());
     }
+    CalculateLightValue();
 }
 
 void Actor::Unequip(const EquipSlot& slot) {
@@ -358,7 +359,15 @@ void Actor::CalculateLightValue() noexcept {
         }
         return uint32_t{0u};
     }();
-    //const auto acc_op = [](const uint32_t a, const Item* b) { return a + b->GetLightValue(); };
-    const auto value = tile_light + _self_illumination;// +std::accumulate(std::cbegin(_equipment), std::cend(_equipment), uint32_t{0u}, acc_op);
-    SetLightValue(value);
+    const auto acc_op = [](const uint32_t a, const Item* b) {
+        const auto b_value = b ? b->GetLightValue() : min_light_value;
+        return a + b_value;
+    };
+    const auto value = tile_light + _self_illumination + std::accumulate(std::cbegin(_equipment), std::cend(_equipment), uint32_t{0u}, acc_op);
+    if(value != GetLightValue()) {
+        SetLightValue(value);
+        if(tile) {
+            tile->DirtyLight();
+        }
+    }
 }

@@ -1,11 +1,8 @@
 <items>
     <spritesheet src="Data/Images/Tileset.png" dimensions="[65,65]" />
-    <item name="chest" index="[28,28]">
-        <equipslot>none</equipslot>
-    </item>
     <item name="torch" index="[34,60]">
         <equipslot>rarm</equipslot>
-        <light value="8" />
+        <light value="4" />
     </item>
     <item name="red_robe" index="[31,53]">
         <equipslot>body</equipslot>

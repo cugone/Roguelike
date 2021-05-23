@@ -149,6 +149,7 @@ bool Layer::LoadFromImage(const Image& img) {
     int tile_x = 0;
     int tile_y = 0;
     for(auto& t : _tiles) {
+        t.layer = this;
         t.color = img.GetTexel(IntVector2{tile_x, tile_y});
         t.SetCoords(tile_x++, tile_y);
         tile_x %= layer_width;
@@ -167,13 +168,13 @@ void Layer::InitializeTiles(const std::size_t layer_width, const std::size_t lay
     int tile_y = 0;
     for(const auto& str : glyph_strings) {
         for(const auto& c : str) {
+            tile_iter->layer = this;
             tile_iter->ChangeTypeFromGlyph(c);
             tile_iter->SetCoords(tile_x, tile_y);
-            tile_iter->layer = this;
-            if(auto* def = tile_iter->GetDefinition(); def && def->is_entrance) {
+            if(auto* def = TileDefinition::GetTileDefinitionByName(tile_iter->GetType()); def && def->is_entrance) {
                 tile_iter->SetEntrance();
             }
-            if(auto* def = tile_iter->GetDefinition(); def && def->is_exit) {
+            if(auto* def = TileDefinition::GetTileDefinitionByName(tile_iter->GetType()); def && def->is_exit) {
                 tile_iter->SetExit();
             }
             ++tile_iter;
@@ -276,8 +277,7 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
                 if(y >= tileDimensions.y || y < 0) {
                     continue;
                 }
-                if(auto* tile = GetTile(x, y); tile && (tile->debug_canSee || tile->canSee || tile->haveSeen)) {
-                    tile->CalculateLightValue();
+                if(auto* tile = GetTile(x, y); tile != nullptr) {
                     results.push_back(tile);
                 }
             }
@@ -302,13 +302,6 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
     }
     for(auto& tile : visibleTiles) {
         tile->Update(deltaSeconds);
-    }
-
-    if(auto* tile = _map->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-        if(g_theGame->current_cursor) {
-            g_theGame->current_cursor->SetCoords(tile->GetCoords());
-            g_theGame->current_cursor->Update(deltaSeconds);
-        }
     }
 }
 
@@ -375,6 +368,10 @@ Map* Layer::GetMap() {
 
 Tile* Layer::GetTile(std::size_t x, std::size_t y) {
     return GetTile(x + (y * tileDimensions.x));
+}
+
+std::size_t Layer::GetTileIndex(std::size_t x, std::size_t y) noexcept {
+    return x + (y * tileDimensions.x);
 }
 
 Tile* Layer::GetTile(std::size_t index) {

@@ -18,6 +18,7 @@
 #include "Game/PursueBehavior.hpp"
 
 #include <cmath>
+#include <random>
 
 MapGenerator::MapGenerator(Map* map, const XMLElement& elem) noexcept
     : _xml_element(elem)
@@ -429,7 +430,7 @@ void RoomsAndCorridorsMapGenerator::MakeVerticalCorridor(const AABB2& from, cons
             tile->ChangeTypeFromName(floorType);
             const auto neighbors = tile->GetNeighbors();
             for(auto* neighbor : neighbors) {
-                if(neighbor && can_be_corridor_wall(neighbor->GetDefinition()->name)) {
+                if(neighbor && can_be_corridor_wall(neighbor->GetType())) {
                     neighbor->ChangeTypeFromName(wallType);
                 }
             }
@@ -451,7 +452,7 @@ void RoomsAndCorridorsMapGenerator::MakeHorizontalCorridor(const AABB2& from, co
             tile->ChangeTypeFromName(floorType);
             const auto neighbors = tile->GetNeighbors();
             for(auto* neighbor : neighbors) {
-                if(neighbor && can_be_corridor_wall(neighbor->GetDefinition()->name)) {
+                if(neighbor && can_be_corridor_wall(neighbor->GetType())) {
                     neighbor->ChangeTypeFromName(wallType);
                 }
             }
@@ -479,13 +480,19 @@ bool RoomsAndCorridorsMapGenerator::VerifyExitIsReachable(const IntVector2& ente
 }
 
 void RoomsAndCorridorsMapGenerator::PlaceActors() noexcept {
-    auto open_set = std::vector<std::size_t>{};
-    open_set.resize(rooms.size());
-    std::iota(std::begin(open_set), std::end(open_set), std::size_t{0u});
+    auto open_set = [this]() {
+        auto result = std::vector<std::size_t>{};
+        result.resize(rooms.size());
+        std::iota(std::begin(result), std::end(result), std::size_t{0u});
+        std::random_device rd;
+        std::mt19937_64 g(rd());
+        std::shuffle(std::begin(result), std::end(result), g);
+        return result;
+    }(); //IIIL
     for(auto* actor : _map->_actors) {
         const auto room_idx = [&]() {
-            auto idx = open_set[static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(static_cast<int>(open_set.size())))];
-            open_set.erase(std::remove(std::begin(open_set), std::end(open_set), idx), std::end(open_set));
+            auto idx = open_set.back();
+            open_set.pop_back();
             return idx;
         }();
         actor->SetPosition(IntVector2{rooms[room_idx].CalcCenter()});

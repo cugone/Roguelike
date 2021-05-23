@@ -33,7 +33,7 @@ Feature* Feature::GetFeatureByName(const std::string& name) {
 
 Feature* Feature::GetFeatureByGlyph(const char glyph) {
     for(const auto& feature : s_registry) {
-        if(feature.second->_tile_def->glyph == glyph) {
+        if(TileDefinition::GetTileDefinitionByName(feature.second->parent_tile->GetType())->glyph == glyph) {
             return feature.second.get();
         }
     }
@@ -55,11 +55,7 @@ bool Feature::LoadFromXml(const XMLElement& elem) {
 
     const auto featureName = DataUtils::ParseXmlAttribute(elem, "name", "");
     std::string definitionName = featureName;
-    const auto state_count = DataUtils::GetChildElementCount(elem, "state");
-
-    if(!state_count) {
-        _tile_def = TileDefinition::GetTileDefinitionByName(definitionName);
-    } else {
+    if(const auto state_count = DataUtils::GetChildElementCount(elem, "state"); state_count > 0) {
         DataUtils::ForEachChildElement(elem, "state", [&definitionName, &featureName, this](const XMLElement& elem) {
             const auto cur_name = DataUtils::ParseXmlAttribute(elem, "name", "");
             definitionName = featureName + "." + cur_name;
@@ -73,40 +69,44 @@ bool Feature::LoadFromXml(const XMLElement& elem) {
             DebuggerPrintf("Feature initialState attribute is empty or missing. Defaulting to first state.");
         }
         initialState = featureName + "." + initialState;
-        _tile_def = TileDefinition::GetTileDefinitionByName(valid_initialState ? initialState : _states[0]);
+        if(auto found = std::find(std::begin(_states), std::end(_states), initialState); found != std::end(_states)) {
+            _current_state = found;
+        } else {
+            _current_state = std::begin(_states);
+        }
+        definitionName = (*_current_state);
+    } else {
+        _states.push_back(definitionName);
+        _current_state = std::begin(_states);
     }
 
-    sprite = _tile_def->GetSprite();
+    if(auto* tile_def = TileDefinition::GetTileDefinitionByName(definitionName); tile_def != nullptr) {
+        sprite = tile_def->GetSprite();
+        _light_value = tile_def->light;
+    }
 
     if(DataUtils::HasAttribute(elem, "position")) {
         SetPosition(DataUtils::ParseXmlAttribute(elem, "position", IntVector2::ZERO));
+        parent_tile = map->GetTile(IntVector3{GetPosition(), layer->z_index});
     }
 
     return true;
 }
 
-bool Feature::IsTransparent() const noexcept {
-    return _tile_def->is_transparent;
+bool Feature::IsOpaque() const noexcept {
+    return TileDefinition::GetTileDefinitionByName(*_current_state)->is_opaque;
 }
 
 bool Feature::IsSolid() const noexcept {
-    return _tile_def->is_solid;
+    return TileDefinition::GetTileDefinitionByName(*_current_state)->is_solid;
 }
 
-bool Feature::IsOpaque() const noexcept {
-    return _tile_def->is_opaque;
+bool Feature::IsVisible() const noexcept {
+    return TileDefinition::GetTileDefinitionByName(*_current_state)->is_visible;
 }
 
-bool Feature::IsVisible() const {
-    return _tile_def->is_visible;
-}
-
-bool Feature::IsNotVisible() const {
+bool Feature::IsInvisible() const noexcept {
     return !IsVisible();
-}
-
-bool Feature::IsInvisible() const {
-    return IsNotVisible();
 }
 
 void Feature::SetPosition(const IntVector2& position) {
@@ -120,11 +120,10 @@ void Feature::SetPosition(const IntVector2& position) {
 
 void Feature::SetState(const std::string& stateName) {
     if(auto* new_def = TileDefinition::GetTileDefinitionByName(name + "." + stateName)) {
-        _tile_def = new_def;
-        sprite = _tile_def->GetSprite();
+        sprite = new_def->GetSprite();
         return;
     }
-    DebuggerPrintf("Attempting ot set Feature to invalid state: %s\n", stateName.c_str());
+    DebuggerPrintf("Attempting to set Feature to invalid state: %s\n", stateName.c_str());
 }
 
 void Feature::ResolveAttack(Entity& attacker, Entity& defender) {
@@ -200,5 +199,5 @@ void Feature::AddVertsForSelf() noexcept {
 }
 
 void Feature::CalculateLightValue() noexcept {
-    SetLightValue(_tile_def->light);
+    SetLightValue(_light_value);
 }

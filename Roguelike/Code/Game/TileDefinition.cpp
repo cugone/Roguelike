@@ -57,6 +57,18 @@ void TileDefinition::ClearTileRegistry() {
     s_registry.clear();
 }
 
+uint32_t TileDefinition::GetLightingBits() const noexcept {
+    if(is_opaque && is_solid) {
+        return tile_flags_opaque_mask | tile_flags_solid_mask;
+    } else if(is_opaque) {
+        return tile_flags_opaque_mask;
+    } else if(is_solid) {
+        return tile_flags_solid_mask;
+    } else {
+        return uint32_t{0u};
+    }
+}
+
 const Texture* TileDefinition::GetTexture() const {
     return GetSheet()->GetTexture();
 }

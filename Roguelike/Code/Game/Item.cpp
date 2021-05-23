@@ -68,6 +68,7 @@ Item::Item(ItemBuilder& builder) noexcept
     , _sprite(std::move(builder._sprite))
     , _slot(builder._slot)
     , _max_stack_size(builder._max_stack_size)
+    , _light_value(builder._light_value)
 {
     if(_friendly_name.empty()) {
         _friendly_name = _name;
@@ -243,6 +244,10 @@ const EquipSlot& Item::GetEquipSlot() const {
     return _slot;
 }
 
+const uint32_t Item::GetLightValue() const noexcept {
+    return _light_value;
+}
+
 ItemBuilder::ItemBuilder(const XMLElement& elem, std::weak_ptr<SpriteSheet> itemSheet) noexcept
     : _itemSheet(itemSheet)
 {
@@ -289,13 +294,18 @@ ItemBuilder& ItemBuilder::MaxStackSize(std::size_t maximumStackSize) noexcept {
     return *this;
 }
 
+ItemBuilder& ItemBuilder::LightValue(uint32_t value) noexcept {
+    _light_value = std::clamp(value, uint32_t{min_light_value}, uint32_t{max_light_value});
+    return *this;
+}
+
 Item* ItemBuilder::Build() noexcept {
     auto item = Item::CreateItem(*this);
     return item;
 }
 
 void ItemBuilder::LoadFromXml(const XMLElement& elem, std::weak_ptr<SpriteSheet> itemSheet) noexcept {
-    DataUtils::ValidateXmlElement(elem, "item", "", "name", "stats,equipslot,animation", "index,maxstack");
+    DataUtils::ValidateXmlElement(elem, "item", "", "name", "stats,equipslot,animation", "index,maxstack,light");
     const auto name = DataUtils::ParseXmlAttribute(elem, "name", "UNKNOWN ITEM");
     Name(name);
     if(auto* xml_equipslot = elem.FirstChildElement("equipslot")) {
@@ -319,5 +329,10 @@ void ItemBuilder::LoadFromXml(const XMLElement& elem, std::weak_ptr<SpriteSheet>
         }
     }
     MaxStackSize(DataUtils::ParseXmlAttribute(elem, "maxstack", _max_stack_size));
+    if(LightValue(0); DataUtils::HasChild(elem, "light")) {
+        if(auto* xml_light = elem.FirstChildElement("light")) {
+            LightValue(DataUtils::ParseXmlAttribute(*xml_light, "value", uint32_t{0}));
+        }
+    }
 }
 

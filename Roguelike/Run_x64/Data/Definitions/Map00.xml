@@ -7,12 +7,17 @@
         <actor name="aerith" lookAndFeel="human..female" position="[7,5]" behavior="pursue" />
     </actors>
     <features>
-        <feature name="torch" position="[12,4]" />
+        <feature name="stairsUp" position="[13,7]" />
+        <feature name="torch" position="[12,2]" />
     </features>
+    <items>
+        <item name="tan_shorts" position="[2,2]" />
+        <item name="green_armor" position="[2,2]" />
+    </items>
     <mapGenerator>
         <layers>
             <layer>
-                <row glyphs="#@########################" />
+                <row glyphs="##########################" />
                 <row glyphs="#........................#" />
                 <row glyphs="#...........#............#" />
                 <row glyphs="#...........#............#" />
@@ -20,7 +25,7 @@
                 <row glyphs="#...........#............#" />
                 <row glyphs="#...........#............#" />
                 <row glyphs="#...........#............#" />
-                <row glyphs="#...........#...........&lt;#" />
+                <row glyphs="#........................#" />
                 <row glyphs="##########################" />
             </layer>
         </layers>
