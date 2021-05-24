@@ -226,7 +226,7 @@ void Game::Render_Loading() const {
 
 void Game::Render_Main() const {
 
-    g_theRenderer->BeginRender(g_theRenderer->GetFullscreenTexture());
+    g_theRenderer->BeginRender(g_theRenderer->GetFullscreenTexture(), _adventure->currentMap->SkyColor());
 
     _adventure->currentMap->Render(*g_theRenderer);
 
