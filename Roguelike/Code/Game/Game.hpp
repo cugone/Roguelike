@@ -25,7 +25,7 @@ struct fullscreen_cb_t {
     float lumosityBrightness = 1.2f;
     float gradiantRadius = 0.5f;
     Vector4 fadeColor{};
-    Vector4 gradiantColor = Rgba::White.GetRgbaAsFloats();
+    Vector4 gradiantColor{1.0f, 1.0f, 1.0f, 1.0f};
 };
 
 enum class FullscreenEffect {

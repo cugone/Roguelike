@@ -219,7 +219,8 @@ void Game::Render_Loading() const {
         static const std::string text = "Press Any Key";
         static const auto text_length = ingamefont->CalculateTextWidth(text);
         g_theRenderer->SetModelMatrix(Matrix4::CreateTranslationMatrix(Vector2{text_length * -0.25f, ingamefont->GetLineHeight()}));
-        g_theRenderer->DrawTextLine(ingamefont, text, Rgba{255, 255, 255, static_cast<unsigned char>(255.0f * _text_alpha)});
+        const auto color = [&]() { auto result = Rgba::White; result.a = static_cast<unsigned char>(255.0f * _text_alpha); return result; }();
+        g_theRenderer->DrawTextLine(ingamefont, text, color);
     }
 }
 
@@ -808,7 +809,8 @@ bool Game::DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
     _fullscreen_data.fadePercent = curFadeTime / fadeTime;
     _fullscreen_data.fadePercent = std::clamp(_fullscreen_data.fadePercent, 0.0f, 1.0f);
     _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeIn);
-    _fullscreen_data.fadeColor = color.GetRgbaAsFloats();
+    const auto [r, g, b, a] = color.GetAsFloats();
+    _fullscreen_data.fadeColor = Vector4{r, g, b, a};
     _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 
     curFadeTime += g_theRenderer->GetGameFrameTime();
@@ -826,7 +828,8 @@ bool Game::DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
     }
     _fullscreen_data.fadePercent = curFadeTime / fadeTime;
     _fullscreen_data.fadePercent = std::clamp(_fullscreen_data.fadePercent, 0.0f, 1.0f);
-    _fullscreen_data.fadeColor = color.GetRgbaAsFloats();
+    const auto [r, g, b, a] = color.GetAsFloats();
+    _fullscreen_data.fadeColor = Vector4{r, g, b, a};
     _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeOut);
     _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 
@@ -856,7 +859,8 @@ void Game::DoCircularGradient(float radius, const Rgba& color) {
     }
     _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::CircularGradient);
     _fullscreen_data.gradiantRadius = radius;
-    _fullscreen_data.gradiantColor = color.GetRgbaAsFloats();
+    const auto [r, g, b, a] = color.GetAsFloats();
+    _fullscreen_data.gradiantColor = Vector4{r, g, b, a};
     _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
@@ -884,7 +888,7 @@ void Game::StopFullscreenEffect() {
     static TimeUtils::FPSeconds curFadeTime{};
     _fullscreen_data.effectIndex = -1;
     _fullscreen_data.fadePercent = 0.0f;
-    _fullscreen_data.fadeColor = Rgba::Black.GetRgbaAsFloats();
+    _fullscreen_data.fadeColor = Vector4::W_AXIS;
     _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
