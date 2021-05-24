@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Core/DataUtils.hpp"
+#include "Engine/Core/Rgba.hpp"
 #include "Engine/Core/ThreadSafeQueue.hpp"
 #include "Engine/Core/TimeUtils.hpp"
 #include "Engine/Core/OrthographicCameraController.hpp"
@@ -33,6 +34,7 @@ class Pathfinder;
 class Map {
 public:
     constexpr static inline int max_dimension = 255;
+
     struct RaycastResult2D {
         bool didImpact{false};
         Vector2 impactPosition{};
@@ -154,6 +156,10 @@ public:
         return results;
     }
 
+    Rgba SkyColor() const noexcept;
+    void SetSkyColorToDay() noexcept;
+    void SetSkyColorToNight() noexcept;
+    void SetSkyColorToCave() noexcept;
 
     RaycastResult2D StepAndSample(const Vector2& startPosition, const Vector2& endPosition, float sampleRate) const;
     RaycastResult2D StepAndSample(const Vector2& startPosition, const Vector2& direction, float maxDistance, float sampleRate) const;
@@ -337,6 +343,7 @@ private:
     void SetParentAdventure(Adventure* parent) noexcept;
 
     bool LoadFromXML(const XMLElement& elem);
+    void LoadTimeOfDayForMap(const XMLElement& elem);
     void LoadNameForMap(const XMLElement& elem);
     void LoadMaterialsForMap(const XMLElement& elem);
     void LoadGenerator(const XMLElement& elem);
@@ -363,6 +370,12 @@ private:
 
     void ShakeCamera(const IntVector2& from, const IntVector2& to) noexcept;
 
+    void SetGlobalLightFromSkyColor() noexcept;
+
+    static const Rgba& GetSkyColorForDay() noexcept;
+    static const Rgba& GetSkyColorForNight() noexcept;
+    static const Rgba& GetSkyColorForCave() noexcept;
+
     std::string _name{};
     std::vector<std::unique_ptr<Layer>> _layers{};
     ThreadSafeQueue<TileInfo> _lightingQueue{};
@@ -371,6 +384,7 @@ private:
     Adventure* _parent_adventure{};
     Material* _default_tileMaterial{};
     Material* _current_tileMaterial{};
+    Rgba _current_sky_color{};
     std::unique_ptr<Pathfinder> _pathfinder{};
     std::vector<Entity*> _entities{};
     std::vector<EntityText*> _text_entities{};

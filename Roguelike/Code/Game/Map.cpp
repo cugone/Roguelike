@@ -6,6 +6,7 @@
 #include "Engine/Core/FileUtils.hpp"
 #include "Engine/Core/Image.hpp"
 #include "Engine/Core/KerningFont.hpp"
+#include "Engine/Core/Rgba.hpp"
 #include "Engine/Core/StringUtils.hpp"
 
 #include "Engine/Math/Vector4.hpp"
@@ -35,6 +36,21 @@
 #include <algorithm>
 #include <sstream>
 
+const Rgba& Map::GetSkyColorForDay() noexcept {
+    static const Rgba g_clearcolor_day = Rgba::SkyBlue;
+    return g_clearcolor_day;
+}
+
+const Rgba& Map::GetSkyColorForNight() noexcept {
+    static const Rgba g_clearcolor_night = Rgba::MidnightBlue;
+    return g_clearcolor_night;
+}
+
+const Rgba& Map::GetSkyColorForCave() noexcept {
+    static const Rgba g_clearcolor_cave = Rgba::Black;
+    return g_clearcolor_cave;
+}
+
 void Map::CreateTextEntity(const TextEntityDesc& desc) noexcept {
     const auto text = EntityText::CreateTextEntity(desc);
     text->map = this;
@@ -52,6 +68,32 @@ void Map::CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) 
 void Map::ShakeCamera(const IntVector2& from, const IntVector2& to) noexcept {
     const auto distance = MathUtils::CalculateManhattanDistance(from, to);
     cameraController.GetCamera().trauma += 0.1f + distance * 0.05f;
+}
+
+void Map::SetGlobalLightFromSkyColor() noexcept {
+    if(_current_sky_color == GetSkyColorForDay()) {
+        g_current_global_light = day_light_value;
+    } else if(_current_sky_color == GetSkyColorForNight()) {
+        g_current_global_light = night_light_value;
+    } else if(_current_sky_color == GetSkyColorForCave()) {
+        g_current_global_light = min_light_value;
+    }
+}
+
+Rgba Map::SkyColor() const noexcept {
+    return _current_sky_color;
+}
+
+void Map::SetSkyColorToDay() noexcept {
+    _current_sky_color = GetSkyColorForDay();
+}
+
+void Map::SetSkyColorToNight() noexcept {
+    _current_sky_color = GetSkyColorForNight();
+}
+
+void Map::SetSkyColorToCave() noexcept {
+    _current_sky_color = GetSkyColorForCave();
 }
 
 std::vector<Tile*> Map::GetViewableTiles() const noexcept {
@@ -325,6 +367,14 @@ void Map::InitializeLighting(Layer* layer) noexcept {
                 bi.layer = layer;
                 _lightingQueue.push(bi);
             }
+        }
+    }
+    const auto width = layer->tileDimensions.x;
+    const auto height = layer->tileDimensions.y;
+    for(int x = 0; x < width; ++x) {
+        for(int y = 0; y < height; ++y) {
+            auto* currentTile = layer->GetTile(x, y);
+            currentTile->SetLightValue(g_current_global_light);
         }
     }
     CalculateLighting(layer);
@@ -993,8 +1043,8 @@ Tile* Map::GetTile(int x, int y, int z) const {
 
 bool Map::LoadFromXML(const XMLElement& elem) {
 
-    DataUtils::ValidateXmlElement(elem, "map", "tiles,material,mapGenerator", "name", "actors,features,items");
-
+    DataUtils::ValidateXmlElement(elem, "map", "tiles,material,mapGenerator", "name", "actors,features,items", "timeOfDay");
+    LoadTimeOfDayForMap(elem);
     LoadNameForMap(elem);
     LoadMaterialsForMap(elem);
     LoadTileDefinitionsForMap(elem);
@@ -1004,6 +1054,21 @@ bool Map::LoadFromXML(const XMLElement& elem) {
 
 void Map::GenerateMap(const XMLElement& elem) noexcept {
     LoadGenerator(elem);
+}
+
+void Map::LoadTimeOfDayForMap(const XMLElement& elem) {
+    const auto value = StringUtils::ToLowerCase(DataUtils::ParseXmlAttribute(elem, "timeOfDay", "night"));
+    if(value == "day") {
+        _current_sky_color = GetSkyColorForDay();
+    } else if(value == "night") {
+        _current_sky_color = GetSkyColorForNight();
+    } else if(value == "cave") {
+        _current_sky_color = GetSkyColorForCave();
+    } else {
+        DebuggerPrintf("Invalid timeOfDay value. Defaulting to day.\n");
+        _current_sky_color = GetSkyColorForDay();
+    }
+    SetGlobalLightFromSkyColor();
 }
 
 void Map::LoadNameForMap(const XMLElement& elem) {

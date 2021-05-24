@@ -25,6 +25,8 @@ extern Game* g_theGame;
 extern EngineSubsystem* g_theSubsystemHead;
 
 constexpr int min_light_value = 0;
+constexpr int day_light_value = 15;
+constexpr int night_light_value = 3;
 constexpr int max_light_value = 15;
 constexpr float min_light_scale = 0.2f;
 constexpr float max_light_scale = 1.0f;
