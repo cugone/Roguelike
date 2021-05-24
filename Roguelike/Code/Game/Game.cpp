@@ -234,10 +234,7 @@ void Game::Render_Main() const {
         _adventure->currentMap->DebugRender(*g_theRenderer);
     }
 
-    g_theRenderer->ResetModelViewProjection();
-    g_theRenderer->SetRenderTargetsToBackBuffer();
-    g_theRenderer->ClearColor(Rgba::NoAlpha);
-    g_theRenderer->ClearDepthStencilBuffer();
+    g_theRenderer->BeginRenderToBackbuffer(Rgba::NoAlpha);
     g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("Fullscreen"));
     g_theRenderer->SetConstantBuffer(3, _fullscreen_cb.get());
     std::vector<Vertex3D> vbo =
