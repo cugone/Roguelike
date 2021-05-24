@@ -1,13 +1,14 @@
 #pragma once
 
-#include "Engine/Core/JobSystem.hpp"
-#include "Engine/Core/FileLogger.hpp"
-#include "Engine/Renderer/Renderer.hpp"
-#include "Engine/Core/Console.hpp"
-#include "Engine/Core/Config.hpp"
-#include "Engine/UI/UISystem.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/FileLogger.hpp"
+#include "Engine/Core/Config.hpp"
+#include "Engine/Core/Console.hpp"
+#include "Engine/Core/JobSystem.hpp"
 #include "Engine/Input/InputSystem.hpp"
+#include "Engine/Renderer/Renderer.hpp"
+#include "Engine/UI/UISystem.hpp"
+
 #include "Game/App.hpp"
 #include "Game/Game.hpp"
 
@@ -45,5 +46,3 @@ constexpr uint32_t tile_y_offset = 16;
 constexpr uint32_t tile_x_offset = 8;
 constexpr uint32_t tile_flags_offset = 4;
 constexpr uint32_t tile_light_offset = 0;
-
-
