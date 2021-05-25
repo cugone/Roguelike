@@ -144,6 +144,9 @@ public:
     Layer* layer{};
     std::size_t index{};
 
+    bool IsSky() const noexcept;
+    bool IsAtEdge() const noexcept;
+
     bool IsLightDirty() const noexcept;
     void ClearLightDirty() noexcept;
     void SetLightDirty() noexcept;

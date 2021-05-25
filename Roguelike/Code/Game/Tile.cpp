@@ -762,3 +762,27 @@ uint32_t TileInfo::GetMaxLightValueFromNeighbors() const noexcept {
     }(); //IIIL
     return max_light;
 }
+
+bool TileInfo::IsSky() const noexcept {
+    if(layer == nullptr) {
+        return false;
+    }
+    if(auto* tile = layer->GetTile(index); tile != nullptr) {
+        return tile->GetType() == "void";
+    }
+    return false;
+}
+
+bool TileInfo::IsAtEdge() const noexcept {
+    if(layer == nullptr) {
+        return false;
+    }
+    const auto value = [this]() {
+        const auto e = TileInfo{*this}.MoveEast();
+        const auto w = TileInfo{*this}.MoveWest();
+        const auto n = TileInfo{*this}.MoveNorth();
+        const auto s = TileInfo{*this}.MoveSouth();
+        return e && w && n && s;
+    }();
+    return value;
+}
