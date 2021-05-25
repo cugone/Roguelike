@@ -353,17 +353,11 @@ Behavior* Actor::GetCurrentBehavior() const noexcept {
 }
 
 void Actor::CalculateLightValue() noexcept {
-    const auto tile_light = [this]()->uint32_t {
-        if(tile) {
-            return tile->GetLightValue();
-        }
-        return uint32_t{0u};
-    }();
     const auto acc_op = [](const uint32_t a, const Item* b) {
         const auto b_value = b ? b->GetLightValue() : min_light_value;
         return a + b_value;
     };
-    const auto value = tile_light + _self_illumination + std::accumulate(std::cbegin(_equipment), std::cend(_equipment), uint32_t{0u}, acc_op);
+    const auto value = _self_illumination + std::accumulate(std::cbegin(_equipment), std::cend(_equipment), uint32_t{0u}, acc_op);
     if(value != GetLightValue()) {
         SetLightValue(value);
         if(tile) {
