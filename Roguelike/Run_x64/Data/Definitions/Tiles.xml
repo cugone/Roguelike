@@ -61,7 +61,7 @@
         <solid />
         <allowDiagonalMovement />
         <animation name="watercyanflow">
-            <animationset startindex="[54,16]" framelength="12" duration="36" loop="true" />
+            <animationset startindex="[54,16]" framelength="12" duration="6.0" loop="true" />
         </animation>
     </tileDefinition>
     <tileDefinition name="ladderUp" index="[16,29]">
