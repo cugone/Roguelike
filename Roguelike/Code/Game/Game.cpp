@@ -1439,12 +1439,17 @@ void Game::ShowTileInspectorUI() {
     const auto tiles_per_row = std::size_t{3u};
     if(_debug_has_picked_tile_with_click) {
         std::size_t i = 0u;
-        for(const auto cur_tile : _debug_inspected_tiles) {
+        for(const auto* cur_tile : _debug_inspected_tiles) {
             const auto* cur_def = cur_tile ? TileDefinition::GetTileDefinitionByName(cur_tile->GetType()) : TileDefinition::GetTileDefinitionByName("void");
             if(const auto* cur_sprite = cur_def->GetSprite()) {
                 const auto tex_coords = cur_sprite->GetCurrentTexCoords();
                 const auto dims = Vector2::ONE * 100.0f;
                 ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                if(ImGui::IsItemHovered()) {
+                    ImGui::BeginTooltip();
+                    ShowTileInspectorStatsTableUI(cur_def, cur_tile);
+                    ImGui::EndTooltip();
+                }
                 if(!i || (i % tiles_per_row) < tiles_per_row - 1) {
                     ImGui::SameLine();
                 }
@@ -1478,6 +1483,99 @@ void Game::ShowTileInspectorUI() {
         }
     }
     ImGui::NewLine();
+}
+
+void Game::ShowTileInspectorStatsTableUI(const TileDefinition* cur_def, const Tile* cur_tile) {
+    if(ImGui::BeginTable("TileInspectorTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_SizingFixedSame | ImGuiTableFlags_RowBg)) {
+        ImGui::TableSetupColumn("TileInspectorTableRowIdsColumn");
+        ImGui::TableSetupColumn("TileInspectorTableRowValuesColumn");
+        //ImGui::TableHeadersRow(); //Commented out to hide header row.
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::Text("Layer Index:");
+        ImGui::TableNextColumn();
+        ImGui::Text(std::to_string(cur_tile->layer->z_index).c_str());
+
+        {
+            const auto types = StringUtils::Split(cur_def->name, '.', false);
+            const auto type = [&]()->std::string { if(types.size() > 0) return types[0]; else return std::string{}; }();
+            const auto subtype = [&]()->std::string { if(types.size() > 1) return types[1]; else return std::string{}; }();
+
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::Text("Type:");
+            ImGui::TableNextColumn();
+            ImGui::Text(type.c_str());
+
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::Text("SubType:");
+            ImGui::TableNextColumn();
+            ImGui::Text(subtype.c_str());
+        }
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::Text("Light Value:");
+        ImGui::TableNextColumn();
+        ImGui::Text(std::to_string(cur_tile->GetLightValue()).c_str());
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::Text("Can See:");
+        ImGui::TableNextColumn();
+        ImGui::Text((cur_tile && cur_tile->canSee ? "true" : "false"));
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::Text("Have Seen:");
+        ImGui::TableNextColumn();
+        ImGui::Text((cur_tile && cur_tile->haveSeen ? "true" : "false"));
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::Text("Visible:");
+        ImGui::TableNextColumn();
+        ImGui::Text((cur_def->is_visible ? "true" : "false"));
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::Text("Opaque:");
+        ImGui::TableNextColumn();
+        ImGui::Text((cur_def->is_opaque ? "true" : "false"));
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::Text("Solid:");
+        ImGui::TableNextColumn();
+        ImGui::Text((cur_def->is_solid ? "true" : "false"));
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::Text("Transparent:");
+        ImGui::TableNextColumn();
+        ImGui::Text((cur_def->is_transparent ? "true" : "false"));
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::Text("Animated:");
+        ImGui::TableNextColumn();
+        ImGui::Text((cur_def->is_animated ? "true" : "false"));
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::Text("Entrance:");
+        ImGui::TableNextColumn();
+        ImGui::Text((cur_def->is_entrance ? "true" : "false"));
+
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::Text("Exit:");
+        ImGui::TableNextColumn();
+        ImGui::Text((cur_def->is_exit ? "true" : "false"));
+
+        ImGui::EndTable();
+    }
 }
 
 std::vector<Tile*> Game::DebugGetTilesFromMouse() {
