@@ -79,7 +79,7 @@
         <allowDiagonalMovement />
         <solid />
         <animation name="flame">
-            <animationset startindex="[33,0]" framelength="8" duration="0.33" loop="true" />
+            <animationset startindex="[33,0]" framelength="8" duration="2.0" loop="true" />
         </animation>
         <light value="15" />
     </tileDefinition>
