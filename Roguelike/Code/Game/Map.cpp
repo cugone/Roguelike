@@ -435,39 +435,25 @@ void Map::DirtyTileLight(TileInfo& ti) noexcept {
 
 
 void Map::UpdateTileLighting(TileInfo& bi) noexcept {
-    uint32_t idealLighting = bi.GetSelfIlluminationValue();
     const auto* tile = bi.layer->GetTile(bi.index);
     if(tile == nullptr) {
         return;
     }
-    const auto has_feature = tile->feature != nullptr;
-    const auto has_actor = tile->actor != nullptr;
-    if(!bi.IsOpaque() || has_feature || has_actor) {
-        uint32_t highestNeighborLightValue = bi.GetMaxLightValueFromNeighbors();
-        auto [actor_value, feature_value] = [tile]() {
-            uint32_t a{};
-            uint32_t f{};
-            if(tile->actor) {
-                a = tile->actor->GetLightValue();
-            }
-            if(tile->feature) {
-                f = tile->feature->GetLightValue();
-            }
-            return std::make_pair(a, f);
-        }(); //IIIL
-        if(highestNeighborLightValue > 0) {
-            idealLighting = (std::max)(idealLighting, highestNeighborLightValue - uint32_t{1u});
+    const uint32_t idealLighting = [&]() {
+        const auto has_feature = tile->feature != nullptr;
+        const auto has_actor = tile->actor != nullptr;
+        const auto not_opaque = !bi.IsOpaque();
+        const auto lighting_needs_updating = not_opaque || has_feature || has_actor;
+        const auto self_value = bi.GetSelfIlluminationValue();
+        if(!lighting_needs_updating) {
+            return self_value;
         }
-        if(actor_value > 0) {
-            idealLighting = (std::max)(idealLighting, actor_value);
-        }
-        if(feature_value > 0) {
-            idealLighting = (std::max)(idealLighting, feature_value);
-        }
-    }
-    //if(bi.IsSky()) {
-    //    idealLighting = (std::max)(idealLighting, g_current_global_light);
-    //}
+        const auto highestNeighborLightValue = (std::max)(std::uint32_t{0u}, (std::min)(bi.GetMaxLightValueFromNeighbors(), bi.GetMaxLightValueFromNeighbors() - std::uint32_t{1u}));
+        const auto actor_value = (std::max)(std::uint32_t{0u}, (has_actor ? tile->actor->GetLightValue() : uint32_t{0u}));
+        const auto feature_value = (std::max)(std::uint32_t{0u}, (has_feature ? tile->feature->GetLightValue() : uint32_t{0u}));
+        const auto sky_value = (std::max)(std::uint32_t{0u}, (bi.IsSky() || bi.IsAtEdge() ? g_current_global_light : std::uint32_t{0}));
+        return (std::max)({sky_value, self_value, highestNeighborLightValue, actor_value, feature_value});
+    }(); //IIIL
     if(idealLighting != bi.GetLightValue()) {
         bi.SetLightValue(idealLighting);
         DirtyNeighborLighting(bi, Layer::NeighborDirection::North);
