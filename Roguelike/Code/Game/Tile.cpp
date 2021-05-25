@@ -638,48 +638,56 @@ void TileInfo::SetSolid() noexcept {
     tile->SetSolid();
 }
 
-void TileInfo::MoveEast() noexcept {
+bool TileInfo::MoveEast() noexcept {
     if(layer == nullptr) {
-        return;
+        return false;
     }
     if(const auto* tile = layer->GetTile(index); tile != nullptr) {
         if(tile = tile->GetEastNeighbor(); tile != nullptr) {
             index = tile->GetIndexFromCoords();
+            return true;
         }
     }
+    return false;
 }
 
-void TileInfo::MoveWest() noexcept {
+bool TileInfo::MoveWest() noexcept {
     if(layer == nullptr) {
-        return;
+        return false;
     }
     if(const auto* tile = layer->GetTile(index); tile != nullptr) {
         if(tile = tile->GetWestNeighbor(); tile != nullptr) {
             index = tile->GetIndexFromCoords();
+            return true;
         }
     }
+    return false;
 }
 
-void TileInfo::MoveNorth() noexcept {
+bool TileInfo::MoveNorth() noexcept {
     if(layer == nullptr) {
-        return;
+        return false;
     }
     if(const auto* tile = layer->GetTile(index); tile != nullptr) {
         if(tile = tile->GetNorthNeighbor(); tile != nullptr) {
             index = tile->GetIndexFromCoords();
+            return true;
         }
     }
+    return false;
 }
 
-void TileInfo::MoveSouth() noexcept {
+bool TileInfo::MoveSouth() noexcept {
     if(layer == nullptr) {
-        return;
+        return false;
     }
     if(const auto* tile = layer->GetTile(index); tile != nullptr) {
         if(tile = tile->GetSouthNeighbor(); tile != nullptr) {
             index = tile->GetIndexFromCoords();
+            return true;
         }
     }
+    return false;
 }
 
 TileInfo TileInfo::GetNorthNeighbor() const noexcept {

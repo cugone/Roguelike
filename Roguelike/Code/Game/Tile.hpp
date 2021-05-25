@@ -156,10 +156,10 @@ public:
     void ClearSolid() noexcept;
     void SetSolid() noexcept;
 
-    void MoveEast() noexcept;
-    void MoveWest() noexcept;
-    void MoveNorth() noexcept;
-    void MoveSouth() noexcept;
+    bool MoveEast() noexcept;
+    bool MoveWest() noexcept;
+    bool MoveNorth() noexcept;
+    bool MoveSouth() noexcept;
 
     TileInfo GetNorthNeighbor() const noexcept;
     TileInfo GetSouthNeighbor() const noexcept;
