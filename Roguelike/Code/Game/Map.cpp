@@ -407,19 +407,19 @@ void Map::CalculateLighting(Layer* layer) noexcept {
             bi.index = layer->GetTileIndex(x, y);
             bi.layer = layer;
             auto n = bi.GetNorthNeighbor();
-            if(n.layer /*&& n.IsSky() == false*/ && n.IsOpaque() == false) {
+            if(n.layer && n.IsSky() == false && n.IsOpaque() == false) {
                 DirtyTileLight(n);
             }
             auto e = bi.GetEastNeighbor();
-            if(e.layer /*&& e.IsSky() == false*/ && e.IsOpaque() == false) {
+            if(e.layer && e.IsSky() == false && e.IsOpaque() == false) {
                 DirtyTileLight(e);
             }
             auto s = bi.GetSouthNeighbor();
-            if(s.layer /*&& s.IsSky() == false*/ && s.IsOpaque() == false) {
+            if(s.layer && s.IsSky() == false && s.IsOpaque() == false) {
                 DirtyTileLight(s);
             }
             auto w = bi.GetWestNeighbor();
-            if(w.layer /*&& w.IsSky() == false*/ && w.IsOpaque() == false) {
+            if(w.layer && w.IsSky() == false && w.IsOpaque() == false) {
                 DirtyTileLight(w);
             }
         }
