@@ -427,11 +427,10 @@ void Map::CalculateLighting(Layer* layer) noexcept {
 }
 
 void Map::DirtyTileLight(TileInfo& ti) noexcept {
-    if(ti.IsLightDirty()) {
-        return;
+    if(!ti.IsLightDirty()) {
+        _lightingQueue.push(ti);
+        ti.SetLightDirty();
     }
-    _lightingQueue.push(ti);
-    ti.SetLightDirty();
 }
 
 
