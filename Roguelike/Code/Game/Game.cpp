@@ -1540,6 +1540,15 @@ void Game::ShowTileInspectorStatsTableUI(const TileDefinition* cur_def, const Ti
             TileInfo ti{cur_tile->layer, cur_tile->GetIndexFromCoords()};
             ImGui::Text((ti.IsAtEdge() ? "true" : "false"));
         }
+        {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::Text("Is Sky:");
+            ImGui::TableNextColumn();
+            TileInfo ti{cur_tile->layer, cur_tile->GetIndexFromCoords()};
+            ImGui::Text((ti.IsSky() ? "true" : "false"));
+        }
+
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
         ImGui::Text("Visible:");
