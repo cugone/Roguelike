@@ -716,12 +716,12 @@ TileInfo TileInfo::GetWestNeighbor() const noexcept {
 
 uint32_t TileInfo::GetLightValue() const noexcept {
     if(layer == nullptr) {
-        return 0;
+        return uint32_t{0u};
     }
     if(auto* tile = layer->GetTile(index); tile != nullptr) {
         return tile->GetLightValue();
     } else {
-        return 0;
+        return uint32_t{0u};
     }
 }
 
@@ -739,14 +739,14 @@ void TileInfo::SetLightValue(uint32_t newValue) noexcept {
 
 uint32_t TileInfo::GetSelfIlluminationValue() const noexcept {
     if(layer == nullptr) {
-        return 0;
+        return uint32_t{0u};
     }
     if(auto* tile = layer->GetTile(index); tile != nullptr) {
         if(const auto* def = TileDefinition::GetTileDefinitionByName(tile->GetType()); def != nullptr) {
             return def->light;
         }
     }
-    return 0;
+    return uint32_t{0u};
 }
 
 uint32_t TileInfo::GetMaxLightValueFromNeighbors() const noexcept {
