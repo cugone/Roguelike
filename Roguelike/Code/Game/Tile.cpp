@@ -782,7 +782,7 @@ bool TileInfo::IsAtEdge() const noexcept {
         const auto w = TileInfo{*this}.MoveWest();
         const auto n = TileInfo{*this}.MoveNorth();
         const auto s = TileInfo{*this}.MoveSouth();
-        return e && w && n && s;
+        return !(e && w && n && s);
     }();
     return value;
 }
