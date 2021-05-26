@@ -1231,39 +1231,6 @@ void Game::ShowEffectsDebuggerUI() {
     }
 }
 
-void Game::ShowTextEntityDebuggerUI() {
-    if(const auto& textEntities = _adventure->currentMap->GetTextEntities(); ImGui::BeginTable("TextEntityDebuggerTableEntities", 6, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit)) {
-        ImGui::TableSetupColumn("Text", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Color", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Position", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Speed", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("TTL", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Font", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableHeadersRow();
-        if(!textEntities.empty()) {
-            for(const auto* e : textEntities) {
-                if(e == nullptr) {
-                    continue;
-                }
-                ImGui::TableNextRow(0, 20.0f);
-                ImGui::TableNextColumn();
-                ImGui::Text(e->text.c_str());
-                ImGui::TableNextColumn();
-                ImGui::Text(StringUtils::to_string(e->color).c_str());
-                ImGui::TableNextColumn();
-                ImGui::Text(StringUtils::to_string(e->GetScreenPosition()).c_str());
-                ImGui::TableNextColumn();
-                ImGui::Text(std::to_string(e->speed).c_str());
-                ImGui::TableNextColumn();
-                ImGui::Text(std::to_string(e->ttl.count()).c_str());
-                ImGui::TableNextColumn();
-                ImGui::Text(e->font->GetName().c_str());
-            }
-        }
-        ImGui::EndTable();
-    }
-}
-
 void Game::ShowEffectsUI() {
     static std::string current_item = "None";
     if(ImGui::BeginCombo("Shader Effect", current_item.c_str())) {
