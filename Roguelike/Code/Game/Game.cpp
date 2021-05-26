@@ -49,7 +49,6 @@ Game::Game()
     , _show_world_bounds{0}
     , _show_camera_bounds{0}
     , _show_tile_debugger{0}
-    , _show_effects_debugger{0}
     , _show_entity_debugger{0}
     , _show_feature_debugger{0}
     , _show_all_entities{0}
@@ -1207,27 +1206,30 @@ void Game::HandleDebugMouseInput() {
 void Game::ShowDebugUI() {
     ImGui::SetNextWindowSize(Vector2{550.0f, 500.0f}, ImGuiCond_Always);
     if(ImGui::Begin("Debugger", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ShowFrameInspectorUI();
-        ShowWorldInspectorUI();
-        ShowEffectsDebuggerUI();
-        ShowTileDebuggerUI();
-        ShowEntityDebuggerUI();
-        ShowFeatureDebuggerUI();
+        if(ImGui::BeginTabBar("Debugger", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton | ImGuiTabBarFlags_FittingPolicyScroll)) {
+            ShowFrameInspectorUI();
+            ShowWorldInspectorUI();
+            ShowEffectsDebuggerUI();
+            ShowTileDebuggerUI();
+            ShowEntityDebuggerUI();
+            ShowFeatureDebuggerUI();
+            ImGui::EndTabBar();
+        }
     }
     ImGui::End();
 }
 
 void Game::ShowTileDebuggerUI() {
-    _show_tile_debugger = ImGui::CollapsingHeader("Tile");
-    if(_show_tile_debugger) {
+    if(_show_tile_debugger = ImGui::BeginTabItem("Tile", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | ImGuiTabItemFlags_NoReorder); _show_tile_debugger) {
         ShowTileInspectorUI();
+        ImGui::EndTabItem();
     }
 }
 
 void Game::ShowEffectsDebuggerUI() {
-    _show_effects_debugger = ImGui::CollapsingHeader("Effects");
-    if(_show_effects_debugger) {
+    if(ImGui::BeginTabItem("Effects", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | ImGuiTabItemFlags_NoReorder)) {
         ShowEffectsUI();
+        ImGui::EndTabItem();
     }
 }
 
@@ -1317,16 +1319,16 @@ void Game::ShowEffectsUI() {
 }
 
 void Game::ShowEntityDebuggerUI() {
-    _show_entity_debugger = ImGui::CollapsingHeader("Entity");
-    if(_show_entity_debugger) {
+    if(_show_entity_debugger = ImGui::BeginTabItem("Entity", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | ImGuiTabItemFlags_NoReorder); _show_entity_debugger) {
         ShowEntityInspectorUI();
+        ImGui::EndTabItem();
     }
 }
 
 void Game::ShowFeatureDebuggerUI() {
-    _show_feature_debugger = ImGui::CollapsingHeader("Feature");
-    if(_show_feature_debugger) {
+    if(_show_feature_debugger = ImGui::BeginTabItem("Feature", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | ImGuiTabItemFlags_NoReorder); _show_feature_debugger) {
         ShowFeatureInspectorUI();
+        ImGui::EndTabItem();
     }
 }
 
@@ -1335,7 +1337,7 @@ void Game::ShowFrameInspectorUI() {
     static std::array<float, max_histogram_count> histogram{};
     static std::size_t histogramIndex = 0;
     static const std::string histogramLabel = "Last " + std::to_string(max_histogram_count) + " Frames";
-    if(ImGui::CollapsingHeader("Frame Data")) {
+    if(ImGui::BeginTabItem("Frame Data", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | ImGuiTabItemFlags_NoReorder)) {
         const auto frameTime = g_theRenderer->GetGameFrameTime().count();
         histogram[histogramIndex++] = frameTime;
         ImGui::Text("FPS: %0.1f", 1.0f / frameTime);
@@ -1348,12 +1350,13 @@ void Game::ShowFrameInspectorUI() {
         if(ImGui::Button("Take Screenshot")) {
             RequestScreenShot();
         }
+        ImGui::EndTabItem();
     }
     histogramIndex %= max_histogram_count;
 }
 
 void Game::ShowWorldInspectorUI() {
-    if(ImGui::CollapsingHeader("World")) {
+    if(ImGui::BeginTabItem("World", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | ImGuiTabItemFlags_NoReorder)) {
         ImGui::Text("View height: %.0f", _adventure->currentMap->cameraController.GetCamera().GetViewHeight());
         ImGui::Text("Camera: [%.1f,%.1f]", _adventure->currentMap->cameraController.GetCamera().position.x, _adventure->currentMap->cameraController.GetCamera().position.y);
         ImGui::Text("Tiles in view: %llu", _adventure->currentMap->DebugTilesInViewCount());
@@ -1384,6 +1387,7 @@ void Game::ShowWorldInspectorUI() {
         ImGui::Checkbox("Show raycasts", &show_raycasts);
         _show_raycasts = show_raycasts;
         _debug_render = _show_room_bounds || _show_camera || _show_grid || _show_world_bounds || _show_camera_bounds || _show_all_entities || _show_raycasts;
+        ImGui::EndTabItem();
     }
 }
 

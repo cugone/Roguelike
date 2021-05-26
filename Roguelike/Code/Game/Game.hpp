@@ -223,7 +223,6 @@ private:
     uint8_t _show_world_bounds : 1;
     uint8_t _show_camera_bounds : 1;
     uint8_t _show_tile_debugger : 1;
-    uint8_t _show_effects_debugger : 1;
     uint8_t _show_entity_debugger : 1;
     uint8_t _show_feature_debugger : 1;
     uint8_t _show_all_entities : 1;
