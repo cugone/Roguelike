@@ -20,6 +20,26 @@ Feature* Feature::CreateFeature(Map* map, const XMLElement& elem) {
     return nullptr;
 }
 
+FeatureInstance Feature::CreateInstanceFromFeature(Feature* feature) noexcept {
+    return CreateInstanceFromFeatureAt(feature, IntVector2::ZERO);
+}
+
+FeatureInstance Feature::CreateInstanceFromFeatureAt(Feature* feature, const IntVector2& position) noexcept {
+    if(feature == nullptr) {
+        return {};
+    }
+    if(const auto layer = feature->layer; layer != nullptr) {
+        const auto tileCount = feature->layer->tileDimensions.x * feature->layer->tileDimensions.y;
+        if(const auto index = feature->layer->GetTileIndex(position.x, position.y); index >= tileCount) {
+            return {};
+        }
+        FeatureInstance inst{};
+        inst.feature = feature;
+        inst.layer = feature->layer;
+    }
+    return {};
+}
+
 void Feature::ClearFeatureRegistry() {
     s_registry.clear();
 }
@@ -50,6 +70,7 @@ Feature::Feature(Map* map, const XMLElement& elem) noexcept
     OnFight.Subscribe_method(this, &Feature::ResolveAttack);
 }
 
+//TODO: Refactor for instancing
 bool Feature::LoadFromXml(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "feature", "", "name", "state", "position,initialState");
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
@@ -145,6 +166,20 @@ void Feature::AddVerts() noexcept {
     AddVertsForSelf();
 }
 
+FeatureInstance Feature::CreateInstance() const noexcept {
+    return CreateInstanceAt(GetPosition());
+}
+
+FeatureInstance Feature::CreateInstanceAt(const IntVector2& position) const noexcept {
+    FeatureInstance inst{};
+    inst.feature = this;
+    inst.layer = layer;
+    inst.index = layer->GetTileIndex(position.x, position.y);
+    //inst.states.push_back();
+    inst.current_state = std::begin(inst.states);
+    return inst;
+}
+
 void Feature::AddVertsForSelf() noexcept {
     if(!sprite || IsInvisible()) {
         return;
@@ -206,3 +241,25 @@ void Feature::AddVertsForSelf() noexcept {
 void Feature::CalculateLightValue() noexcept {
     SetLightValue(_light_value);
 }
+
+Tile* FeatureInstance::GetParentTile() const noexcept {
+    if(layer || feature) {
+        return nullptr;
+    }
+    return layer->GetTile(index);
+}
+
+void FeatureInstance::AddState() noexcept {
+    /* DO NOTHING */
+}
+
+void FeatureInstance::SetState(std::vector<std::string>::iterator iterator) noexcept {
+    current_state = iterator;
+}
+
+void FeatureInstance::SetStatebyName(const std::string& name) noexcept {
+    if(auto found = std::find(std::begin(states), std::end(states), name); found != std::end(states)) {
+        SetState(found);
+    }
+}
+

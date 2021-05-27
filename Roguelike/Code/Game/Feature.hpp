@@ -6,6 +6,29 @@
 #include <vector>
 
 class TileDefinition;
+class Feature;
+class Map;
+class Layer;
+class Tile;
+
+class FeatureInstance {
+public:
+    Tile* GetParentTile() const noexcept;
+
+    void AddState() noexcept;
+    void SetState(std::vector<std::string>::iterator iterator) noexcept;
+    void SetStatebyName(const std::string& name) noexcept;
+
+    Layer* layer{};
+    const Feature* feature{};
+    std::size_t index{};
+private:
+    std::vector<std::string> states{};
+    decltype(states)::iterator current_state{};
+
+    friend class Feature;
+};
+
 
 class Feature : public Entity {
 public:
@@ -17,6 +40,8 @@ public:
     virtual ~Feature() = default;
 
     static Feature* CreateFeature(Map* map, const XMLElement& elem);
+    static FeatureInstance CreateInstanceFromFeature(Feature* feature) noexcept;
+    static FeatureInstance CreateInstanceFromFeatureAt(Feature* feature, const IntVector2& position) noexcept;
     static void ClearFeatureRegistry();
 
     static Feature* GetFeatureByName(const std::string& name);
@@ -37,6 +62,9 @@ public:
     void AddVerts() noexcept override;
 
     Tile* parent_tile{};
+
+    FeatureInstance CreateInstance() const noexcept;
+    FeatureInstance CreateInstanceAt(const IntVector2& position) const noexcept;
 
 protected:
     virtual void ResolveAttack(Entity& attacker, Entity& defender) override;
