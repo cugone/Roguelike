@@ -1,12 +1,12 @@
 <tileDefinitions>
     <spritesheet src="Data/Images/Tileset.png" dimensions="[65,65]" />
-    <tileDefinition name="white_circle" index="[51,34]">
+    <tileDefinition name="white_circle" index="[56,34]">
         <glyph value=" " />
     </tileDefinition>
-    <tileDefinition name="white" index="[52,34]">
+    <tileDefinition name="white" index="[57,34]">
         <glyph value=" " />
     </tileDefinition>
-    <tileDefinition name="blue" index="[53,34]">
+    <tileDefinition name="blue" index="[58,34]">
         <glyph value=" " />
     </tileDefinition>
     <tileDefinition name="void" index="[64,64]">
@@ -14,7 +14,7 @@
         <invisible />
         <allowDiagonalMovement />
     </tileDefinition>
-    <tileDefinition name="wall" index="[52,13]">
+    <tileDefinition name="wall" index="[57,13]">
         <glyph value="#" />
         <opaque />
         <solid />
@@ -56,15 +56,15 @@
         <glyph value="^" />
         <allowDiagonalMovement />
     </tileDefinition>
-    <tileDefinition name="water.cyan" index="[54,16]">
+    <tileDefinition name="water.cyan" index="[59,16]">
         <glyph value="~" />
         <solid />
         <allowDiagonalMovement />
         <animation name="watercyanflow">
-            <animationset startindex="[54,16]" framelength="12" duration="6.0" loop="true" />
+            <animationset startindex="[59,16]" framelength="12" duration="6.0" loop="true" />
         </animation>
     </tileDefinition>
-    <tileDefinition name="ladderUp" index="[16,29]">
+    <tileDefinition name="ladderUp" index="[21,29]">
         <glyph value="/" />
         <allowDiagonalMovement />
         <entrance />
@@ -92,13 +92,23 @@
         </animation>
         <light value="15" />
     </tileDefinition>
-    <tileDefinition name="dirt" index="[32,2]">
+    <tileDefinition name="dirt" index="[37,2]">
         <glyph value="_" />
         <allowDiagonalMovement />
     </tileDefinition>
-    <tileDefinition name="torch" index="[34,60]">
+    <tileDefinition name="torch.unlit" index="[24,13]">
+        <glyph value="," />
+        <allowDiagonalMovement />
+        <light value="0" />
+        <selflight value="0" />
+    </tileDefinition>
+    <tileDefinition name="torch.lit" index="[25,13]">
         <glyph value=";" />
         <allowDiagonalMovement />
         <light value="4" />
+        <selflight value="15" />
+        <animation name="torchlit">
+            <animationset startindex="[25,13]" framelength="4" duration="0.33" loop="true" />
+        </animation>
     </tileDefinition>
 </tileDefinitions>
