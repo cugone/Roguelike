@@ -116,7 +116,6 @@ TileDefinition::TileDefinition(Renderer& renderer, const XMLElement& elem, std::
     GUARANTEE_OR_DIE(LoadFromXml(elem), "TileDefinition failed to load.\n");
 }
 
-//TODO: Fix extraneous leading space
 bool TileDefinition::LoadFromXml(const XMLElement& elem) {
 
     DataUtils::ValidateXmlElement(elem, "tileDefinition", "glyph", "name,index", "opaque,solid,visible,invisible,allowDiagonalMovement,animation,offset,entrance,exit,light,selflight");
