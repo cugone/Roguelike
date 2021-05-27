@@ -55,8 +55,8 @@ HeightMapGenerator::HeightMapGenerator(Map* map, const XMLElement& elem) noexcep
 
 void HeightMapGenerator::Generate() {
     DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "glyph", "type,src");
-    const auto xml_src = DataUtils::ParseXmlAttribute(_xml_element, "src", "");
-    Image img(std::filesystem::path{xml_src});
+    const auto src = DataUtils::ParseXmlAttribute(_xml_element, "src", "");
+    Image img(std::filesystem::path{src});
     const auto width = img.GetDimensions().x;
     const auto height = img.GetDimensions().y;
     _map->_layers.emplace_back(std::make_unique<Layer>(_map, img));
