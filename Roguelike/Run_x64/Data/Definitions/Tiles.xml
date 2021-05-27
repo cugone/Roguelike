@@ -91,6 +91,7 @@
             <animationset startindex="[17,0]" framelength="3" duration="0.33" loop="true" />
         </animation>
         <light value="15" />
+        <selflight value="15" />
     </tileDefinition>
     <tileDefinition name="dirt" index="[37,2]">
         <glyph value="_" />
@@ -106,7 +107,7 @@
         <glyph value=";" />
         <allowDiagonalMovement />
         <light value="4" />
-        <selflight value="15" />
+        <selflight value="4" />
         <animation name="torchlit">
             <animationset startindex="[25,13]" framelength="4" duration="0.33" loop="true" />
         </animation>

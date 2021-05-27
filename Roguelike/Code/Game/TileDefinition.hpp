@@ -39,6 +39,7 @@ public:
     bool allow_diagonal_movement = true;
     char glyph = ' ';
     uint32_t light{};
+    uint32_t self_illumination{};
     std::string name{};
     int frame_length = 0;
 
