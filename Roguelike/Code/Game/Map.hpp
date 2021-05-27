@@ -290,10 +290,10 @@ public:
     void ResetTileMaterial();
     std::size_t GetLayerCount() const;
     Layer* GetLayer(std::size_t index) const;
-    std::vector<Tile*> GetTiles(const IntVector2& location) const;
-    std::vector<Tile*> GetTiles(int x, int y) const;
-    std::vector<Tile*> PickTilesFromWorldCoords(const Vector2& worldCoords) const;
-    std::vector<Tile*> PickTilesFromMouseCoords(const Vector2& mouseCoords) const;
+    std::optional<std::vector<Tile*>> GetTiles(const IntVector2& location) const;
+    std::optional<std::vector<Tile*>> GetTiles(int x, int y) const;
+    std::optional<std::vector<Tile*>> PickTilesFromWorldCoords(const Vector2& worldCoords) const;
+    std::optional<std::vector<Tile*>> PickTilesFromMouseCoords(const Vector2& mouseCoords) const;
     Vector2 WorldCoordsToScreenCoords(const Vector2& worldCoords) const;
     Vector2 ScreenCoordsToWorldCoords(const Vector2& screenCoords) const;
     IntVector2 TileCoordsFromWorldCoords(const Vector2& worldCoords) const;

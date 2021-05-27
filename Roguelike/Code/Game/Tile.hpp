@@ -107,15 +107,15 @@ public:
 
     uint32_t GetMaxLightValueFromNeighbors() const noexcept;
 
-    std::vector<Tile*> GetNeighbors(const IntVector2& direction) const;
-    std::vector<Tile*> GetNorthNeighbors() const;
-    std::vector<Tile*> GetNorthEastNeighbors() const;
-    std::vector<Tile*> GetEastNeighbors() const;
-    std::vector<Tile*> GetSouthEastNeighbors() const;
-    std::vector<Tile*> GetSouthNeighbors() const;
-    std::vector<Tile*> GetSouthWestNeighbors() const;
-    std::vector<Tile*> GetWestNeighbors() const;
-    std::vector<Tile*> GetNorthWestNeighbors() const;
+    std::optional<std::vector<Tile*>> GetNeighbors(const IntVector2& direction) const;
+    std::optional<std::vector<Tile*>> GetNorthNeighbors() const;
+    std::optional<std::vector<Tile*>> GetNorthEastNeighbors() const;
+    std::optional<std::vector<Tile*>> GetEastNeighbors() const;
+    std::optional<std::vector<Tile*>> GetSouthEastNeighbors() const;
+    std::optional<std::vector<Tile*>> GetSouthNeighbors() const;
+    std::optional<std::vector<Tile*>> GetSouthWestNeighbors() const;
+    std::optional<std::vector<Tile*>> GetWestNeighbors() const;
+    std::optional<std::vector<Tile*>> GetNorthWestNeighbors() const;
 
     Entity* GetEntity() const noexcept;
     void SetEntity(Entity* e) noexcept;

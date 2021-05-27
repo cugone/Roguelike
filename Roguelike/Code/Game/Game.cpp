@@ -1061,18 +1061,18 @@ void Game::HandleDebugMouseInput() {
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::LButton)) {
         const auto& picked_tiles = DebugGetTilesFromCursor();
-        _debug_has_picked_tile_with_click = _show_tile_debugger && !picked_tiles.empty();
-        _debug_has_picked_entity_with_click = _show_entity_debugger && !picked_tiles.empty();
-        _debug_has_picked_feature_with_click = _show_feature_debugger && !picked_tiles.empty();
+        _debug_has_picked_tile_with_click = _show_tile_debugger && picked_tiles.has_value();
+        _debug_has_picked_entity_with_click = _show_entity_debugger && picked_tiles.has_value();
+        _debug_has_picked_feature_with_click = _show_feature_debugger && picked_tiles.has_value();
         if(_debug_has_picked_tile_with_click) {
-            _debug_inspected_tiles = picked_tiles;
+            _debug_inspected_tiles = (*picked_tiles);
         }
         if(_debug_has_picked_entity_with_click) {
-            _debug_inspected_entity = picked_tiles[0]->actor;
+            _debug_inspected_entity = (*picked_tiles)[0]->actor;
             _debug_has_picked_entity_with_click = _debug_inspected_entity != nullptr;
         }
         if(_debug_has_picked_feature_with_click) {
-            _debug_inspected_feature = picked_tiles[0]->feature;
+            _debug_inspected_feature = (*picked_tiles)[0]->feature;
             _debug_has_picked_feature_with_click = _debug_inspected_feature != nullptr;
         }
     }
@@ -1280,80 +1280,84 @@ void Game::ShowWorldInspectorUI() {
 }
 
 void Game::ShowTileInspectorUI() {
-    const auto& picked_tiles = DebugGetTilesFromCursor();
-    bool has_tile = !picked_tiles.empty();
-    bool has_selected_tile = _debug_has_picked_tile_with_click && !_debug_inspected_tiles.empty();
-    bool shouldnt_show_inspector = !(has_tile || has_selected_tile);
-    if(shouldnt_show_inspector) {
-        ImGui::Text("Tile Inspector: None");
+    if(const auto& picked_tiles = DebugGetTilesFromCursor(); !picked_tiles.has_value()) {
+        ImGui::Text("Tile Inspector: Invalid Tiles");
         return;
-    }
-    ImGui::Text("Tile Inspector");
-    ImGui::SameLine();
-    if(ImGui::Button("Unlock Tile")) {
-        _debug_has_picked_tile_with_click = false;
-        _debug_inspected_tiles.clear();
-    }
-    const auto max_layers = std::size_t{9u};
-    const auto tiles_per_row = std::size_t{3u};
-    const auto tiles_per_col = std::size_t{3u};
-    const auto debugger_window_content_region_width = ImGui::GetWindowContentRegionWidth();
-    const auto debugger_window_width = ImGui::GetWindowWidth();
-    //TODO: Get Centering working. Not currently in API.
-    ImGui::SetNextItemWidth(debugger_window_content_region_width * 0.5f);
-    if(ImGui::BeginTable("TileInspectorTable", tiles_per_col, ImGuiTableFlags_Borders | ImGuiTableFlags_SizingFixedSame | ImGuiTableFlags_NoHostExtendX )) {
-        ImGui::TableSetupColumn("TileInspectorTableLeftColumn", ImGuiTableColumnFlags_WidthFixed, 100.0f);
-        ImGui::TableSetupColumn("TileInspectorTableCenterColumn", ImGuiTableColumnFlags_WidthFixed, 100.0f);
-        ImGui::TableSetupColumn("TileInspectorTableRightColumn", ImGuiTableColumnFlags_WidthFixed, 100.0f);
-        if(_debug_has_picked_tile_with_click) {
-            for(auto row = std::size_t{0u}; row != tiles_per_row; ++row) {
-                ImGui::TableNextRow(ImGuiTableRowFlags_None, 100.0f);
-                for(auto col = std::size_t{0u}; col != tiles_per_col; ++col) {
-                    ImGui::TableSetColumnIndex(static_cast<int>(col));
-                    const auto index = row * tiles_per_col + col;
-                    if(index >= _debug_inspected_tiles.size()) {
-                        continue;
-                    }
-                    if(const auto* cur_tile = _debug_inspected_tiles[index]; cur_tile == nullptr) {
-                        continue;
-                    } else {
-                        const auto* cur_def = TileDefinition::GetTileDefinitionByName(cur_tile->GetType());
-                        if(cur_def == nullptr) {
-                            cur_def = TileDefinition::GetTileDefinitionByName("void");
+    } else {
+        bool has_tile = !picked_tiles->empty();
+        bool has_selected_tile = _debug_has_picked_tile_with_click && !_debug_inspected_tiles.empty();
+        bool shouldnt_show_inspector = !(has_tile || has_selected_tile);
+        if(shouldnt_show_inspector) {
+            ImGui::Text("Tile Inspector: None");
+            return;
+        }
+        ImGui::Text("Tile Inspector");
+        ImGui::SameLine();
+        if(ImGui::Button("Unlock Tile")) {
+            _debug_has_picked_tile_with_click = false;
+            _debug_inspected_tiles.clear();
+        }
+        const auto max_layers = std::size_t{9u};
+        const auto tiles_per_row = std::size_t{3u};
+        const auto tiles_per_col = std::size_t{3u};
+        const auto debugger_window_content_region_width = ImGui::GetWindowContentRegionWidth();
+        const auto debugger_window_width = ImGui::GetWindowWidth();
+        //TODO: Get Centering working. Not currently in API.
+        ImGui::SetNextItemWidth(debugger_window_content_region_width * 0.5f);
+        if(ImGui::BeginTable("TileInspectorTable", tiles_per_col, ImGuiTableFlags_Borders | ImGuiTableFlags_SizingFixedSame | ImGuiTableFlags_NoHostExtendX)) {
+            ImGui::TableSetupColumn("TileInspectorTableLeftColumn", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+            ImGui::TableSetupColumn("TileInspectorTableCenterColumn", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+            ImGui::TableSetupColumn("TileInspectorTableRightColumn", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+            if(_debug_has_picked_tile_with_click) {
+                for(auto row = std::size_t{0u}; row != tiles_per_row; ++row) {
+                    ImGui::TableNextRow(ImGuiTableRowFlags_None, 100.0f);
+                    for(auto col = std::size_t{0u}; col != tiles_per_col; ++col) {
+                        ImGui::TableSetColumnIndex(static_cast<int>(col));
+                        const auto index = row * tiles_per_col + col;
+                        if(index >= _debug_inspected_tiles.size()) {
+                            continue;
                         }
-                        if(const auto* cur_sprite = cur_def->GetSprite()) {
-                            const auto tex_coords = cur_sprite->GetCurrentTexCoords();
-                            const auto dims = Vector2::ONE * 100.0f;
-                            ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
-                            if(ImGui::IsItemHovered()) {
-                                ImGui::BeginTooltip();
-                                ShowTileInspectorStatsTableUI(cur_def, cur_tile);
-                                ImGui::EndTooltip();
+                        if(const auto* cur_tile = _debug_inspected_tiles[index]; cur_tile == nullptr) {
+                            continue;
+                        } else {
+                            const auto* cur_def = TileDefinition::GetTileDefinitionByName(cur_tile->GetType());
+                            if(cur_def == nullptr) {
+                                cur_def = TileDefinition::GetTileDefinitionByName("void");
+                            }
+                            if(const auto* cur_sprite = cur_def->GetSprite()) {
+                                const auto tex_coords = cur_sprite->GetCurrentTexCoords();
+                                const auto dims = Vector2::ONE * 100.0f;
+                                ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                                if(ImGui::IsItemHovered()) {
+                                    ImGui::BeginTooltip();
+                                    ShowTileInspectorStatsTableUI(cur_def, cur_tile);
+                                    ImGui::EndTooltip();
+                                }
                             }
                         }
                     }
                 }
-            }
-        } else {
-            for(auto row = std::size_t{0u}; row != tiles_per_row; ++row) {
-                ImGui::TableNextRow(ImGuiTableRowFlags_None, 100.0f);
-                for(auto col = std::size_t{0u}; col != tiles_per_col; ++col) {
-                    ImGui::TableSetColumnIndex(static_cast<int>(col));
-                    const auto index = row * tiles_per_col + col;
-                    if(index >= picked_tiles.size()) {
-                        continue;
-                    }
-                    const auto* cur_tile = picked_tiles[index];
-                    const auto* cur_def = cur_tile ? TileDefinition::GetTileDefinitionByName(cur_tile->GetType()) : TileDefinition::GetTileDefinitionByName("void");
-                    if(const auto* cur_sprite = cur_def->GetSprite()) {
-                        const auto tex_coords = cur_sprite->GetCurrentTexCoords();
-                        const auto dims = Vector2::ONE * 100.0f;
-                        ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+            } else {
+                for(auto row = std::size_t{0u}; row != tiles_per_row; ++row) {
+                    ImGui::TableNextRow(ImGuiTableRowFlags_None, 100.0f);
+                    for(auto col = std::size_t{0u}; col != tiles_per_col; ++col) {
+                        ImGui::TableSetColumnIndex(static_cast<int>(col));
+                        const auto index = row * tiles_per_col + col;
+                        if(index >= picked_tiles->size()) {
+                            continue;
+                        }
+                        const auto* cur_tile = (*picked_tiles)[index];
+                        const auto* cur_def = cur_tile ? TileDefinition::GetTileDefinitionByName(cur_tile->GetType()) : TileDefinition::GetTileDefinitionByName("void");
+                        if(const auto* cur_sprite = cur_def->GetSprite()) {
+                            const auto tex_coords = cur_sprite->GetCurrentTexCoords();
+                            const auto dims = Vector2::ONE * 100.0f;
+                            ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                        }
                     }
                 }
             }
+            ImGui::EndTable();
         }
-        ImGui::EndTable();
     }
 }
 
@@ -1467,20 +1471,19 @@ void Game::ShowTileInspectorStatsTableUI(const TileDefinition* cur_def, const Ti
     }
 }
 
-std::vector<Tile*> Game::DebugGetTilesFromMouse() {
+std::optional<std::vector<Tile*>> Game::DebugGetTilesFromMouse() {
     if(g_theUISystem->WantsInputMouseCapture()) {
         return {};
     }
     const auto mouse_pos = g_theInputSystem->GetCursorWindowPosition(*g_theRenderer->GetOutput()->GetWindow());
     if(_debug_has_picked_tile_with_click) {
-        static std::vector<Tile*> picked_tiles{};
-        picked_tiles = _adventure->currentMap->PickTilesFromMouseCoords(mouse_pos);
-        if(picked_tiles.empty()) {
+        static std::optional<std::vector<Tile*>> picked_tiles{};
+        if(picked_tiles = _adventure->currentMap->PickTilesFromMouseCoords(mouse_pos); !picked_tiles.has_value()) {
             return {};
         }
-        auto* tile_actor = picked_tiles[0]->actor;
-        auto* tile_feature = picked_tiles[0]->feature;
-        bool tile_has_entity = !picked_tiles.empty() && (tile_actor || tile_feature);
+        auto* tile_actor = (*picked_tiles)[0]->actor;
+        auto* tile_feature = (*picked_tiles)[0]->feature;
+        bool tile_has_entity = tile_actor || tile_feature;
         if(tile_has_entity && _debug_has_picked_entity_with_click) {
             if(tile_actor) {
                 _debug_inspected_entity = tile_actor;
@@ -1493,19 +1496,18 @@ std::vector<Tile*> Game::DebugGetTilesFromMouse() {
     return _adventure->currentMap->PickTilesFromMouseCoords(mouse_pos);
 }
 
-std::vector<Tile*> Game::DebugGetTilesFromCursor() {
+std::optional<std::vector<Tile*>> Game::DebugGetTilesFromCursor() {
     if(!current_cursor) {
         return {};
     }
     if(_debug_has_picked_tile_with_click) {
-        static std::vector<Tile*> picked_tiles{};
-        picked_tiles = _adventure->currentMap->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});
-        if(picked_tiles.empty()) {
+        static std::optional<std::vector<Tile*>> picked_tiles{};
+        if(picked_tiles = _adventure->currentMap->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()}); !picked_tiles.has_value()) {
             return {};
         }
-        auto* tile_actor = picked_tiles[0]->actor;
-        auto* tile_feature = picked_tiles[0]->feature;
-        bool tile_has_entity = !picked_tiles.empty() && (tile_actor || tile_feature);
+        auto* tile_actor = (*picked_tiles)[0]->actor;
+        auto* tile_feature = (*picked_tiles)[0]->feature;
+        bool tile_has_entity = tile_actor || tile_feature;
         if(tile_has_entity && _debug_has_picked_entity_with_click) {
             if(tile_actor) {
                 _debug_inspected_entity = tile_actor;
@@ -1519,64 +1521,72 @@ std::vector<Tile*> Game::DebugGetTilesFromCursor() {
 }
 
 void Game::ShowEntityInspectorUI() {
-    const auto& picked_tiles = DebugGetTilesFromCursor();
-    const auto picked_count = picked_tiles.size();
-    bool has_entity = (picked_count > 0 && picked_tiles[0]->actor);
-    bool has_selected_entity = _debug_has_picked_entity_with_click && _debug_inspected_entity;
-    bool shouldnt_show_inspector = !has_entity && !has_selected_entity;
-    if(shouldnt_show_inspector) {
-        ImGui::Text("Entity Inspector: None");
+    if(const auto& picked_tiles = DebugGetTilesFromCursor(); !picked_tiles.has_value()) {
+        ImGui::Text("Entity Inspector: Invalid Tiles");
         return;
-    }
-    if(const auto* cur_entity = _debug_inspected_entity ? _debug_inspected_entity : picked_tiles[0]->actor) {
-        if(const auto* cur_sprite = cur_entity->sprite) {
-            ImGui::Text("Entity Inspector");
-            ImGui::SameLine();
-            if(ImGui::Button("Unlock Entity")) {
-                _debug_has_picked_entity_with_click = false;
-                _debug_inspected_entity = nullptr;
-            }
-            if(ImGui::BeginTable("EntityInspectorTable", 2, ImGuiTableFlags_Borders)) {
-                ImGui::TableSetupColumn("EntityInspectorTableEntityColumn");
-                ImGui::TableSetupColumn("EntityInspectorTableInventoryColumn");
-                //ImGui::TableHeadersRow(); //Commented out to hide header row.
-                ImGui::TableNextColumn();
-                ShowEntityInspectorEntityColumnUI(cur_entity, cur_sprite);
-                ImGui::TableNextColumn();
-                ShowEntityInspectorInventoryColumnUI(cur_entity);
-                ImGui::EndTable();
+    } else {
+        const auto picked_count = (*picked_tiles).size();
+        bool has_entity = (picked_count > 0 && (*picked_tiles)[0]->actor);
+        bool has_selected_entity = _debug_has_picked_entity_with_click && _debug_inspected_entity;
+        bool shouldnt_show_inspector = !has_entity && !has_selected_entity;
+        if(shouldnt_show_inspector) {
+            ImGui::Text("Entity Inspector: None");
+            return;
+        }
+        if(const auto* cur_entity = _debug_inspected_entity ? _debug_inspected_entity : (*picked_tiles)[0]->actor) {
+            if(const auto* cur_sprite = cur_entity->sprite) {
+                ImGui::Text("Entity Inspector");
+                ImGui::SameLine();
+                if(ImGui::Button("Unlock Entity")) {
+                    _debug_has_picked_entity_with_click = false;
+                    _debug_inspected_entity = nullptr;
+                }
+                if(ImGui::BeginTable("EntityInspectorTable", 2, ImGuiTableFlags_Borders)) {
+                    ImGui::TableSetupColumn("EntityInspectorTableEntityColumn");
+                    ImGui::TableSetupColumn("EntityInspectorTableInventoryColumn");
+                    //ImGui::TableHeadersRow(); //Commented out to hide header row.
+                    ImGui::TableNextColumn();
+                    ShowEntityInspectorEntityColumnUI(cur_entity, cur_sprite);
+                    ImGui::TableNextColumn();
+                    ShowEntityInspectorInventoryColumnUI(cur_entity);
+                    ImGui::EndTable();
+                }
             }
         }
     }
 }
 
 void Game::ShowFeatureInspectorUI() {
-    const auto& picked_tiles = DebugGetTilesFromCursor();
-    const auto picked_count = picked_tiles.size();
-    bool has_feature = (picked_count > 0 && picked_tiles[0]->feature);
-    bool has_selected_feature = _debug_has_picked_feature_with_click && _debug_inspected_feature;
-    bool shouldnt_show_inspector = !has_feature && !has_selected_feature;
-    if(shouldnt_show_inspector) {
-        ImGui::Text("Feature Inspector: None");
+    if(const auto& picked_tiles = DebugGetTilesFromCursor(); !picked_tiles.has_value()) {
+        ImGui::Text("Feature Inspector: Invalid Tiles");
         return;
-    }
-    if(const auto* cur_entity = _debug_inspected_feature ? _debug_inspected_feature : picked_tiles[0]->feature) {
-        if(const auto* cur_sprite = cur_entity->sprite) {
-            ImGui::Text("Feature Inspector");
-            ImGui::SameLine();
-            if(ImGui::Button("Unlock Feature")) {
-                _debug_has_picked_feature_with_click = false;
-                _debug_inspected_feature = nullptr;
-            }
-            const auto tex_coords = cur_sprite->GetCurrentTexCoords();
-            const auto dims = Vector2::ONE * 100.0f;
-            ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
-            if(const auto* actor = dynamic_cast<const Actor*>(cur_entity)) {
-                for(const auto& eq : actor->GetEquipment()) {
-                    if(eq) {
-                        const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
-                        ImGui::SameLine(8.0f);
-                        ImGui::Image(cur_sprite->GetTexture(), dims, eq_coords.mins, eq_coords.maxs, Rgba::White, Rgba::NoAlpha);
+    } else {
+        const auto picked_count = picked_tiles->size();
+        bool has_feature = (picked_count > 0 && (*picked_tiles)[0]->feature);
+        bool has_selected_feature = _debug_has_picked_feature_with_click && _debug_inspected_feature;
+        bool shouldnt_show_inspector = !has_feature && !has_selected_feature;
+        if(shouldnt_show_inspector) {
+            ImGui::Text("Feature Inspector: None");
+            return;
+        }
+        if(const auto* cur_entity = _debug_inspected_feature ? _debug_inspected_feature : (*picked_tiles)[0]->feature) {
+            if(const auto* cur_sprite = cur_entity->sprite) {
+                ImGui::Text("Feature Inspector");
+                ImGui::SameLine();
+                if(ImGui::Button("Unlock Feature")) {
+                    _debug_has_picked_feature_with_click = false;
+                    _debug_inspected_feature = nullptr;
+                }
+                const auto tex_coords = cur_sprite->GetCurrentTexCoords();
+                const auto dims = Vector2::ONE * 100.0f;
+                ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                if(const auto* actor = dynamic_cast<const Actor*>(cur_entity)) {
+                    for(const auto& eq : actor->GetEquipment()) {
+                        if(eq) {
+                            const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
+                            ImGui::SameLine(8.0f);
+                            ImGui::Image(cur_sprite->GetTexture(), dims, eq_coords.mins, eq_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                        }
                     }
                 }
             }

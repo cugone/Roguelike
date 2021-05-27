@@ -210,7 +210,7 @@ AABB2 Map::CalcCameraBounds() const {
     return bounds;
 }
 
-std::vector<Tile*> Map::PickTilesFromWorldCoords(const Vector2& worldCoords) const {
+std::optional<std::vector<Tile*>> Map::PickTilesFromWorldCoords(const Vector2& worldCoords) const {
     auto world_bounds = CalcWorldBounds();
     if(MathUtils::IsPointInside(world_bounds, worldCoords)) {
         return GetTiles(IntVector2{worldCoords});
@@ -226,7 +226,7 @@ Tile* Map::PickTileFromWorldCoords(const Vector2& worldCoords, int layerIndex) c
     return nullptr;
 }
 
-std::vector<Tile*> Map::PickTilesFromMouseCoords(const Vector2& mouseCoords) const {
+std::optional<std::vector<Tile*>> Map::PickTilesFromMouseCoords(const Vector2& mouseCoords) const {
     const auto& world_coords = _renderer.ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
     return PickTilesFromWorldCoords(world_coords);
 }
@@ -320,9 +320,9 @@ void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
 }
 
 void Map::UpdateCursor(TimeUtils::FPSeconds deltaSeconds) noexcept {
-    if(const auto& tiles = PickTilesFromMouseCoords(g_theInputSystem->GetMouseCoords()); !tiles.empty()) {
+    if(const auto& tiles = PickTilesFromMouseCoords(g_theInputSystem->GetMouseCoords()); tiles.has_value()) {
         if(g_theGame->current_cursor) {
-            g_theGame->current_cursor->SetCoords(tiles.back()->GetCoords());
+            g_theGame->current_cursor->SetCoords((*tiles).back()->GetCoords());
             g_theGame->current_cursor->Update(deltaSeconds);
         }
     }
@@ -1000,7 +1000,7 @@ Layer* Map::GetLayer(std::size_t index) const {
     return _layers[index].get();
 }
 
-std::vector<Tile*> Map::GetTiles(const IntVector2& location) const {
+std::optional<std::vector<Tile*>> Map::GetTiles(const IntVector2& location) const {
     return GetTiles(location.x, location.y);
 }
 
@@ -1008,8 +1008,7 @@ Tile* Map::GetTile(const IntVector3& locationAndLayerIndex) const {
     return GetTile(locationAndLayerIndex.x, locationAndLayerIndex.y, locationAndLayerIndex.z);
 }
 
-//TODO: std::optional return
-std::vector<Tile*> Map::GetTiles(int x, int y) const {
+std::optional<std::vector<Tile*>> Map::GetTiles(int x, int y) const {
     std::vector<Tile*> results{};
     for(auto i = std::size_t{0}; i < GetLayerCount(); ++i) {
         if(auto* cur_layer = GetLayer(i)) {
@@ -1017,10 +1016,9 @@ std::vector<Tile*> Map::GetTiles(int x, int y) const {
         }
     }
     if(std::all_of(std::begin(results), std::end(results), [](const Tile* t) { return t == nullptr; })) {
-        results.clear();
-        results.shrink_to_fit();
+        return {};
     }
-    return results;
+    return std::make_optional(results);
 }
 
 Tile* Map::GetTile(int x, int y, int z) const {
