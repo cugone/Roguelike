@@ -57,8 +57,6 @@ void HeightMapGenerator::Generate() {
     DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "glyph", "type,src");
     const auto src = DataUtils::ParseXmlAttribute(_xml_element, "src", "");
     Image img(std::filesystem::path{src});
-    const auto width = img.GetDimensions().x;
-    const auto height = img.GetDimensions().y;
     _map->_layers.emplace_back(std::make_unique<Layer>(_map, img));
     auto* layer = _map->_layers.back().get();
     for(auto& t : *layer) {
@@ -77,7 +75,6 @@ void HeightMapGenerator::Generate() {
         t.color = Rgba::White;
         t.layer = layer;
     }
-    //TODO: Implement multiple layers for height maps
     layer->z_index = 0;
 }
 
