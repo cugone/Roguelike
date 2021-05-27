@@ -248,7 +248,7 @@ bool Actor::Move(const IntVector2& direction) {
         const auto target_position = pos + direction;
         if(const auto test_tiles = map->GetTiles(target_position); test_tiles.has_value()) {
             for(const auto* t : *test_tiles) {
-                if(!t || (t && !t->IsPassable())) {
+                if(!t || !t->IsPassable()) {
                     return false;
                 }
             }
