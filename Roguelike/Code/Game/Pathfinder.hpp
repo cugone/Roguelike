@@ -29,7 +29,7 @@ public:
         bool visited = false;
     };
 
-    void Initialize(int width, int height) noexcept;
+    void Initialize(const IntVector2& dimensions) noexcept;
     const std::vector<const Pathfinder::Node*> GetResult() const noexcept;
     void ResetNavMap() noexcept;
 

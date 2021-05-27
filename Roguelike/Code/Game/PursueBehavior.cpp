@@ -34,10 +34,7 @@ void PursueBehavior::InitializePathfinding() {
     auto* target = GetTarget();
     if(target) {
         pather = target->map->GetPathfinder();
-        const auto dims = IntVector2{target->map->CalcMaxDimensions()};
-        const auto w = dims.x;
-        const auto h = dims.y;
-        pather->Initialize(w, h);
+        pather->Initialize(IntVector2{target->map->CalcMaxDimensions()});
     }
 }
 

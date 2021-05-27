@@ -1,18 +1,18 @@
 #include "Game/Pathfinder.hpp"
 
-void Pathfinder::Initialize(int width, int height) noexcept {
-    if(already_initialized && _dimensions == IntVector2{width, height}) {
+void Pathfinder::Initialize(const IntVector2& dimensions) noexcept {
+    if(already_initialized && _dimensions == dimensions) {
         return;
     }
-    _dimensions = IntVector2{width, height};
-    const auto area = width * height;
+    _dimensions = dimensions;
     _path.clear();
-    _navMap.resize(area);
-    for(auto x = 0; x < width; ++x) {
-        for(auto y = 0; y < height; ++y) {
-            auto* node = GetNode(IntVector2{x, y});
-            node->coords = IntVector2{x, y};
-            SetNeighbors(x, y);
+    _navMap.resize(static_cast<std::size_t>(_dimensions.x) * _dimensions.y);
+    for(auto x = 0; x != _dimensions.x; ++x) {
+        for(auto y = 0; y != _dimensions.y; ++y) {
+            if(auto* node = GetNode(IntVector2{x, y})) {
+                node->coords = IntVector2{x, y};
+                SetNeighbors(x, y);
+            }
         }
     }
     already_initialized = true;
@@ -26,7 +26,7 @@ void Pathfinder::ResetNavMap() noexcept {
     for(auto& node : _navMap) {
         node = Node{};
     }
-    Initialize(_dimensions.x, _dimensions.y);
+    Initialize(_dimensions);
 }
 
 const Pathfinder::Node* Pathfinder::GetNode(int x, int y) const noexcept {
