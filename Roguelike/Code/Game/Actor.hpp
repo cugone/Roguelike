@@ -51,8 +51,6 @@ public:
 
     virtual void SetPosition(const IntVector2& position) override;
 
-    float visibility = 7.0f;
-
     void SetBehavior(BehaviorID id);
     Behavior* GetCurrentBehavior() const noexcept;
 

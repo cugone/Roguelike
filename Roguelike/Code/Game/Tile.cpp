@@ -24,9 +24,6 @@ void Tile::AddVerts() const noexcept {
     if(actor) {
         actor->AddVerts();
     }
-    if(!canSee && haveSeen) {
-        //AddVertsForOverlay();
-    }
 }
 
 void Tile::ClearLightDirty() noexcept {
@@ -62,6 +59,15 @@ void Tile::ClearSolid() noexcept {
 void Tile::SetSolid() noexcept {
     _flags_coords_lightvalue &= ~tile_flags_solid_mask;
     _flags_coords_lightvalue |= tile_flags_solid_mask;
+}
+
+void Tile::ClearCanSee() noexcept {
+    _flags_coords_lightvalue &= ~tile_flags_can_see_mask;
+}
+
+void Tile::SetCanSee() noexcept {
+    _flags_coords_lightvalue &= ~tile_flags_can_see_mask;
+    _flags_coords_lightvalue |= tile_flags_can_see_mask;
 }
 
 void Tile::Update(TimeUtils::FPSeconds deltaSeconds) {
@@ -259,6 +265,10 @@ bool Tile::IsInvisible() const {
     return IsNotVisible();
 }
 
+bool Tile::CanSee() const noexcept {
+    return (_flags_coords_lightvalue & tile_flags_can_see_mask) == tile_flags_can_see_mask;
+}
+
 bool Tile::IsLightDirty() const {
     return (_flags_coords_lightvalue & tile_flags_dirty_light_mask) == tile_flags_dirty_light_mask;
 }
@@ -364,32 +374,6 @@ void Tile::SetFlags(uint32_t flags) noexcept {
     _flags_coords_lightvalue |= flags;
 }
 
-void Tile::CalculateLightValue() noexcept {
-    const auto max_neighbor_value = GetMaxLightValueFromNeighbors();
-    const auto neighbor_value = max_neighbor_value > uint32_t{0u} ? max_neighbor_value - uint32_t{1u} : uint32_t{0u};
-    const auto self_value = [this]() {
-        TileInfo info{};
-        info.layer = this->layer;
-        info.index = this->GetIndexFromCoords();
-        return info.GetSelfIlluminationValue();
-    }();
-    const auto feature_value = [this]() {
-        if(feature) {
-            feature->CalculateLightValue();
-            return feature->GetLightValue();
-        }
-        return uint32_t{0u};
-    }(); //IIIL
-    const auto actor_value = [this]() {
-        if(actor) {
-            actor->CalculateLightValue();
-            return actor->GetLightValue();
-        }
-        return uint32_t{0u};
-    }(); //IIIL
-    SetLightValue(std::clamp(g_current_global_light + neighbor_value + feature_value + actor_value, uint32_t{min_light_value}, uint32_t{max_light_value}));
-}
-
 uint32_t Tile::GetLightValue() const noexcept {
     return _flags_coords_lightvalue & tile_flags_light_mask;
 }
@@ -403,12 +387,16 @@ void Tile::IncrementLightValue(int value /*= 1*/) noexcept {
     int lv = GetLightValue();
     lv = std::clamp(lv + value, min_light_value, max_light_value);
     SetLightValue(lv);
+    DirtyLight();
+    layer->DirtyMesh();
 }
 
 void Tile::DecrementLightValue(int value /*= 1*/) noexcept {
     int lv = GetLightValue();
     lv = std::clamp(lv - value, min_light_value, max_light_value);
     SetLightValue(lv);
+    DirtyLight();
+    layer->DirtyMesh();
 }
 
 Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) const {
@@ -587,12 +575,18 @@ bool TileInfo::IsLightDirty() const noexcept {
 }
 
 void TileInfo::ClearLightDirty() noexcept {
+    if(layer) {
+        return;
+    }
     if(auto* tile = layer->GetTile(index)) {
         tile->ClearLightDirty();
     }
 }
 
 void TileInfo::SetLightDirty() noexcept {
+    if(layer) {
+        return;
+    }
     if(auto* tile = layer->GetTile(index)) {
         tile->SetLightDirty();
     }
@@ -602,19 +596,23 @@ bool TileInfo::IsOpaque() const noexcept {
     if(layer == nullptr) {
         return false;
     }
-    if(auto* tile = layer->GetTile(index)) {
-        return tile->IsOpaque();
-    }
-    return false;
+    auto* tile = layer->GetTile(index);
+    return tile && tile->IsOpaque();
 }
 
 void TileInfo::ClearOpaque() noexcept {
+    if(layer) {
+        return;
+    }
     if(auto* tile = layer->GetTile(index)) {
         tile->ClearOpaque();
     }
 }
 
 void TileInfo::SetOpaque() noexcept {
+    if(layer) {
+        return;
+    }
     if(auto* tile = layer->GetTile(index)) {
         tile->SetOpaque();
     }
@@ -629,24 +627,56 @@ bool TileInfo::IsSolid() const noexcept {
 }
 
 void TileInfo::ClearSolid() noexcept {
-    auto* tile = layer->GetTile(index);
-    tile->ClearSolid();
+    if(layer == nullptr) {
+        return;
+    }
+    if(auto* tile = layer->GetTile(index)) {
+        tile->ClearSolid();
+    }
 }
 
 void TileInfo::SetSolid() noexcept {
+    if(layer == nullptr) {
+        return;
+    }
+    if(auto* tile = layer->GetTile(index)) {
+        tile->SetSolid();
+    }
+}
+
+bool TileInfo::CanSee() const noexcept {
+    if(layer == nullptr) {
+        return false;
+    }
     auto* tile = layer->GetTile(index);
-    tile->SetSolid();
+    return tile && tile->CanSee();
+}
+
+void TileInfo::ClearCanSee() noexcept {
+    if(layer == nullptr) {
+        return;
+    }
+    if(auto* tile = layer->GetTile(index)) {
+        tile->ClearCanSee();
+    }
+}
+
+void TileInfo::SetCanSee() noexcept {
+    if(layer == nullptr) {
+        return;
+    }
+    if(auto* tile = layer->GetTile(index)) {
+        tile->SetCanSee();
+    }
 }
 
 bool TileInfo::MoveEast() noexcept {
     if(layer == nullptr) {
         return false;
     }
-    if(const auto* tile = layer->GetTile(index); tile != nullptr) {
-        if(tile = tile->GetEastNeighbor(); tile != nullptr) {
-            index = tile->GetIndexFromCoords();
-            return true;
-        }
+    if(const auto* tile = layer->GetTile(index + 1); tile != nullptr) {
+        index = tile->GetIndexFromCoords();
+        return true;
     }
     return false;
 }
@@ -655,11 +685,9 @@ bool TileInfo::MoveWest() noexcept {
     if(layer == nullptr) {
         return false;
     }
-    if(const auto* tile = layer->GetTile(index); tile != nullptr) {
-        if(tile = tile->GetWestNeighbor(); tile != nullptr) {
-            index = tile->GetIndexFromCoords();
-            return true;
-        }
+    if(const auto* tile = layer->GetTile(index - 1); tile != nullptr) {
+        index = tile->GetIndexFromCoords();
+        return true;
     }
     return false;
 }
@@ -668,11 +696,9 @@ bool TileInfo::MoveNorth() noexcept {
     if(layer == nullptr) {
         return false;
     }
-    if(const auto* tile = layer->GetTile(index); tile != nullptr) {
-        if(tile = tile->GetNorthNeighbor(); tile != nullptr) {
-            index = tile->GetIndexFromCoords();
-            return true;
-        }
+    if(const auto* tile = layer->GetTile(index - layer->tileDimensions.x); tile != nullptr) {
+        index = tile->GetIndexFromCoords();
+        return true;
     }
     return false;
 }
@@ -681,14 +707,57 @@ bool TileInfo::MoveSouth() noexcept {
     if(layer == nullptr) {
         return false;
     }
-    if(const auto* tile = layer->GetTile(index); tile != nullptr) {
-        if(tile = tile->GetSouthNeighbor(); tile != nullptr) {
-            index = tile->GetIndexFromCoords();
-            return true;
-        }
+    if(const auto* tile = layer->GetTile(index + layer->tileDimensions.x); tile != nullptr) {
+        index = tile->GetIndexFromCoords();
+        return true;
     }
     return false;
 }
+
+bool TileInfo::MoveNorthWest() noexcept {
+    if(layer == nullptr) {
+        return false;
+    }
+    if(const auto* tile = layer->GetTile(index - layer->tileDimensions.x - 1); tile != nullptr) {
+        index = tile->GetIndexFromCoords();
+        return true;
+    }
+    return false;
+}
+
+bool TileInfo::MoveNorthEast() noexcept {
+    if(layer == nullptr) {
+        return false;
+    }
+    if(const auto* tile = layer->GetTile(index - layer->tileDimensions.x + 1); tile != nullptr) {
+        index = tile->GetIndexFromCoords();
+        return true;
+    }
+    return false;
+}
+
+bool TileInfo::MoveSouthWest() noexcept {
+    if(layer == nullptr) {
+        return false;
+    }
+    if(const auto* tile = layer->GetTile(index + layer->tileDimensions.x - 1); tile != nullptr) {
+        index = tile->GetIndexFromCoords();
+        return true;
+    }
+    return false;
+}
+
+bool TileInfo::MoveSouthEast() noexcept {
+    if(layer == nullptr) {
+        return false;
+    }
+    if(const auto* tile = layer->GetTile(index + layer->tileDimensions.x + 1); tile != nullptr) {
+        index = tile->GetIndexFromCoords();
+        return true;
+    }
+    return false;
+}
+
 
 TileInfo TileInfo::GetNorthNeighbor() const noexcept {
     TileInfo copy(*this);
@@ -714,6 +783,61 @@ TileInfo TileInfo::GetWestNeighbor() const noexcept {
     return copy;
 }
 
+std::array<TileInfo, 4> TileInfo::GetCardinalNeighbors() const noexcept {
+    return {GetNorthNeighbor(), GetEastNeighbor(), GetSouthNeighbor(), GetWestNeighbor()};
+}
+
+TileInfo TileInfo::GetNorthWestNeighbor() const noexcept {
+    TileInfo copy(*this);
+    copy.MoveNorthWest();
+    return copy;
+}
+
+TileInfo TileInfo::GetNorthEastNeighbor() const noexcept {
+    TileInfo copy(*this);
+    copy.MoveNorthEast();
+    return copy;
+}
+
+TileInfo TileInfo::GetSouthEastNeighbor() const noexcept {
+    TileInfo copy(*this);
+    copy.MoveSouthEast();
+    return copy;
+}
+
+TileInfo TileInfo::GetSouthWestNeighbor() const noexcept {
+    TileInfo copy(*this);
+    copy.MoveSouthWest();
+    return copy;
+}
+
+std::array<TileInfo, 4> TileInfo::GetOrdinalNeighbors() const noexcept {
+    return {GetNorthWestNeighbor(), GetNorthEastNeighbor(), GetSouthEastNeighbor(), GetSouthWestNeighbor()};
+}
+
+std::array<TileInfo, 8> TileInfo::GetAllNeighbors() const noexcept {
+    const auto& c = GetCardinalNeighbors();
+    const auto& o = GetOrdinalNeighbors();
+    auto r = std::array<TileInfo, 8>{};
+    std::copy(std::cbegin(c), std::cend(c), std::begin(r));
+    std::copy(std::cbegin(o), std::cend(o), std::begin(r) + c.size());
+    return r;
+}
+
+uint32_t TileInfo::GetActorLightValue() const noexcept {
+    if(HasActor()) {
+        return layer->GetTile(index)->actor->GetLightValue();
+    }
+    return uint32_t{0u};
+}
+
+uint32_t TileInfo::GetFeatureLightValue() const noexcept {
+    if(HasFeature()) {
+        return layer->GetTile(index)->feature->GetLightValue();
+    }
+    return uint32_t{0u};
+}
+
 uint32_t TileInfo::GetLightValue() const noexcept {
     if(layer == nullptr) {
         return uint32_t{0u};
@@ -729,12 +853,9 @@ void TileInfo::SetLightValue(uint32_t newValue) noexcept {
     if(layer == nullptr) {
         return;
     }
-    auto* t = layer->GetTile(index);
-    if(t->GetLightValue() == newValue) {
-        return;
+    if(auto* t = layer->GetTile(index); t != nullptr) {
+        t->SetLightValue(newValue);
     }
-    layer->DirtyMesh();
-    t->SetLightValue(newValue);
 }
 
 uint32_t TileInfo::GetSelfIlluminationValue() const noexcept {
@@ -754,13 +875,52 @@ uint32_t TileInfo::GetMaxLightValueFromNeighbors() const noexcept {
         return 0;
     }
     const auto max_light = [this]()->uint32_t {
-        const auto values = std::array<uint32_t, 4>{
-            GetEastNeighbor().GetLightValue(), GetWestNeighbor().GetLightValue(),
-            GetNorthNeighbor().GetLightValue(), GetSouthNeighbor().GetLightValue(),
-        };
-        return (*std::max_element(std::cbegin(values), std::cend(values)));
+        auto idealLighting = uint32_t{0u};
+        if(const auto n = GetEastNeighbor(); !n.IsOpaque()) {
+            idealLighting = (std::max)(idealLighting, n.GetLightValue());
+        }
+        if(const auto n = GetWestNeighbor(); !n.IsOpaque()) {
+            idealLighting = (std::max)(idealLighting, n.GetLightValue());
+        }
+        if(const auto n = GetNorthNeighbor(); !n.IsOpaque()) {
+            idealLighting = (std::max)(idealLighting, n.GetLightValue());
+        }
+        if(const auto n = GetSouthNeighbor(); !n.IsOpaque()) {
+            idealLighting = (std::max)(idealLighting, n.GetLightValue());
+        }
+        return idealLighting;
     }(); //IIIL
     return max_light;
+}
+
+bool TileInfo::HasActor() const noexcept {
+    if(layer == nullptr) {
+        return false;
+    }
+    if(auto* tile = layer->GetTile(index); tile != nullptr) {
+        return tile->actor != nullptr;
+    }
+    return false;
+}
+
+bool TileInfo::HasFeature() const noexcept {
+    if(layer == nullptr) {
+        return false;
+    }
+    if(auto* tile = layer->GetTile(index); tile != nullptr) {
+        return tile->feature != nullptr;
+    }
+    return false;
+}
+
+bool TileInfo::HasInventory() const noexcept {
+    if(layer == nullptr) {
+        return false;
+    }
+    if(auto* tile = layer->GetTile(index); tile != nullptr) {
+        return tile->HasInventory();
+    }
+    return false;
 }
 
 bool TileInfo::IsSky() const noexcept {

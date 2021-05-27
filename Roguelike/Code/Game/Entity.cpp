@@ -24,9 +24,8 @@ Entity::Entity(const XMLElement& elem) noexcept
 }
 
 Entity::Entity(EntityDefinition* definition) noexcept
-    : def(definition)
-    , sprite(def->GetSprite())
-    , inventory(def->inventory)
+    : sprite(definition->GetSprite())
+    , inventory(definition->inventory)
     , stats(definition->GetBaseStats())
 {
     /* DO NOTHING */
@@ -109,7 +108,7 @@ uint32_t Entity::GetLightValue() const noexcept {
 }
 
 void Entity::SetLightValue(uint32_t value) noexcept {
-    _light_value = std::clamp(value + _self_illumination, uint32_t{min_light_value}, uint32_t{max_light_value});
+    _light_value = std::clamp(value, uint32_t{min_light_value}, uint32_t{max_light_value});
 }
 
 void Entity::EndFrame() {
@@ -129,11 +128,11 @@ Stats& Entity::GetBaseStats() noexcept {
 }
 
 void Entity::LoadFromXml(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "entity", "definition", "name");
+    DataUtils::ValidateXmlElement(elem, "entity", "definition", "name", "selflight");
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     auto xml_definition = elem.FirstChildElement("definition");
     auto definition_name = ParseEntityDefinitionName(*xml_definition);
-    def = EntityDefinition::GetEntityDefinitionByName(definition_name);
+    auto* def = EntityDefinition::GetEntityDefinitionByName(definition_name);
     sprite = def->GetSprite();
     stats = def->GetBaseStats();
 }
@@ -191,7 +190,10 @@ bool Entity::IsNotVisible() const {
 }
 
 bool Entity::IsInvisible() const {
-    return def->is_invisible;
+    if(auto* def = EntityDefinition::GetEntityDefinitionByName(name)) {
+        return def->is_invisible;
+    }
+    return false;
 }
 
 void Entity::SetPosition(const IntVector2& position) {

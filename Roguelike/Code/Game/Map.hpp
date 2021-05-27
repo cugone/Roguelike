@@ -356,13 +356,16 @@ private:
 
     void InitializeLighting(Layer* layer) noexcept;
     void CalculateLighting(Layer* layer) noexcept;
-    void UpdateTileLighting(TileInfo& bi) noexcept;
-    void DirtyNeighborLighting(TileInfo& bi, const Layer::NeighborDirection& direction) noexcept;
+    void DirtyValidNeighbors(TileInfo& ti) noexcept;
+    void DirtyCardinalNeighbors(TileInfo& ti) noexcept;
+    void UpdateTileLighting(TileInfo& ti) noexcept;
+    void DirtyNeighborLighting(TileInfo& ti, const Layer::NeighborDirection& direction) noexcept;
 
     void UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds);
     void UpdateActorAI(TimeUtils::FPSeconds deltaSeconds);
     void UpdateEntities(TimeUtils::FPSeconds deltaSeconds);
     void UpdateLighting(TimeUtils::FPSeconds deltaSeconds) noexcept;
+    void CalculateLightingForLayers([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept;
 
     void RenderStatsBlock(Actor* actor) const noexcept;
 
@@ -385,6 +388,7 @@ private:
     Material* _default_tileMaterial{};
     Material* _current_tileMaterial{};
     Rgba _current_sky_color{};
+    uint32_t _current_global_light{};
     std::unique_ptr<Pathfinder> _pathfinder{};
     std::vector<Entity*> _entities{};
     std::vector<EntityText*> _text_entities{};
@@ -405,5 +409,4 @@ private:
     friend class RoomsMapGenerator;
     friend class RoomsAndCorridorsMapGenerator;
     friend class Adventure;
-
 };

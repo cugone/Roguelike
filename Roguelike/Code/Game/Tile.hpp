@@ -42,6 +42,8 @@ public:
     bool IsNotVisible() const;
     bool IsInvisible() const;
 
+    bool CanSee() const noexcept;
+
     bool IsLightDirty() const;
     bool IsOpaque() const;
     bool IsTransparent() const;
@@ -70,7 +72,6 @@ public:
     uint32_t GetFlags() const noexcept;
     void SetFlags(uint32_t flags) noexcept;
 
-    void CalculateLightValue() noexcept;
     uint32_t GetLightValue() const noexcept;
     void SetLightValue(uint32_t newValue) noexcept;
     void IncrementLightValue(int value = 1) noexcept;
@@ -85,6 +86,9 @@ public:
 
     void ClearSolid() noexcept;
     void SetSolid() noexcept;
+
+    void ClearCanSee() noexcept;
+    void SetCanSee() noexcept;
 
     std::array<Tile*, 8> GetNeighbors() const;
     std::array<Tile*, 4> GetCardinalNeighbors() const;
@@ -126,8 +130,6 @@ public:
     Feature* feature{};
     Layer* layer{};
     std::unique_ptr<Inventory> inventory{};
-    uint8_t haveSeen : 1;
-    uint8_t canSee : 1;
 protected:
 private:
     void AddVertsForTile() const noexcept;
@@ -144,6 +146,10 @@ public:
     Layer* layer{};
     std::size_t index{};
 
+    bool HasActor() const noexcept;
+    bool HasFeature() const noexcept;
+    bool HasInventory() const noexcept;
+
     bool IsSky() const noexcept;
     bool IsAtEdge() const noexcept;
 
@@ -159,16 +165,38 @@ public:
     void ClearSolid() noexcept;
     void SetSolid() noexcept;
 
+    bool CanSee() const noexcept;
+    void ClearCanSee() noexcept;
+    void SetCanSee() noexcept;
+
     bool MoveEast() noexcept;
     bool MoveWest() noexcept;
     bool MoveNorth() noexcept;
     bool MoveSouth() noexcept;
+    
+    bool MoveNorthEast() noexcept;
+    bool MoveNorthWest() noexcept;
+    bool MoveSouthEast() noexcept;
+    bool MoveSouthWest() noexcept;
 
     TileInfo GetNorthNeighbor() const noexcept;
     TileInfo GetSouthNeighbor() const noexcept;
     TileInfo GetEastNeighbor() const noexcept;
     TileInfo GetWestNeighbor() const noexcept;
 
+    std::array<TileInfo, 4> GetCardinalNeighbors() const noexcept;
+
+    TileInfo GetNorthWestNeighbor() const noexcept;
+    TileInfo GetNorthEastNeighbor() const noexcept;
+    TileInfo GetSouthEastNeighbor() const noexcept;
+    TileInfo GetSouthWestNeighbor() const noexcept;
+
+    std::array<TileInfo, 4> GetOrdinalNeighbors() const noexcept;
+
+    std::array<TileInfo, 8> GetAllNeighbors() const noexcept;
+
+    uint32_t GetActorLightValue() const noexcept;
+    uint32_t GetFeatureLightValue() const noexcept;
     uint32_t GetLightValue() const noexcept;
     void SetLightValue(uint32_t newValue) noexcept;
     uint32_t GetSelfIlluminationValue() const noexcept;

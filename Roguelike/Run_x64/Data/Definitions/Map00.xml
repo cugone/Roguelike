@@ -2,12 +2,20 @@
     <material name="Tile" />
     <tiles src="Data/Definitions/Tiles.xml" />
     <actors>
-        <actor name="player" lookAndFeel="human..male" position="[15,15]" />
+        <actor name="player" lookAndFeel="human..male" position="[1,1]" />
         <actor name="aerith" lookAndFeel="human..female" position="[9,15]" />
     </actors>
     <features>
-        <feature name="torch" position="[15,6]" />
-        <feature name="flamePedestal" position="[16,11]" />
+        <feature name="torch" initialState="lit" position="[15,11]">
+            <state name="lit" />
+            <state name="unlit" />
+        </feature>
+        <!--
+        <feature name="torch" initialState="unlit" position="[15,10]">
+            <state name="lit" />
+            <state name="unlit" />
+        </feature>
+        -->
     </features>
     <mapGenerator>
         <layers>
@@ -18,62 +26,30 @@
                 <row glyphs=".............................." />
                 <row glyphs=".............................." />
                 <row glyphs=".............................." />
-                <row glyphs="......#................#......" />
-                <row glyphs=".............................." />
-                <row glyphs=".............................." />
-                <row glyphs=".............................." />
-                <row glyphs=".............................." />
-                <row glyphs="...... ........#.............." />
-                <row glyphs="...............~.............." />
-                <row glyphs=".............................." />
-                <row glyphs=".............................." />
-                <row glyphs="..........#........#.........." />
-                <row glyphs=".............................." />
-                <row glyphs=".............................." />
-                <row glyphs=".............................." />
-                <row glyphs="...............#.............." />
-                <row glyphs=".............................." />
-                <row glyphs=".............................." />
-                <row glyphs=".............................." />
-                <row glyphs="......#................#......" />
+                <row glyphs="#.....#.#....................." />
+                <row glyphs="#.....#.#....................." />
+                <row glyphs="#.....#.#....................." />
+                <row glyphs="#.....#.#....................." />
+                <row glyphs="#.....#.########.............." />
+                <row glyphs="#.....#........#.............." />
+                <row glyphs="#.....##########.............." />
                 <row glyphs=".............................." />
                 <row glyphs=".............................." />
                 <row glyphs=".............................." />
                 <row glyphs=".............................." />
                 <row glyphs=".............................." />
                 <row glyphs=".............................." />
-            </layer>
-            <layer>
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="      #                #      " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="               #              " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="          #        #          " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="               #              " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="      #                #      " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
-                <row glyphs="                              " />
+                <row glyphs=".............................." />
+                <row glyphs=".............................." />
+                <row glyphs=".............................." />
+                <row glyphs=".............................." />
+                <row glyphs=".............................." />
+                <row glyphs=".............................." />
+                <row glyphs=".............................." />
+                <row glyphs=".............................." />
+                <row glyphs=".............................." />
+                <row glyphs=".............................." />
+                <row glyphs=".............................." />
             </layer>
         </layers>
     </mapGenerator>

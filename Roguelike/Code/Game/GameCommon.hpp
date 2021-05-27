@@ -28,13 +28,14 @@ constexpr int min_light_value = 0;
 constexpr int day_light_value = 15;
 constexpr int night_light_value = 3;
 constexpr int max_light_value = 15;
-constexpr float min_light_scale = 0.2f;
+constexpr float min_light_scale = 0.0f;
 constexpr float max_light_scale = 1.0f;
-extern uint32_t g_current_global_light;
+
 constexpr uint32_t tile_coords_y_mask           = 0b0000'0000'1111'1111'0000'0000'0000'0000;
 constexpr uint32_t tile_coords_x_mask           = 0b0000'0000'0000'0000'1111'1111'0000'0000;
 constexpr uint32_t tile_coords_mask             = tile_coords_y_mask | tile_coords_x_mask;
 constexpr uint32_t tile_flags_light_mask        = 0b0000'0000'0000'0000'0000'0000'0000'1111;
+constexpr uint32_t tile_flags_can_see_mask      = 0b0000'0000'0000'0000'0000'0000'1000'0000;
 constexpr uint32_t tile_flags_opaque_mask       = 0b0000'0000'0000'0000'0000'0000'0100'0000;
 constexpr uint32_t tile_flags_solid_mask        = 0b0000'0000'0000'0000'0000'0000'0010'0000;
 constexpr uint32_t tile_flags_dirty_light_mask  = 0b0000'0000'0000'0000'0000'0000'0001'0000;

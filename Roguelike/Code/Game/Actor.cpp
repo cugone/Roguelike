@@ -42,7 +42,7 @@ Actor::Actor(Map* map, EntityDefinition* definition) noexcept
 {
     this->map = map;
     this->layer = this->map->GetLayer(0);
-    sprite = def->GetSprite();
+    sprite = definition->GetSprite();
     OnDamage.Subscribe_method(this, &Actor::ApplyDamage);
     OnFight.Subscribe_method(this, &Actor::ResolveAttack);
     OnMiss.Subscribe_method(this, &Actor::AttackerMissed);
@@ -79,7 +79,7 @@ bool Actor::LoadFromXml(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "actor", "", "name,lookAndFeel", "", "position,behavior");
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
     const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
-    def = EntityDefinition::GetEntityDefinitionByName(definitionName);
+    auto* def = EntityDefinition::GetEntityDefinitionByName(definitionName);
     sprite = def->GetSprite();
     inventory = def->inventory;
     const auto behaviorName = DataUtils::ParseXmlAttribute(elem, "behavior", "none");
@@ -339,12 +339,14 @@ void Actor::SetPosition(const IntVector2& position) {
 
 void Actor::SetBehavior(BehaviorID id) {
     const auto behaviorName = Behavior::NameFromId(id);
-    const auto& behaviors = def->GetAvailableBehaviors();
-    const auto found_iter = std::find_if(std::begin(behaviors), std::end(behaviors), [this, &behaviorName](auto b) { return b->GetName() == behaviorName; });
-    const auto is_available = found_iter != std::end(behaviors);
-    if(is_available) {
-        _active_behavior = found_iter->get();
-        _active_behavior->SetTarget(this->map->player);
+    if(auto* def = EntityDefinition::GetEntityDefinitionByName(name)) {
+        const auto& behaviors = def->GetAvailableBehaviors();
+        const auto found_iter = std::find_if(std::begin(behaviors), std::end(behaviors), [this, &behaviorName](auto b) { return b->GetName() == behaviorName; });
+        const auto is_available = found_iter != std::end(behaviors);
+        if(is_available) {
+            _active_behavior = found_iter->get();
+            _active_behavior->SetTarget(this->map->player);
+        }
     }
 }
 
@@ -360,8 +362,8 @@ void Actor::CalculateLightValue() noexcept {
     const auto value = _self_illumination + std::accumulate(std::cbegin(_equipment), std::cend(_equipment), uint32_t{0u}, acc_op);
     if(value != GetLightValue()) {
         SetLightValue(value);
-        if(tile) {
-            tile->DirtyLight();
+        for(auto* neighbor : tile->GetCardinalNeighbors()) {
+            neighbor->DirtyLight();
         }
     }
 }

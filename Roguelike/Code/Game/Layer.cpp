@@ -285,29 +285,35 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
         results.shrink_to_fit();
         return results;
     }();
-    const auto& visibleTiles = _map->GetVisibleTilesWithinDistance(*_map->player->tile, _map->player->visibility);
+    for(auto& tile : viewableTiles) {
+        if(tile->GetLightValue()) {
+            tile->SetCanSee();
+        }
+    }
+    const auto& visibleTiles = _map->GetVisibleTilesWithinDistance(*_map->player->tile, _map->player->GetLightValue());
     for(auto& tile : visibleTiles) {
-        tile->canSee = true;
-        tile->haveSeen = true;
+        tile->SetCanSee();
     }
     if(meshNeedsRebuild) {
         for(auto& tile : viewableTiles) {
             ++debug_tiles_in_view_count;
-            if(tile->canSee || tile->haveSeen) {
+            if(tile->CanSee()) {
                 ++debug_visible_tiles_in_view_count;
             }
             tile->AddVerts();
         }
         meshNeedsRebuild = false;
     }
-    for(auto& tile : visibleTiles) {
-        tile->Update(deltaSeconds);
+    for(auto& tile : viewableTiles) {
+        if(tile->GetLightValue()) {
+            tile->Update(deltaSeconds);
+        }
     }
 }
 
 void Layer::BeginFrame() {
     for(auto& tile : _tiles) {
-        tile.canSee = false;
+        tile.ClearCanSee();
     }
 }
 

@@ -12,4 +12,3 @@ App* g_theApp = nullptr;
 Game* g_theGame = nullptr;
 EngineSubsystem* g_theSubsystemHead = nullptr;
 
-uint32_t g_current_global_light = 6;

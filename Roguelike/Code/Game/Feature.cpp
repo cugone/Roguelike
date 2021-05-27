@@ -14,9 +14,10 @@ std::map<std::string, std::unique_ptr<Feature>> Feature::s_registry{};
 Feature* Feature::CreateFeature(Map* map, const XMLElement& elem) {
     auto new_feature = std::make_unique<Feature>(map, elem);
     std::string new_feature_name = new_feature->name;
-    auto* ptr = new_feature.get();
-    s_registry.try_emplace(new_feature_name, std::move(new_feature));
-    return ptr;
+    if(auto&& [where, inserted] = s_registry.try_emplace(new_feature_name, std::move(new_feature)); inserted) {
+        return where->second.get();
+    }
+    return nullptr;
 }
 
 void Feature::ClearFeatureRegistry() {
@@ -57,6 +58,7 @@ bool Feature::LoadFromXml(const XMLElement& elem) {
     std::string definitionName = featureName;
     if(const auto state_count = DataUtils::GetChildElementCount(elem, "state"); state_count > 0) {
         DataUtils::ForEachChildElement(elem, "state", [&definitionName, &featureName, this](const XMLElement& elem) {
+            DataUtils::ValidateXmlElement(elem, "state", "", "name");
             const auto cur_name = DataUtils::ParseXmlAttribute(elem, "name", "");
             definitionName = featureName + "." + cur_name;
             _states.push_back(definitionName);
@@ -83,6 +85,7 @@ bool Feature::LoadFromXml(const XMLElement& elem) {
     if(auto* tile_def = TileDefinition::GetTileDefinitionByName(definitionName); tile_def != nullptr) {
         sprite = tile_def->GetSprite();
         _light_value = tile_def->light;
+        _self_illumination = tile_def->self_illumination;
     }
 
     if(DataUtils::HasAttribute(elem, "position")) {
@@ -120,6 +123,8 @@ void Feature::SetPosition(const IntVector2& position) {
 
 void Feature::SetState(const std::string& stateName) {
     if(auto* new_def = TileDefinition::GetTileDefinitionByName(name + "." + stateName)) {
+        TileInfo ti{layer, layer->GetTileIndex(_position.x, _position.y)};
+        ti.SetLightDirty();
         sprite = new_def->GetSprite();
         return;
     }
@@ -172,7 +177,7 @@ void Feature::AddVertsForSelf() noexcept {
     auto& builder = layer->GetMeshBuilder();
     const auto newColor = [&]() {
         auto clr = layer_color != color && color != Rgba::White ? color : layer_color;
-        clr.ScaleRGB(GetLightValue() / static_cast<float>(max_light_value));
+        clr.ScaleRGB(MathUtils::RangeMap(static_cast<float>(GetLightValue()), static_cast<float>(min_light_value), static_cast<float>(max_light_value), min_light_scale, max_light_scale));
         return clr;
     }(); //IIIL
     const auto normal = -Vector3::Z_AXIS;

@@ -301,118 +301,6 @@ void Game::EndFrame_Loading() {
 
 void Game::RegisterCommands() {
     {
-        Console::Command moveto{};
-        moveto.command_name = "move_to";
-        moveto.help_text_short = "Move towards tile";
-        moveto.help_text_long = "move_to: Moves towards the highlighted tile";
-        moveto.command_function = [this](const std::string& /*args*/) {
-            if(_adventure->currentMap && _adventure->currentMap->player) {
-                if(auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-                    _adventure->currentMap->player->MoveTo(tile);
-                }
-            }
-        };
-        _consoleCommands.AddCommand(moveto);
-    }
-    {
-        Console::Command setvis{};
-        setvis.command_name = "set_visibility";
-        setvis.help_text_short = "Sets the player's visibility range";
-        setvis.help_text_long = "set_visibility [distance]: Sets the player's visibility distance in tiles.";
-        setvis.command_function = [this](const std::string& args) {
-            ArgumentParser p(args);
-            if(_adventure->currentMap) {
-                float value = 2.0f;
-                if(!(p >> value)) {
-                    return;
-                }
-                _adventure->currentMap->player->visibility = value;
-            }
-        };
-        _consoleCommands.AddCommand(setvis);
-    }
-    {
-        Console::Command cleartilevis{};
-        cleartilevis.command_name = "clear_visibility";
-        cleartilevis.help_text_short = "Clears all tile visibility.";
-        cleartilevis.help_text_long = "clear_tile_vis: Sets every tile's visibility flags to false.";
-        cleartilevis.command_function = [this](const std::string& /*args*/) {
-            if(_adventure->currentMap) {
-                std::size_t layer_index{0u};
-                auto* layer = _adventure->currentMap->GetLayer(layer_index++);
-                for(auto& tile : *layer) {
-                    tile.canSee = false;
-                    tile.haveSeen = false;
-                }
-            }
-        };
-        _consoleCommands.AddCommand(cleartilevis);
-    }
-    {
-        Console::Command color{};
-        color.command_name = "set_color";
-        color.help_text_short = "Sets entity's color value.";
-        color.help_text_long = "set_color [color_value]: Sets an entity's color value. No value returns it to White.";
-        color.command_function = [this](const std::string& args) {
-            ArgumentParser p{args};
-            Entity* entity = nullptr;
-            if(_debug_inspected_entity) {
-                entity = _debug_inspected_entity;
-            }
-            if(auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-                if(tile->actor) {
-                    entity = tile->actor;
-                }
-                if(tile->feature) {
-                    entity = tile->feature;
-                }
-            }
-            if(!entity) {
-                g_theConsole->ErrorMsg("Select an entity to color.");
-                return;
-            }
-            std::string color_str{};
-            if(!(p >> color_str)) {
-                entity->color = Rgba::White;
-                return;
-            }
-            entity->color = Rgba(color_str);
-        };
-        _consoleCommands.AddCommand(color);
-    }
-
-    {
-        Console::Command set_state{};
-        set_state.command_name = "set_state";
-        set_state.help_text_short = "Sets the state of a feature.";
-        set_state.help_text_long = "set_state [name]: Sets the highlighted or selected feature state to [name].";
-        set_state.command_function = [this](const std::string& args) {
-            ArgumentParser p{args};
-            std::string name{};
-            if(!(p >> name)) {
-                g_theConsole->ErrorMsg("No state name provided.");
-                return;
-            }
-            Entity* entity = nullptr;
-            if(_debug_inspected_feature) {
-                entity = _debug_inspected_feature;
-            } else
-                if(auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-                    entity = tile->feature;
-                    if(!entity) {
-                        const auto ss = std::string{"Select a feature to set the state to \""} + name + "\".";
-                        g_theConsole->ErrorMsg(ss);
-                        return;
-                    }
-                    if(auto* f = entity->tile->feature) {
-                        f->SetState(name);
-                    }
-                }
-        };
-        _consoleCommands.AddCommand(set_state);
-    }
-
-    {
         Console::Command give{};
         give.command_name = "give";
         give.help_text_short = "Gives object to entity.";
@@ -483,15 +371,15 @@ void Game::RegisterCommands() {
                 return;
             }
             if(auto* item = entity->inventory.HasItem(item_name)) {
-                auto asActor = dynamic_cast<Actor*>(entity);
-                if(!asActor) {
+                if(auto asActor = dynamic_cast<Actor*>(entity); !asActor) {
                     g_theConsole->ErrorMsg("Entity is not an actor.");
                     return;
-                }
-                if(auto* equippedItem = asActor->IsEquipped(item->GetEquipSlot())) {
-                    asActor->Unequip(equippedItem->GetEquipSlot());
                 } else {
-                    asActor->Equip(item->GetEquipSlot(), item);
+                    if(auto* equippedItem = asActor->IsEquipped(item->GetEquipSlot())) {
+                        asActor->Unequip(equippedItem->GetEquipSlot());
+                    } else {
+                        asActor->Equip(item->GetEquipSlot(), item);
+                    }
                 }
             } else {
                 const auto ss = std::string{"Actor does not have "} + item_name;
@@ -1508,13 +1396,13 @@ void Game::ShowTileInspectorStatsTableUI(const TileDefinition* cur_def, const Ti
         ImGui::TableNextColumn();
         ImGui::Text("Can See:");
         ImGui::TableNextColumn();
-        ImGui::Text((cur_tile && cur_tile->canSee ? "true" : "false"));
+        ImGui::Text((cur_tile && cur_tile->CanSee() ? "true" : "false"));
 
-        ImGui::TableNextRow();
-        ImGui::TableNextColumn();
-        ImGui::Text("Have Seen:");
-        ImGui::TableNextColumn();
-        ImGui::Text((cur_tile && cur_tile->haveSeen ? "true" : "false"));
+        //ImGui::TableNextRow();
+        //ImGui::TableNextColumn();
+        //ImGui::Text("Have Seen:");
+        //ImGui::TableNextColumn();
+        //ImGui::Text((cur_tile && cur_tile->haveSeen ? "true" : "false"));
 
         {
             ImGui::TableNextRow();
@@ -1700,8 +1588,10 @@ void Game::ShowFeatureInspectorUI() {
 void Game::ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const AnimatedSprite* cur_sprite) {
     std::ostringstream ss;
     ss << "Name: " << cur_entity->name;
-    ss << "\nInvisible: " << (cur_entity->def->is_invisible ? "true" : "false");
-    ss << "\nAnimated: " << (cur_entity->def->is_animated ? "true" : "false");
+    if(auto* def = EntityDefinition::GetEntityDefinitionByName(cur_entity->name)) {
+        ss << "\nInvisible: " << (def->is_invisible ? "true" : "false");
+        ss << "\nAnimated: " << (def->is_animated ? "true" : "false");
+    }
     ImGui::Text(ss.str().c_str());
     const auto tex_coords = cur_sprite->GetCurrentTexCoords();
     const auto dims = Vector2::ONE * 100.0f;

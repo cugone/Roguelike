@@ -69,7 +69,6 @@ public:
     Map* map = nullptr;
     Layer* layer = nullptr;
     Tile* tile = nullptr;
-    EntityDefinition* def = nullptr;
     AnimatedSprite* sprite = nullptr;
     Inventory inventory{};
     Rgba color{Rgba::White};

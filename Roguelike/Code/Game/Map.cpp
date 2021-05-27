@@ -51,6 +51,12 @@ const Rgba& Map::GetSkyColorForCave() noexcept {
     return g_clearcolor_cave;
 }
 
+void Map::CalculateLightingForLayers([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept {
+    for(auto& layer : _layers) {
+        CalculateLighting(layer.get());
+    }
+}
+
 void Map::CreateTextEntity(const TextEntityDesc& desc) noexcept {
     const auto text = EntityText::CreateTextEntity(desc);
     text->map = this;
@@ -72,11 +78,11 @@ void Map::ShakeCamera(const IntVector2& from, const IntVector2& to) noexcept {
 
 void Map::SetGlobalLightFromSkyColor() noexcept {
     if(_current_sky_color == GetSkyColorForDay()) {
-        g_current_global_light = day_light_value;
+        _current_global_light = day_light_value;
     } else if(_current_sky_color == GetSkyColorForNight()) {
-        g_current_global_light = night_light_value;
+        _current_global_light = night_light_value;
     } else if(_current_sky_color == GetSkyColorForCave()) {
-        g_current_global_light = min_light_value;
+        _current_global_light = min_light_value;
     }
 }
 
@@ -294,6 +300,7 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
     UpdateLayers(deltaSeconds);
     UpdateTextEntities(deltaSeconds);
     UpdateEntities(deltaSeconds);
+    CalculateLightingForLayers(deltaSeconds);
     UpdateLighting(deltaSeconds);
     cameraController.TranslateTo(Vector2(player->tile->GetCoords()), deltaSeconds);
     const auto clamped_camera_position = MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
@@ -334,6 +341,9 @@ void Map::UpdateEntities(TimeUtils::FPSeconds deltaSeconds) {
     for(auto* actor : _actors) {
         actor->CalculateLightValue();
     }
+    for(auto* feature : _features) {
+        feature->CalculateLightValue();
+    }
 }
 
 void Map::UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds) {
@@ -344,10 +354,11 @@ void Map::UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds) {
 
 void Map::UpdateLighting(TimeUtils::FPSeconds /*deltaSeconds*/) noexcept {
     while(!_lightingQueue.empty()) {
-        auto& bi = _lightingQueue.front();
+        auto& ti = _lightingQueue.front();
         _lightingQueue.pop();
-        bi.ClearLightDirty();
-        UpdateTileLighting(bi);
+        ti.ClearLightDirty();
+        UpdateTileLighting(ti);
+        ti.layer->DirtyMesh();
     }
 }
 
@@ -355,139 +366,133 @@ void Map::InitializeLighting(Layer* layer) noexcept {
     if(layer == nullptr) {
         return;
     }
-    const auto tileCount = layer->tileDimensions.x * layer->tileDimensions.y;
-    for(int i = 0; i < tileCount; ++i) {
-        if(auto* currentTile = layer->GetTile(i); currentTile == nullptr) {
-            continue;
-        } else {
-            if(TileDefinition::GetTileDefinitionByName(currentTile->GetType())->light > 0 || (currentTile->actor && currentTile->actor->GetLightValue() > 0) || (currentTile->feature && currentTile->feature->GetLightValue() > 0)) {
-                currentTile->SetLightDirty();
-                TileInfo bi{};
-                bi.index = i;
-                bi.layer = layer;
-                _lightingQueue.push(bi);
-            }
-        }
+    const auto tileCount = static_cast<std::size_t>(layer->tileDimensions.x) * static_cast<std::size_t>(layer->tileDimensions.y);
+    for(auto i = std::size_t{0u}; i != tileCount; ++i) {
+        TileInfo ti{layer, i};
+        ti.SetLightValue(_current_global_light);
     }
-    const auto width = layer->tileDimensions.x;
-    const auto height = layer->tileDimensions.y;
-    for(int x = 0; x < width; ++x) {
-        for(int y = 0; y < height; ++y) {
-            auto* currentTile = layer->GetTile(x, y);
-            currentTile->SetLightValue(g_current_global_light);
-        }
-    }
-    CalculateLighting(layer);
+    layer->DirtyMesh();
 }
 
 void Map::CalculateLighting(Layer* layer) noexcept {
     if(layer == nullptr) {
         return;
     }
-    const auto width = layer->tileDimensions.x;
-    const auto height = layer->tileDimensions.y;
-    for(int x = 0; x < width; ++x) {
-        for(int y = 0; y < height; ++y) {
-            auto* currentTile = layer->GetTile(x, y);
-            if(currentTile->IsOpaque()) {
-                break;
+    const auto width = static_cast<std::size_t>(layer->tileDimensions.x);
+    const auto height = static_cast<std::size_t>(layer->tileDimensions.y);
+    const auto tileCount = width * height;
+    for(auto i = std::size_t{}; i != tileCount; ++i) {
+        TileInfo ti{layer, i};
+        if(ti.IsOpaque()) {
+            std::array<uint32_t, 8> lightvalues{};
+            auto iter = std::begin(lightvalues);
+            for(auto& n : ti.GetAllNeighbors()) {
+                if(!n.IsOpaque() && n.index != ti.index) {
+                    (*iter) = n.GetLightValue();
+                }
+                ++iter;
             }
-            //currentTile->SetSky();
-            currentTile->SetLightValue(g_current_global_light);
-        }
-    }
-
-    for(int x = 0; x < width; ++x) {
-        for(int y = 0; y < height; ++y) {
-            auto* currentTile = layer->GetTile(x, y);
-            if(currentTile->IsOpaque()) {
-                break;
+            if(auto max_light_neighbor_value = *(std::max_element)(std::cbegin(lightvalues), std::cend(lightvalues))) {
+                ti.SetLightValue(max_light_neighbor_value - uint32_t{1u});
+                ti.SetLightDirty();
             }
-            TileInfo bi{};
-            bi.index = layer->GetTileIndex(x, y);
-            bi.layer = layer;
-            auto n = bi.GetNorthNeighbor();
-            if(n.layer && n.IsSky() == false && n.IsOpaque() == false) {
-                DirtyTileLight(n);
-            }
-            auto e = bi.GetEastNeighbor();
-            if(e.layer && e.IsSky() == false && e.IsOpaque() == false) {
-                DirtyTileLight(e);
-            }
-            auto s = bi.GetSouthNeighbor();
-            if(s.layer && s.IsSky() == false && s.IsOpaque() == false) {
-                DirtyTileLight(s);
-            }
-            auto w = bi.GetWestNeighbor();
-            if(w.layer && w.IsSky() == false && w.IsOpaque() == false) {
-                DirtyTileLight(w);
-            }
+        } else {
+            DirtyValidNeighbors(ti);
         }
     }
 }
 
 void Map::DirtyTileLight(TileInfo& ti) noexcept {
     if(!ti.IsLightDirty()) {
-        _lightingQueue.push(ti);
         ti.SetLightDirty();
+        _lightingQueue.push(ti);
     }
 }
 
-
-void Map::UpdateTileLighting(TileInfo& bi) noexcept {
-    const auto* tile = bi.layer->GetTile(bi.index);
-    if(tile == nullptr) {
-        return;
-    }
-    const uint32_t idealLighting = [&]() {
-        const auto has_feature = tile->feature != nullptr;
-        const auto has_actor = tile->actor != nullptr;
-        const auto not_opaque = !bi.IsOpaque();
-        const auto lighting_needs_updating = not_opaque || has_feature || has_actor;
-        const auto self_value = bi.GetSelfIlluminationValue();
-        if(!lighting_needs_updating) {
-            return self_value;
-        }
-        const auto highestNeighborLightValue = (std::max)(std::uint32_t{0u}, (std::min)(bi.GetMaxLightValueFromNeighbors(), bi.GetMaxLightValueFromNeighbors() - std::uint32_t{1u}));
-        const auto actor_value = (std::max)(std::uint32_t{0u}, (has_actor ? tile->actor->GetLightValue() : uint32_t{0u}));
-        const auto feature_value = (std::max)(std::uint32_t{0u}, (has_feature ? tile->feature->GetLightValue() : uint32_t{0u}));
-        const auto sky_value = (std::max)(std::uint32_t{0u}, (bi.IsSky() || bi.IsAtEdge() ? g_current_global_light : std::uint32_t{0}));
-        return (std::max)({sky_value, self_value, highestNeighborLightValue, actor_value, feature_value});
-    }(); //IIIL
-    if(idealLighting != bi.GetLightValue()) {
-        bi.SetLightValue(idealLighting);
-        DirtyNeighborLighting(bi, Layer::NeighborDirection::North);
-        DirtyNeighborLighting(bi, Layer::NeighborDirection::East);
-        DirtyNeighborLighting(bi, Layer::NeighborDirection::South);
-        DirtyNeighborLighting(bi, Layer::NeighborDirection::West);
-    }
-}
-
-void Map::DirtyNeighborLighting(TileInfo& bi, const Layer::NeighborDirection& direction) noexcept {
-    TileInfo neighbor;
-    switch(direction) {
-    case Layer::NeighborDirection::North:
-        neighbor = bi.GetNorthNeighbor();
-        break;
-    case Layer::NeighborDirection::East:
-        neighbor = bi.GetEastNeighbor();
-        break;
-    case Layer::NeighborDirection::South:
-        neighbor = bi.GetSouthNeighbor();
-        break;
-    case Layer::NeighborDirection::West:
-        neighbor = bi.GetWestNeighbor();
-        break;
-    default:
-        ERROR_AND_DIE("Map::DirtyNeighborLighting: Invalid neighbor direction.");
-    }
-    if(neighbor.layer) {
-        if(!neighbor.IsOpaque()) {
-            if(!neighbor.IsLightDirty()) {
-                DirtyTileLight(neighbor);
+void Map::UpdateTileLighting(TileInfo& ti) noexcept {
+    const uint32_t idealLighting = [&]() { // Ideal Lighting of tile is highest available from self, neighbor, sky, actor, or feature...
+        const auto self_value = ti.GetSelfIlluminationValue();
+        const auto highestNeighborLightValue = [&]() {
+            if(auto value = ti.GetMaxLightValueFromNeighbors(); value) {
+                return value - uint32_t{1u};
             }
+            return uint32_t{0u};
+        }(); //IIIL
+        const auto actor_value = ti.GetActorLightValue();
+        const auto feature_value = ti.GetFeatureLightValue();
+        const auto sky_value = [&]() { //If sky, light value is global value
+            if(ti.IsSky()) {
+                return _current_global_light;
+            }
+            return uint32_t{0u};
+        }(); //IIIL
+        const auto edge_value = [&]() { //If at edge, "edge" is global value, so actual tile is one less (if able) or zero.
+            if(auto value = _current_global_light; ti.IsAtEdge() && value) {
+                return value - uint32_t{1u};
+            }
+            return uint32_t{0u};
+        }(); //IIIL
+        return (std::max)({edge_value, sky_value, self_value, highestNeighborLightValue, actor_value, feature_value});
+    }(); //IIIL
+    if(idealLighting != ti.GetLightValue()) {
+        ti.SetLightValue(idealLighting);
+        ti.SetLightDirty();
+        if(ti.IsOpaque()) {
+            DirtyNeighborLighting(ti, Layer::NeighborDirection::North);
+            DirtyNeighborLighting(ti, Layer::NeighborDirection::East);
+            DirtyNeighborLighting(ti, Layer::NeighborDirection::South);
+            DirtyNeighborLighting(ti, Layer::NeighborDirection::West);
         }
     }
+}
+
+void Map::DirtyValidNeighbors(TileInfo& ti) noexcept {
+    auto n = ti.GetNorthNeighbor();
+    if(!n.IsSky() && !n.IsOpaque()) {
+        DirtyTileLight(n);
+    }
+    auto e = ti.GetEastNeighbor();
+    if(!e.IsSky() && !e.IsOpaque()) {
+        DirtyTileLight(e);
+    }
+    auto s = ti.GetSouthNeighbor();
+    if(!s.IsSky() && !s.IsOpaque()) {
+        DirtyTileLight(s);
+    }
+    auto w = ti.GetWestNeighbor();
+    if(!w.IsSky() && !w.IsOpaque()) {
+        DirtyTileLight(w);
+    }
+}
+
+void Map::DirtyCardinalNeighbors(TileInfo& ti) noexcept {
+    auto n = ti.GetNorthNeighbor();
+    DirtyTileLight(n);
+    auto e = ti.GetEastNeighbor();
+    DirtyTileLight(e);
+    auto s = ti.GetSouthNeighbor();
+    DirtyTileLight(s);
+    auto w = ti.GetWestNeighbor();
+    DirtyTileLight(w);
+}
+
+
+void Map::DirtyNeighborLighting(TileInfo& ti, const Layer::NeighborDirection& direction) noexcept {
+    TileInfo neighbor = [&]() {
+        switch(direction) {
+        case Layer::NeighborDirection::North:
+            return ti.GetNorthNeighbor();
+        case Layer::NeighborDirection::East:
+            return ti.GetEastNeighbor();
+        case Layer::NeighborDirection::South:
+            return ti.GetSouthNeighbor();
+        case Layer::NeighborDirection::West:
+            return ti.GetWestNeighbor();
+        default:
+            ERROR_AND_DIE("Map::DirtyNeighborLighting: Invalid neighbor direction.");
+        }
+    }(); //IIIL
+    DirtyTileLight(neighbor);
 }
 
 void Map::UpdateActorAI(TimeUtils::FPSeconds /*deltaSeconds*/) {
@@ -1151,9 +1156,10 @@ void Map::LoadFeaturesForMap(const XMLElement& elem) {
         DataUtils::ValidateXmlElement(*xml_features, "features", "feature", "");
         DataUtils::ForEachChildElement(*xml_features, "feature",
             [this](const XMLElement& elem) {
-                auto* feature = Feature::CreateFeature(this, elem);
-                _entities.push_back(feature);
-                _features.push_back(feature);
+                if(auto* feature = Feature::CreateFeature(this, elem)) {
+                    _entities.push_back(feature);
+                    _features.push_back(feature);
+                }
             });
     }
 }
