@@ -49,7 +49,7 @@ void Adventure::PlacePlayerNearEntrance() noexcept {
             }
             if(entrance_tile) {
                 for(auto* tile : entrance_tile->GetNeighbors()) {
-                    if(tile->IsPassable()) {
+                    if(tile && tile->IsPassable()) {
                         return tile;
                     }
                 }
