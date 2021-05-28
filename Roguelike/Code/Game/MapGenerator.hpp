@@ -120,6 +120,9 @@ protected:
     std::string stairsUpType{"void"};
     std::string enterType{"void"};
     std::string exitType{"void"};
+
+    void FillConjoinedRoomsWithFloorTiles() noexcept;
+
 private:
     void LoadItems(const XMLElement& elem) override;
     void LoadActors(const XMLElement& elem) override;
@@ -144,8 +147,10 @@ private:
     void GenerateCorridors() noexcept;
     bool GenerateExitAndEntrance() noexcept;
     void MakeHorizontalCorridor(const AABB2& from, const AABB2& to) noexcept;
+    void MakeCorridorSegmentAt(float x, const  float y) const noexcept;
     void MakeVerticalCorridor(const AABB2& from, const AABB2& to) noexcept;
     bool VerifyExitIsReachable(const IntVector2& enter_loc, const  IntVector2& exit_loc) const noexcept;
+    bool CanTileBeCorridorWall(const std::string& name) const noexcept;
     void PlaceActors() noexcept;
     void PlaceFeatures() noexcept;
     void PlaceItems() noexcept;
