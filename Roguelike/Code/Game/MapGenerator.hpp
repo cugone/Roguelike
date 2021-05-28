@@ -122,11 +122,12 @@ protected:
     std::string exitType{"void"};
 
     void FillConjoinedRoomsWithFloorTiles() noexcept;
+    void LoadActors(const XMLElement& elem) override;
+    void LoadItems(const XMLElement& elem) override;
+    void LoadFeatures(const XMLElement& elem) override;
 
 private:
-    void LoadItems(const XMLElement& elem) override;
-    void LoadActors(const XMLElement& elem) override;
-    void LoadFeatures(const XMLElement& elem) override;
+
 };
 
 class RoomsAndCorridorsMapGenerator : public RoomsMapGenerator {
@@ -140,10 +141,6 @@ public:
     virtual ~RoomsAndCorridorsMapGenerator() noexcept = default;
     void Generate() override;
 private:
-    void LoadItems(const XMLElement& elem) override;
-    void LoadActors(const XMLElement& elem) override;
-    void LoadFeatures(const XMLElement& elem) override;
-
     void GenerateCorridors() noexcept;
     bool GenerateExitAndEntrance() noexcept;
     void MakeHorizontalCorridor(const AABB2& from, const AABB2& to) noexcept;
