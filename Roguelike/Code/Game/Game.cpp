@@ -360,10 +360,11 @@ void Game::RegisterCommands() {
             Entity* entity = nullptr;
             if(_debug_inspected_entity) {
                 entity = _debug_inspected_entity;
-            }
-            if(auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-                if(auto* asActor = dynamic_cast<Actor*>(tile->actor)) {
-                    entity = asActor;
+            } else {
+                if(auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+                    if(auto* asActor = dynamic_cast<Actor*>(tile->actor)) {
+                        entity = asActor;
+                    }
                 }
             }
             if(!entity) {
@@ -1632,6 +1633,12 @@ void Game::ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity) {
         }
     }
     ImGui::Text(ss.str().c_str());
+    ImGui::SameLine();
+    if(const auto* asActor = dynamic_cast<const Actor*>(cur_entity); asActor) {
+        if(ImGui::SmallButton("Equip")) {
+            g_theConsole->RunCommand(std::string{"Equip "} + ss.str());
+        }
+    }
 }
 
 #endif
