@@ -222,4 +222,5 @@
     </item>
     <item name="key" maxstack="0" index="[43,28]" />
     <item name="chest" index="[33,28]" />
+    <item name="gold" maxstack="-1" index="[19,28]" />
 </items>
