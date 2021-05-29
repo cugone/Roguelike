@@ -293,7 +293,7 @@ bool Actor::MoveNorthWest() {
     return Move(IntVector2{-1,-1});
 }
 
-Item* Actor::IsEquipped(const EquipSlot& slot) {
+Item* Actor::IsEquipped(const EquipSlot& slot) const noexcept {
     if(slot != EquipSlot::None) {
         return _equipment[static_cast<std::size_t>(slot)];
     }

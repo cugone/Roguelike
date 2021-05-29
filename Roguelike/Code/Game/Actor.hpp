@@ -43,7 +43,7 @@ public:
     bool MoveWest();
     bool MoveNorthWest();
 
-    Item* IsEquipped(const EquipSlot& slot);
+    Item* IsEquipped(const EquipSlot& slot) const noexcept;
     void Equip(const EquipSlot& slot, Item* item);
     void Unequip(const EquipSlot& slot);
 
