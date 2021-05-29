@@ -140,9 +140,9 @@ private:
     void ShowTileInspectorUI();
     void ShowTileInspectorStatsTableUI(const  TileDefinition* cur_def, const  Tile* cur_tile);
     void ShowEntityInspectorUI();
+    void ShowEntityInspectorInventoryManipulatorUI(Entity* const cur_entity);
     void ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const AnimatedSprite* cur_sprite);
     void ShowEntityInspectorInventoryColumnUI(Entity* const cur_entity);
-
     void ShowFeatureInspectorUI();
 #endif
 

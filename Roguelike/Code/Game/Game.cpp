@@ -300,162 +300,6 @@ void Game::EndFrame_Loading() {
 }
 
 void Game::RegisterCommands() {
-    {
-        Console::Command give{};
-        give.command_name = "give";
-        give.help_text_short = "Gives object to entity.";
-        give.help_text_long = "give item [count]: adds 1 or [count] item(s) to selected entity's inventory.";
-        give.command_function = [this](const std::string& args) {
-            ArgumentParser p{args};
-            std::string item_name{};
-            if(!(p >> item_name)) {
-                g_theConsole->ErrorMsg("No item name provided.");
-                return;
-            }
-            int item_count = 1;
-            p >> item_count;
-            Entity* entity = nullptr;
-            if(_debug_inspected_entity) {
-                entity = _debug_inspected_entity;
-            }
-            if(auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-                if(auto* asActor = dynamic_cast<Actor*>(tile->actor)) {
-                    entity = asActor;
-                }
-            }
-            if(!entity) {
-                g_theConsole->ErrorMsg("Select an actor to give the item to.");
-                return;
-            }
-            auto* item = Item::GetItem(item_name);
-            if(!item) {
-                const auto ss = std::string{"Item "} + item_name + " not found.";
-                g_theConsole->ErrorMsg(ss);
-                return;
-            }
-            entity->inventory.AddStack(item_name, item_count);
-            auto* asActor = dynamic_cast<Actor*>(entity);
-            if(!asActor) {
-                g_theConsole->ErrorMsg("Entity is not an actor.");
-                return;
-            }
-            if(!asActor->IsEquipped(item->GetEquipSlot())) {
-                asActor->Equip(item->GetEquipSlot(), item);
-            }
-        };
-        _consoleCommands.AddCommand(give);
-    }
-
-    {
-        Console::Command equip{};
-        equip.command_name = "equip";
-        equip.help_text_short = "Equips/Unequips an item in an actor's inventory.";
-        equip.help_text_long = "equip item: Equips or Unequips an item from/to selected actor.";
-        equip.command_function = [this](const std::string& args) {
-            ArgumentParser p{args};
-            std::string item_name{};
-            if(!(p >> item_name)) {
-                return;
-            }
-            Entity* entity = nullptr;
-            if(_debug_inspected_entity) {
-                entity = _debug_inspected_entity;
-            } else {
-                if(auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-                    if(auto* asActor = dynamic_cast<Actor*>(tile->actor)) {
-                        entity = asActor;
-                    }
-                }
-            }
-            if(!entity) {
-                g_theConsole->ErrorMsg("Select an actor to equip.");
-                return;
-            }
-            if(auto* item = entity->inventory.HasItem(item_name)) {
-                if(auto asActor = dynamic_cast<Actor*>(entity); !asActor) {
-                    g_theConsole->ErrorMsg("Entity is not an actor.");
-                    return;
-                } else {
-                    if(auto* equippedItem = asActor->IsEquipped(item->GetEquipSlot())) {
-                        asActor->Unequip(equippedItem->GetEquipSlot());
-                    } else {
-                        asActor->Equip(item->GetEquipSlot(), item);
-                    }
-                }
-            } else {
-                const auto ss = std::string{"Actor does not have "} + item_name;
-                g_theConsole->ErrorMsg(ss);
-            }
-        };
-        _consoleCommands.AddCommand(equip);
-    }
-
-    {
-        Console::Command list{};
-        list.command_name = "list";
-        list.help_text_short = "list [items|actors|features|all]";
-        list.help_text_long = "lists all entities of specified type or all.";
-        list.command_function = [this, list](const std::string& args) {
-            ArgumentParser p{args};
-            std::string subcommand{};
-            if(!(p >> subcommand)) {
-                g_theConsole->PrintMsg(list.help_text_short);
-                return;
-            }
-            subcommand = StringUtils::ToLowerCase(StringUtils::TrimWhitespace(subcommand));
-            const auto all_item_names = [=]()->std::vector<std::string> {
-                std::vector<std::string> names{};
-                names.reserve(Item::s_registry.size());
-                std::for_each(std::cbegin(Item::s_registry), std::cend(Item::s_registry), [&](const auto& iter) { names.push_back(iter.first); });
-                return names;
-            }();
-            const auto all_actor_names = [=]()->std::vector<std::string> {
-                const auto& entities = this->_adventure->currentMap->GetEntities();
-                std::vector<std::string> names{};
-                names.reserve(entities.size());
-                std::for_each(std::cbegin(entities), std::cend(entities), [&](const Entity* e) { if(const Actor* a = dynamic_cast<const Actor*>(e)) names.push_back(a->name); });
-                return names;
-            }();
-            //const auto all_feature_names = [=]()->std::vector<std::string> {
-            //    const auto& entities = this->_map->GetEntities();
-            //    std::vector<std::string> names{};
-            //    names.reserve(entities.size());
-            //    std::for_each(std::cbegin(entities), std::cend(entities), [&](const Entity* e) { if(const Feature* f = dynamic_cast<const Feature*>(e)) names.push_back(f->name); });
-            //    return names;
-            //}();
-            const auto all_feature_names = std::vector<std::string>{};
-            if(subcommand == "items") {
-                for(const auto& name : all_item_names) {
-                    g_theConsole->PrintMsg(name);
-                }
-            } else if(subcommand == "actors") {
-                for(const auto& name : all_actor_names) {
-                    g_theConsole->PrintMsg(name);
-                }
-            } else if(subcommand == "features") {
-                g_theConsole->WarnMsg("Not yet implemented.");
-                for(const auto& name : all_feature_names) {
-                    g_theConsole->PrintMsg(name);
-                }
-            } else if(subcommand == "all") {
-                for(const auto& name : all_item_names) {
-                    g_theConsole->PrintMsg(name);
-                }
-                for(const auto& name : all_actor_names) {
-                    g_theConsole->PrintMsg(name);
-                }
-                for(const auto& name : all_feature_names) {
-                    g_theConsole->PrintMsg(name);
-                }
-            } else {
-                g_theConsole->WarnMsg("Invalid argument.");
-                g_theConsole->WarnMsg(list.help_text_short);
-            }
-        };
-        _consoleCommands.AddCommand(list);
-    }
-
-
     g_theConsole->PushCommandList(_consoleCommands);
 }
 
@@ -1290,10 +1134,12 @@ void Game::ShowTileInspectorUI() {
         }
         ImGui::Text("Tile Inspector");
         ImGui::SameLine();
-        if(ImGui::Button("Unlock Tile")) {
+        ImGui::PushID(static_cast<int>(has_selected_tile ? _debug_inspected_tiles[0]->GetIndexFromCoords() : (*picked_tiles)[0]->GetIndexFromCoords()));
+        if(ImGui::Button("Unlock")) {
             _debug_has_picked_tile_with_click = false;
             _debug_inspected_tiles.clear();
         }
+        ImGui::PopID();
         const auto max_layers = std::size_t{9u};
         const auto tiles_per_row = std::size_t{3u};
         const auto tiles_per_col = std::size_t{3u};
@@ -1349,6 +1195,11 @@ void Game::ShowTileInspectorUI() {
                             const auto tex_coords = cur_sprite->GetCurrentTexCoords();
                             const auto dims = Vector2::ONE * 100.0f;
                             ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                            if(ImGui::IsItemHovered()) {
+                                ImGui::BeginTooltip();
+                                ShowTileInspectorStatsTableUI(cur_def, cur_tile);
+                                ImGui::EndTooltip();
+                            }
                         }
                     }
                 }
@@ -1359,10 +1210,11 @@ void Game::ShowTileInspectorUI() {
 }
 
 void Game::ShowTileInspectorStatsTableUI(const TileDefinition* cur_def, const Tile* cur_tile) {
+    ImGui::PushID(cur_tile);
     if(ImGui::BeginTable("TileInspectorTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_SizingFixedSame | ImGuiTableFlags_RowBg)) {
         ImGui::TableSetupColumn("TileInspectorTableRowIdsColumn");
         ImGui::TableSetupColumn("TileInspectorTableRowValuesColumn");
-        //ImGui::TableHeadersRow(); //Commented out to hide header row.
+
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
         ImGui::Text("Layer Index:");
@@ -1398,12 +1250,6 @@ void Game::ShowTileInspectorStatsTableUI(const TileDefinition* cur_def, const Ti
         ImGui::Text("Can See:");
         ImGui::TableNextColumn();
         ImGui::Text((cur_tile && cur_tile->CanSee() ? "true" : "false"));
-
-        //ImGui::TableNextRow();
-        //ImGui::TableNextColumn();
-        //ImGui::Text("Have Seen:");
-        //ImGui::TableNextColumn();
-        //ImGui::Text((cur_tile && cur_tile->haveSeen ? "true" : "false"));
 
         {
             ImGui::TableNextRow();
@@ -1466,6 +1312,7 @@ void Game::ShowTileInspectorStatsTableUI(const TileDefinition* cur_def, const Ti
 
         ImGui::EndTable();
     }
+    ImGui::PopID();
 }
 
 std::optional<std::vector<Tile*>> Game::DebugGetTilesFromMouse() {
@@ -1534,13 +1381,18 @@ void Game::ShowEntityInspectorUI() {
             if(const auto* cur_sprite = cur_entity->sprite) {
                 ImGui::Text("Entity Inspector");
                 ImGui::SameLine();
-                if(ImGui::Button("Unlock Entity")) {
+                ImGui::PushID(cur_entity);
+                if(ImGui::Button("Unlock")) {
                     _debug_has_picked_entity_with_click = false;
                     _debug_inspected_entity = nullptr;
                 }
+                ImGui::PopID();
+                ImGui::SameLine();
+                ShowEntityInspectorInventoryManipulatorUI(cur_entity);
+
                 if(ImGui::BeginTable("EntityInspectorTable", 2, ImGuiTableFlags_Borders)) {
-                    ImGui::TableSetupColumn("EntityInspectorTableEntityColumn");
-                    ImGui::TableSetupColumn("EntityInspectorTableInventoryColumn");
+                    ImGui::TableSetupColumn("Entity");
+                    ImGui::TableSetupColumn("Inventory");
                     //ImGui::TableHeadersRow(); //Commented out to hide header row.
                     ImGui::TableNextColumn();
                     ShowEntityInspectorEntityColumnUI(cur_entity, cur_sprite);
@@ -1570,10 +1422,12 @@ void Game::ShowFeatureInspectorUI() {
             if(const auto* cur_sprite = cur_entity->sprite) {
                 ImGui::Text("Feature Inspector");
                 ImGui::SameLine();
-                if(ImGui::Button("Unlock Feature")) {
+                ImGui::PushID(cur_entity);
+                if(ImGui::Button("Unlock")) {
                     _debug_has_picked_feature_with_click = false;
                     _debug_inspected_feature = nullptr;
                 }
+                ImGui::PopID();
                 const auto tex_coords = cur_sprite->GetCurrentTexCoords();
                 const auto dims = Vector2::ONE * 100.0f;
                 ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
@@ -1614,6 +1468,36 @@ void Game::ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const Ani
     }
 }
 
+void Game::ShowEntityInspectorInventoryManipulatorUI(Entity* const cur_entity) {
+    static std::string current_item_fname = "";
+    static Item* current_item_ptr = nullptr;
+    if(ImGui::BeginCombo("Inventory", current_item_fname.c_str())) {
+        bool is_selected{false};
+        if(ImGui::Selectable("None")) {
+            current_item_fname.clear();
+            current_item_ptr = nullptr;
+        }
+        for(const auto& item : Item::s_registry) {
+            ImGui::PushID(item.second.get());
+            if(ImGui::Selectable(item.second.get()->GetFriendlyName().c_str())) {
+                current_item_fname = item.second.get()->GetFriendlyName();
+                current_item_ptr = item.second.get();
+            }
+            ImGui::PopID();
+            if(is_selected) {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+    ImGui::SameLine();
+    if(ImGui::Button("Add Item")) {
+        if(current_item_ptr) {
+            cur_entity->inventory.AddItem(current_item_ptr->GetName());
+        }
+    }
+}
+
 void Game::ShowEntityInspectorInventoryColumnUI(Entity* const cur_entity) {
     if(!cur_entity) {
         return;
@@ -1624,44 +1508,75 @@ void Game::ShowEntityInspectorInventoryColumnUI(Entity* const cur_entity) {
         ImGui::Text(ss.str().c_str());
         return;
     }
-    if(ImGui::BeginTable("EntityInspectorInventory", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_SizingFixedSame )) {
-        ImGui::TableSetupColumn("Inventory##EntityInspectorInventoryTableItemColumnUI");
-        ImGui::TableSetupColumn("Count##EntityInspectorInventoryTableCountColumnUI");
+    ImGui::PushID(cur_entity);
+    if(ImGui::BeginTable("Inventory", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_SizingFixedSame )) {
+        ImGui::TableSetupColumn("Inventory");
+        ImGui::TableSetupColumn("Count");
         ImGui::TableHeadersRow();
         std::size_t item_number{0u};
         for(auto* item : cur_entity->inventory) {
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
+            ImGui::AlignTextToFramePadding();
             ImGui::Text(item->GetFriendlyName().c_str());
             ImGui::SameLine();
             const auto button_label = [&]() -> std::string {
                 if(auto* const asActor = dynamic_cast<Actor* const>(cur_entity); asActor) {
-                    if(asActor->IsEquipped(item->GetEquipSlot())) {
-                        return {"Unequip##Item" + std::to_string(item_number)};
-                    } else {
-                        return {"Equip##Item" + std::to_string(item_number)};
+                    if(item->GetEquipSlot() != EquipSlot::None) {
+                        if(asActor->inventory.HasItem(item)) {
+                            if(asActor->IsEquipped(item->GetEquipSlot(), item->GetName())) {
+                                return {"Unequip"};
+                            } else {
+                                return {"Equip"};
+                            }
+                        }
                     }
                 }
                 return {};
             }(); //IIIL
             if(!button_label.empty()) {
+                ImGui::PushID(item);
                 if(ImGui::SmallButton(button_label.c_str())) {
                     if(auto* const asActor = dynamic_cast<Actor* const>(cur_entity); asActor) {
-                        if(asActor->IsEquipped(item->GetEquipSlot())) {
-                            asActor->Equip(item->GetEquipSlot(), nullptr);
+                        if(auto* equipped_item = asActor->IsEquipped(item->GetEquipSlot()); equipped_item != nullptr) {
+                            if(!asActor->IsEquipped(item->GetEquipSlot(), item->GetName())) {
+                                asActor->Unequip(equipped_item->GetEquipSlot());
+                                asActor->Equip(item->GetEquipSlot(), item);
+                            } else {
+                                asActor->Unequip(equipped_item->GetEquipSlot());
+                            }
                         } else {
                             asActor->Equip(item->GetEquipSlot(), item);
                         }
                     }
                 }
+                ImGui::PopID();
             }
             ImGui::TableNextColumn();
+            ImGui::AlignTextToFramePadding();
             ImGui::Text(std::to_string(item->GetCount()).c_str());
+            ImGui::SameLine();
+            ImGui::PushButtonRepeat(true);
+            ImGui::PushID(item);
+            if(ImGui::ArrowButton("##Up", ImGuiDir_Up)) {
+                item->IncrementCount();
+            }
+            ImGui::PopID();
+            ImGui::PopButtonRepeat();
+            ImGui::SameLine();
+            ImGui::PushButtonRepeat(true);
+            ImGui::PushID(item);
+            if(ImGui::ArrowButton("##Down", ImGuiDir_Down)) {
+                item->DecrementCount();
+            }
+            ImGui::PopID();
+            ImGui::PopButtonRepeat();
             ++item_number;
         }
 
         ImGui::EndTable();
     }
+    ImGui::PopID();
 }
 
 #endif
