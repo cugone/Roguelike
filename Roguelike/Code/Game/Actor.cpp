@@ -300,6 +300,13 @@ Item* Actor::IsEquipped(const EquipSlot& slot) const noexcept {
     return nullptr;
 }
 
+bool Actor::IsEquipped(const EquipSlot& slot, const std::string& itemName) const noexcept {
+    if(const auto* equipped_item = IsEquipped(slot); equipped_item != nullptr) {
+        return equipped_item->GetName() == itemName;
+    }
+    return false;
+}
+
 void Actor::Equip(const EquipSlot& slot, Item* item) {
     if(slot == EquipSlot::None) {
         return;

@@ -44,6 +44,7 @@ public:
     bool MoveNorthWest();
 
     Item* IsEquipped(const EquipSlot& slot) const noexcept;
+    bool IsEquipped(const EquipSlot& slot, const std::string& itemName) const noexcept;
     void Equip(const EquipSlot& slot, Item* item);
     void Unequip(const EquipSlot& slot);
 
