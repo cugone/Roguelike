@@ -1530,7 +1530,7 @@ void Game::ShowEntityInspectorUI() {
             ImGui::Text("Entity Inspector: None");
             return;
         }
-        if(const auto* cur_entity = _debug_inspected_entity ? _debug_inspected_entity : (*picked_tiles)[0]->actor) {
+        if(auto* const cur_entity = _debug_inspected_entity ? _debug_inspected_entity : (*picked_tiles)[0]->actor) {
             if(const auto* cur_sprite = cur_entity->sprite) {
                 ImGui::Text("Entity Inspector");
                 ImGui::SameLine();
@@ -1614,7 +1614,7 @@ void Game::ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const Ani
     }
 }
 
-void Game::ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity) {
+void Game::ShowEntityInspectorInventoryColumnUI(Entity* const cur_entity) {
     if(!cur_entity) {
         return;
     }
@@ -1624,20 +1624,43 @@ void Game::ShowEntityInspectorInventoryColumnUI(const Entity* cur_entity) {
         ImGui::Text(ss.str().c_str());
         return;
     }
-    ss << "Inventory:";
-    for(const auto* item : cur_entity->inventory) {
-        const auto count = item->GetCount();
-        ss << '\n' << item->GetFriendlyName();
-        if(count > 1) {
-            ss << " x" << (count > 99u ? 99u : count);
+    if(ImGui::BeginTable("EntityInspectorInventory", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_NoHostExtendX | ImGuiTableFlags_SizingFixedSame )) {
+        ImGui::TableSetupColumn("Inventory##EntityInspectorInventoryTableItemColumnUI");
+        ImGui::TableSetupColumn("Count##EntityInspectorInventoryTableCountColumnUI");
+        ImGui::TableHeadersRow();
+        std::size_t item_number{0u};
+        for(auto* item : cur_entity->inventory) {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::Text(item->GetFriendlyName().c_str());
+            ImGui::SameLine();
+            const auto button_label = [&]() -> std::string {
+                if(auto* const asActor = dynamic_cast<Actor* const>(cur_entity); asActor) {
+                    if(asActor->IsEquipped(item->GetEquipSlot())) {
+                        return {"Unequip##Item" + std::to_string(item_number)};
+                    } else {
+                        return {"Equip##Item" + std::to_string(item_number)};
+                    }
+                }
+                return {};
+            }(); //IIIL
+            if(!button_label.empty()) {
+                if(ImGui::SmallButton(button_label.c_str())) {
+                    if(auto* const asActor = dynamic_cast<Actor* const>(cur_entity); asActor) {
+                        if(asActor->IsEquipped(item->GetEquipSlot())) {
+                            asActor->Equip(item->GetEquipSlot(), nullptr);
+                        } else {
+                            asActor->Equip(item->GetEquipSlot(), item);
+                        }
+                    }
+                }
+            }
+            ImGui::TableNextColumn();
+            ImGui::Text(std::to_string(item->GetCount()).c_str());
+            ++item_number;
         }
-    }
-    ImGui::Text(ss.str().c_str());
-    ImGui::SameLine();
-    if(const auto* asActor = dynamic_cast<const Actor*>(cur_entity); asActor) {
-        if(ImGui::SmallButton("Equip")) {
-            g_theConsole->RunCommand(std::string{"Equip "} + ss.str());
-        }
+
+        ImGui::EndTable();
     }
 }
 
