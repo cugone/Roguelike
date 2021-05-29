@@ -121,7 +121,7 @@ protected:
     std::string enterType{"void"};
     std::string exitType{"void"};
 
-    void FillConjoinedRoomsWithFloorTiles() noexcept;
+    void FillRoomsWithFloorTiles() noexcept;
     void LoadActors(const XMLElement& elem) override;
     void LoadItems(const XMLElement& elem) override;
     void LoadFeatures(const XMLElement& elem) override;

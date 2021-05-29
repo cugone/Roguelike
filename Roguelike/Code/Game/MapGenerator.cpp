@@ -253,10 +253,10 @@ void RoomsMapGenerator::Generate() {
             }
         }
     }
-    FillConjoinedRoomsWithFloorTiles();
+    FillRoomsWithFloorTiles();
 }
 
-void RoomsMapGenerator::FillConjoinedRoomsWithFloorTiles() noexcept {
+void RoomsMapGenerator::FillRoomsWithFloorTiles() noexcept {
     for(auto& room : rooms) {
         const auto room_floor_bounds = [&]() { AABB2 bounds = room; bounds.AddPaddingToSides(-1.0f, -1.0f); return bounds; }();
         const auto roomFloorTiles = _map->GetTilesInArea(room_floor_bounds);
@@ -351,7 +351,7 @@ void RoomsAndCorridorsMapGenerator::GenerateCorridors() noexcept {
             MakeHorizontalCorridor(r2, r1);
         }
     }
-    FillConjoinedRoomsWithFloorTiles();
+    FillRoomsWithFloorTiles();
 }
 
 void RoomsAndCorridorsMapGenerator::MakeVerticalCorridor(const AABB2& from, const AABB2& to) noexcept {
