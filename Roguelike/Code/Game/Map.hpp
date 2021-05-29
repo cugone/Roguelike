@@ -130,7 +130,7 @@ public:
         std::vector<Tile*> results;
         for(auto& tile : *layer0) {
             const auto& end_coords = tile.GetCoords();
-            if(predicate(start_coords, end_coords) < distance) {
+            if(std::invoke(std::forward<Pr>(predicate), start_coords, end_coords) < distance) {
                 results.push_back(&tile);
             }
         }
@@ -147,8 +147,8 @@ public:
         std::vector<Tile*> results;
         for(auto& tile : *layer0) {
             const auto& end_coords = tile.GetCoords();
-            const bool pLessD = predicate(start_coords, end_coords) < distance;
-            const bool dLessP = distance < predicate(start_coords, end_coords);
+            const bool pLessD = std::invoke(std::forward<Pr>(predicate), start_coords, end_coords) < distance;
+            const bool dLessP = distance < std::invoke(std::forward<Pr>(predicate), start_coords, end_coords);
             if(!pLessD && !dLessP) {
                 results.push_back(&tile);
             }
@@ -178,7 +178,7 @@ public:
     //     The predicate shall return true on impact.
     //************************************
     template<typename Pr>
-    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& direction, float maxDistance, bool ignoreSelf, Pr predicate) const {
+    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& direction, float maxDistance, bool ignoreSelf, Pr&& predicate) const {
         const auto endPosition = startPosition + (direction * maxDistance);
         IntVector2 currentTileCoords{startPosition};
         IntVector2 endTileCoords{endPosition};
@@ -216,7 +216,7 @@ public:
         float tOfNextYCrossing = std::abs(firstVerticalIntersectionY - startPosition.y) * tDeltaY;
 
         Map::RaycastResult2D result;
-        if(!ignoreSelf && predicate(currentTileCoords)) {
+        if(!ignoreSelf && std::invoke(std::forward<Pr>(predicate), currentTileCoords)) {
             result.didImpact = true;
             result.impactFraction = 0.0f;
             result.impactPosition = startPosition;
@@ -233,7 +233,7 @@ public:
                     return result;
                 }
                 currentTileCoords.x += tileStepX;
-                if(predicate(currentTileCoords)) {
+                if(std::invoke(std::forward<Pr>(predicate), currentTileCoords)) {
                     result.didImpact = true;
                     result.impactFraction = tOfNextXCrossing;
                     result.impactPosition = startPosition + (D * result.impactFraction);
@@ -248,7 +248,7 @@ public:
                     return result;
                 }
                 currentTileCoords.y += tileStepY;
-                if(predicate(currentTileCoords)) {
+                if(std::invoke(std::forward<Pr>(predicate), currentTileCoords)) {
                     result.didImpact = true;
                     result.impactFraction = tOfNextYCrossing;
                     result.impactPosition = startPosition + (D * result.impactFraction);
@@ -275,11 +275,11 @@ public:
     //     The predicate shall return true on impact.
     //************************************
     template<typename Pr>
-    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& endPosition, bool ignoreSelf, Pr predicate) const {
+    RaycastResult2D Raycast(const Vector2& startPosition, const Vector2& endPosition, bool ignoreSelf, Pr&& predicate) const {
         const auto displacement = endPosition - startPosition;
         const auto direction = displacement.GetNormalize();
         float length = displacement.CalcLength();
-        return Raycast(startPosition, direction, length, ignoreSelf, predicate);
+        return Raycast(startPosition, direction, length, ignoreSelf, std::forward<Pr>(predicate));
     }
 
     AABB2 CalcWorldBounds() const;
