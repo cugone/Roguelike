@@ -79,6 +79,9 @@ void Tile::Update(TimeUtils::FPSeconds deltaSeconds) {
         if(actor) {
             actor->Update(deltaSeconds);
         }
+        if(HasInventory() && inventory->size() == 1) {
+            inventory->GetItem(0)->GetSprite()->Update(deltaSeconds);
+        }
     }
 }
 
