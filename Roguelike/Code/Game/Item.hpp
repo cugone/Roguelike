@@ -51,7 +51,7 @@ public:
 
     explicit Item(ItemBuilder& builder) noexcept;
 
-    void Update(TimeUtils::FPSeconds deltaSeconds, const Vector2& position, Layer* parent_layer);
+    void Update(TimeUtils::FPSeconds deltaSeconds);
     void AddVerts(const Vector2& position, Layer* parent_layer) const;
 
     const Inventory& GetInventory() const noexcept;

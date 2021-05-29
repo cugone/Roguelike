@@ -79,11 +79,10 @@ Item::Item(ItemBuilder& builder) noexcept
     }
 }
 
-void Item::Update(TimeUtils::FPSeconds deltaSeconds, const Vector2& position, Layer* parent_layer) {
+void Item::Update(TimeUtils::FPSeconds deltaSeconds) {
     if(_sprite) {
         _sprite->Update(deltaSeconds);
     }
-    AddVerts(position, parent_layer);
 }
 
 void Item::AddVerts(const Vector2& position, Layer* parent_layer) const {
