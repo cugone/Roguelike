@@ -354,6 +354,7 @@ private:
     void LoadFeaturesForMap(const XMLElement& elem);
     void LoadItemsForMap(const XMLElement& elem);
 
+    bool AllowLightingDuringDay() const noexcept;
     void InitializeLighting(Layer* layer) noexcept;
     void CalculateLighting(Layer* layer) noexcept;
     void DirtyValidNeighbors(TileInfo& ti) noexcept;
@@ -401,6 +402,7 @@ private:
     mutable std::size_t _debug_visible_tiles_in_view_count{};
     static inline unsigned long long default_map_index = 0ull;
     bool _should_render_stat_window{false};
+    bool _allow_lighting_calculations_during_day{false};
 
     friend class MapGenerator;
     friend class HeightMapGenerator;

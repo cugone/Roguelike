@@ -51,6 +51,13 @@ const Rgba& Map::GetSkyColorForCave() noexcept {
     return g_clearcolor_cave;
 }
 
+bool Map::AllowLightingDuringDay() const noexcept {
+    if(_current_global_light == day_light_value) {
+        return _allow_lighting_calculations_during_day;
+    }
+    return true; //Not Day, lighting is a good idea.
+}
+
 void Map::CalculateLightingForLayers([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept {
     for(auto& layer : _layers) {
         CalculateLighting(layer.get());
@@ -300,8 +307,10 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
     UpdateLayers(deltaSeconds);
     UpdateTextEntities(deltaSeconds);
     UpdateEntities(deltaSeconds);
-    CalculateLightingForLayers(deltaSeconds);
-    UpdateLighting(deltaSeconds);
+    if(AllowLightingDuringDay()) {
+        CalculateLightingForLayers(deltaSeconds);
+        UpdateLighting(deltaSeconds);
+    }
     cameraController.TranslateTo(Vector2(player->tile->GetCoords()), deltaSeconds);
     const auto clamped_camera_position = MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
     cameraController.SetPosition(clamped_camera_position);
@@ -1030,7 +1039,7 @@ Tile* Map::GetTile(int x, int y, int z) const {
 
 bool Map::LoadFromXML(const XMLElement& elem) {
 
-    DataUtils::ValidateXmlElement(elem, "map", "tiles,material,mapGenerator", "name", "actors,features,items", "timeOfDay");
+    DataUtils::ValidateXmlElement(elem, "map", "tiles,material,mapGenerator", "name", "actors,features,items", "timeOfDay,allowLightingDuringDay");
     LoadTimeOfDayForMap(elem);
     LoadNameForMap(elem);
     LoadMaterialsForMap(elem);
@@ -1056,6 +1065,7 @@ void Map::LoadTimeOfDayForMap(const XMLElement& elem) {
         _current_sky_color = GetSkyColorForDay();
     }
     SetGlobalLightFromSkyColor();
+    _allow_lighting_calculations_during_day = DataUtils::ParseXmlAttribute(elem, "allowLightingDuringDay", false);
 }
 
 void Map::LoadNameForMap(const XMLElement& elem) {
