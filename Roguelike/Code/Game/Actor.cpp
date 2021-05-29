@@ -312,11 +312,11 @@ void Actor::Equip(const EquipSlot& slot, Item* item) {
         return;
     }
     auto& current_equipment = _equipment[static_cast<std::size_t>(slot)];
-    if(current_equipment) {
+    if(current_equipment) { //Remove existing equipment, reduce your stats by equipment's stats.
         this->AdjustStatModifiers(-current_equipment->GetStatModifiers());
     }
     current_equipment = item;
-    if(current_equipment) {
+    if(current_equipment) { //Don new equipment, add equipment's stats to your stats.
         this->AdjustStatModifiers(current_equipment->GetStatModifiers());
     }
     CalculateLightValue();
