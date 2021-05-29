@@ -37,9 +37,9 @@ public:
 
     explicit Inventory(const XMLElement& elem) noexcept;
 
-    void AddVerts(const Vector2& position, Layer* layer) const noexcept;
+    void AddVerts(const Vector2& position, Layer* layer) noexcept;
 
-    Item* HasItem(Item* item) const noexcept;
+    Item* HasItem(const Item* item) const noexcept;
     Item* HasItem(const std::string& name) const noexcept;
 
     void AddStack(Item* item, std::size_t count) noexcept;
