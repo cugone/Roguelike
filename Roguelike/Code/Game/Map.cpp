@@ -597,12 +597,8 @@ void Map::Render(Renderer& renderer) const {
     const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
     const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
-    auto ui_leftBottom = Vector2{-ui_view_half_extents.x, ui_view_half_extents.y};
-    auto ui_rightTop = Vector2{ui_view_half_extents.x, -ui_view_half_extents.y};
-    auto ui_nearFar = Vector2{0.0f, 1.0f};
-    ui_camera.SetPosition(ui_view_half_extents);
-    ui_camera.SetupView(ui_leftBottom, ui_rightTop, ui_nearFar, ui_camera.GetAspectRatio());
-    g_theRenderer->SetCamera(ui_camera);
+
+    renderer.BeginHUDRender(ui_camera, ui_view_half_extents, ui_view_height);
 
     for(auto* entity : _text_entities) {
         entity->Render();
