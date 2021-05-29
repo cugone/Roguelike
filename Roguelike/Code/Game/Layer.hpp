@@ -52,12 +52,14 @@ public:
 
     const Map* GetMap() const;
     Map* GetMap();
-    Tile* GetTile(std::size_t x, std::size_t y);
-    Tile* GetTile(std::size_t index);
-    std::size_t GetTileIndex(std::size_t x, std::size_t y) noexcept;
+    const Tile* GetTile(std::size_t x, std::size_t y) const noexcept;
+    Tile* GetTile(std::size_t x, std::size_t y) noexcept;
+    const Tile* GetTile(std::size_t index) const noexcept;
+    Tile* GetTile(std::size_t index) noexcept;
+    std::size_t GetTileIndex(std::size_t x, std::size_t y) const noexcept;
 
-    Tile* GetNeighbor(const NeighborDirection& direction);
-    Tile* GetNeighbor(const IntVector2& direction);
+    const Tile* GetNeighbor(const NeighborDirection& direction);
+    const Tile* GetNeighbor(const IntVector2& direction);
 
     void DirtyMesh() noexcept;
 

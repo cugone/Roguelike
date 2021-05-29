@@ -51,7 +51,7 @@ Layer::Layer(Map* map, const IntVector2& dimensions)
     }
 }
 
-Tile* Layer::GetNeighbor(const NeighborDirection& direction) {
+const Tile* Layer::GetNeighbor(const NeighborDirection& direction) {
     switch(direction) {
     case NeighborDirection::Self:
         return GetNeighbor(IntVector2::ZERO);
@@ -76,7 +76,7 @@ Tile* Layer::GetNeighbor(const NeighborDirection& direction) {
     }
 }
 
-Tile* Layer::GetNeighbor(const IntVector2& direction) {
+const Tile* Layer::GetNeighbor(const IntVector2& direction) {
     return GetTile(direction.x, direction.y);
 }
 
@@ -372,17 +372,25 @@ Map* Layer::GetMap() {
     return _map;
 }
 
-Tile* Layer::GetTile(std::size_t x, std::size_t y) {
+const Tile* Layer::GetTile(std::size_t x, std::size_t y) const noexcept {
     return GetTile(x + (y * tileDimensions.x));
 }
 
-std::size_t Layer::GetTileIndex(std::size_t x, std::size_t y) noexcept {
-    return x + (y * tileDimensions.x);
+Tile* Layer::GetTile(std::size_t x, std::size_t y) noexcept {
+    return const_cast<Tile*>(static_cast<const Layer&>(*this).GetTile(x, y));
 }
 
-Tile* Layer::GetTile(std::size_t index) {
+const Tile* Layer::GetTile(std::size_t index) const noexcept {
     if(index >= _tiles.size()) {
         return nullptr;
     }
     return &_tiles[index];
+}
+
+Tile* Layer::GetTile(std::size_t index) noexcept {
+    return const_cast<Tile*>(static_cast<const Layer&>(*this).GetTile(index));
+}
+
+std::size_t Layer::GetTileIndex(std::size_t x, std::size_t y) const noexcept {
+    return x + (y * tileDimensions.x);
 }
