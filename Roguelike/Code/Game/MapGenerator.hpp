@@ -130,6 +130,22 @@ private:
 
 };
 
+class RoomsOnlyMapGenerator : public RoomsMapGenerator {
+public:
+    RoomsOnlyMapGenerator() = delete;
+    explicit RoomsOnlyMapGenerator(Map* map, const XMLElement& elem) noexcept;
+    RoomsOnlyMapGenerator(const RoomsOnlyMapGenerator& other) = delete;
+    RoomsOnlyMapGenerator(RoomsOnlyMapGenerator&& other) = delete;
+    RoomsOnlyMapGenerator& operator=(const RoomsOnlyMapGenerator& other) = delete;
+    RoomsOnlyMapGenerator& operator=(RoomsOnlyMapGenerator&& other) = delete;
+    virtual ~RoomsOnlyMapGenerator() noexcept = default;
+    void Generate() override;
+protected:
+
+private:
+
+};
+
 class RoomsAndCorridorsMapGenerator : public RoomsMapGenerator {
 public:
     RoomsAndCorridorsMapGenerator() = delete;

@@ -411,6 +411,7 @@ private:
     friend class FileMapGenerator;
     friend class XmlMapGenerator;
     friend class RoomsMapGenerator;
+    friend class RoomsOnlyMapGenerator;
     friend class RoomsAndCorridorsMapGenerator;
     friend class Adventure;
 };

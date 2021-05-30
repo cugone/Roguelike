@@ -174,6 +174,9 @@ void MazeMapGenerator::Generate(Map* map, const XMLElement& elem) {
     if(algoName == "rooms") {
         map->_map_generator = std::make_unique<RoomsMapGenerator>(map, elem);
         map->_map_generator->Generate();
+    } else if(algoName == "roomsOnly") {
+        map->_map_generator = std::make_unique<RoomsOnlyMapGenerator>(map, elem);
+        map->_map_generator->Generate();
     } else if(algoName == "roomsAndCorridors") {
         map->_map_generator = std::make_unique<RoomsAndCorridorsMapGenerator>(map, elem);
         map->_map_generator->Generate();
@@ -187,36 +190,6 @@ RoomsMapGenerator::RoomsMapGenerator(Map* map, const XMLElement& elem) noexcept
 }
 
 void RoomsMapGenerator::Generate() {
-    //TODO: Generate using "floorplan" algorithm here: https://www.reddit.com/r/roguelikedev/comments/310ae2/looking_for_a_bit_of_help_on_a_dungeon_generator/cpxrfbh?utm_source=share&utm_medium=web2x&context=3
-    //1.  Make up some general constraints, like maximum and minimum room width & height.
-    //2.  You need some sort of generic "room" construct, abstract from the map.
-    //    Rooms are basically just rectangles with a top (y), left (x), width, height.
-    //    From there, it is simple to know what tiles are floor, walls, or corner walls.
-    //3.  Place a single (random size) room somewhere on the map;
-    //        add it to a list of rooms.
-    //4.  Begin Loop while % of tiles in rooms is < threshold% of map:
-    //5.      Pick a room out of your list of rooms (initialized in step 3);
-    //            this is your "base" room, for this pass.
-    //6.      Pick a random wall (non corner) of that base room.
-    //7.      Make a "new" room, new random height, width (x, y will be determined in the next step).
-    //8.      Place the new room such that it overlaps that wall/side of the base room;
-    //        you can "slide" it up and down or left-to-right according to the new room's width.
-    //        Make sure the walls actually overlap;
-    //        you don't want double walls because that's ugly and makes doors look stupid.
-    //9.      Check the corner of this new room;
-    //        if it's outside of the map;
-    //            chuck it out and start over at step 4.
-    //10.     Check to see if the new room overlaps any existing rooms;
-    //            if so, chuck it out and start over at step 4.
-    //11.     Add the new room to the list of rooms;
-    //            Make sure to keep track of the specific wall coordinate that you picked in step 5;
-    //            this will be a candidate for a door.
-    //12. End Loop;
-    //until the map is filled up to X%.
-    //Keep in mind the higher X%;
-    //the longer the algorithm will take to find that one last tiny,
-    //perfectly-shaped room to fit and bump you over the percentage requirement.
-
     DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "minSize,maxSize", "count,floor,wall,default", "", "down,up,enter,exit,width,height");
     const auto min_size = std::clamp([&]()->const int { const auto* xml_min = _xml_element.FirstChildElement("minSize"); int result = DataUtils::ParseXmlElementText(*xml_min, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
     const auto max_size = std::clamp([&]()->const int { const auto* xml_max = _xml_element.FirstChildElement("maxSize"); int result = DataUtils::ParseXmlElementText(*xml_max, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
@@ -345,6 +318,45 @@ void RoomsMapGenerator::LoadFeatures(const XMLElement& elem) {
                 _map->_features.push_back(feature);
             });
     }
+}
+
+
+RoomsOnlyMapGenerator::RoomsOnlyMapGenerator(Map* map, const XMLElement& elem) noexcept
+    : RoomsMapGenerator(map, elem)
+{
+    /* DO NOTHING */
+}
+
+void RoomsOnlyMapGenerator::Generate() {
+    //TODO: Generate using "floorplan" algorithm here: https://www.reddit.com/r/roguelikedev/comments/310ae2/looking_for_a_bit_of_help_on_a_dungeon_generator/cpxrfbh?utm_source=share&utm_medium=web2x&context=3
+    //1.  Make up some general constraints, like maximum and minimum room width & height.
+    //2.  You need some sort of generic "room" construct, abstract from the map.
+    //    Rooms are basically just rectangles with a top (y), left (x), width, height.
+    //    From there, it is simple to know what tiles are floor, walls, or corner walls.
+    //3.  Place a single (random size) room somewhere on the map;
+    //        add it to a list of rooms.
+    //4.  Begin Loop while % of tiles in rooms is < threshold% of map:
+    //5.      Pick a room out of your list of rooms (initialized in step 3);
+    //            this is your "base" room, for this pass.
+    //6.      Pick a random wall (non corner) of that base room.
+    //7.      Make a "new" room, new random height, width (x, y will be determined in the next step).
+    //8.      Place the new room such that it overlaps that wall/side of the base room;
+    //        you can "slide" it up and down or left-to-right according to the new room's width.
+    //        Make sure the walls actually overlap;
+    //        you don't want double walls because that's ugly and makes doors look stupid.
+    //9.      Check the corner of this new room;
+    //        if it's outside of the map;
+    //            chuck it out and start over at step 4.
+    //10.     Check to see if the new room overlaps any existing rooms;
+    //            if so, chuck it out and start over at step 4.
+    //11.     Add the new room to the list of rooms;
+    //            Make sure to keep track of the specific wall coordinate that you picked in step 5;
+    //            this will be a candidate for a door.
+    //12. End Loop;
+    //until the map is filled up to X%.
+    //Keep in mind the higher X%;
+    //the longer the algorithm will take to find that one last tiny,
+    //perfectly-shaped room to fit and bump you over the percentage requirement.
 }
 
 RoomsAndCorridorsMapGenerator::RoomsAndCorridorsMapGenerator(Map* map, const XMLElement& elem) noexcept
