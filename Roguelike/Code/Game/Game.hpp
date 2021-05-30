@@ -213,6 +213,9 @@ private:
     GameState _nextGameState = GameState::Title;
     std::condition_variable _loading_signal{};
     uint8_t _player_requested_wait : 1;
+    uint8_t _done_loading : 1;
+    uint8_t _reset_loading_flag : 1;
+    uint8_t _skip_frame : 1;
     uint8_t _debug_has_picked_entity_with_click : 1;
     uint8_t _debug_has_picked_feature_with_click : 1;
     uint8_t _debug_has_picked_tile_with_click : 1;
@@ -228,9 +231,6 @@ private:
     uint8_t _debug_show_all_entities : 1;
     uint8_t _debug_show_camera : 1;
     uint8_t _debug_show_room_bounds : 1;
-    uint8_t _done_loading : 1;
-    uint8_t _reset_loading_flag : 1;
-    uint8_t _skip_frame : 1;
     friend class Map;
     friend class Layer;
     friend class Tile;

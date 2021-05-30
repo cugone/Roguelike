@@ -38,10 +38,13 @@
 #include <string>
 
 Game::Game()
-    :_debug_has_picked_entity_with_click{0}
+    : _player_requested_wait{0}
+    , _done_loading{0}
+    , _reset_loading_flag{0}
+    , _skip_frame{0}
+    , _debug_has_picked_entity_with_click{0}
     , _debug_has_picked_feature_with_click{0}
     , _debug_has_picked_tile_with_click{0}
-    , _player_requested_wait{0}
     , _debug_render{0}
     , _debug_show_grid{0}
     , _debug_show_debug_window{0}
@@ -54,8 +57,6 @@ Game::Game()
     , _debug_show_all_entities{0}
     , _debug_show_camera{0}
     , _debug_show_room_bounds{0}
-    , _done_loading{0}
-    , _reset_loading_flag{0}
 {
     /* DO NOTHING */
 }
