@@ -303,6 +303,8 @@ public:
     Tile* PickTileFromWorldCoords(const Vector2& worldCoords, int layerIndex) const;
     Tile* PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) const;
 
+    Vector2 GetSubTileLocationFromMouseCoords(const Vector2& mouseCoords) const noexcept;
+
     bool MoveOrAttack(Actor* actor, Tile* tile);
 
     void SetDebugGridColor(const Rgba& gridColor);

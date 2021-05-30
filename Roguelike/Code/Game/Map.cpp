@@ -255,6 +255,13 @@ Tile* Map::PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) c
     return PickTileFromWorldCoords(world_coords, layerIndex);
 }
 
+Vector2 Map::GetSubTileLocationFromMouseCoords(const Vector2& mouseCoords) const noexcept {
+    const auto& world_coords = _renderer.ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
+    const auto&& [x_int, x_frac] = MathUtils::SplitFloatingPointValue(world_coords.x);
+    const auto&& [y_int, y_frac] = MathUtils::SplitFloatingPointValue(world_coords.y);
+    return Vector2{x_frac, y_frac};
+}
+
 bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
     if(!actor || !tile) {
         return false;
