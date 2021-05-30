@@ -149,7 +149,7 @@ void Tile::AddVertsForTile() const noexcept {
 
 void Tile::DebugRender(Renderer& renderer) const {
     Entity* entity = (actor ? dynamic_cast<Entity*>(actor) : (feature ? dynamic_cast<Entity*>(feature) : nullptr));
-    if(g_theGame->_show_all_entities && entity) {
+    if(g_theGame->_debug_show_all_entities && entity) {
         auto tile_bounds = GetBounds();
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
         renderer.SetModelMatrix(Matrix4::I);

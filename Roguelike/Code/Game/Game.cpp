@@ -43,17 +43,17 @@ Game::Game()
     , _debug_has_picked_tile_with_click{0}
     , _player_requested_wait{0}
     , _debug_render{0}
-    , _show_grid{0}
-    , _show_debug_window{0}
-    , _show_raycasts{0}
-    , _show_world_bounds{0}
-    , _show_camera_bounds{0}
-    , _show_tile_debugger{0}
-    , _show_entity_debugger{0}
-    , _show_feature_debugger{0}
-    , _show_all_entities{0}
-    , _show_camera{0}
-    , _show_room_bounds{0}
+    , _debug_show_grid{0}
+    , _debug_show_debug_window{0}
+    , _debug_show_raycasts{0}
+    , _debug_show_world_bounds{0}
+    , _debug_show_camera_bounds{0}
+    , _debug_show_tile_debugger{0}
+    , _debug_show_entity_debugger{0}
+    , _debug_show_feature_debugger{0}
+    , _debug_show_all_entities{0}
+    , _debug_show_camera{0}
+    , _debug_show_room_bounds{0}
     , _done_loading{0}
     , _reset_loading_flag{0}
 {
@@ -371,7 +371,7 @@ void Game::OnExitState(const GameState& state) {
 
 const bool Game::IsDebugWindowOpen() const noexcept {
 #ifdef PROFILE_BUILD
-    return _show_debug_window;
+    return _debug_show_debug_window;
 #else
     return false;
 #endif
@@ -835,7 +835,7 @@ void Game::ZoomIn() {
 
 void Game::HandleDebugInput() {
 #ifdef PROFILE_BUILD
-    if(_show_debug_window) {
+    if(_debug_show_debug_window) {
         ShowDebugUI();
     }
     HandleDebugKeyboardInput();
@@ -848,7 +848,7 @@ void Game::HandleDebugKeyboardInput() {
     if(g_theUISystem->WantsInputKeyboardCapture()) {
         return;
     }
-    if(!_show_debug_window && !g_theUISystem->IsAnyImguiDebugWindowVisible()) {
+    if(!_debug_show_debug_window && !g_theUISystem->IsAnyImguiDebugWindowVisible()) {
         g_theInputSystem->HideMouseCursor();
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::J)) {
@@ -859,7 +859,7 @@ void Game::HandleDebugKeyboardInput() {
         }
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::F1)) {
-        _show_debug_window = !_show_debug_window;
+        _debug_show_debug_window = !_debug_show_debug_window;
         if(!g_theInputSystem->IsMouseCursorVisible()) {
             g_theInputSystem->ShowMouseCursor();
         }
@@ -902,9 +902,9 @@ void Game::HandleDebugMouseInput() {
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::LButton)) {
         const auto& picked_tiles = DebugGetTilesFromCursor();
-        _debug_has_picked_tile_with_click = _show_tile_debugger && picked_tiles.has_value();
-        _debug_has_picked_entity_with_click = _show_entity_debugger && picked_tiles.has_value();
-        _debug_has_picked_feature_with_click = _show_feature_debugger && picked_tiles.has_value();
+        _debug_has_picked_tile_with_click = _debug_show_tile_debugger && picked_tiles.has_value();
+        _debug_has_picked_entity_with_click = _debug_show_entity_debugger && picked_tiles.has_value();
+        _debug_has_picked_feature_with_click = _debug_show_feature_debugger && picked_tiles.has_value();
         if(_debug_has_picked_tile_with_click) {
             _debug_inspected_tiles = (*picked_tiles);
         }
@@ -949,7 +949,7 @@ void Game::ShowDebugUI() {
 }
 
 void Game::ShowTileDebuggerUI() {
-    if(_show_tile_debugger = ImGui::BeginTabItem("Tile", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | ImGuiTabItemFlags_NoReorder); _show_tile_debugger) {
+    if(_debug_show_tile_debugger = ImGui::BeginTabItem("Tile", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | ImGuiTabItemFlags_NoReorder); _debug_show_tile_debugger) {
         ShowTileInspectorUI();
         ImGui::EndTabItem();
     }
@@ -1048,14 +1048,14 @@ void Game::ShowEffectsUI() {
 }
 
 void Game::ShowEntityDebuggerUI() {
-    if(_show_entity_debugger = ImGui::BeginTabItem("Entity", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | ImGuiTabItemFlags_NoReorder); _show_entity_debugger) {
+    if(_debug_show_entity_debugger = ImGui::BeginTabItem("Entity", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | ImGuiTabItemFlags_NoReorder); _debug_show_entity_debugger) {
         ShowEntityInspectorUI();
         ImGui::EndTabItem();
     }
 }
 
 void Game::ShowFeatureDebuggerUI() {
-    if(_show_feature_debugger = ImGui::BeginTabItem("Feature", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | ImGuiTabItemFlags_NoReorder); _show_feature_debugger) {
+    if(_debug_show_feature_debugger = ImGui::BeginTabItem("Feature", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | ImGuiTabItemFlags_NoReorder); _debug_show_feature_debugger) {
         ShowFeatureInspectorUI();
         ImGui::EndTabItem();
     }
@@ -1092,30 +1092,30 @@ void Game::ShowWorldInspectorUI() {
         ImGui::Text("Tiles visible in view: %llu", _adventure->currentMap->DebugVisibleTilesInViewCount());
         static bool show_camera = false;
         ImGui::Checkbox("Show Camera", &show_camera);
-        _show_camera = show_camera;
+        _debug_show_camera = show_camera;
         static bool show_grid = false;
         ImGui::Checkbox("World Grid", &show_grid);
-        _show_grid = show_grid;
+        _debug_show_grid = show_grid;
         ImGui::SameLine();
         if(ImGui::ColorEdit4("Grid Color##Picker", _grid_color, ImGuiColorEditFlags_NoLabel)) {
             _adventure->currentMap->SetDebugGridColor(_grid_color);
         }
         static bool show_world_bounds = false;
         ImGui::Checkbox("World Bounds", &show_world_bounds);
-        _show_world_bounds = show_world_bounds;
+        _debug_show_world_bounds = show_world_bounds;
         static bool show_camera_bounds = false;
         ImGui::Checkbox("Camera Bounds", &show_camera_bounds);
-        _show_camera_bounds = show_camera_bounds;
+        _debug_show_camera_bounds = show_camera_bounds;
         static bool show_room_bounds = false;
         ImGui::Checkbox("Show Room Bounds", &show_room_bounds);
-        _show_room_bounds = show_room_bounds;
+        _debug_show_room_bounds = show_room_bounds;
         static bool show_all_entities = false;
         ImGui::Checkbox("Show All Entities", &show_all_entities);
-        _show_all_entities = show_all_entities;
+        _debug_show_all_entities = show_all_entities;
         static bool show_raycasts = false;
         ImGui::Checkbox("Show raycasts", &show_raycasts);
-        _show_raycasts = show_raycasts;
-        _debug_render = _show_room_bounds || _show_camera || _show_grid || _show_world_bounds || _show_camera_bounds || _show_all_entities || _show_raycasts;
+        _debug_show_raycasts = show_raycasts;
+        _debug_render = _debug_show_room_bounds || _debug_show_camera || _debug_show_grid || _debug_show_world_bounds || _debug_show_camera_bounds || _debug_show_all_entities || _debug_show_raycasts;
         ImGui::EndTabItem();
     }
 }

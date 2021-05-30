@@ -619,13 +619,13 @@ void Map::DebugRender(Renderer& renderer) const {
     if(!g_theGame->_debug_render) {
         return;
     }
-    if(g_theGame->_show_grid) {
+    if(g_theGame->_debug_show_grid) {
         renderer.SetModelMatrix(Matrix4::I);
         const auto* layer = GetLayer(0);
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
         renderer.DrawWorldGrid2D(layer->tileDimensions, layer->debug_grid_color);
     }
-    if(g_theGame->_show_room_bounds) {
+    if(g_theGame->_debug_show_room_bounds) {
         if(auto* generator = dynamic_cast<RoomsMapGenerator*>(_map_generator.get()); generator != nullptr) {
             for(auto& room : generator->rooms) {
                 renderer.SetModelMatrix(Matrix4::I);
@@ -634,19 +634,19 @@ void Map::DebugRender(Renderer& renderer) const {
             }
         }
     }
-    if(g_theGame->_show_world_bounds) {
+    if(g_theGame->_debug_show_world_bounds) {
         auto bounds = CalcWorldBounds();
         renderer.SetModelMatrix(Matrix4::I);
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
         renderer.DrawAABB2(bounds, Rgba::Cyan, Rgba::NoAlpha);
     }
-    if(g_theGame->_show_camera_bounds) {
+    if(g_theGame->_debug_show_camera_bounds) {
         auto bounds = CalcCameraBounds();
         renderer.SetModelMatrix(Matrix4::I);
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
         renderer.DrawAABB2(bounds, Rgba::Orange, Rgba::NoAlpha);
     }
-    if(g_theGame->_show_camera) {
+    if(g_theGame->_debug_show_camera) {
         const auto& cam_pos = cameraController.GetCamera().GetPosition();
         renderer.SetMaterial(renderer.GetMaterial("__2D"));
         renderer.DrawCircle2D(cam_pos, 0.5f, Rgba::Cyan);
