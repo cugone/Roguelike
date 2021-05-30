@@ -1092,7 +1092,14 @@ void Game::ShowFrameInspectorUI() {
 void Game::ShowWorldInspectorUI() {
     if(ImGui::BeginTabItem("World", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | ImGuiTabItemFlags_NoReorder)) {
         ImGui::Text("View height: %.0f", _adventure->currentMap->cameraController.GetCamera().GetViewHeight());
+        ImGui::Text("World dimensions: %.0f, %.0f", _adventure->currentMap->CalcMaxDimensions().x, _adventure->currentMap->CalcMaxDimensions().y);
         ImGui::Text("Camera: [%.1f,%.1f]", _adventure->currentMap->cameraController.GetCamera().position.x, _adventure->currentMap->cameraController.GetCamera().position.y);
+        {
+            const auto& mouse_coords = g_theRenderer->ConvertScreenToWorldCoords(_adventure->currentMap->cameraController.GetCamera(), g_theInputSystem->GetMouseCoords());
+            ImGui::Text("Mouse: [%.1f,%.1f]", mouse_coords.x, mouse_coords.y);
+            const auto& cursor_coords = current_cursor->GetCoords();
+            ImGui::Text("Cursor: [%d,%d]", cursor_coords.x, cursor_coords.y);
+        }
         ImGui::Text("Tiles in view: %llu", _adventure->currentMap->DebugTilesInViewCount());
         ImGui::Text("Tiles visible in view: %llu", _adventure->currentMap->DebugVisibleTilesInViewCount());
         static bool show_camera = false;
