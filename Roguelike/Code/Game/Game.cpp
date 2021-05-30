@@ -935,6 +935,8 @@ void Game::HandleDebugMouseInput() {
 #endif
 }
 
+#pragma region Imgui UI Debugger Code
+
 #ifdef PROFILE_BUILD
 
 void Game::ShowDebugUI() {
@@ -1592,3 +1594,5 @@ void Game::ShowEntityInspectorInventoryColumnUI(Entity* const cur_entity) {
 }
 
 #endif
+
+#pragma endregion
