@@ -147,7 +147,8 @@ void Tile::AddVertsForTile() const noexcept {
 
 }
 
-void Tile::DebugRender(Renderer& renderer) const {
+void Tile::DebugRender([[maybe_unused]]Renderer& renderer) const {
+#ifdef UI_DEBUG
     Entity* entity = (actor ? dynamic_cast<Entity*>(actor) : (feature ? dynamic_cast<Entity*>(feature) : nullptr));
     if(g_theGame->_debug_show_all_entities && entity) {
         auto tile_bounds = GetBounds();
@@ -155,6 +156,7 @@ void Tile::DebugRender(Renderer& renderer) const {
         renderer.SetModelMatrix(Matrix4::I);
         renderer.DrawAABB2(tile_bounds, Rgba::Red, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
     }
+#endif
 }
 
 void Tile::AddVertsForOverlay() const noexcept {

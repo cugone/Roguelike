@@ -612,7 +612,8 @@ void Map::Render(Renderer& renderer) const {
 
 }
 
-void Map::DebugRender(Renderer& renderer) const {
+void Map::DebugRender([[maybe_unused]] Renderer& renderer) const {
+#ifdef UI_DEBUG
     for(const auto& layer : _layers) {
         layer->DebugRender(renderer);
     }
@@ -653,6 +654,7 @@ void Map::DebugRender(Renderer& renderer) const {
         renderer.DrawAABB2(GetLayer(0)->CalcViewBounds(cam_pos), Rgba::Green, Rgba::NoAlpha);
         renderer.DrawAABB2(GetLayer(0)->CalcCullBounds(cam_pos), Rgba::Blue, Rgba::NoAlpha);
     }
+#endif
 }
 
 void Map::EndFrame() {

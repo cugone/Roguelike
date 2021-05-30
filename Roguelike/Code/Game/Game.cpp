@@ -42,6 +42,7 @@ Game::Game()
     , _done_loading{0}
     , _reset_loading_flag{0}
     , _skip_frame{0}
+#ifdef UI_DEBUG
     , _debug_has_picked_entity_with_click{0}
     , _debug_has_picked_feature_with_click{0}
     , _debug_has_picked_tile_with_click{0}
@@ -57,6 +58,7 @@ Game::Game()
     , _debug_show_all_entities{0}
     , _debug_show_camera{0}
     , _debug_show_room_bounds{0}
+#endif
 {
     /* DO NOTHING */
 }
@@ -230,9 +232,11 @@ void Game::Render_Main() const {
 
     _adventure->currentMap->Render(*g_theRenderer);
 
+#ifdef UI_DEBUG
     if(_debug_render) {
         _adventure->currentMap->DebugRender(*g_theRenderer);
     }
+#endif
 
     g_theRenderer->BeginRenderToBackbuffer(Rgba::NoAlpha);
     g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("Fullscreen"));
