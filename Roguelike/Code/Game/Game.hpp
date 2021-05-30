@@ -46,10 +46,10 @@ enum class GameState {
 
 enum class CursorId {
     First_
-    , Green_Box = First_
-    , Question
+    , Yellow_Corner_Box = First_
+    , Green_Box
     , Red_Crosshair_Box
-    , Yellow_Corner_Box
+    , Question
     , Last_
     , Max = Last_
 };
