@@ -102,21 +102,17 @@ bool Actor::CanMoveDiagonallyToNeighbor(const IntVector2& direction) const {
     if(pos.x == target.x || pos.y == target.y) {
         return true;
     }
-    {
-        if(const auto test_tiles = map->GetTiles(pos.x, target.y); test_tiles.has_value()) {
-            for(const auto* t : (*test_tiles)) {
-                if(t && t->IsSolid()) {
-                    return false;
-                }
+    if(const auto test_tiles = map->GetTiles(pos.x, target.y); test_tiles.has_value()) {
+        for(const auto* t : (*test_tiles)) {
+            if(t && t->IsSolid()) {
+                return false;
             }
         }
     }
-    {
-        if(const auto test_tiles = map->GetTiles(target.x, pos.y); test_tiles.has_value()) {
-            for(const auto* t : *test_tiles) {
-                if(t && t->IsSolid()) {
-                    return false;
-                }
+    if(const auto test_tiles = map->GetTiles(target.x, pos.y); test_tiles.has_value()) {
+        for(const auto* t : *test_tiles) {
+            if(t && t->IsSolid()) {
+                return false;
             }
         }
     }
