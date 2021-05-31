@@ -47,6 +47,7 @@ private:
     void LoadFeatures(const XMLElement& elem) override;
 };
 
+//TODO: Implement binary files
 class FileMapGenerator : public MapGenerator {
 public:
     FileMapGenerator() = delete;
