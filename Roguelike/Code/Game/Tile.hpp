@@ -64,6 +64,7 @@ public:
     Item* AddItem(const std::string& name) noexcept;
 
     const IntVector2 GetCoords() const;
+    void SetCoords(std::size_t index);
     void SetCoords(int x, int y);
     void SetCoords(const IntVector2& coords);
     

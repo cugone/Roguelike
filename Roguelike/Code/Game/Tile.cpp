@@ -351,6 +351,12 @@ Item* Tile::AddItem(const std::string& name) noexcept {
     return inventory->AddItem(name);
 }
 
+void Tile::SetCoords(std::size_t index) {
+    const auto x = static_cast<int>(index / layer->tileDimensions.x);
+    const auto y = static_cast<int>(index % layer->tileDimensions.x);
+    SetCoords(x, y);
+}
+
 void Tile::SetCoords(int x, int y) {
     SetCoords(IntVector2{x, y});
 }
