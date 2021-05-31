@@ -276,8 +276,7 @@ void RoomsMapGenerator::CreateOrOverwriteLayer(const int width, const int height
 
 void RoomsMapGenerator::FillRoomsWithFloorTiles() noexcept {
     for(auto& room : rooms) {
-        const auto room_floor_bounds = [&]() { AABB2 bounds = room; bounds.AddPaddingToSides(-1.0f, -1.0f); return bounds; }();
-        const auto roomFloorTiles = _map->GetTilesInArea(room_floor_bounds);
+        const auto roomFloorTiles = _map->GetTilesInArea(room);
         for(auto& tile : roomFloorTiles) {
             if(tile) {
                 tile->ChangeTypeFromName(floorType);
