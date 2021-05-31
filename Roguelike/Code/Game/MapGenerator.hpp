@@ -118,6 +118,7 @@ public:
     void CreateOrOverwriteLayer(const int width, const int height) noexcept;
 
     std::vector<AABB2> rooms{};
+    std::vector<IntVector2> doors{};
 protected:
     std::string defaultType{"void"};
     std::string floorType{"void"};
