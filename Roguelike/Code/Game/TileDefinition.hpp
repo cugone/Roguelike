@@ -27,7 +27,6 @@ public:
 
     static TileDefinition* GetTileDefinitionByName(const std::string& name);
     static TileDefinition* GetTileDefinitionByGlyph(char glyph);
-    static void ClearTileRegistry();
 
     bool is_opaque = false;
     bool is_visible = true;

@@ -53,10 +53,6 @@ TileDefinition* TileDefinition::GetTileDefinitionByGlyph(char glyph) {
     return nullptr;
 }
 
-void TileDefinition::ClearTileRegistry() {
-    s_registry.clear();
-}
-
 uint32_t TileDefinition::GetLightingBits() const noexcept {
     if(is_opaque && is_solid) {
         return tile_flags_opaque_mask | tile_flags_solid_mask;
