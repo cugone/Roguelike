@@ -20,8 +20,6 @@
 #include <cmath>
 #include <random>
 
-void MakeCorridorSegmentAt(Map* map, float x, const  float y) noexcept;
-
 MapGenerator::MapGenerator(Map* map, const XMLElement& elem) noexcept
     : _xml_element(elem)
     , _map(map)
