@@ -413,13 +413,12 @@ void RoomsOnlyMapGenerator::Generate() {
     //the longer the algorithm will take to find that one last tiny,
     //perfectly-shaped room to fit and bump you over the percentage requirement.
 
-    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "minSize,maxSize", "count,floor,wall", "", "coverage,down,up,enter,exit,width,height");
+    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "minSize,maxSize", "floor,wall", "", "coverage,down,up,enter,exit,width,height");
     //Step 1.
     const auto max_tile_coverage = DataUtils::ParseXmlAttribute(_xml_element, "coverage", 0.10f);
     GUARANTEE_OR_DIE(0.0f <= max_tile_coverage && max_tile_coverage <= 1.0f, "RoomsOnlyMapGenerator: coverage value out of [0.0, 1.0f] range.");
     const auto min_size = std::clamp([&]()->const int { const auto* xml_min = _xml_element.FirstChildElement("minSize"); int result = DataUtils::ParseXmlElementText(*xml_min, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
     const auto max_size = std::clamp([&]()->const int { const auto* xml_max = _xml_element.FirstChildElement("maxSize"); int result = DataUtils::ParseXmlElementText(*xml_max, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
-    const int room_count = DataUtils::ParseXmlAttribute(_xml_element, "count", 1);
     const int width = std::clamp(DataUtils::ParseXmlAttribute(_xml_element, "width", 1), 1, Map::max_dimension);
     const int height = std::clamp(DataUtils::ParseXmlAttribute(_xml_element, "height", 1), 1, Map::max_dimension);
     GetTileTypes();
@@ -429,8 +428,6 @@ void RoomsOnlyMapGenerator::Generate() {
     for(auto& tile : *_map->GetLayer(0)) {
         tile.ChangeTypeFromName(defaultType);
     }
-
-    rooms.reserve(room_count);
     //Step 2.
     //Step 3.
     {
