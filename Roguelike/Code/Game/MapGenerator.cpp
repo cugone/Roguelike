@@ -235,13 +235,8 @@ void RoomsMapGenerator::Generate() {
             _map->_layers[0] = std::move(std::make_unique<Layer>(_map, IntVector2{map_width, map_height}));
         }
     }
-    floorType = DataUtils::ParseXmlAttribute(_xml_element, "floor", floorType);
-    wallType = DataUtils::ParseXmlAttribute(_xml_element, "wall", wallType);
-    defaultType = DataUtils::ParseXmlAttribute(_xml_element, "default", defaultType);
-    stairsDownType = DataUtils::ParseXmlAttribute(_xml_element, "down", stairsDownType);
-    stairsUpType = DataUtils::ParseXmlAttribute(_xml_element, "up", stairsUpType);
-    enterType = DataUtils::ParseXmlAttribute(_xml_element, "enter", enterType);
-    exitType = DataUtils::ParseXmlAttribute(_xml_element, "exit", exitType);
+    GetTileTypes();
+
 
     if(auto* layer = _map->GetLayer(0); layer != nullptr) {
         for(auto& tile : *layer) {
@@ -257,6 +252,16 @@ void RoomsMapGenerator::Generate() {
         }
     }
     FillRoomsWithFloorTiles();
+}
+
+void RoomsMapGenerator::GetTileTypes() noexcept {
+    floorType = DataUtils::ParseXmlAttribute(_xml_element, "floor", floorType);
+    wallType = DataUtils::ParseXmlAttribute(_xml_element, "wall", wallType);
+    defaultType = DataUtils::ParseXmlAttribute(_xml_element, "default", defaultType);
+    stairsDownType = DataUtils::ParseXmlAttribute(_xml_element, "down", stairsDownType);
+    stairsUpType = DataUtils::ParseXmlAttribute(_xml_element, "up", stairsUpType);
+    enterType = DataUtils::ParseXmlAttribute(_xml_element, "enter", enterType);
+    exitType = DataUtils::ParseXmlAttribute(_xml_element, "exit", exitType);
 }
 
 void RoomsMapGenerator::FillRoomsWithFloorTiles() noexcept {

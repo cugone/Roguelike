@@ -114,6 +114,7 @@ public:
     RoomsMapGenerator& operator=(RoomsMapGenerator&& other) = delete;
     virtual ~RoomsMapGenerator() noexcept = default;
     void Generate() override;
+    void GetTileTypes() noexcept;
     std::vector<AABB2> rooms{};
 protected:
     std::string defaultType{"void"};
