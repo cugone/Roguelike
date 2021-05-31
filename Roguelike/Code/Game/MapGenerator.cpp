@@ -264,6 +264,16 @@ void RoomsMapGenerator::GetTileTypes() noexcept {
     exitType = DataUtils::ParseXmlAttribute(_xml_element, "exit", exitType);
 }
 
+void RoomsMapGenerator::CreateOrOverwriteLayer(const int width, const int height) noexcept {
+    if(_map->_layers.empty()) {
+        _map->_layers.emplace_back(std::make_unique<Layer>(_map, IntVector2{width, height}));
+    } else {
+        if(_map->_layers[0]->tileDimensions != IntVector2{width, height}) {
+            _map->_layers[0] = std::move(std::make_unique<Layer>(_map, IntVector2{width, height}));
+        }
+    }
+}
+
 void RoomsMapGenerator::FillRoomsWithFloorTiles() noexcept {
     for(auto& room : rooms) {
         const auto room_floor_bounds = [&]() { AABB2 bounds = room; bounds.AddPaddingToSides(-1.0f, -1.0f); return bounds; }();

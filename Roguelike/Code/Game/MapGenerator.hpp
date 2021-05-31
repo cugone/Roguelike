@@ -115,6 +115,8 @@ public:
     virtual ~RoomsMapGenerator() noexcept = default;
     void Generate() override;
     void GetTileTypes() noexcept;
+    void CreateOrOverwriteLayer(const int width, const int height) noexcept;
+
     std::vector<AABB2> rooms{};
 protected:
     std::string defaultType{"void"};
