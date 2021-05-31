@@ -401,13 +401,13 @@ void RoomsOnlyMapGenerator::Generate() {
     //        you can "slide" it up and down or left-to-right according to the new room's width.
     //        Make sure the walls actually overlap;
     //        you don't want double walls because that's ugly and makes doors look stupid.
-    //9.      Check the corner of this new room;
+    //9.      Check the corners of this new room;
     //        if it's outside of the map;
     //            chuck it out and start over at step 4.
     //10.     Check to see if the new room overlaps any existing rooms;
     //            if so, chuck it out and start over at step 4.
     //11.     Add the new room to the list of rooms;
-    //            Make sure to keep track of the specific wall coordinate that you picked in step 5;
+    //            Make sure to keep track of the specific wall coordinate that you picked in step 6;
     //            this will be a candidate for a door.
     //12. End Loop;
     //until the map is filled up to X%.
