@@ -320,6 +320,49 @@ void RoomsMapGenerator::LoadFeatures(const XMLElement& elem) {
     }
 }
 
+void RoomsMapGenerator::PlaceActors() noexcept {
+    auto open_set = [this]() {
+        auto result = std::vector<std::size_t>{};
+        result.resize(rooms.size());
+        std::iota(std::begin(result), std::end(result), std::size_t{0u});
+        std::random_device rd;
+        std::mt19937_64 g(rd());
+        std::shuffle(std::begin(result), std::end(result), g);
+        return result;
+    }(); //IIIL
+    for(auto* actor : _map->_actors) {
+        if(open_set.empty()) {
+            break;
+        }
+        const auto room_idx = [&]() {
+            auto idx = open_set.back();
+            open_set.pop_back();
+            return idx;
+        }();
+        actor->SetPosition(IntVector2{rooms[room_idx].CalcCenter()});
+        if(auto* b = actor->GetCurrentBehavior(); b && b->GetName() == "pursue") {
+            if(auto* bAsPursue = dynamic_cast<PursueBehavior*>(b)) {
+                bAsPursue->SetTarget(_map->player);
+            }
+        }
+    }
+    //TODO: Determine enter/exit tile
+    //player->SetPosition(_map->GetTile());
+}
+
+void RoomsMapGenerator::PlaceFeatures() noexcept {
+    const auto map_dims = _map->CalcMaxDimensions();
+    for(auto* feature : _map->_features) {
+        const auto x = MathUtils::GetRandomIntLessThan(static_cast<int>(map_dims.x));
+        const auto y = MathUtils::GetRandomIntLessThan(static_cast<int>(map_dims.y));
+        const auto tile_pos = IntVector2{x, y};
+        feature->SetPosition(tile_pos);
+    }
+}
+
+void RoomsMapGenerator::PlaceItems() noexcept {
+    /* DO NOTHING */
+}
 
 RoomsOnlyMapGenerator::RoomsOnlyMapGenerator(Map* map, const XMLElement& elem) noexcept
     : RoomsMapGenerator(map, elem)
@@ -461,47 +504,6 @@ bool RoomsAndCorridorsMapGenerator::VerifyExitIsReachable(const IntVector2& ente
 
 bool RoomsAndCorridorsMapGenerator::CanTileBeCorridorWall(const std::string& name) const noexcept {
     return name != this->floorType;
-}
-
-void RoomsAndCorridorsMapGenerator::PlaceActors() noexcept {
-    auto open_set = [this]() {
-        auto result = std::vector<std::size_t>{};
-        result.resize(rooms.size());
-        std::iota(std::begin(result), std::end(result), std::size_t{0u});
-        std::random_device rd;
-        std::mt19937_64 g(rd());
-        std::shuffle(std::begin(result), std::end(result), g);
-        return result;
-    }(); //IIIL
-    for(auto* actor : _map->_actors) {
-        const auto room_idx = [&]() {
-            auto idx = open_set.back();
-            open_set.pop_back();
-            return idx;
-        }();
-        actor->SetPosition(IntVector2{rooms[room_idx].CalcCenter()});
-        if(auto* b = actor->GetCurrentBehavior(); b && b->GetName() == "pursue") {
-            if(auto* bAsPursue = dynamic_cast<PursueBehavior*>(b)) {
-                bAsPursue->SetTarget(_map->player);
-            }
-        }
-    }
-    //TODO: Determine enter/exit tile
-    //player->SetPosition(_map->GetTile());
-}
-
-void RoomsAndCorridorsMapGenerator::PlaceFeatures() noexcept {
-    const auto map_dims = _map->CalcMaxDimensions();
-    for(auto* feature : _map->_features) {
-        const auto x = MathUtils::GetRandomIntLessThan(static_cast<int>(map_dims.x));
-        const auto y = MathUtils::GetRandomIntLessThan(static_cast<int>(map_dims.y));
-        const auto tile_pos = IntVector2{x, y};
-        feature->SetPosition(tile_pos);
-    }
-}
-
-void RoomsAndCorridorsMapGenerator::PlaceItems() noexcept {
-    /* DO NOTHING */
 }
 
 bool RoomsAndCorridorsMapGenerator::GenerateExitAndEntrance() noexcept {

@@ -98,6 +98,9 @@ protected:
     virtual void LoadItems(const XMLElement& elem) = 0;
     virtual void LoadActors(const XMLElement& elem) = 0;
     virtual void LoadFeatures(const XMLElement& elem) = 0;
+    virtual void PlaceActors() noexcept = 0;
+    virtual void PlaceFeatures() noexcept = 0;
+    virtual void PlaceItems() noexcept = 0;
 private:
 };
 
@@ -125,7 +128,9 @@ protected:
     void LoadActors(const XMLElement& elem) override;
     void LoadItems(const XMLElement& elem) override;
     void LoadFeatures(const XMLElement& elem) override;
-
+    void PlaceActors() noexcept override;
+    void PlaceFeatures() noexcept override;
+    void PlaceItems() noexcept override;
 private:
 
 };
@@ -164,7 +169,4 @@ private:
     void MakeVerticalCorridor(const AABB2& from, const AABB2& to) noexcept;
     bool VerifyExitIsReachable(const IntVector2& enter_loc, const  IntVector2& exit_loc) const noexcept;
     bool CanTileBeCorridorWall(const std::string& name) const noexcept;
-    void PlaceActors() noexcept;
-    void PlaceFeatures() noexcept;
-    void PlaceItems() noexcept;
 };
