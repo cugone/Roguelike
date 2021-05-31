@@ -366,7 +366,9 @@ void Actor::CalculateLightValue() noexcept {
     if(value != GetLightValue()) {
         SetLightValue(value);
         for(auto* neighbor : tile->GetCardinalNeighbors()) {
-            neighbor->DirtyLight();
+            if(neighbor) {
+                neighbor->DirtyLight();
+            }
         }
     }
 }
