@@ -70,7 +70,7 @@ Game::~Game() noexcept {
     Actor::ClearActorRegistry();
     Feature::ClearFeatureRegistry();
     EntityDefinition::ClearEntityRegistry();
-    TileDefinition::DestroyTileDefinitions();
+    TileDefinition::ClearTileDefinitions();
 }
 
 void Game::Initialize() {
@@ -145,7 +145,7 @@ void Game::OnExit_Main() {
     Actor::ClearActorRegistry();
     Feature::ClearFeatureRegistry();
     EntityDefinition::ClearEntityRegistry();
-    TileDefinition::DestroyTileDefinitions();
+    TileDefinition::ClearTileDefinitions();
 }
 
 void Game::BeginFrame_Title() {

@@ -32,7 +32,7 @@ TileDefinition* TileDefinition::CreateTileDefinition(Renderer& renderer, const X
     return new_def_ptr;
 }
 
-void TileDefinition::DestroyTileDefinitions() {
+void TileDefinition::ClearTileDefinitions() {
     s_registry.clear();
 }
 

@@ -23,7 +23,7 @@ public:
 
     static TileDefinition* CreateOrGetTileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
     static TileDefinition* CreateTileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
-    static void DestroyTileDefinitions();
+    static void ClearTileDefinitions();
 
     static TileDefinition* GetTileDefinitionByName(const std::string& name);
     static TileDefinition* GetTileDefinitionByGlyph(char glyph);
