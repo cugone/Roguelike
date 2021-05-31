@@ -414,6 +414,109 @@ void RoomsOnlyMapGenerator::Generate() {
     //Keep in mind the higher X%;
     //the longer the algorithm will take to find that one last tiny,
     //perfectly-shaped room to fit and bump you over the percentage requirement.
+
+    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "minSize,maxSize", "count,floor,wall", "", "coverage,down,up,enter,exit,width,height");
+    //Step 1.
+    const auto max_tile_coverage = DataUtils::ParseXmlAttribute(_xml_element, "coverage", 0.10f);
+    GUARANTEE_OR_DIE(0.0f <= max_tile_coverage && max_tile_coverage <= 1.0f, "RoomsOnlyMapGenerator: coverage value out of [0.0, 1.0f] range.");
+    const auto min_size = std::clamp([&]()->const int { const auto* xml_min = _xml_element.FirstChildElement("minSize"); int result = DataUtils::ParseXmlElementText(*xml_min, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
+    const auto max_size = std::clamp([&]()->const int { const auto* xml_max = _xml_element.FirstChildElement("maxSize"); int result = DataUtils::ParseXmlElementText(*xml_max, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
+    const int room_count = DataUtils::ParseXmlAttribute(_xml_element, "count", 1);
+    const int width = std::clamp(DataUtils::ParseXmlAttribute(_xml_element, "width", 1), 1, Map::max_dimension);
+    const int height = std::clamp(DataUtils::ParseXmlAttribute(_xml_element, "height", 1), 1, Map::max_dimension);
+    GetTileTypes();
+    defaultType = wallType;
+    CreateOrOverwriteLayer(width, height);
+
+    for(auto& tile : *_map->GetLayer(0)) {
+        tile.ChangeTypeFromName(defaultType);
+    }
+
+    rooms.reserve(room_count);
+    //Step 2.
+    //Step 3.
+    {
+        const auto w = MathUtils::GetRandomIntInRange(min_size, max_size);
+        const auto h = MathUtils::GetRandomIntInRange(min_size, max_size);
+        const auto x = MathUtils::GetRandomIntLessThan(width);
+        const auto y = MathUtils::GetRandomIntLessThan(height);
+        rooms.push_back(AABB2{(float)x, (float)y, (float)x + (float)w, (float)y + +(float)h});
+    }
+    const auto calcTileCoverage = [&]() {
+        int count{0};
+        for(const auto& room : rooms) {
+            count += static_cast<int>(_map->GetTilesInArea(room).size());
+        }
+        const auto area = width * height;
+        return count / static_cast<float>(area);
+    };
+    //Step 4.
+    while(calcTileCoverage() < max_tile_coverage) {
+        //Step 5.
+        const auto base_room_index = MathUtils::GetRandomIntLessThan(static_cast<int>(rooms.size()));
+        auto& base_room = rooms[base_room_index];
+        //Step 6.
+        const auto new_room_position_offset = [&]() {
+            const auto base_room_center = IntVector2(base_room.CalcCenter());
+            const auto base_room_half_extents = IntVector2(base_room.CalcDimensions()) / 2;
+            auto result = IntVector2{};
+            switch(MathUtils::GetRandomIntLessThan(4)) {
+            case 0: {result.x = base_room_center.x - base_room_half_extents.x; break; } //West wall
+            case 1: {result.x = base_room_center.x + base_room_half_extents.x; break; } //East wall
+            case 2: {result.y = base_room_center.y - base_room_half_extents.y; break; } //North wall
+            case 3: {result.y = base_room_center.y + base_room_half_extents.y; break; } //South wall
+            }
+            return result;
+        }();
+        //Step 7.
+        auto new_room = AABB2{};
+        const auto w = MathUtils::GetRandomIntInRange(min_size, max_size);
+        const auto h = MathUtils::GetRandomIntInRange(min_size, max_size);
+        new_room.maxs = Vector2{static_cast<float>(w), static_cast<float>(h)};
+        //Step 8.
+        auto new_position = new_room_position_offset;
+        if(new_room_position_offset.x != 0) {
+            new_position.x += (w / 2) * (new_room_position_offset.x < 0 ? -1 : 1);
+            new_position.y += MathUtils::GetRandomIntLessThan((h / 2));
+        } else if(new_room_position_offset.y != 0) {
+            new_position.y += (h / 2) * (new_room_position_offset.y < 0 ? -1 : 1);
+            new_position.x += MathUtils::GetRandomIntLessThan((w / 2));
+        }
+        new_room.Translate(Vector2(new_position));
+        //Step 9.
+        const auto world_bounds = AABB2{0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)};
+        if(!MathUtils::Contains(world_bounds, new_room)) {
+            continue;
+        }
+        //Step 10.
+        if(const auto rooms_overlap = [&]() {
+            for(const auto& room : rooms) {
+                if(MathUtils::DoAABBsOverlap(new_room, room)) {
+                    return true;
+                }
+            }
+            return false;
+            }()) //IIIL
+        {
+            continue;
+        }
+        rooms.push_back(new_room);
+        doors.push_back(new_room_position_offset);
+    }
+    for(auto& door : doors) {
+        if(auto* tile = _map->GetTile(door.x, door.y, 0); tile != nullptr) {
+            tile->ChangeTypeFromName("floor");
+        }
+        //TODO: Feature Instancing!! (Doors).
+    }
+    FillRoomsWithFloorTiles();
+    _map->GetPathfinder()->Initialize(IntVector2{_map->CalcMaxDimensions()});
+    LoadFeatures(_map->_root_xml_element);
+    LoadActors(_map->_root_xml_element);
+    LoadItems(_map->_root_xml_element);
+    PlaceActors();
+    PlaceFeatures();
+    PlaceItems();
 }
 
 RoomsAndCorridorsMapGenerator::RoomsAndCorridorsMapGenerator(Map* map, const XMLElement& elem) noexcept
