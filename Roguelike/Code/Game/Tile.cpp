@@ -830,8 +830,10 @@ std::array<TileInfo, 8> TileInfo::GetAllNeighbors() const noexcept {
     const auto& c = GetCardinalNeighbors();
     const auto& o = GetOrdinalNeighbors();
     auto r = std::array<TileInfo, 8>{};
-    std::copy(std::cbegin(c), std::cend(c), std::begin(r));
-    std::copy(std::cbegin(o), std::cend(o), std::begin(r) + c.size());
+    for(auto i = std::size_t{0u}, j = std::size_t{0u}; i != std::size_t{4u} && j != std::size_t{8u}; (i += 1), (j += 2)) {
+        r[j] = o[i];
+        r[j + 1] = c[i];
+    }
     return r;
 }
 
