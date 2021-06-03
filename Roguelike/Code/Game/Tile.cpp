@@ -450,13 +450,13 @@ void Tile::AppendToMesh(const Tile* const tile) noexcept {
 void Tile::AppendToMesh() const noexcept {
     AddVertsForTile();
     if(feature) {
-        feature->AddVerts();
+        layer->AppendToMesh(feature);
     }
     if(HasInventory() && !inventory->empty()) {
         inventory->AddVerts(Vector2{GetCoords()}, layer);
     }
     if(actor) {
-        actor->AddVerts();
+        layer->AppendToMesh(actor);
     }
 }
 

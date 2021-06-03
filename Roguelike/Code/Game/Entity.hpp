@@ -59,8 +59,7 @@ public:
     Faction JoinFaction(const Faction& faction) noexcept;
     Rgba GetFactionAsColor() const noexcept;
 
-    virtual void AddVerts() noexcept;
-    virtual void AddVertsForSelf() noexcept;
+    static void AppendToMesh(const Entity* const entity) noexcept;
 
     virtual void CalculateLightValue() noexcept;
     uint32_t GetLightValue() const noexcept;
@@ -81,6 +80,8 @@ public:
     Event<> OnDestroy;
 
 protected:
+    virtual void AppendToMesh() const noexcept;
+
     virtual void ResolveAttack(Entity& attacker, Entity& defender);
     Stats GetStatModifiers() const noexcept;
     const Stats& GetBaseStats() const noexcept;
@@ -95,8 +96,8 @@ private:
     void LoadFromXml(const XMLElement& elem);
     std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
 
-    void AddVertsForEquipment() const;
-    void AddVertsForCapeEquipment() const;
+    void AddVertsForEquipment() const noexcept;
+    void AddVertsForCapeEquipment() const noexcept;
 
     Stats stats{1,1,1};
     Stats stat_modifiers{};

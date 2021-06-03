@@ -58,8 +58,6 @@ public:
     void SetState(const std::string& stateName);
 
     void CalculateLightValue() noexcept override;
-    void AddVertsForSelf() noexcept override;
-    void AddVerts() noexcept override;
 
     Tile* parent_tile{};
 
