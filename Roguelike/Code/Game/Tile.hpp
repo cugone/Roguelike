@@ -134,9 +134,6 @@ public:
 protected:
 private:
     void AddVertsForTile() const noexcept;
-    void AddVertsForOverlay() const noexcept;
-    AABB2 GetCoordsForOverlay(std::string overlayName) const;
-    AnimatedSprite* GetSpriteForOverlay(std::string overlayName) const;
 
     std::string _type{"void"};
     uint32_t _flags_coords_lightvalue{};
