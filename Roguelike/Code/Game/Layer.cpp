@@ -117,11 +117,39 @@ Mesh::Builder& Layer::GetMeshBuilder() noexcept {
 }
 
 void Layer::AppendToMesh(const Tile* const tile) noexcept {
+    if(tile->IsInvisible()) {
+        return;
+    }
     const auto* def = TileDefinition::GetTileDefinitionByName(tile->GetType());
-    const auto& sprite = def->GetSprite();
+    const auto* sprite = def->GetSprite();
     const auto& coords = sprite->GetCurrentTexCoords();
+    auto* material = sprite->GetMaterial();
+    const auto& tile_coords = tile->GetCoords();
+    AppendToMesh(tile_coords, coords, tile->GetLightValue(), material);
+    if(tile->feature) {
+        AppendToMesh(tile->feature);
+    }
+    //if(tile->HasInventory()) {
+    //    AppendToMesh(tile->inventory);
+    //}
+    if(tile->actor) {
+        AppendToMesh(tile->actor);
+    }
+    return;
+}
 
-    const auto tile_coords = tile->GetCoords();
+void Layer::AppendToMesh(const Entity* const entity) noexcept {
+    if(!entity->sprite || entity->IsInvisible()) {
+        return;
+    }
+    const auto& coords = entity->sprite->GetCurrentTexCoords();
+    const auto& position = entity->GetPosition();
+    entity->AddVertsForCapeEquipment();
+    AppendToMesh(position, coords, entity->GetLightValue(), entity->sprite->GetMaterial());
+    entity->AddVertsForEquipment();
+}
+
+void Layer::AppendToMesh(const IntVector2& tile_coords, const AABB2& uv_coords, const uint32_t light_value, Material* material) noexcept {
     const auto vert_left = tile_coords.x + 0.0f;
     const auto vert_right = tile_coords.x + 1.0f;
     const auto vert_top = tile_coords.y + 0.0f;
@@ -132,10 +160,10 @@ void Layer::AppendToMesh(const Tile* const tile) noexcept {
     const auto vert_tr = Vector2(vert_right, vert_top);
     const auto vert_br = Vector2(vert_right, vert_bottom);
 
-    const auto tx_left = coords.mins.x;
-    const auto tx_right = coords.maxs.x;
-    const auto tx_top = coords.mins.y;
-    const auto tx_bottom = coords.maxs.y;
+    const auto tx_left = uv_coords.mins.x;
+    const auto tx_right = uv_coords.maxs.x;
+    const auto tx_top = uv_coords.mins.y;
+    const auto tx_bottom = uv_coords.maxs.y;
 
     const auto tx_bl = Vector2(tx_left, tx_bottom);
     const auto tx_tl = Vector2(tx_left, tx_top);
@@ -148,7 +176,7 @@ void Layer::AppendToMesh(const Tile* const tile) noexcept {
     auto& builder = GetMeshBuilder();
     const auto newColor = [&]() {
         auto clr = layer_color != color && color != Rgba::White ? color : layer_color;
-        clr.ScaleRGB(MathUtils::RangeMap(static_cast<float>(tile->GetLightValue()), static_cast<float>(min_light_value), static_cast<float>(max_light_value), min_light_scale, max_light_scale));
+        clr.ScaleRGB(MathUtils::RangeMap(static_cast<float>(light_value), static_cast<float>(min_light_value), static_cast<float>(max_light_value), min_light_scale, max_light_scale));
         return clr;
     }(); //IIIL
     const auto normal = -Vector3::Z_AXIS;
@@ -171,80 +199,7 @@ void Layer::AppendToMesh(const Tile* const tile) noexcept {
 
     builder.AddIndicies(Mesh::Builder::Primitive::Quad);
 
-    builder.End(sprite->GetMaterial());
-
-}
-
-void Layer::AppendToMesh(const Entity* const entity) noexcept {
-    if(!entity->sprite || entity->IsInvisible()) {
-        return;
-    }
-    const auto& coords = entity->sprite->GetCurrentTexCoords();
-
-    const auto& position = entity->GetPosition();
-    const auto vert_left = position.x + 0.0f;
-    const auto vert_right = position.x + 1.0f;
-    const auto vert_top = position.y + 0.0f;
-    const auto vert_bottom = position.y + 1.0f;
-
-    const auto vert_bl = Vector2(vert_left, vert_bottom);
-    const auto vert_tl = Vector2(vert_left, vert_top);
-    const auto vert_tr = Vector2(vert_right, vert_top);
-    const auto vert_br = Vector2(vert_right, vert_bottom);
-
-    const auto tx_left = coords.mins.x;
-    const auto tx_right = coords.maxs.x;
-    const auto tx_top = coords.mins.y;
-    const auto tx_bottom = coords.maxs.y;
-
-    const auto tx_bl = Vector2(tx_left, tx_bottom);
-    const auto tx_tl = Vector2(tx_left, tx_top);
-    const auto tx_tr = Vector2(tx_right, tx_top);
-    const auto tx_br = Vector2(tx_right, tx_bottom);
-
-    const float z = static_cast<float>(z_index);
-    const Rgba layer_color = color;
-
-    auto& builder = GetMeshBuilder();
-    const auto newColor = [&]() {
-        auto clr = layer_color != color && color != Rgba::White ? color : layer_color;
-        clr.ScaleRGB(MathUtils::RangeMap(static_cast<float>(entity->GetLightValue()), static_cast<float>(min_light_value), static_cast<float>(max_light_value), min_light_scale, max_light_scale));
-        return clr;
-    }(); //IIIL
-    const auto normal = -Vector3::Z_AXIS;
-
-    builder.Begin(PrimitiveType::Triangles);
-    builder.SetColor(newColor);
-    builder.SetNormal(normal);
-
-    builder.SetUV(tx_bl);
-    builder.AddVertex(Vector3{vert_bl, z});
-
-    builder.SetUV(tx_tl);
-    builder.AddVertex(Vector3{vert_tl, z});
-
-    builder.SetUV(tx_tr);
-    builder.AddVertex(Vector3{vert_tr, z});
-
-    builder.SetUV(tx_br);
-    builder.AddVertex(Vector3{vert_br, z});
-
-    builder.AddIndicies(Mesh::Builder::Primitive::Quad);
-    builder.End(entity->sprite->GetMaterial());
-}
-
-void Layer::AppendToMesh(const Feature* const feature) noexcept {
-    if(!feature->sprite || feature->IsInvisible()) {
-        return;
-    }
-    Entity::AppendToMesh(feature);
-}
-
-void Layer::AppendToMesh(const Actor* const actor) noexcept {
-    if(!actor->sprite || actor->IsInvisible()) {
-        return;
-    }
-    Entity::AppendToMesh(actor);
+    builder.End(material);
 }
 
 bool Layer::LoadFromXml(const XMLElement& elem) {
@@ -422,7 +377,7 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
             if(tile->CanSee()) {
                 ++debug_visible_tiles_in_view_count;
             }
-            Tile::AppendToMesh(tile);
+            AppendToMesh(tile);
         }
         meshNeedsRebuild = false;
     }

@@ -89,6 +89,8 @@ public:
 
 protected:
 private:
+    void AppendToMesh(const IntVector2& tile_coords, const AABB2& uv_coords, const uint32_t light_value, Material* material) noexcept;
+
     bool LoadFromXml(const XMLElement& elem);
     bool LoadFromImage(const Image& img);
     void InitializeTiles(const std::size_t row_count, const std::size_t max_row_length, const std::vector<std::string>& glyph_strings);
