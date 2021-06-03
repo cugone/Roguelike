@@ -82,6 +82,8 @@ public:
     const Mesh::Builder& GetMeshBuilder() const noexcept;
     Mesh::Builder& GetMeshBuilder() noexcept;
 
+    void AppendToMesh(const Tile* const tile) noexcept;
+
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);

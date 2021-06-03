@@ -13,19 +13,6 @@
 
 #include "Game/GameCommon.hpp"
 
-void Tile::AddVerts() const noexcept {
-    AddVertsForTile();
-    if(feature) {
-        feature->AddVerts();
-    }
-    if(HasInventory() && !inventory->empty()) {
-        inventory->AddVerts(Vector2{GetCoords()}, layer);
-    }
-    if(actor) {
-        actor->AddVerts();
-    }
-}
-
 void Tile::ClearLightDirty() noexcept {
     _flags_coords_lightvalue &= ~tile_flags_dirty_light_mask;
 }
@@ -89,62 +76,7 @@ void Tile::AddVertsForTile() const noexcept {
     if(IsInvisible()) {
         return;
     }
-    const auto* def = TileDefinition::GetTileDefinitionByName(_type);
-    const auto& sprite = def->GetSprite();
-    const auto& coords = sprite->GetCurrentTexCoords();
-
-    const auto tile_coords = GetCoords();
-    const auto vert_left = tile_coords.x + 0.0f;
-    const auto vert_right = tile_coords.x + 1.0f;
-    const auto vert_top = tile_coords.y + 0.0f;
-    const auto vert_bottom = tile_coords.y + 1.0f;
-
-    const auto vert_bl = Vector2(vert_left, vert_bottom);
-    const auto vert_tl = Vector2(vert_left, vert_top);
-    const auto vert_tr = Vector2(vert_right, vert_top);
-    const auto vert_br = Vector2(vert_right, vert_bottom);
-
-    const auto tx_left = coords.mins.x;
-    const auto tx_right = coords.maxs.x;
-    const auto tx_top = coords.mins.y;
-    const auto tx_bottom = coords.maxs.y;
-
-    const auto tx_bl = Vector2(tx_left, tx_bottom);
-    const auto tx_tl = Vector2(tx_left, tx_top);
-    const auto tx_tr = Vector2(tx_right, tx_top);
-    const auto tx_br = Vector2(tx_right, tx_bottom);
-
-    const float z = static_cast<float>(layer->z_index);
-    const Rgba layer_color = layer->color;
-
-    auto& builder = layer->GetMeshBuilder();
-    const auto newColor = [&]() {
-        auto clr = layer_color != color && color != Rgba::White ? color : layer_color;
-        clr.ScaleRGB(MathUtils::RangeMap(static_cast<float>(GetLightValue()), static_cast<float>(min_light_value), static_cast<float>(max_light_value), min_light_scale, max_light_scale));
-        return clr;
-    }(); //IIIL
-    const auto normal = -Vector3::Z_AXIS;
-
-    builder.Begin(PrimitiveType::Triangles);
-    builder.SetColor(newColor);
-    builder.SetNormal(normal);
-
-    builder.SetUV(tx_bl);
-    builder.AddVertex(Vector3{vert_bl, z});
-
-    builder.SetUV(tx_tl);
-    builder.AddVertex(Vector3{vert_tl, z});
-
-    builder.SetUV(tx_tr);
-    builder.AddVertex(Vector3{vert_tr, z});
-
-    builder.SetUV(tx_br);
-    builder.AddVertex(Vector3{vert_br, z});
-
-    builder.AddIndicies(Mesh::Builder::Primitive::Quad);
-
-    builder.End(sprite->GetMaterial());
-
+    layer->AppendToMesh(this);
 }
 
 void Tile::DebugRender([[maybe_unused]]Renderer& renderer) const {
@@ -509,6 +441,23 @@ void Tile::SetEntity(Entity* e) noexcept {
 
 const std::string Tile::GetType() const noexcept {
     return _type;
+}
+
+void Tile::AppendToMesh(const Tile* const tile) noexcept {
+    tile->AppendToMesh();
+}
+
+void Tile::AppendToMesh() const noexcept {
+    AddVertsForTile();
+    if(feature) {
+        feature->AddVerts();
+    }
+    if(HasInventory() && !inventory->empty()) {
+        inventory->AddVerts(Vector2{GetCoords()}, layer);
+    }
+    if(actor) {
+        actor->AddVerts();
+    }
 }
 
 bool TileInfo::IsLightDirty() const noexcept {

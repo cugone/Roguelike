@@ -122,7 +122,7 @@ public:
     void SetEntity(Entity* e) noexcept;
     const std::string GetType() const noexcept;
 
-    void AddVerts() const noexcept;
+    static void AppendToMesh(const Tile* const tile) noexcept;
 
     Rgba debugRaycastColor = Rgba::Red;
     Rgba highlightColor = Rgba::White;
@@ -133,6 +133,7 @@ public:
     std::unique_ptr<Inventory> inventory{};
 protected:
 private:
+    void AppendToMesh() const noexcept;
     void AddVertsForTile() const noexcept;
 
     std::string _type{"void"};
