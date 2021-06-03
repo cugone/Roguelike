@@ -299,7 +299,7 @@ void Game::EndFrame_Loading() {
             }
         , _reset_loading_flag);
     } else {
-        SetCurrentCursorById(CursorId::Green_Box);
+        SetCurrentCursorById(CursorId::Yellow_Corner_Box);
         _adventure->currentMap->cameraController.GetCamera().position = _adventure->currentMap->CalcMaxDimensions() * 0.5f;
     }
 }
