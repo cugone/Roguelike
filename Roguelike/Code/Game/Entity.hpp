@@ -82,6 +82,9 @@ public:
     Event<> OnMiss;
     Event<> OnDestroy;
 
+    void AddVertsForEquipment() const noexcept;
+    void AddVertsForCapeEquipment() const noexcept;
+
 protected:
     virtual void AppendToMesh() const noexcept;
 
@@ -98,9 +101,6 @@ protected:
 private:
     void LoadFromXml(const XMLElement& elem);
     std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
-
-    void AddVertsForEquipment() const noexcept;
-    void AddVertsForCapeEquipment() const noexcept;
 
     Stats stats{1,1,1};
     Stats stat_modifiers{};
