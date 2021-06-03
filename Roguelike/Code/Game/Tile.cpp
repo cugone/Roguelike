@@ -72,13 +72,6 @@ void Tile::Update(TimeUtils::FPSeconds deltaSeconds) {
     }
 }
 
-void Tile::AddVertsForTile() const noexcept {
-    if(IsInvisible()) {
-        return;
-    }
-    layer->AppendToMesh(this);
-}
-
 void Tile::DebugRender([[maybe_unused]]Renderer& renderer) const {
 #ifdef UI_DEBUG
     Entity* entity = (actor ? dynamic_cast<Entity*>(actor) : (feature ? dynamic_cast<Entity*>(feature) : nullptr));
@@ -441,23 +434,6 @@ void Tile::SetEntity(Entity* e) noexcept {
 
 const std::string Tile::GetType() const noexcept {
     return _type;
-}
-
-void Tile::AppendToMesh(const Tile* const tile) noexcept {
-    tile->AppendToMesh();
-}
-
-void Tile::AppendToMesh() const noexcept {
-    AddVertsForTile();
-    if(feature) {
-        layer->AppendToMesh(feature);
-    }
-    if(HasInventory() && !inventory->empty()) {
-        inventory->AddVerts(Vector2{GetCoords()}, layer);
-    }
-    if(actor) {
-        layer->AppendToMesh(actor);
-    }
 }
 
 bool TileInfo::IsLightDirty() const noexcept {
