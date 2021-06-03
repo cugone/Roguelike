@@ -45,6 +45,8 @@ public:
     bool IsVisible() const;
     bool IsNotVisible() const;
     bool IsInvisible() const;
+    virtual bool IsSolid() const noexcept;
+    virtual bool IsOpaque() const noexcept;
 
     virtual void SetPosition(const IntVector2& position);
     const IntVector2& GetPosition() const;

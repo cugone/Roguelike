@@ -50,6 +50,8 @@ public:
 
     std::string name{"UNKNOWN ENTITY"};
     bool is_invisible = false;
+    bool is_solid = false;
+    bool is_opaque = false;
     bool is_animated = false;
     Inventory inventory{};
     std::vector<Item*> equipment = std::vector<Item*>(static_cast<std::size_t>(EquipSlot::Max));

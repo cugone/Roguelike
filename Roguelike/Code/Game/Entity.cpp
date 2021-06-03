@@ -146,6 +146,20 @@ bool Entity::IsInvisible() const {
     return false;
 }
 
+bool Entity::IsOpaque() const noexcept {
+    if(auto* def = EntityDefinition::GetEntityDefinitionByName(name)) {
+        return def->is_opaque;
+    }
+    return false;
+}
+
+bool Entity::IsSolid() const noexcept {
+    if(auto* def = EntityDefinition::GetEntityDefinitionByName(name)) {
+        return def->is_solid;
+    }
+    return false;
+}
+
 void Entity::SetPosition(const IntVector2& position) {
     _position = position;
     _screen_position = map->WorldCoordsToScreenCoords(Vector2(_position));
