@@ -84,8 +84,6 @@ public:
 
     void AppendToMesh(const Tile* const tile) noexcept;
     void AppendToMesh(const Entity* const entity) noexcept;
-    void AppendToMesh(const Feature* const feature) noexcept;
-    void AppendToMesh(const Actor* const actor) noexcept;
 
 protected:
 private:
