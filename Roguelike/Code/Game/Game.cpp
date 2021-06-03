@@ -10,6 +10,7 @@
 #include "Engine/Math/Vector2.hpp"
 #include "Engine/Math/Vector4.hpp"
 
+#include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/AnimatedSprite.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 #include "Engine/Renderer/Texture.hpp"
@@ -92,7 +93,7 @@ void Game::Initialize() {
 }
 
 void Game::CreateFullscreenConstantBuffer() {
-    _fullscreen_cb = std::unique_ptr<ConstantBuffer>(g_theRenderer->CreateConstantBuffer(&_fullscreen_data, sizeof(_fullscreen_data)));
+    _fullscreen_cb = std::move(g_theRenderer->CreateConstantBuffer(&_fullscreen_data, sizeof(_fullscreen_data)));
     _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
@@ -251,7 +252,7 @@ void Game::Render_Main() const {
 
     if(g_theApp->LostFocus()) {
         g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
-        g_theRenderer->DrawQuad2D(Vector2::ZERO, Vector2::ONE, Rgba{0, 0, 0, 128});
+        g_theRenderer->DrawQuad2D(Vector2::ZERO, Vector2::ONE, Rgba(0, 0, 0, 128));
     }
 
     g_theRenderer->BeginHUDRender(ui_camera, Vector2::ZERO, currentGraphicsOptions.WindowHeight);
@@ -393,7 +394,7 @@ void Game::LoadMaps() {
         if(auto str_buffer = FileUtils::ReadStringBufferFromFile(str_path)) {
             tinyxml2::XMLDocument xml_doc;
             if(auto parse_result = xml_doc.Parse(str_buffer->c_str(), str_buffer->size()); parse_result == tinyxml2::XML_SUCCESS) {
-                _adventure = std::make_unique<Adventure>(*g_theRenderer, *xml_doc.RootElement());
+                _adventure = std::move(std::make_unique<Adventure>(*g_theRenderer, *xml_doc.RootElement()));
             }
         }
     }
@@ -1224,6 +1225,9 @@ void Game::ShowTileInspectorUI() {
 }
 
 void Game::ShowTileInspectorStatsTableUI(const TileDefinition* cur_def, const Tile* cur_tile) {
+    if(cur_tile == nullptr || cur_def == nullptr) {
+        return;
+    }
     ImGui::PushID(cur_tile);
     if(ImGui::BeginTable("TileInspectorTable", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_SizingFixedSame | ImGuiTableFlags_RowBg)) {
         ImGui::TableSetupColumn("TileInspectorTableRowIdsColumn");
