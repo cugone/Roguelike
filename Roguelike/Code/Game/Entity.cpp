@@ -131,15 +131,15 @@ void Entity::ResolveAttack(Entity& /*attacker*/, Entity& /*defender*/) {
     /* DO NOTHING */
 }
 
-bool Entity::IsVisible() const {
+bool Entity::IsVisible() const noexcept {
     return !IsNotVisible();
 }
 
-bool Entity::IsNotVisible() const {
+bool Entity::IsNotVisible() const noexcept {
     return !IsInvisible();
 }
 
-bool Entity::IsInvisible() const {
+bool Entity::IsInvisible() const noexcept {
     if(auto* def = EntityDefinition::GetEntityDefinitionByName(name)) {
         return def->is_invisible;
     }

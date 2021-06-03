@@ -49,10 +49,10 @@ public:
 
     Feature(Map* map, const XMLElement& elem) noexcept;
 
-    bool IsSolid() const noexcept;
-    bool IsOpaque() const noexcept;
-    bool IsVisible() const noexcept;
-    bool IsInvisible() const noexcept;
+    bool IsSolid() const noexcept override;
+    bool IsOpaque() const noexcept override;
+    bool IsVisible() const noexcept override;
+    bool IsInvisible() const noexcept override;
 
     virtual void SetPosition(const IntVector2& position) override;
     void SetState(const std::string& stateName);

@@ -42,9 +42,10 @@ public:
 
     static void Fight(Entity& attacker, Entity& defender);
 
-    bool IsVisible() const;
-    bool IsNotVisible() const;
-    bool IsInvisible() const;
+
+    virtual bool IsVisible() const noexcept;
+    virtual bool IsNotVisible() const noexcept;
+    virtual bool IsInvisible() const noexcept;
     virtual bool IsSolid() const noexcept;
     virtual bool IsOpaque() const noexcept;
 
