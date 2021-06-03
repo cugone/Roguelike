@@ -39,16 +39,6 @@ void Entity::Update(TimeUtils::FPSeconds deltaSeconds) {
     sprite->Update(deltaSeconds);
 }
 
-void Entity::AppendToMesh(const Entity* const entity) noexcept {
-    entity->AppendToMesh();
-}
-
-void Entity::AppendToMesh() const noexcept {
-    AddVertsForCapeEquipment();
-    layer->AppendToMesh(this);
-    AddVertsForEquipment();
-}
-
 void Entity::CalculateLightValue() noexcept {
     SetLightValue(_self_illumination);
 }

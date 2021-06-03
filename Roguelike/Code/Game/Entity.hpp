@@ -62,8 +62,6 @@ public:
     Faction JoinFaction(const Faction& faction) noexcept;
     Rgba GetFactionAsColor() const noexcept;
 
-    static void AppendToMesh(const Entity* const entity) noexcept;
-
     virtual void CalculateLightValue() noexcept;
     uint32_t GetLightValue() const noexcept;
     void SetLightValue(uint32_t value) noexcept;
@@ -86,8 +84,6 @@ public:
     void AddVertsForCapeEquipment() const noexcept;
 
 protected:
-    virtual void AppendToMesh() const noexcept;
-
     virtual void ResolveAttack(Entity& attacker, Entity& defender);
     Stats GetStatModifiers() const noexcept;
     const Stats& GetBaseStats() const noexcept;
