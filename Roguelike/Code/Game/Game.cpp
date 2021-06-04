@@ -444,7 +444,7 @@ void Game::LoadCursorsFromFile(const std::filesystem::path& src) {
 void Game::LoadCursorDefinitionsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
     ThrowIfSourceFileNotFound(src);
-    if(auto* xml_root = ThrowIfSourceFileNotLoaded(src)) {
+    if(tinyxml2::XMLDocument doc{}; auto* xml_root = ThrowIfSourceFileNotLoaded(doc, src)) {
         DataUtils::ValidateXmlElement(*xml_root, "UI", "spritesheet", "", "cursors,overlays");
         auto* xml_spritesheet = xml_root->FirstChildElement("spritesheet");
         _cursor_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet);
@@ -466,7 +466,7 @@ void Game::ThrowIfSourceFileNotFound(const std::filesystem::path& src) {
 void Game::LoadEntitiesFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
     ThrowIfSourceFileNotFound(src);
-    if(auto* xml_entities_root = ThrowIfSourceFileNotLoaded(src)) {
+    if(tinyxml2::XMLDocument doc{}; auto* xml_entities_root = ThrowIfSourceFileNotLoaded(doc, src)) {
         DataUtils::ValidateXmlElement(*xml_entities_root, "entities", "definitions,entity", "");
         if(auto* xml_definitions = xml_entities_root->FirstChildElement("definitions")) {
             DataUtils::ValidateXmlElement(*xml_definitions, "definitions", "", "src");
@@ -479,19 +479,17 @@ void Game::LoadEntitiesFromFile(const std::filesystem::path& src) {
     }
 }
 
-XMLElement* Game::ThrowIfSourceFileNotLoaded(const std::filesystem::path& src) {
-    tinyxml2::XMLDocument doc{};
-    if(auto xml_result = doc.LoadFile(src.string().c_str()); xml_result != tinyxml2::XML_SUCCESS) {
-        const auto error_msg = std::string{"Entities source file at "} + src.string() + " could not be loaded.";
-        GUARANTEE_OR_DIE(xml_result == tinyxml2::XML_SUCCESS, error_msg.c_str());
-    }
+XMLElement* Game::ThrowIfSourceFileNotLoaded(tinyxml2::XMLDocument& doc, const std::filesystem::path& src) {
+    auto xml_result = doc.LoadFile(src.string().c_str());
+    const auto error_msg = std::string{"Entities source file at "} + src.string() + " could not be loaded.";
+    GUARANTEE_OR_DIE(xml_result == tinyxml2::XML_SUCCESS, error_msg.c_str());
     return doc.RootElement();
 }
 
 void Game::LoadEntityDefinitionsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
     ThrowIfSourceFileNotFound(src);
-    if(auto* xml_root = ThrowIfSourceFileNotLoaded(src)) {
+    if(tinyxml2::XMLDocument doc{}; auto* xml_root = ThrowIfSourceFileNotLoaded(doc, src)) {
         DataUtils::ValidateXmlElement(*xml_root, "entityDefinitions", "spritesheet,entityDefinition", "");
         auto* xml_spritesheet = xml_root->FirstChildElement("spritesheet");
         _entity_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet);
@@ -505,11 +503,12 @@ void Game::LoadEntityDefinitionsFromFile(const std::filesystem::path& src) {
 void Game::LoadItemsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
     ThrowIfSourceFileNotFound(src);
-    if(auto* xml_item_root = ThrowIfSourceFileNotLoaded(src)) {
-        DataUtils::ValidateXmlElement(*xml_item_root, "items", "spritesheet,item", "");
-        auto* xml_item_sheet = xml_item_root->FirstChildElement("spritesheet");
+    tinyxml2::XMLDocument doc{};
+    if(auto* xml_root = ThrowIfSourceFileNotLoaded(doc, src)) {
+        DataUtils::ValidateXmlElement(*xml_root, "items", "spritesheet,item", "");
+        auto* xml_item_sheet = xml_root->FirstChildElement("spritesheet");
         _item_sheet = g_theRenderer->CreateSpriteSheet(*xml_item_sheet);
-        DataUtils::ForEachChildElement(*xml_item_root, "item", [this](const XMLElement& elem) {
+        DataUtils::ForEachChildElement(*xml_root, "item", [this](const XMLElement& elem) {
             ItemBuilder builder(elem, _item_sheet);
             builder.Build();
             });

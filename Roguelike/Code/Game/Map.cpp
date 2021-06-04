@@ -1121,7 +1121,7 @@ void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
 void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
     g_theGame->ThrowIfSourceFileNotFound(src);
-    if(auto xml_root = g_theGame->ThrowIfSourceFileNotLoaded(src)) {
+    if(tinyxml2::XMLDocument doc{}; auto* xml_root = g_theGame->ThrowIfSourceFileNotLoaded(doc, src)) {
         DataUtils::ValidateXmlElement(*xml_root, "tileDefinitions", "spritesheet,tileDefinition", "");
         if(auto xml_spritesheet = xml_root->FirstChildElement("spritesheet")) {
             if(_tileset_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet); _tileset_sheet) {
