@@ -1400,18 +1400,7 @@ void Game::ShowFeatureInspectorUI() {
                     _debug_inspected_feature = nullptr;
                 }
                 ImGui::PopID();
-                const auto tex_coords = cur_sprite->GetCurrentTexCoords();
-                const auto dims = Vector2::ONE * 100.0f;
-                ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
-                if(const auto* actor = dynamic_cast<const Actor*>(cur_entity)) {
-                    for(const auto& eq : actor->GetEquipment()) {
-                        if(eq) {
-                            const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
-                            ImGui::SameLine(8.0f);
-                            ImGui::Image(cur_sprite->GetTexture(), dims, eq_coords.mins, eq_coords.maxs, Rgba::White, Rgba::NoAlpha);
-                        }
-                    }
-                }
+                ShowEntityInspectorImageUI(cur_sprite, cur_entity);
             }
         }
     }
@@ -1426,18 +1415,7 @@ void Game::ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const Ani
         ss << "\nAnimated: " << (def->is_animated ? "true" : "false");
     }
     ImGui::Text(ss.str().c_str());
-    const auto tex_coords = cur_sprite->GetCurrentTexCoords();
-    const auto dims = Vector2::ONE * 100.0f;
-    ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
-    if(const auto* actor = dynamic_cast<const Actor*>(cur_entity)) {
-        for(const auto& eq : actor->GetEquipment()) {
-            if(eq) {
-                const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
-                ImGui::SameLine(8.0f);
-                ImGui::Image(cur_sprite->GetTexture(), dims, eq_coords.mins, eq_coords.maxs, Rgba::White, Rgba::NoAlpha);
-            }
-        }
-    }
+    ShowEntityInspectorImageUI(cur_sprite, cur_entity);
 }
 
 void Game::ShowEntityInspectorInventoryManipulatorUI(Entity* const cur_entity) {
@@ -1551,6 +1529,20 @@ void Game::ShowEntityInspectorInventoryColumnUI(Entity* const cur_entity) {
     ImGui::PopID();
 }
 
+void Game::ShowEntityInspectorImageUI(const AnimatedSprite* cur_sprite, const Entity* cur_entity) {
+    const auto tex_coords = cur_sprite->GetCurrentTexCoords();
+    const auto dims = Vector2::ONE * 100.0f;
+    ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+    if(const auto* actor = dynamic_cast<const Actor*>(cur_entity)) {
+        for(const auto& eq : actor->GetEquipment()) {
+            if(eq) {
+                const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
+                ImGui::SameLine(8.0f);
+                ImGui::Image(cur_sprite->GetTexture(), dims, eq_coords.mins, eq_coords.maxs, Rgba::White, Rgba::NoAlpha);
+            }
+        }
+    }
+}
 #endif
 
 #pragma endregion

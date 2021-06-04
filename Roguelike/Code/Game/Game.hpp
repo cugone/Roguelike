@@ -18,6 +18,7 @@
 #include <memory>
 
 class KerningFont;
+class AnimatedSprite;
 
 struct fullscreen_cb_t {
     int effectIndex = -1;
@@ -144,6 +145,7 @@ private:
     void ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const AnimatedSprite* cur_sprite);
     void ShowEntityInspectorInventoryColumnUI(Entity* const cur_entity);
     void ShowFeatureInspectorUI();
+    void ShowEntityInspectorImageUI(const AnimatedSprite* cur_sprite, const Entity* cur_entity);
 #endif
 
     const bool IsDebugWindowOpen() const noexcept;
