@@ -14,14 +14,6 @@ Inventory::Inventory(const XMLElement& elem) noexcept
     LoadFromXml(elem);
 }
 
-void Inventory::AddVerts(const Vector2& position, Layer* layer) noexcept {
-    if(!empty()) {
-        if(const auto* item = Item::GetItem("chest")) {
-            item->AddVerts(position, layer);
-        }
-    }
-}
-
 Item* Inventory::HasItem(const Item* item) const noexcept {
     if(!item) {
         return nullptr;

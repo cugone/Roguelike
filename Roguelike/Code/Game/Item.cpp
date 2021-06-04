@@ -85,65 +85,6 @@ void Item::Update(TimeUtils::FPSeconds deltaSeconds) {
     }
 }
 
-void Item::AddVerts(const Vector2& position, Layer* parent_layer) const {
-
-    if(!_sprite) {
-        return;
-    }
-
-    const auto color = Rgba::White;
-
-    const auto& coords = _sprite->GetCurrentTexCoords();
-
-    const auto vert_left = position.x + 0.0f;
-    const auto vert_right = position.x + 1.0f;
-    const auto vert_top = position.y + 0.0f;
-    const auto vert_bottom = position.y + 1.0f;
-
-    const auto vert_bl = Vector2(vert_left, vert_bottom);
-    const auto vert_tl = Vector2(vert_left, vert_top);
-    const auto vert_tr = Vector2(vert_right, vert_top);
-    const auto vert_br = Vector2(vert_right, vert_bottom);
-
-    const auto tx_left = coords.mins.x;
-    const auto tx_right = coords.maxs.x;
-    const auto tx_top = coords.mins.y;
-    const auto tx_bottom = coords.maxs.y;
-
-    const auto tx_bl = Vector2(tx_left, tx_bottom);
-    const auto tx_tl = Vector2(tx_left, tx_top);
-    const auto tx_tr = Vector2(tx_right, tx_top);
-    const auto tx_br = Vector2(tx_right, tx_bottom);
-
-    auto* layer = parent_layer;
-    const float z = static_cast<float>(layer->z_index);
-    const Rgba layer_color = layer->color;
-
-    auto& builder = layer->GetMeshBuilder();
-    const auto newColor = layer_color != color && color != Rgba::White ? color : layer_color;
-    const auto normal = -Vector3::Z_AXIS;
-
-    builder.Begin(PrimitiveType::Triangles);
-    builder.SetColor(newColor);
-    builder.SetNormal(normal);
-
-    builder.SetUV(tx_bl);
-    builder.AddVertex(Vector3{vert_bl, z});
-
-    builder.SetUV(tx_tl);
-    builder.AddVertex(Vector3{vert_tl, z});
-
-    builder.SetUV(tx_tr);
-    builder.AddVertex(Vector3{vert_tr, z});
-
-    builder.SetUV(tx_br);
-    builder.AddVertex(Vector3{vert_br, z});
-
-    builder.AddIndicies(Mesh::Builder::Primitive::Quad);
-    builder.End(_sprite->GetMaterial());
-
-}
-
 bool Item::HasOwningInventory() const noexcept {
     return _parent_inventory != nullptr;
 }
