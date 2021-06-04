@@ -129,9 +129,9 @@ void Layer::AppendToMesh(const Tile* const tile) noexcept {
     if(tile->feature) {
         AppendToMesh(tile->feature);
     }
-    //if(tile->HasInventory()) {
-    //    AppendToMesh(tile->inventory);
-    //}
+    if(tile->HasInventory()) {
+        AppendToMesh(tile->inventory.get(), tile->GetCoords());
+    }
     if(tile->actor) {
         AppendToMesh(tile->actor);
     }
@@ -144,12 +144,17 @@ void Layer::AppendToMesh(const Entity* const entity) noexcept {
     }
     const auto& coords = entity->sprite->GetCurrentTexCoords();
     const auto& position = entity->GetPosition();
+    const auto entity_light_value = [&]() {
+        auto evalue = entity->GetLightValue();
+        auto tvalue = entity->tile->GetLightValue();
+        return (std::max)(evalue, tvalue);
+    }(); //IIIL
     entity->AddVertsForCapeEquipment();
-    AppendToMesh(position, coords, entity->GetLightValue(), entity->sprite->GetMaterial());
+    AppendToMesh(position, coords, entity_light_value, entity->sprite->GetMaterial());
     entity->AddVertsForEquipment();
 }
 
-void Layer::AppendToMesh(const IntVector2& tile_coords, const AABB2& uv_coords, const uint32_t light_value, Material* material) noexcept {
+void Layer::AppendToMesh(const IntVector2& tile_coords, const AABB2& uv_coords, const uint32_t light_value, const Material* const material) noexcept {
     const auto vert_left = tile_coords.x + 0.0f;
     const auto vert_right = tile_coords.x + 1.0f;
     const auto vert_top = tile_coords.y + 0.0f;
@@ -200,6 +205,37 @@ void Layer::AppendToMesh(const IntVector2& tile_coords, const AABB2& uv_coords, 
     builder.AddIndicies(Mesh::Builder::Primitive::Quad);
 
     builder.End(material);
+}
+
+void Layer::AppendToMesh(const Item* const item, const IntVector2& tile_coords) noexcept {
+    if(item == nullptr) {
+        return;
+    }
+    const auto* sprite = item->GetSprite();
+    if(!sprite) {
+        return;
+    }
+    const auto& uvs = sprite->GetCurrentTexCoords();
+    auto* material = sprite->GetMaterial();
+    const auto light_value = [&]() {
+        if(const auto item_value = item->GetLightValue(); item_value) {
+            return item_value;
+        } else {
+            if(const auto* const tile = GetTile(tile_coords.x, tile_coords.y); tile) {
+                return tile->GetLightValue();
+            }
+        }
+        return uint32_t{0u};
+    }();
+    AppendToMesh(tile_coords, uvs, light_value, material);
+}
+
+void Layer::AppendToMesh(const Inventory* const inventory, const IntVector2& tile_coords) noexcept {
+    if(inventory && !inventory->empty()) {
+        if(const auto* const item = Item::GetItem("chest"); item != nullptr) {
+            AppendToMesh(item, tile_coords);
+        }
+    }
 }
 
 bool Layer::LoadFromXml(const XMLElement& elem) {
