@@ -139,7 +139,7 @@ private:
     void ShowWorldInspectorUI();
     void ShowTileInspectorUI();
     void ShowTileInspectorTableUI(const std::vector<Tile*>& tiles, const uint8_t tiles_per_row, const uint8_t tiles_per_col);
-    void ShowInspectedElementImageUI(const  AnimatedSprite* cur_sprite) noexcept;
+    void ShowInspectedElementImageUI(const  AnimatedSprite* cur_sprite, const Vector2& dims, const AABB2& tex_coords) noexcept;
     void ShowTileInspectorStatsTableUI(const  TileDefinition* cur_def, const  Tile* cur_tile);
     void ShowEntityInspectorUI();
     void ShowEntityInspectorInventoryManipulatorUI(Entity* const cur_entity);
