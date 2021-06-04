@@ -318,7 +318,7 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
         CalculateLightingForLayers(deltaSeconds);
         UpdateLighting(deltaSeconds);
     }
-    cameraController.TranslateTo(Vector2(player->tile->GetCoords()), deltaSeconds);
+    cameraController.TranslateTo(Vector2{player->tile->GetCoords()} + Vector2{0.5f, 0.5f}, deltaSeconds);
     const auto clamped_camera_position = MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
     cameraController.SetPosition(clamped_camera_position);
     _should_render_stat_window = false;

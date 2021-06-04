@@ -301,7 +301,7 @@ void Game::EndFrame_Loading() {
         , _reset_loading_flag);
     } else {
         SetCurrentCursorById(CursorId::Yellow_Corner_Box);
-        _adventure->currentMap->cameraController.GetCamera().position = _adventure->currentMap->CalcMaxDimensions() * 0.5f;
+        _adventure->currentMap->cameraController.SetPosition(Vector2{_adventure->currentMap->player->GetPosition()} + Vector2{0.5f, 0.5f});
     }
 }
 
