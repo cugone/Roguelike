@@ -54,7 +54,7 @@ public:
 
     void BeginFrame();
     void Update(TimeUtils::FPSeconds deltaSeconds);
-    void UpdateLayers(TimeUtils::FPSeconds deltaSeconds);
+    void FocusCameraOnPlayer(TimeUtils::FPSeconds deltaSeconds) noexcept;    void UpdateLayers(TimeUtils::FPSeconds deltaSeconds);
     void UpdateCursor(TimeUtils::FPSeconds deltaSeconds) noexcept;
     void AddCursorToTopLayer() noexcept;
     void SetPriorityLayer(std::size_t i);
