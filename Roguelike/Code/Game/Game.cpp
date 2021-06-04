@@ -1311,30 +1311,6 @@ void Game::ShowTileInspectorTableUI(const std::vector<Tile*>& tiles, const uint8
         ImGui::EndTable();
     }
 }
-std::optional<std::vector<Tile*>> Game::DebugGetTilesFromMouse() {
-    if(g_theUISystem->WantsInputMouseCapture()) {
-        return {};
-    }
-    const auto mouse_pos = g_theInputSystem->GetCursorWindowPosition(*g_theRenderer->GetOutput()->GetWindow());
-    if(_debug_has_picked_tile_with_click) {
-        static std::optional<std::vector<Tile*>> picked_tiles{};
-        if(picked_tiles = _adventure->currentMap->PickTilesFromMouseCoords(mouse_pos); !picked_tiles.has_value()) {
-            return {};
-        }
-        auto* tile_actor = (*picked_tiles)[0]->actor;
-        auto* tile_feature = (*picked_tiles)[0]->feature;
-        bool tile_has_entity = tile_actor || tile_feature;
-        if(tile_has_entity && _debug_has_picked_entity_with_click) {
-            if(tile_actor) {
-                _debug_inspected_entity = tile_actor;
-            } else if(tile_feature) {
-                _debug_inspected_entity = tile_feature;
-            }
-        }
-        return picked_tiles;
-    }
-    return _adventure->currentMap->PickTilesFromMouseCoords(mouse_pos);
-}
 
 std::optional<std::vector<Tile*>> Game::DebugGetTilesFromCursor() {
     if(!current_cursor) {
