@@ -371,6 +371,8 @@ private:
     void CalculateLightingForLayers([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept;
 
     void SetCursorForFaction(const Actor* actor) const noexcept;
+    void SetCursorForTile() const noexcept;
+    void ShouldRenderStatWindow() noexcept;
     void RenderStatsBlock(Actor* actor) const noexcept;
 
     void BringLayerToFront(std::size_t i);

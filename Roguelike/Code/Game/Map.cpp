@@ -71,6 +71,26 @@ void Map::SetCursorForFaction(const Actor* actor) const noexcept {
     }
 }
 
+void Map::SetCursorForTile() const noexcept {
+    g_theGame->SetCurrentCursorById(CursorId::Yellow_Corner_Box);
+    if(auto* tile = this->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+        if(tile) {
+            if(!tile->CanSee()) {
+                g_theGame->SetCurrentCursorById(CursorId::Question);
+            } else if(tile->actor) {
+                SetCursorForFaction(tile->actor);
+            }
+        }
+    }
+}
+
+void Map::ShouldRenderStatWindow() noexcept {
+    _should_render_stat_window = false;
+    if(auto* tile = this->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile && tile->actor) {
+        _should_render_stat_window = true;
+    }
+}
+
 bool Map::AllowLightingDuringDay() const noexcept {
     if(_current_global_light == day_light_value) {
         return _allow_lighting_calculations_during_day;
@@ -341,19 +361,8 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
     cameraController.TranslateTo(Vector2{player->tile->GetCoords()} + Vector2{0.5f, 0.5f}, deltaSeconds);
     const auto clamped_camera_position = MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
     cameraController.SetPosition(clamped_camera_position);
-    _should_render_stat_window = false;
-    g_theGame->SetCurrentCursorById(CursorId::Yellow_Corner_Box);
-    if(auto* tile = this->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-        if(tile) {
-            if(tile->actor) {
-                _should_render_stat_window = true;
-                SetCursorForFaction(tile->actor);
-            }
-            if(!tile->CanSee()) {
-                g_theGame->SetCurrentCursorById(CursorId::Question);
-            }
-        }
-    }
+    ShouldRenderStatWindow();
+    SetCursorForTile();
 }
 
 void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
