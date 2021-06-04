@@ -1149,78 +1149,20 @@ void Game::ShowTileInspectorUI() {
         }
         ImGui::Text("Tile Inspector");
         ImGui::SameLine();
-        ImGui::PushID(static_cast<int>(has_selected_tile ? _debug_inspected_tiles[0]->GetIndexFromCoords() : (*picked_tiles)[0]->GetIndexFromCoords()));
+        const auto& tiles = has_selected_tile ? _debug_inspected_tiles : (*picked_tiles);
+        ImGui::PushID(static_cast<int>(tiles[0]->GetIndexFromCoords()));
         if(ImGui::Button("Unlock")) {
             _debug_has_picked_tile_with_click = false;
             _debug_inspected_tiles.clear();
         }
         ImGui::PopID();
-        const auto max_layers = std::size_t{9u};
         const auto tiles_per_row = std::size_t{3u};
         const auto tiles_per_col = std::size_t{3u};
-        const auto debugger_window_content_region_width = ImGui::GetWindowContentRegionWidth();
-        const auto debugger_window_width = ImGui::GetWindowWidth();
         //TODO: Get Centering working. Not currently in API.
-        ImGui::SetNextItemWidth(debugger_window_content_region_width * 0.5f);
-        if(ImGui::BeginTable("TileInspectorTable", tiles_per_col, ImGuiTableFlags_Borders | ImGuiTableFlags_SizingFixedSame | ImGuiTableFlags_NoHostExtendX)) {
-            ImGui::TableSetupColumn("TileInspectorTableLeftColumn", ImGuiTableColumnFlags_WidthFixed, 100.0f);
-            ImGui::TableSetupColumn("TileInspectorTableCenterColumn", ImGuiTableColumnFlags_WidthFixed, 100.0f);
-            ImGui::TableSetupColumn("TileInspectorTableRightColumn", ImGuiTableColumnFlags_WidthFixed, 100.0f);
-            if(_debug_has_picked_tile_with_click) {
-                for(auto row = std::size_t{0u}; row != tiles_per_row; ++row) {
-                    ImGui::TableNextRow(ImGuiTableRowFlags_None, 100.0f);
-                    for(auto col = std::size_t{0u}; col != tiles_per_col; ++col) {
-                        ImGui::TableSetColumnIndex(static_cast<int>(col));
-                        const auto index = row * tiles_per_col + col;
-                        if(index >= _debug_inspected_tiles.size()) {
-                            continue;
-                        }
-                        if(const auto* cur_tile = _debug_inspected_tiles[index]; cur_tile == nullptr) {
-                            continue;
-                        } else {
-                            const auto* cur_def = TileDefinition::GetTileDefinitionByName(cur_tile->GetType());
-                            if(cur_def == nullptr) {
-                                cur_def = TileDefinition::GetTileDefinitionByName("void");
-                            }
-                            if(const auto* cur_sprite = cur_def->GetSprite()) {
-                                const auto tex_coords = cur_sprite->GetCurrentTexCoords();
-                                const auto dims = Vector2::ONE * 100.0f;
-                                ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
-                                if(ImGui::IsItemHovered()) {
-                                    ImGui::BeginTooltip();
-                                    ShowTileInspectorStatsTableUI(cur_def, cur_tile);
-                                    ImGui::EndTooltip();
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                for(auto row = std::size_t{0u}; row != tiles_per_row; ++row) {
-                    ImGui::TableNextRow(ImGuiTableRowFlags_None, 100.0f);
-                    for(auto col = std::size_t{0u}; col != tiles_per_col; ++col) {
-                        ImGui::TableSetColumnIndex(static_cast<int>(col));
-                        const auto index = row * tiles_per_col + col;
-                        if(index >= picked_tiles->size()) {
-                            continue;
-                        }
-                        const auto* cur_tile = (*picked_tiles)[index];
-                        const auto* cur_def = cur_tile ? TileDefinition::GetTileDefinitionByName(cur_tile->GetType()) : TileDefinition::GetTileDefinitionByName("void");
-                        if(const auto* cur_sprite = cur_def->GetSprite()) {
-                            const auto tex_coords = cur_sprite->GetCurrentTexCoords();
-                            const auto dims = Vector2::ONE * 100.0f;
-                            ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
-                            if(ImGui::IsItemHovered()) {
-                                ImGui::BeginTooltip();
-                                ShowTileInspectorStatsTableUI(cur_def, cur_tile);
-                                ImGui::EndTooltip();
-                            }
-                        }
-                    }
-                }
-            }
-            ImGui::EndTable();
-        }
+        //const auto debugger_window_content_region_width = ImGui::GetWindowContentRegionWidth();
+        //const auto debugger_window_width = ImGui::GetWindowWidth();
+        //ImGui::SetNextItemWidth(debugger_window_content_region_width * 0.5f);
+        ShowTileInspectorTableUI(tiles, tiles_per_row, tiles_per_col);
     }
 }
 
@@ -1333,6 +1275,42 @@ void Game::ShowTileInspectorStatsTableUI(const TileDefinition* cur_def, const Ti
     ImGui::PopID();
 }
 
+void Game::ShowTileInspectorTableUI(const std::vector<Tile*>& tiles, const uint8_t tiles_per_row, const uint8_t tiles_per_col) {
+    if(ImGui::BeginTable("TileInspectorTable", tiles_per_col, ImGuiTableFlags_Borders | ImGuiTableFlags_SizingFixedSame | ImGuiTableFlags_NoHostExtendX)) {
+        ImGui::TableSetupColumn("TileInspectorTableLeftColumn", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+        ImGui::TableSetupColumn("TileInspectorTableCenterColumn", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+        ImGui::TableSetupColumn("TileInspectorTableRightColumn", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+        for(auto row = std::size_t{0u}; row != tiles_per_row; ++row) {
+            ImGui::TableNextRow(ImGuiTableRowFlags_None, 100.0f);
+            for(auto col = std::size_t{0u}; col != tiles_per_col; ++col) {
+                ImGui::TableSetColumnIndex(static_cast<int>(col));
+                const auto index = row * tiles_per_col + col;
+                if(index >= tiles.size()) {
+                    continue;
+                }
+                if(const auto* cur_tile = tiles[index]; cur_tile == nullptr) {
+                    continue;
+                } else {
+                    const auto* cur_def = TileDefinition::GetTileDefinitionByName(cur_tile->GetType());
+                    if(cur_def == nullptr) {
+                        cur_def = TileDefinition::GetTileDefinitionByName("void");
+                    }
+                    if(const auto* cur_sprite = cur_def->GetSprite()) {
+                        const auto tex_coords = cur_sprite->GetCurrentTexCoords();
+                        const auto dims = Vector2::ONE * 100.0f;
+                        ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                        if(ImGui::IsItemHovered()) {
+                            ImGui::BeginTooltip();
+                            ShowTileInspectorStatsTableUI(cur_def, cur_tile);
+                            ImGui::EndTooltip();
+                        }
+                    }
+                }
+            }
+        }
+        ImGui::EndTable();
+    }
+}
 std::optional<std::vector<Tile*>> Game::DebugGetTilesFromMouse() {
     if(g_theUISystem->WantsInputMouseCapture()) {
         return {};
