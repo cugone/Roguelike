@@ -383,7 +383,7 @@ RoomsOnlyMapGenerator::RoomsOnlyMapGenerator(Map* map, const XMLElement& elem) n
 }
 
 void RoomsOnlyMapGenerator::Generate() {
-    //TODO: Generate using "floorplan" algorithm here: https://www.reddit.com/r/roguelikedev/comments/310ae2/looking_for_a_bit_of_help_on_a_dungeon_generator/cpxrfbh?utm_source=share&utm_medium=web2x&context=3
+    //Ref: Using "floorplan" algorithm here: https://www.reddit.com/r/roguelikedev/comments/310ae2/looking_for_a_bit_of_help_on_a_dungeon_generator/cpxrfbh?utm_source=share&utm_medium=web2x&context=3
     //1.  Make up some general constraints, like maximum and minimum room width & height.
     //2.  You need some sort of generic "room" construct, abstract from the map.
     //    Rooms are basically just rectangles with a top (y), left (x), width, height.
