@@ -161,7 +161,9 @@ private:
     void LoadCursorsFromFile(const std::filesystem::path& src);
     void LoadCursorDefinitionsFromFile(const std::filesystem::path& src);
 
+    void ThrowIfSourceFileNotFound(const std::filesystem::path& src);
     void LoadEntitiesFromFile(const std::filesystem::path& src);
+    XMLElement* ThrowIfSourceFileNotLoaded(const std::filesystem::path& src);
     void LoadEntityDefinitionsFromFile(const std::filesystem::path& src);
     void LoadItemsFromFile(const std::filesystem::path& src);
 

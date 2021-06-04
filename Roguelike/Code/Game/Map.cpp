@@ -1120,17 +1120,8 @@ void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
 
 void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
-    {
-        const auto error_msg = std::string{"Tiles source file at "} + src.string() + " could not be found.";
-        GUARANTEE_OR_DIE(FS::exists(src), error_msg.c_str());
-    }
-    tinyxml2::XMLDocument doc;
-    auto xml_result = doc.LoadFile(src.string().c_str());
-    {
-        const auto error_msg = std::string("Map ") + _name + " failed to load. Tiles source file at " + src.string() + " could not be loaded.";
-        GUARANTEE_OR_DIE(xml_result == tinyxml2::XML_SUCCESS, error_msg.c_str());
-    }
-    if(auto xml_root = doc.RootElement()) {
+    g_theGame->ThrowIfSourceFileNotFound(src);
+    if(auto xml_root = g_theGame->ThrowIfSourceFileNotLoaded(src)) {
         DataUtils::ValidateXmlElement(*xml_root, "tileDefinitions", "spritesheet,tileDefinition", "");
         if(auto xml_spritesheet = xml_root->FirstChildElement("spritesheet")) {
             if(_tileset_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet); _tileset_sheet) {
