@@ -370,6 +370,7 @@ private:
     void UpdateLighting(TimeUtils::FPSeconds deltaSeconds) noexcept;
     void CalculateLightingForLayers([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept;
 
+    void SetCursorForFaction(const Actor* actor) const noexcept;
     void RenderStatsBlock(Actor* actor) const noexcept;
 
     void BringLayerToFront(std::size_t i);

@@ -51,6 +51,26 @@ const Rgba& Map::GetSkyColorForCave() noexcept {
     return g_clearcolor_cave;
 }
 
+void Map::SetCursorForFaction(const Actor* actor) const noexcept {
+    switch(actor->GetFaction()) {
+    case Faction::None:
+        g_theGame->SetCurrentCursorById(CursorId::Yellow_Corner_Box);
+        break;
+    case Faction::Player:
+        g_theGame->SetCurrentCursorById(CursorId::Yellow_Corner_Box);
+        break;
+    case Faction::Enemy:
+        g_theGame->SetCurrentCursorById(CursorId::Red_Crosshair_Box);
+        break;
+    case Faction::Neutral:
+        g_theGame->SetCurrentCursorById(CursorId::Yellow_Corner_Box);
+        break;
+    default:
+        g_theGame->SetCurrentCursorById(CursorId::Green_Box);
+        break;
+    }
+}
+
 bool Map::AllowLightingDuringDay() const noexcept {
     if(_current_global_light == day_light_value) {
         return _allow_lighting_calculations_during_day;
@@ -322,8 +342,17 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
     const auto clamped_camera_position = MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
     cameraController.SetPosition(clamped_camera_position);
     _should_render_stat_window = false;
-    if(auto* tile = this->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr && tile->actor != nullptr) {
-        _should_render_stat_window = true;
+    g_theGame->SetCurrentCursorById(CursorId::Yellow_Corner_Box);
+    if(auto* tile = this->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
+        if(tile) {
+            if(tile->actor) {
+                _should_render_stat_window = true;
+                SetCursorForFaction(tile->actor);
+            }
+            if(!tile->CanSee()) {
+                g_theGame->SetCurrentCursorById(CursorId::Question);
+            }
+        }
     }
 }
 
