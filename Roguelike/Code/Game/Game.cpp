@@ -347,6 +347,32 @@ void Game::MapExited() noexcept {
     }
 }
 
+void Game::ShowInspectedActorEquipmentExceptImageUI(const AnimatedSprite* cur_sprite, const Entity* cur_entity, const EquipSlot& skip_equip_slot /*= EquipSlot::None*/) noexcept {
+    if(const auto* actor = dynamic_cast<const Actor*>(cur_entity)) {
+        for(const auto& eq : actor->GetEquipment()) {
+            if(eq && eq->GetEquipSlot() != skip_equip_slot) {
+                const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
+                ImGui::SameLine(8.0f);
+                ImGui::SetItemAllowOverlap();
+                ImGui::Image(cur_sprite->GetTexture(), Vector2{100.0f, 100.0f}, eq_coords.mins, eq_coords.maxs, Rgba::White, Rgba::NoAlpha);
+            }
+        }
+    }
+}
+
+void Game::ShowInspectedActorEquipmentOnlyImageUI(const AnimatedSprite* cur_sprite, const Entity* cur_entity, const EquipSlot& equip_slot) noexcept {
+    if(const auto* actor = dynamic_cast<const Actor*>(cur_entity)) {
+        for(const auto& eq : actor->GetEquipment()) {
+            if(eq && eq->GetEquipSlot() == equip_slot) {
+                const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
+                ImGui::SameLine(8.0f);
+                ImGui::SetItemAllowOverlap();
+                ImGui::Image(cur_sprite->GetTexture(), Vector2{100.0f, 100.0f}, eq_coords.mins, eq_coords.maxs, Rgba::White, Rgba::NoAlpha);
+            }
+        }
+    }
+}
+
 void Game::EndFrame_Main() {
     _adventure->currentMap->EndFrame();
     OnMapExit.Trigger();
@@ -1296,9 +1322,7 @@ void Game::ShowTileInspectorTableUI(const std::vector<Tile*>& tiles, const uint8
                         cur_def = TileDefinition::GetTileDefinitionByName("void");
                     }
                     if(const auto* cur_sprite = cur_def->GetSprite()) {
-                        const auto tex_coords = cur_sprite->GetCurrentTexCoords();
-                        const auto dims = Vector2::ONE * 100.0f;
-                        ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+                        ShowInspectedElementImageUI(cur_sprite);
                         if(ImGui::IsItemHovered()) {
                             ImGui::BeginTooltip();
                             ShowTileInspectorStatsTableUI(cur_def, cur_tile);
@@ -1310,6 +1334,12 @@ void Game::ShowTileInspectorTableUI(const std::vector<Tile*>& tiles, const uint8
         }
         ImGui::EndTable();
     }
+}
+
+void Game::ShowInspectedElementImageUI(const AnimatedSprite* cur_sprite) noexcept {
+    const auto tex_coords = cur_sprite->GetCurrentTexCoords();
+    const auto dims = Vector2::ONE * 100.0f;
+    ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
 }
 
 std::optional<std::vector<Tile*>> Game::DebugGetTilesFromCursor() {
@@ -1415,6 +1445,7 @@ void Game::ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const Ani
         ss << "\nAnimated: " << (def->is_animated ? "true" : "false");
     }
     ImGui::Text(ss.str().c_str());
+    ImGui::NewLine();
     ShowEntityInspectorImageUI(cur_sprite, cur_entity);
 }
 
@@ -1530,18 +1561,10 @@ void Game::ShowEntityInspectorInventoryColumnUI(Entity* const cur_entity) {
 }
 
 void Game::ShowEntityInspectorImageUI(const AnimatedSprite* cur_sprite, const Entity* cur_entity) {
-    const auto tex_coords = cur_sprite->GetCurrentTexCoords();
-    const auto dims = Vector2::ONE * 100.0f;
-    ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
-    if(const auto* actor = dynamic_cast<const Actor*>(cur_entity)) {
-        for(const auto& eq : actor->GetEquipment()) {
-            if(eq) {
-                const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
-                ImGui::SameLine(8.0f);
-                ImGui::Image(cur_sprite->GetTexture(), dims, eq_coords.mins, eq_coords.maxs, Rgba::White, Rgba::NoAlpha);
-            }
-        }
-    }
+    ShowInspectedActorEquipmentOnlyImageUI(cur_sprite, cur_entity, EquipSlot::Cape);
+    ImGui::SameLine(8.0f);
+    ShowInspectedElementImageUI(cur_sprite);
+    ShowInspectedActorEquipmentExceptImageUI(cur_sprite, cur_entity, EquipSlot::Cape);
 }
 #endif
 
