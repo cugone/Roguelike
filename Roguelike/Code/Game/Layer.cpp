@@ -6,6 +6,8 @@
 
 #include "Engine/Math/Vector3.hpp"
 
+#include "Game/Cursor.hpp"
+#include "Game/CursorDefinition.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/GameConfig.hpp"
 #include "Game/Map.hpp"
@@ -236,6 +238,55 @@ void Layer::AppendToMesh(const Inventory* const inventory, const IntVector2& til
             AppendToMesh(item, tile_coords);
         }
     }
+}
+
+void Layer::AppendToMesh(const Cursor* cursor) noexcept {
+    if(cursor == nullptr) {
+        return;
+    }
+    const auto& tile_coords = cursor->GetCoords();
+    const auto vert_left = tile_coords.x + 0.0f;
+    const auto vert_right = tile_coords.x + 1.0f;
+    const auto vert_top = tile_coords.y + 0.0f;
+    const auto vert_bottom = tile_coords.y + 1.0f;
+
+    const auto vert_bl = Vector2(vert_left, vert_bottom);
+    const auto vert_tl = Vector2(vert_left, vert_top);
+    const auto vert_tr = Vector2(vert_right, vert_top);
+    const auto vert_br = Vector2(vert_right, vert_bottom);
+
+    const auto& sprite = cursor->GetDefinition()->GetSprite();
+    const auto& uv_coords = sprite->GetCurrentTexCoords();
+
+    const auto tx_left = uv_coords.mins.x;
+    const auto tx_right = uv_coords.maxs.x;
+    const auto tx_top = uv_coords.mins.y;
+    const auto tx_bottom = uv_coords.maxs.y;
+
+    const auto tx_bl = Vector2(tx_left, tx_bottom);
+    const auto tx_tl = Vector2(tx_left, tx_top);
+    const auto tx_tr = Vector2(tx_right, tx_top);
+    const auto tx_br = Vector2(tx_right, tx_bottom);
+
+    auto& builder = GetMeshBuilder();
+    builder.Begin(PrimitiveType::Triangles);
+    builder.SetColor(color);
+    builder.SetNormal(-Vector3::Z_AXIS);
+
+    builder.SetUV(tx_bl);
+    builder.AddVertex(Vector3{vert_bl, 0.0f});
+
+    builder.SetUV(tx_tl);
+    builder.AddVertex(Vector3{vert_tl, 0.0f});
+
+    builder.SetUV(tx_tr);
+    builder.AddVertex(Vector3{vert_tr, 0.0f});
+
+    builder.SetUV(tx_br);
+    builder.AddVertex(Vector3{vert_br, 0.0f});
+
+    builder.AddIndicies(Mesh::Builder::Primitive::Quad);
+    builder.End(sprite->GetMaterial());
 }
 
 bool Layer::LoadFromXml(const XMLElement& elem) {

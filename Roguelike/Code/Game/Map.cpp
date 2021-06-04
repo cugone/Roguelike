@@ -346,9 +346,9 @@ void Map::UpdateCursor(TimeUtils::FPSeconds deltaSeconds) noexcept {
 
 void Map::AddCursorToTopLayer() noexcept {
     if(g_theGame->current_cursor) {
-        auto* layer = GetLayer(GetLayerCount() - std::size_t{1u});
-        auto& builder = layer->GetMeshBuilder();
-        g_theGame->current_cursor->AddVertsForCursor(builder);
+        if(auto* layer = GetLayer(GetLayerCount() - std::size_t{1u}); layer) {
+            layer->AppendToMesh(g_theGame->current_cursor);
+        }
     }
 }
 

@@ -38,8 +38,6 @@ public:
 
     Rgba color = Rgba::White;
 
-    void AddVertsForCursor(Mesh::Builder& builder) const;
-
 protected:
 private:
 
