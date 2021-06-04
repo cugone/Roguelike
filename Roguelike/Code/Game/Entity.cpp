@@ -89,11 +89,16 @@ void Entity::AddVertsForCapeEquipment() const noexcept {
     if(auto actor = dynamic_cast<const Actor*>(this)) {
         for(const auto& e : actor->GetEquipment()) {
             if(e && e->GetEquipSlot() == EquipSlot::Cape) {
-
-                if(const auto* s = e->GetSprite(); !s || actor->IsInvisible()) {
+                if(const auto* const s = e->GetSprite(); !s || actor->IsInvisible()) {
                     continue;
+                } else {
+                    const auto light_value = [&]() {
+                        const auto a = actor->GetLightValue();
+                        const auto t = actor->tile->GetLightValue();
+                        return (std::max)(a, t);
+                    }();
+                    layer->AppendToMesh(_position, s->GetCurrentTexCoords(), light_value, s->GetMaterial());
                 }
-                e->AddVerts(Vector2{_position}, layer);
             }
         }
     }
@@ -103,11 +108,16 @@ void Entity::AddVertsForEquipment() const noexcept {
     if(auto actor = dynamic_cast<const Actor*>(this)) {
         for(const auto& e : actor->GetEquipment()) {
             if(e && e->GetEquipSlot() != EquipSlot::Cape) {
-
                 if(const auto* s = e->GetSprite(); !s || actor->IsInvisible()) {
                     continue;
+                } else {
+                    const auto light_value = [&]() {
+                        const auto a = actor->GetLightValue();
+                        const auto t = actor->tile->GetLightValue();
+                        return (std::max)(a, t);
+                    }();
+                    layer->AppendToMesh(_position, s->GetCurrentTexCoords(), light_value, s->GetMaterial());
                 }
-                e->AddVerts(Vector2{_position}, layer);
             }
         }
     }
