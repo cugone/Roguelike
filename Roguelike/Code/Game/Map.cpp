@@ -1121,7 +1121,7 @@ void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
 void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
     {
-        const auto error_msg = std::string{"Entities file at "} + src.string() + " could not be found.";
+        const auto error_msg = std::string{"Tiles source file at "} + src.string() + " could not be found.";
         GUARANTEE_OR_DIE(FS::exists(src), error_msg.c_str());
     }
     tinyxml2::XMLDocument doc;
