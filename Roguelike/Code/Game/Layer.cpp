@@ -156,7 +156,7 @@ void Layer::AppendToMesh(const Entity* const entity) noexcept {
     entity->AddVertsForEquipment();
 }
 
-void Layer::AppendToMesh(const IntVector2& tile_coords, const AABB2& uv_coords, const uint32_t light_value, const Material* const material) noexcept {
+void Layer::AppendToMesh(const IntVector2& tile_coords, const AABB2& uv_coords, const uint32_t light_value, Material* material) noexcept {
     const auto vert_left = tile_coords.x + 0.0f;
     const auto vert_right = tile_coords.x + 1.0f;
     const auto vert_top = tile_coords.y + 0.0f;

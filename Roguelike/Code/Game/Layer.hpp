@@ -87,7 +87,7 @@ public:
     void AppendToMesh(const Entity* const entity) noexcept;
     void AppendToMesh(const Item* const item, const IntVector2& tile_coords) noexcept;
     void AppendToMesh(const Inventory* const inventory, const IntVector2& tile_coords) noexcept;
-    void AppendToMesh(const IntVector2& tile_coords, const AABB2& uv_coords, const uint32_t light_value, const Material* const material) noexcept;
+    void AppendToMesh(const IntVector2& tile_coords, const AABB2& uv_coords, const uint32_t light_value, Material* material) noexcept;
     void AppendToMesh(const Cursor* cursor) noexcept;
 
 protected:
