@@ -10,7 +10,6 @@
 
 #include <vector>
 
-class Renderer;
 class CursorDefinition;
 class Entity;
 class Layer;

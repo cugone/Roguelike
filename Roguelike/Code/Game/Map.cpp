@@ -14,8 +14,10 @@
 #include "Engine/Math/MathUtils.hpp"
 
 #include "Engine/Renderer/Material.hpp"
-#include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
+
+#include "Engine/Services/ServiceLocator.hpp"
+#include "Engine/Services/IRendererService.hpp"
 
 #include "Game/Adventure.hpp"
 #include "Game/Actor.hpp"
@@ -274,16 +276,16 @@ Tile* Map::PickTileFromWorldCoords(const Vector2& worldCoords, int layerIndex) c
 }
 
 std::optional<std::vector<Tile*>> Map::PickTilesFromMouseCoords(const Vector2& mouseCoords) const {
-    const auto& world_coords = _renderer.ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
+    const auto& world_coords = ServiceLocator::get<IRendererService>().ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
     return PickTilesFromWorldCoords(world_coords);
 }
 
 Vector2 Map::WorldCoordsToScreenCoords(const Vector2& worldCoords) const {
-    return _renderer.ConvertWorldToScreenCoords(cameraController.GetCamera(), worldCoords);
+    return ServiceLocator::get<IRendererService>().ConvertWorldToScreenCoords(cameraController.GetCamera(), worldCoords);
 }
 
 Vector2 Map::ScreenCoordsToWorldCoords(const Vector2& screenCoords) const {
-    return _renderer.ConvertScreenToWorldCoords(cameraController.GetCamera(), screenCoords);
+    return ServiceLocator::get<IRendererService>().ConvertScreenToWorldCoords(cameraController.GetCamera(), screenCoords);
 }
 
 IntVector2 Map::TileCoordsFromWorldCoords(const Vector2& worldCoords) const {
@@ -291,12 +293,12 @@ IntVector2 Map::TileCoordsFromWorldCoords(const Vector2& worldCoords) const {
 }
 
 Tile* Map::PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) const {
-    const auto& world_coords = _renderer.ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
+    const auto& world_coords = ServiceLocator::get<IRendererService>().ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
     return PickTileFromWorldCoords(world_coords, layerIndex);
 }
 
 Vector2 Map::GetSubTileLocationFromMouseCoords(const Vector2& mouseCoords) const noexcept {
-    const auto& world_coords = _renderer.ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
+    const auto& world_coords = ServiceLocator::get<IRendererService>().ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
     const auto&& [x_int, x_frac] = MathUtils::SplitFloatingPointValue(world_coords.x);
     const auto&& [y_int, y_frac] = MathUtils::SplitFloatingPointValue(world_coords.y);
     return Vector2{x_frac, y_frac};
@@ -322,13 +324,12 @@ bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
     }
 }
 
-Map::Map(Renderer& renderer, const XMLElement& elem) noexcept
-    : _renderer(renderer)
-    , _root_xml_element(elem)
+Map::Map(const XMLElement& elem) noexcept
+    : _root_xml_element(elem)
     , _pathfinder(std::make_unique<Pathfinder>())
 {
     GUARANTEE_OR_DIE(LoadFromXML(elem), "Could not load map.");
-    cameraController = OrthographicCameraController(&_renderer, g_theInputSystem);
+    cameraController = OrthographicCameraController{};
     cameraController.SetZoomLevelRange(Vector2{8.0f, 16.0f});
     for(auto& layer : _layers) {
         InitializeLighting(layer.get());
@@ -634,9 +635,9 @@ void Map::BringLayerToFront(std::size_t i) {
     }
 }
 
-void Map::Render(Renderer& renderer) const {
+void Map::Render() const {
     for(const auto& layer : _layers) {
-        layer->Render(renderer);
+        layer->Render();
     }
 
     auto& ui_camera = g_theGame->ui_camera;
@@ -647,7 +648,7 @@ void Map::Render(Renderer& renderer) const {
     const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
 
-    renderer.BeginHUDRender(ui_camera, ui_view_half_extents, ui_view_height);
+    g_theRenderer->BeginHUDRender(ui_camera, ui_view_half_extents, ui_view_height);
 
     for(auto* entity : _text_entities) {
         entity->Render();
@@ -661,47 +662,47 @@ void Map::Render(Renderer& renderer) const {
 
 }
 
-void Map::DebugRender([[maybe_unused]] Renderer& renderer) const {
+void Map::DebugRender() const {
 #ifdef UI_DEBUG
     for(const auto& layer : _layers) {
-        layer->DebugRender(renderer);
+        layer->DebugRender();
     }
     if(!g_theGame->_debug_render) {
         return;
     }
     if(g_theGame->_debug_show_grid) {
-        renderer.SetModelMatrix(Matrix4::I);
+        g_theRenderer->SetModelMatrix(Matrix4::I);
         const auto* layer = GetLayer(0);
-        renderer.SetMaterial(renderer.GetMaterial("__2D"));
-        renderer.DrawWorldGrid2D(layer->tileDimensions, layer->debug_grid_color);
+        g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+        g_theRenderer->DrawWorldGrid2D(layer->tileDimensions, layer->debug_grid_color);
     }
     if(g_theGame->_debug_show_room_bounds) {
         if(auto* generator = dynamic_cast<RoomsMapGenerator*>(_map_generator.get()); generator != nullptr) {
             for(auto& room : generator->rooms) {
-                renderer.SetModelMatrix(Matrix4::I);
-                renderer.SetMaterial(renderer.GetMaterial("__2D"));
-                renderer.DrawAABB2(room, Rgba::Cyan, Rgba::NoAlpha);
+                g_theRenderer->SetModelMatrix(Matrix4::I);
+                g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+                g_theRenderer->DrawAABB2(room, Rgba::Cyan, Rgba::NoAlpha);
             }
         }
     }
     if(g_theGame->_debug_show_world_bounds) {
         auto bounds = CalcWorldBounds();
-        renderer.SetModelMatrix(Matrix4::I);
-        renderer.SetMaterial(renderer.GetMaterial("__2D"));
-        renderer.DrawAABB2(bounds, Rgba::Cyan, Rgba::NoAlpha);
+        g_theRenderer->SetModelMatrix(Matrix4::I);
+        g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+        g_theRenderer->DrawAABB2(bounds, Rgba::Cyan, Rgba::NoAlpha);
     }
     if(g_theGame->_debug_show_camera_bounds) {
         auto bounds = CalcCameraBounds();
-        renderer.SetModelMatrix(Matrix4::I);
-        renderer.SetMaterial(renderer.GetMaterial("__2D"));
-        renderer.DrawAABB2(bounds, Rgba::Orange, Rgba::NoAlpha);
+        g_theRenderer->SetModelMatrix(Matrix4::I);
+        g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+        g_theRenderer->DrawAABB2(bounds, Rgba::Orange, Rgba::NoAlpha);
     }
     if(g_theGame->_debug_show_camera) {
         const auto& cam_pos = cameraController.GetCamera().GetPosition();
-        renderer.SetMaterial(renderer.GetMaterial("__2D"));
-        renderer.DrawCircle2D(cam_pos, 0.5f, Rgba::Cyan);
-        renderer.DrawAABB2(GetLayer(0)->CalcViewBounds(cam_pos), Rgba::Green, Rgba::NoAlpha);
-        renderer.DrawAABB2(GetLayer(0)->CalcCullBounds(cam_pos), Rgba::Blue, Rgba::NoAlpha);
+        g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+        g_theRenderer->DrawCircle2D(cam_pos, 0.5f, Rgba::Cyan);
+        g_theRenderer->DrawAABB2(GetLayer(0)->CalcViewBounds(cam_pos), Rgba::Green, Rgba::NoAlpha);
+        g_theRenderer->DrawAABB2(GetLayer(0)->CalcCullBounds(cam_pos), Rgba::Blue, Rgba::NoAlpha);
     }
 #endif
 }
@@ -1169,7 +1170,7 @@ void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
             if(_tileset_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet); _tileset_sheet) {
                 DataUtils::ForEachChildElement(*xml_root, "tileDefinition",
                     [this](const XMLElement& elem) {
-                        auto* def = TileDefinition::CreateOrGetTileDefinition(*g_theRenderer, elem, _tileset_sheet);
+                        auto* def = TileDefinition::CreateOrGetTileDefinition(elem, _tileset_sheet);
                         def->GetSprite()->SetMaterial(_current_tileMaterial);
                     });
             }

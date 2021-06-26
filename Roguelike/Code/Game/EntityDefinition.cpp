@@ -7,17 +7,18 @@
 #include "Engine/Renderer/SpriteSheet.hpp"
 
 #include "Game/Behavior.hpp"
+#include "Game/GameCommon.hpp"
 
 std::map<std::string, std::unique_ptr<EntityDefinition>> EntityDefinition::s_registry;
 
-void EntityDefinition::CreateEntityDefinition(Renderer& renderer, const XMLElement& elem) {
-    auto new_def = std::make_unique<EntityDefinition>(renderer, elem);
+void EntityDefinition::CreateEntityDefinition(const XMLElement& elem) {
+    auto new_def = std::make_unique<EntityDefinition>(elem);
     auto new_def_name = new_def->name;
     s_registry.try_emplace(new_def_name, std::move(new_def));
 }
 
-void EntityDefinition::CreateEntityDefinition(Renderer& renderer, const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet) {
-    auto new_def = std::make_unique<EntityDefinition>(renderer, elem, sheet);
+void EntityDefinition::CreateEntityDefinition(const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet) {
+    auto new_def = std::make_unique<EntityDefinition>(elem, sheet);
     auto new_def_name = new_def->name;
     s_registry.try_emplace(new_def_name, std::move(new_def));
 }
@@ -43,15 +44,13 @@ std::vector<std::string> EntityDefinition::GetAllEntityDefinitionNames() {
     return result;
 }
 
-EntityDefinition::EntityDefinition(Renderer& renderer, const XMLElement& elem)
-    : _renderer(renderer)
+EntityDefinition::EntityDefinition(const XMLElement& elem)
 {
     GUARANTEE_OR_DIE(LoadFromXml(elem), "Entity Definition failed to load.");
 }
 
-EntityDefinition::EntityDefinition(Renderer& renderer, const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet)
-    : _renderer(renderer)
-    , _sheet(sheet)
+EntityDefinition::EntityDefinition(const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet)
+: _sheet(sheet)
 {
     GUARANTEE_OR_DIE(LoadFromXml(elem), "Entity Definition failed to load.");
 }
@@ -186,8 +185,8 @@ void EntityDefinition::LoadAttachPoints(const XMLElement& elem) {
 void EntityDefinition::LoadAnimation(const XMLElement& elem) {
     if(auto* xml_animation = elem.FirstChildElement("animation")) {
         is_animated = true;
-        _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, *xml_animation));
+        _sprite = std::move(g_theRenderer->CreateAnimatedSprite(_sheet, *xml_animation));
     } else {
-        _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, _index));
+        _sprite = std::move(g_theRenderer->CreateAnimatedSprite(_sheet, _index));
     }
 }

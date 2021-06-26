@@ -42,8 +42,8 @@ public:
 
     void BeginFrame();
     void Update(TimeUtils::FPSeconds deltaSeconds);
-    void Render(Renderer& renderer) const;
-    void DebugRender(Renderer& renderer) const;
+    void Render() const;
+    void DebugRender() const;
     void EndFrame();
 
     AABB2 CalcOrthoBounds() const;
@@ -97,9 +97,9 @@ private:
     bool LoadFromImage(const Image& img);
     void InitializeTiles(const std::size_t row_count, const std::size_t max_row_length, const std::vector<std::string>& glyph_strings);
     std::size_t NormalizeLayerRows(std::vector<std::string>& glyph_strings);
-    void SetModelViewProjectionBounds(Renderer& renderer) const;
-    void RenderTiles(Renderer& renderer) const;
-    void DebugRenderTiles(Renderer& renderer) const;
+    void SetModelViewProjectionBounds() const;
+    void RenderTiles() const;
+    void DebugRenderTiles() const;
 
     void UpdateTiles(TimeUtils::FPSeconds deltaSeconds);
 

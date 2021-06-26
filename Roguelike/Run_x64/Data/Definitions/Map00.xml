@@ -5,24 +5,24 @@
         <actor name="player" lookAndFeel="human..male" position="[1,1]" />
         <actor name="aerith" lookAndFeel="human..female" position="[9,15]" />
     </actors>
-    <features>
+    <!--<features>
         <feature name="torch" initialState="lit" position="[15,11]">
             <state name="lit" />
             <state name="unlit" />
         </feature>
-        <!--
         <feature name="torch" initialState="unlit" position="[15,10]">
             <state name="lit" />
             <state name="unlit" />
         </feature>
-        -->
-    </features>
-    <!--
-    <mapGenerator type="maze" algorithm="roomsAndCorridors" width="100" height="100" count="10" floor="grass" wall="wall" default="void">
-        <minSize>3</minSize>
-        <maxSize>3</maxSize>
-    </mapGenerator>
-    -->
+    </features>-->
+    <!--<items>
+        <item name="torch" position="[4,4]"/>
+        <item name="red_robe" position="[4,4]"/>
+    </items>-->
+    <!--<mapGenerator type="maze" algorithm="roomsOnly" width="10" height="10" floor="grass" wall="wall" default="void">
+        <minSize>1</minSize>
+        <maxSize>2</maxSize>
+    </mapGenerator>-->
     <mapGenerator>
         <layers>
             <layer>

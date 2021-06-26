@@ -5,6 +5,9 @@
 #include "Engine/Renderer/AnimatedSprite.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 
+#include "Engine/Services/ServiceLocator.hpp"
+#include "Engine/Services/IRendererService.hpp"
+
 #include "Game/Actor.hpp"
 #include "Game/Feature.hpp"
 #include "Game/Layer.hpp"
@@ -72,14 +75,14 @@ void Tile::Update(TimeUtils::FPSeconds deltaSeconds) {
     }
 }
 
-void Tile::DebugRender([[maybe_unused]]Renderer& renderer) const {
+void Tile::DebugRender() const {
 #ifdef UI_DEBUG
     Entity* entity = (actor ? dynamic_cast<Entity*>(actor) : (feature ? dynamic_cast<Entity*>(feature) : nullptr));
     if(g_theGame->_debug_show_all_entities && entity) {
         auto tile_bounds = GetBounds();
-        renderer.SetMaterial(renderer.GetMaterial("__2D"));
-        renderer.SetModelMatrix(Matrix4::I);
-        renderer.DrawAABB2(tile_bounds, Rgba::Red, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
+        g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+        g_theRenderer->SetModelMatrix(Matrix4::I);
+        g_theRenderer->DrawAABB2(tile_bounds, Rgba::Red, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
     }
 #endif
 }

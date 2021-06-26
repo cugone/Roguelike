@@ -15,8 +15,8 @@ const std::vector<std::unique_ptr<CursorDefinition>>& CursorDefinition::GetLoade
     return s_registry;
 }
 
-void CursorDefinition::CreateCursorDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
-    s_registry.emplace_back(std::move(std::make_unique<CursorDefinition>(renderer, elem, sheet)));
+void CursorDefinition::CreateCursorDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
+    s_registry.emplace_back(std::move(std::make_unique<CursorDefinition>(elem, sheet)));
 }
 
 void CursorDefinition::DestroyCursorDefinitions() {
@@ -75,9 +75,8 @@ int CursorDefinition::GetIndex() const {
     return -1;
 }
 
-CursorDefinition::CursorDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet)
-    : _renderer(renderer)
-    , _sheet(sheet)
+CursorDefinition::CursorDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet)
+: _sheet(sheet)
 {
     GUARANTEE_OR_DIE(LoadFromXml(elem), "CursorDefinition failed to load.\n");
 }
@@ -91,9 +90,9 @@ bool CursorDefinition::LoadFromXml(const XMLElement& elem) {
 
     if(auto xml_animation = elem.FirstChildElement("animation")) {
         is_animated = true;
-        _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, *xml_animation));
+        _sprite = std::move(g_theRenderer->CreateAnimatedSprite(_sheet, *xml_animation));
     } else {
-        _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, _index));
+        _sprite = std::move(g_theRenderer->CreateAnimatedSprite(_sheet, _index));
     }
     return true;
 }

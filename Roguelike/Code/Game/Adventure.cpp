@@ -10,8 +10,7 @@
 
 #include <sstream>
 
-Adventure::Adventure(Renderer& renderer, const XMLElement& elem) noexcept
-    : _renderer(renderer)
+Adventure::Adventure(const XMLElement& elem) noexcept
 {
     GUARANTEE_OR_DIE(LoadFromXml(elem), "Adventure failed to load.");
     _current_map_iter = std::begin(_maps);
@@ -110,7 +109,7 @@ bool Adventure::LoadFromXml(const XMLElement& elem) noexcept {
             const auto map_src = DataUtils::ParseXmlAttribute(xml_map, "src", "");
             tinyxml2::XMLDocument doc{};
             if(auto load_result = doc.LoadFile(map_src.c_str()); load_result == tinyxml2::XML_SUCCESS) {
-                auto newMap = std::make_unique<Map>(_renderer, *doc.RootElement());
+                auto newMap = std::make_unique<Map>(*doc.RootElement());
                 newMap->SetParentAdventure(this);
                 _maps.emplace_back(std::move(newMap));
             }

@@ -45,7 +45,7 @@ public:
 
 
     Map() noexcept = default;
-    explicit Map(Renderer& renderer, const XMLElement& elem) noexcept;
+    explicit Map(const XMLElement& elem) noexcept;
     Map(const Map& other) = default;
     Map(Map&& other) = default;
     Map& operator=(const Map& other) = default;
@@ -58,8 +58,8 @@ public:
     void UpdateCursor(TimeUtils::FPSeconds deltaSeconds) noexcept;
     void AddCursorToTopLayer() noexcept;
     void SetPriorityLayer(std::size_t i);
-    void Render(Renderer& renderer) const;
-    void DebugRender(Renderer& renderer) const;
+    void Render() const;
+    void DebugRender() const;
     void EndFrame();
 
     bool IsPlayerOnExit() const noexcept;
@@ -388,7 +388,6 @@ private:
     std::string _name{};
     std::vector<std::unique_ptr<Layer>> _layers{};
     ThreadSafeQueue<TileInfo> _lightingQueue{};
-    Renderer& _renderer;
     const XMLElement& _root_xml_element;
     Adventure* _parent_adventure{};
     Material* _default_tileMaterial{};

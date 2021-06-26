@@ -32,8 +32,8 @@ public:
         , Max
     };
 
-    static void CreateEntityDefinition(Renderer& renderer, const XMLElement& elem);
-    static void CreateEntityDefinition(Renderer& renderer, const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet);
+    static void CreateEntityDefinition(const XMLElement& elem);
+    static void CreateEntityDefinition(const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet);
     static EntityDefinition* GetEntityDefinitionByName(const std::string& name);
     static void ClearEntityRegistry();
     static std::vector<std::string> GetAllEntityDefinitionNames();
@@ -45,8 +45,8 @@ public:
     EntityDefinition& operator=(EntityDefinition&& other) = default;
     ~EntityDefinition() = default;
 
-    EntityDefinition(Renderer& renderer, const XMLElement& elem);
-    EntityDefinition(Renderer& renderer, const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet);
+    explicit EntityDefinition(const XMLElement& elem);
+    EntityDefinition(const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet);
 
     std::string name{"UNKNOWN ENTITY"};
     bool is_invisible = false;
@@ -79,7 +79,6 @@ private:
     void LoadBehaviors(const XMLElement& elem);
 
     static std::map<std::string, std::unique_ptr<EntityDefinition>> s_registry;
-    Renderer& _renderer;
     std::shared_ptr<class SpriteSheet> _sheet{};
     std::unique_ptr<class AnimatedSprite> _sprite{};
     std::vector<std::shared_ptr<class Behavior>> _available_behaviors{};

@@ -231,11 +231,11 @@ void Game::Render_Main() const {
 
     g_theRenderer->BeginRender(g_theRenderer->GetFullscreenTexture(), _adventure->currentMap->SkyColor());
 
-    _adventure->currentMap->Render(*g_theRenderer);
+    _adventure->currentMap->Render();
 
 #ifdef UI_DEBUG
     if(_debug_render) {
-        _adventure->currentMap->DebugRender(*g_theRenderer);
+        _adventure->currentMap->DebugRender();
     }
 #endif
 
@@ -420,7 +420,7 @@ void Game::LoadMaps() {
         if(auto str_buffer = FileUtils::ReadStringBufferFromFile(str_path)) {
             tinyxml2::XMLDocument xml_doc;
             if(auto parse_result = xml_doc.Parse(str_buffer->c_str(), str_buffer->size()); parse_result == tinyxml2::XML_SUCCESS) {
-                _adventure = std::move(std::make_unique<Adventure>(*g_theRenderer, *xml_doc.RootElement()));
+                _adventure = std::move(std::make_unique<Adventure>(*xml_doc.RootElement()));
             }
         }
     }
@@ -451,7 +451,7 @@ void Game::LoadCursorDefinitionsFromFile(const std::filesystem::path& src) {
         if(auto* xml_cursors = xml_root->FirstChildElement("cursors")) {
             DataUtils::ForEachChildElement(*xml_cursors, "cursor",
                 [this](const XMLElement& elem) {
-                    CursorDefinition::CreateCursorDefinition(*g_theRenderer, elem, _cursor_sheet);
+                    CursorDefinition::CreateCursorDefinition(elem, _cursor_sheet);
                 });
         }
     }
@@ -495,7 +495,7 @@ void Game::LoadEntityDefinitionsFromFile(const std::filesystem::path& src) {
         _entity_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet);
         DataUtils::ForEachChildElement(*xml_root, "entityDefinition",
             [this](const XMLElement& elem) {
-                EntityDefinition::CreateEntityDefinition(*g_theRenderer, elem, _entity_sheet);
+                EntityDefinition::CreateEntityDefinition(elem, _entity_sheet);
             });
     }
 }

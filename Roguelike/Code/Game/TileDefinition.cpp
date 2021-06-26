@@ -5,14 +5,17 @@
 #include "Engine/Renderer/AnimatedSprite.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 
+#include "Engine/Services/ServiceLocator.hpp"
+#include "Engine/Services/IRendererService.hpp"
+
 #include "Game/GameCommon.hpp"
 
 #include <memory>
 
 std::map<std::string, std::unique_ptr<TileDefinition>> TileDefinition::s_registry{};
 
-TileDefinition* TileDefinition::CreateOrGetTileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
-    auto new_def = std::make_unique<TileDefinition>(renderer, elem, sheet);
+TileDefinition* TileDefinition::CreateOrGetTileDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
+    auto new_def = std::make_unique<TileDefinition>(elem, sheet);
     auto* new_def_ptr = new_def.get();
     std::string new_def_name = new_def->name;
     if(auto found = s_registry.find(new_def_name); found != std::end(s_registry)) {
@@ -24,8 +27,8 @@ TileDefinition* TileDefinition::CreateOrGetTileDefinition(Renderer& renderer, co
     return new_def_ptr;
 }
 
-TileDefinition* TileDefinition::CreateTileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
-    auto new_def = std::make_unique<TileDefinition>(renderer, elem, sheet);
+TileDefinition* TileDefinition::CreateTileDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
+    auto new_def = std::make_unique<TileDefinition>(elem, sheet);
     auto* new_def_ptr = new_def.get();
     std::string new_def_name = new_def->name;
     s_registry.try_emplace(new_def_name, std::move(new_def));
@@ -105,9 +108,8 @@ int TileDefinition::GetIndex() const {
     return -1;
 }
 
-TileDefinition::TileDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet)
-    : _renderer(renderer)
-    , _sheet(sheet)
+TileDefinition::TileDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet)
+: _sheet(sheet)
 {
     GUARANTEE_OR_DIE(LoadFromXml(elem), "TileDefinition failed to load.\n");
 }
@@ -166,11 +168,12 @@ bool TileDefinition::LoadFromXml(const XMLElement& elem) {
     if(auto xml_selflight = elem.FirstChildElement("selflight")) {
         self_illumination = DataUtils::ParseXmlAttribute(*xml_selflight, "value", self_illumination);
     }
+    auto& renderer = ServiceLocator::get<IRendererService>();
     if(auto xml_animation = elem.FirstChildElement("animation")) {
         is_animated = true;
-        _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, *xml_animation));
+        _sprite = std::move(renderer.CreateAnimatedSprite(_sheet, *xml_animation));
     } else {
-        _sprite = std::move(_renderer.CreateAnimatedSprite(_sheet, _index));
+        _sprite = std::move(renderer.CreateAnimatedSprite(_sheet, _index));
     }
     return true;
 }

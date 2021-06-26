@@ -21,7 +21,7 @@ public:
     ~CursorDefinition() = default;
 
     static const std::vector<std::unique_ptr<CursorDefinition>>& GetLoadedDefinitions();
-    static void CreateCursorDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
+    static void CreateCursorDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
     static void DestroyCursorDefinitions();
 
     static CursorDefinition* GetCursorDefinitionByName(const std::string& name);
@@ -40,7 +40,7 @@ public:
     IntVector2 GetIndexCoords() const;
     int GetIndex() const;
 
-    CursorDefinition(Renderer& renderer, const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
+    CursorDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
 
 protected:
 private:
@@ -50,7 +50,6 @@ private:
     void SetIndex(const IntVector2& indexCoords);
 
     static std::vector<std::unique_ptr<CursorDefinition>> s_registry;
-    Renderer& _renderer;
     std::weak_ptr<SpriteSheet> _sheet{};
     std::unique_ptr<AnimatedSprite> _sprite{};
     IntVector2 _index{};

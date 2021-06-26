@@ -375,16 +375,16 @@ std::size_t Layer::NormalizeLayerRows(std::vector<std::string>& glyph_strings) {
     return max_row_length;
 }
 
-void Layer::SetModelViewProjectionBounds(Renderer& renderer) const {
+void Layer::SetModelViewProjectionBounds() const {
 
     const auto ortho_bounds = CalcOrthoBounds();
 
-    renderer.SetModelMatrix(Matrix4::I);
-    renderer.SetViewMatrix(Matrix4::I);
+    g_theRenderer->SetModelMatrix(Matrix4::I);
+    g_theRenderer->SetViewMatrix(Matrix4::I);
     const auto leftBottom = Vector2{ortho_bounds.mins.x, ortho_bounds.maxs.y};
     const auto rightTop = Vector2{ortho_bounds.maxs.x, ortho_bounds.mins.y};
     _map->cameraController.GetCamera().SetupView(leftBottom, rightTop, Vector2(0.0f, 1000.0f));
-    renderer.SetCamera(_map->cameraController.GetCamera());
+    g_theRenderer->SetCamera(_map->cameraController.GetCamera());
 
     Camera2D& base_camera = _map->cameraController.GetCamera();
     Camera2D shakyCam = _map->cameraController.GetCamera();
@@ -401,24 +401,24 @@ void Layer::SetModelViewProjectionBounds(Renderer& renderer) const {
     const auto& cam_pos = shakyCam.GetPosition();
     const auto Vt = Matrix4::CreateTranslationMatrix(-cam_pos);
     const auto v = Matrix4::MakeRT(Vt, VRz);
-    renderer.SetViewMatrix(v);
+    g_theRenderer->SetViewMatrix(v);
 
 }
 
-void Layer::RenderTiles(Renderer& renderer) const {
-    renderer.SetModelMatrix(Matrix4::I);
-    Mesh::Render(renderer, _mesh_builder);
+void Layer::RenderTiles() const {
+    g_theRenderer->SetModelMatrix(Matrix4::I);
+    Mesh::Render(_mesh_builder);
 }
 
-void Layer::DebugRenderTiles(Renderer& renderer) const {
-    renderer.SetModelMatrix(Matrix4::I);
+void Layer::DebugRenderTiles() const {
+    g_theRenderer->SetModelMatrix(Matrix4::I);
 
     AABB2 cullbounds = CalcCullBounds(_map->cameraController.GetCamera().position);
 
     for(auto& t : _tiles) {
         AABB2 tile_bounds = t.GetBounds();
         if(MathUtils::DoAABBsOverlap(cullbounds, tile_bounds)) {
-            t.DebugRender(renderer);
+            t.DebugRender();
         }
     }
 }
@@ -485,14 +485,14 @@ void Layer::Update(TimeUtils::FPSeconds deltaSeconds) {
     UpdateTiles(deltaSeconds);
 }
 
-void Layer::Render(Renderer& renderer) const {
-    SetModelViewProjectionBounds(renderer);
-    RenderTiles(renderer);
+void Layer::Render() const {
+    SetModelViewProjectionBounds();
+    RenderTiles();
 }
 
-void Layer::DebugRender(Renderer& renderer) const {
-    SetModelViewProjectionBounds(renderer);
-    DebugRenderTiles(renderer);
+void Layer::DebugRender() const {
+    SetModelViewProjectionBounds();
+    DebugRenderTiles();
 }
 
 void Layer::EndFrame() {

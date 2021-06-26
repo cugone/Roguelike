@@ -18,7 +18,7 @@ public:
     Adventure& operator=(Adventure&& other) noexcept = default;
     ~Adventure() noexcept = default;
 
-    explicit Adventure(Renderer& renderer, const XMLElement& elem) noexcept;
+    explicit Adventure(const XMLElement& elem) noexcept;
 
     Actor* player{};
     Map* currentMap{};
@@ -32,7 +32,6 @@ private:
     void PlacePlayerNearEntrance() noexcept;
     void PlacePlayerNearExit() noexcept;
 
-    Renderer& _renderer;
     std::string _name{"UNKNOWN ADVENTURE"};
     std::vector<std::unique_ptr<class Map>> _maps{};
     decltype(_maps)::iterator _current_map_iter{};

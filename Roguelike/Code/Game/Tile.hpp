@@ -11,7 +11,6 @@
 #include <array>
 #include <vector>
 
-class Renderer;
 class AnimatedSprite;
 class TileDefinition;
 class Entity;
@@ -31,7 +30,7 @@ public:
 
     void Update(TimeUtils::FPSeconds deltaSeconds);
 
-    void DebugRender(Renderer& renderer) const;
+    void DebugRender() const;
 
     void ChangeTypeFromName(const std::string& name);
     void ChangeTypeFromGlyph(char glyph);
