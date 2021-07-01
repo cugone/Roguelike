@@ -54,7 +54,8 @@ public:
 
     void BeginFrame();
     void Update(TimeUtils::FPSeconds deltaSeconds);
-    void FocusCameraOnPlayer(TimeUtils::FPSeconds deltaSeconds) noexcept;    void UpdateLayers(TimeUtils::FPSeconds deltaSeconds);
+    void FocusCameraOnPlayer(TimeUtils::FPSeconds deltaSeconds) noexcept;
+    void UpdateLayers(TimeUtils::FPSeconds deltaSeconds);
     void UpdateCursor(TimeUtils::FPSeconds deltaSeconds) noexcept;
     void AddCursorToTopLayer() noexcept;
     void SetPriorityLayer(std::size_t i);
@@ -308,6 +309,8 @@ public:
     bool MoveOrAttack(Actor* actor, Tile* tile);
 
     void SetDebugGridColor(const Rgba& gridColor);
+    void SetDebugGlobalLight(int lightValue);
+    int GetCurrentGlobalLightValue() const noexcept;
 
     OrthographicCameraController cameraController{};
     Actor* player = nullptr;
@@ -374,12 +377,14 @@ private:
     void SetCursorForTile() const noexcept;
     void ShouldRenderStatWindow() noexcept;
     void RenderStatsBlock(Actor* actor) const noexcept;
+    void RenderSkyQuad() const noexcept;
 
     void BringLayerToFront(std::size_t i);
 
     void ShakeCamera(const IntVector2& from, const IntVector2& to) noexcept;
 
     void SetGlobalLightFromSkyColor() noexcept;
+    void SetSkyColorFromGlobalLight() noexcept;
 
     static const Rgba& GetSkyColorForDay() noexcept;
     static const Rgba& GetSkyColorForNight() noexcept;
@@ -416,4 +421,5 @@ private:
     friend class RoomsOnlyMapGenerator;
     friend class RoomsAndCorridorsMapGenerator;
     friend class Adventure;
+    friend class Game;
 };
