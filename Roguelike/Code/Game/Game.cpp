@@ -347,32 +347,6 @@ void Game::MapExited() noexcept {
     }
 }
 
-void Game::ShowInspectedActorEquipmentExceptImageUI(const AnimatedSprite* cur_sprite, const Entity* cur_entity, const EquipSlot& skip_equip_slot /*= EquipSlot::None*/) noexcept {
-    if(const auto* actor = dynamic_cast<const Actor*>(cur_entity)) {
-        for(const auto& eq : actor->GetEquipment()) {
-            if(eq && eq->GetEquipSlot() != skip_equip_slot) {
-                ImGui::SameLine(8.0f);
-                ImGui::SetItemAllowOverlap();
-                const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
-                ShowInspectedElementImageUI(cur_sprite, Vector2::ONE * 100.0f, eq_coords);
-            }
-        }
-    }
-}
-
-void Game::ShowInspectedActorEquipmentOnlyImageUI(const AnimatedSprite* cur_sprite, const Entity* cur_entity, const EquipSlot& equip_slot) noexcept {
-    if(const auto* actor = dynamic_cast<const Actor*>(cur_entity)) {
-        for(const auto& eq : actor->GetEquipment()) {
-            if(eq && eq->GetEquipSlot() == equip_slot) {
-                ImGui::SameLine(8.0f);
-                ImGui::SetItemAllowOverlap();
-                const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
-                ShowInspectedElementImageUI(cur_sprite, Vector2::ONE * 100.0f, eq_coords);
-            }
-        }
-    }
-}
-
 void Game::EndFrame_Main() {
     _adventure->currentMap->EndFrame();
     OnMapExit.Trigger();
@@ -1542,6 +1516,33 @@ void Game::ShowEntityInspectorImageUI(const AnimatedSprite* cur_sprite, const En
     ShowInspectedElementImageUI(cur_sprite, Vector2::ONE * 100.0f, cur_sprite->GetCurrentTexCoords());
     ShowInspectedActorEquipmentExceptImageUI(cur_sprite, cur_entity, EquipSlot::Cape);
 }
+
+void Game::ShowInspectedActorEquipmentExceptImageUI(const AnimatedSprite* cur_sprite, const Entity* cur_entity, const EquipSlot& skip_equip_slot /*= EquipSlot::None*/) noexcept {
+    if(const auto* actor = dynamic_cast<const Actor*>(cur_entity)) {
+        for(const auto& eq : actor->GetEquipment()) {
+            if(eq && eq->GetEquipSlot() != skip_equip_slot) {
+                ImGui::SameLine(8.0f);
+                ImGui::SetItemAllowOverlap();
+                const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
+                ShowInspectedElementImageUI(cur_sprite, Vector2::ONE * 100.0f, eq_coords);
+            }
+        }
+    }
+}
+
+void Game::ShowInspectedActorEquipmentOnlyImageUI(const AnimatedSprite* cur_sprite, const Entity* cur_entity, const EquipSlot& equip_slot) noexcept {
+    if(const auto* actor = dynamic_cast<const Actor*>(cur_entity)) {
+        for(const auto& eq : actor->GetEquipment()) {
+            if(eq && eq->GetEquipSlot() == equip_slot) {
+                ImGui::SameLine(8.0f);
+                ImGui::SetItemAllowOverlap();
+                const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
+                ShowInspectedElementImageUI(cur_sprite, Vector2::ONE * 100.0f, eq_coords);
+            }
+        }
+    }
+}
+
 #endif
 
 #pragma endregion
