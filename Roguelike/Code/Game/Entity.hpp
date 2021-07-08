@@ -5,7 +5,8 @@
 #include "Engine/Core/DataUtils.hpp"
 #include "Engine/Core/Event.hpp"
 #include "Engine/Core/TimeUtils.hpp"
-#include "Engine/Core/Vertex3D.hpp"
+
+#include "Engine/Renderer/Vertex3D.hpp"
 
 #include "Game/Inventory.hpp"
 #include "Game/Stats.hpp"
