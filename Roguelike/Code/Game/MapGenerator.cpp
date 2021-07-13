@@ -55,7 +55,7 @@ HeightMapGenerator::HeightMapGenerator(Map* map, const XMLElement& elem) noexcep
 
 void HeightMapGenerator::Generate() {
     DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "glyph", "type,src");
-    const auto src = DataUtils::ParseXmlAttribute(_xml_element, "src", "");
+    const auto src = DataUtils::ParseXmlAttribute(_xml_element, "src", std::string{});
     Image img(std::filesystem::path{src});
     _map->_layers.emplace_back(std::make_unique<Layer>(_map, img));
     auto* layer = _map->_layers.back().get();
@@ -102,7 +102,7 @@ void FileMapGenerator::Generate() {
 }
 
 void FileMapGenerator::LoadLayersFromFile(const XMLElement& elem) {
-    const auto xml_src = DataUtils::ParseXmlAttribute(elem, "src", "");
+    const auto xml_src = DataUtils::ParseXmlAttribute(elem, "src", std::string{});
     if(auto src = FileUtils::ReadStringBufferFromFile(xml_src)) {
         GUARANTEE_OR_DIE(!src.value().empty(), "Loading Map from file with empty or invalid source attribute.");
         tinyxml2::XMLDocument doc;
@@ -167,7 +167,7 @@ MazeMapGenerator::MazeMapGenerator(Map* map, const XMLElement& elem) noexcept
 
 void MazeMapGenerator::Generate(Map* map, const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "mapGenerator", "", "algorithm");
-    const auto algoName = DataUtils::ParseXmlAttribute(elem, "algorithm", "");
+    const auto algoName = DataUtils::ParseXmlAttribute(elem, "algorithm", std::string{});
     GUARANTEE_OR_DIE(!algoName.empty(), "Maze Generator algorithm type specifier cannot be empty.");
     if(algoName == "rooms") {
         map->_map_generator = std::make_unique<RoomsMapGenerator>(map, elem);
@@ -288,7 +288,7 @@ void RoomsMapGenerator::LoadItems(const XMLElement& elem) {
         DataUtils::ValidateXmlElement(*xml_items, "items", "item", "");
         DataUtils::ForEachChildElement(*xml_items, "item", [this](const XMLElement& elem) {
             DataUtils::ValidateXmlElement(elem, "item", "", "name,position");
-            const auto name = DataUtils::ParseXmlAttribute(elem, "name", nullptr);
+            const auto name = DataUtils::ParseXmlAttribute(elem, "name", std::string{});
             const auto pos = DataUtils::ParseXmlAttribute(elem, "position", IntVector2{-1, -1});
             if(auto* tile = _map->GetTile(IntVector3(pos, 0))) {
                 tile->AddItem(Item::GetItem(name));

@@ -1101,7 +1101,7 @@ void Map::GenerateMap(const XMLElement& elem) noexcept {
 }
 
 void Map::LoadTimeOfDayForMap(const XMLElement& elem) {
-    const auto value = StringUtils::ToLowerCase(DataUtils::ParseXmlAttribute(elem, "timeOfDay", "night"));
+    const auto value = StringUtils::ToLowerCase(DataUtils::ParseXmlAttribute(elem, "timeOfDay", std::string{"night"}));
     if(value == "day") {
         _current_sky_color = GetSkyColorForDay();
     } else if(value == "night") {
@@ -1137,7 +1137,7 @@ void Map::LoadGenerator(const XMLElement& elem) {
 
 void Map::CreateGeneratorFromTypename(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "mapGenerator", "", "", "", "type");
-    const auto xml_type = DataUtils::ParseXmlAttribute(elem, "type", "");
+    const auto xml_type = DataUtils::ParseXmlAttribute(elem, "type", std::string{});
     if(xml_type == "heightmap") {
         _map_generator = std::make_unique<HeightMapGenerator>(this, elem);
         _map_generator->Generate();
@@ -1216,7 +1216,7 @@ void Map::LoadItemsForMap(const XMLElement& elem) {
         DataUtils::ValidateXmlElement(*xml_items, "items", "item", "");
         DataUtils::ForEachChildElement(*xml_items, "item", [this](const XMLElement& elem) {
             DataUtils::ValidateXmlElement(elem, "item", "", "name,position");
-            const auto name = DataUtils::ParseXmlAttribute(elem, "name", nullptr);
+            const auto name = DataUtils::ParseXmlAttribute(elem, "name", std::string{});
             const auto pos = DataUtils::ParseXmlAttribute(elem, "position", IntVector2{-1, -1});
             if(auto* tile = this->GetTile(IntVector3(pos, 0))) {
                 tile->AddItem(Item::GetItem(name));

@@ -64,7 +64,7 @@ BehaviorID Behavior::IdFromName(std::string name) {
 
 std::shared_ptr<Behavior> Behavior::Create(const XMLElement& element) noexcept {
     DataUtils::ValidateXmlElement(element, "behavior", "", "name");
-    const std::string name = DataUtils::ParseXmlAttribute(element, "name", "");
+    const std::string name = DataUtils::ParseXmlAttribute(element, "name", std::string{});
     return Behavior::Create(name);
 }
 

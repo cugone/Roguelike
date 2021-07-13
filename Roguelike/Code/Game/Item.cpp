@@ -246,10 +246,10 @@ Item* ItemBuilder::Build() noexcept {
 
 void ItemBuilder::LoadFromXml(const XMLElement& elem, std::weak_ptr<SpriteSheet> itemSheet) noexcept {
     DataUtils::ValidateXmlElement(elem, "item", "", "name", "stats,equipslot,animation", "index,maxstack,light");
-    const auto name = DataUtils::ParseXmlAttribute(elem, "name", "UNKNOWN ITEM");
+    const auto name = DataUtils::ParseXmlAttribute(elem, "name", std::string{"UNKNOWN ITEM"});
     Name(name);
     if(auto* xml_equipslot = elem.FirstChildElement("equipslot")) {
-        Slot(EquipSlotFromString(DataUtils::ParseXmlElementText(*xml_equipslot, "none")));
+        Slot(EquipSlotFromString(DataUtils::ParseXmlElementText(*xml_equipslot, std::string{"none"})));
     } else {
         Slot(EquipSlot::None);
     }

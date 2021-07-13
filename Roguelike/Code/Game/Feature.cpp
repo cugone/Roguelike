@@ -75,12 +75,12 @@ bool Feature::LoadFromXml(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "feature", "", "name", "state", "position,initialState");
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
 
-    const auto featureName = DataUtils::ParseXmlAttribute(elem, "name", "");
+    const auto featureName = DataUtils::ParseXmlAttribute(elem, "name", std::string{});
     std::string definitionName = featureName;
     if(const auto state_count = DataUtils::GetChildElementCount(elem, "state"); state_count > 0) {
         DataUtils::ForEachChildElement(elem, "state", [&definitionName, &featureName, this](const XMLElement& elem) {
             DataUtils::ValidateXmlElement(elem, "state", "", "name");
-            const auto cur_name = DataUtils::ParseXmlAttribute(elem, "name", "");
+            const auto cur_name = DataUtils::ParseXmlAttribute(elem, "name", std::string{});
             definitionName = featureName + "." + cur_name;
             _states.push_back(definitionName);
             });

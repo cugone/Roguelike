@@ -78,11 +78,11 @@ bool Actor::MoveTo(Tile* destination) {
 bool Actor::LoadFromXml(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "actor", "", "name,lookAndFeel", "", "position,behavior");
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
-    const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", "");
+    const auto definitionName = DataUtils::ParseXmlAttribute(elem, "lookAndFeel", std::string{});
     auto* def = EntityDefinition::GetEntityDefinitionByName(definitionName);
     sprite = def->GetSprite();
     inventory = def->inventory;
-    const auto behaviorName = DataUtils::ParseXmlAttribute(elem, "behavior", "none");
+    const auto behaviorName = DataUtils::ParseXmlAttribute(elem, "behavior", std::string{"none"});
     this->SetBehavior(Behavior::IdFromName(behaviorName));
     _equipment = def->equipment;
     for(const auto& e : _equipment) {

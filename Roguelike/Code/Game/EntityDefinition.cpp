@@ -122,7 +122,7 @@ void EntityDefinition::LoadEquipment(const XMLElement& elem) {
         DataUtils::ForEachChildElement(*xml_equipment, "",
             [this](const XMLElement& elem) {
                 auto slotname = std::string{elem.Name() ? elem.Name() : ""};
-                auto itemname = DataUtils::ParseXmlAttribute(elem, "name", "");
+                auto itemname = DataUtils::ParseXmlAttribute(elem, "name", std::string{});
                 auto slot_id = EquipSlotFromString(slotname);
                 auto slot = static_cast<std::size_t>(slot_id);
                 auto item = inventory.GetItem(itemname);

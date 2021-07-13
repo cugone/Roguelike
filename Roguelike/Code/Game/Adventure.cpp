@@ -106,7 +106,7 @@ bool Adventure::LoadFromXml(const XMLElement& elem) noexcept {
         _maps.reserve(map_count);
         DataUtils::ForEachChildElement(*xml_maps, "map", [this, map_count](const XMLElement& xml_map) {
             DataUtils::ValidateXmlElement(xml_map, "map", "", "src");
-            const auto map_src = DataUtils::ParseXmlAttribute(xml_map, "src", "");
+            const auto map_src = DataUtils::ParseXmlAttribute(xml_map, "src", std::string{});
             tinyxml2::XMLDocument doc{};
             if(auto load_result = doc.LoadFile(map_src.c_str()); load_result == tinyxml2::XML_SUCCESS) {
                 auto newMap = std::make_unique<Map>(*doc.RootElement());

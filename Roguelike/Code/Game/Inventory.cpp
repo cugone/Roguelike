@@ -228,7 +228,7 @@ void Inventory::LoadFromXml(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "inventory", "item", "");
     DataUtils::ForEachChildElement(elem, "item",
         [this](const XMLElement& elem) {
-            auto item_name = DataUtils::ParseXmlAttribute(elem, "name", "");
+            auto item_name = DataUtils::ParseXmlAttribute(elem, "name", std::string{});
             if(auto item = Item::GetItem(item_name)) {
                 _items.emplace_back(item);
             }
