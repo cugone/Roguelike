@@ -514,11 +514,7 @@ void Game::Update(TimeUtils::FPSeconds deltaSeconds) {
 
 bool Game::DoFade(const Rgba& color, TimeUtils::FPSeconds fadeTime, FullscreenEffect fadeType) {
     static TimeUtils::FPSeconds curFadeTime{};
-    if(!(fadeType == FullscreenEffect::FadeIn || fadeType == FullscreenEffect::FadeOut)) {
-        curFadeTime = curFadeTime.zero();
-        return false;
-    }
-    if(_fullscreen_data.effectIndex == static_cast<int>(fadeType)) {
+    if(_fullscreen_data.effectIndex != static_cast<int>(fadeType)) {
         _fullscreen_data.effectIndex = static_cast<int>(fadeType);
         curFadeTime = curFadeTime.zero();
     }
