@@ -512,15 +512,19 @@ void Game::Update(TimeUtils::FPSeconds deltaSeconds) {
     }
 }
 
-bool Game::DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
+bool Game::DoFade(const Rgba& color, TimeUtils::FPSeconds fadeTime, FullscreenEffect fadeType) {
     static TimeUtils::FPSeconds curFadeTime{};
-    if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::FadeIn)) {
-        _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeIn);
+    if(!(fadeType == FullscreenEffect::FadeIn || fadeType == FullscreenEffect::FadeOut)) {
+        curFadeTime = curFadeTime.zero();
+        return false;
+    }
+    if(_fullscreen_data.effectIndex == static_cast<int>(fadeType)) {
+        _fullscreen_data.effectIndex = static_cast<int>(fadeType);
         curFadeTime = curFadeTime.zero();
     }
+
     _fullscreen_data.fadePercent = curFadeTime / fadeTime;
     _fullscreen_data.fadePercent = std::clamp(_fullscreen_data.fadePercent, 0.0f, 1.0f);
-    _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeIn);
     const auto [r, g, b, a] = color.GetAsFloats();
     _fullscreen_data.fadeColor = Vector4{r, g, b, a};
     _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
@@ -532,24 +536,12 @@ bool Game::DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
     return _fullscreen_data.fadePercent == 1.0f;
 }
 
-bool Game::DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
-    static TimeUtils::FPSeconds curFadeTime{};
-    if(_fullscreen_data.effectIndex != static_cast<int>(FullscreenEffect::FadeOut)) {
-        _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeOut);
-        curFadeTime = curFadeTime.zero();
-    }
-    _fullscreen_data.fadePercent = curFadeTime / fadeTime;
-    _fullscreen_data.fadePercent = std::clamp(_fullscreen_data.fadePercent, 0.0f, 1.0f);
-    const auto [r, g, b, a] = color.GetAsFloats();
-    _fullscreen_data.fadeColor = Vector4{r, g, b, a};
-    _fullscreen_data.effectIndex = static_cast<int>(FullscreenEffect::FadeOut);
-    _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
+bool Game::DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
+    return DoFade(color, fadeTime, FullscreenEffect::FadeIn);
+}
 
-    curFadeTime += g_theRenderer->GetGameFrameTime();
-    if(_fullscreen_data.fadePercent == 1.0f) {
-        _fullscreen_callback();
-    }
-    return _fullscreen_data.fadePercent == 1.0f;
+bool Game::DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime) {
+    return DoFade(color, fadeTime, FullscreenEffect::FadeOut);
 }
 
 void Game::DoLumosity(float brightnessPower /*= 2.4f*/) {

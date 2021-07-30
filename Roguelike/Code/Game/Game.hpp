@@ -169,6 +169,7 @@ private:
 
     void RequestScreenShot() const noexcept;
     void UpdateFullscreenEffect(const FullscreenEffect& effect);
+    bool DoFade(const Rgba& color, TimeUtils::FPSeconds fadeTime, FullscreenEffect fadeType);
     bool DoFadeIn(const Rgba& color, TimeUtils::FPSeconds fadeTime);
     bool DoFadeOut(const Rgba& color, TimeUtils::FPSeconds fadeTime);
     void DoLumosity(float brightnessPower = 2.4f);
