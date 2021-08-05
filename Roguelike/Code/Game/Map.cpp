@@ -75,13 +75,11 @@ void Map::SetCursorForFaction(const Actor* actor) const noexcept {
 
 void Map::SetCursorForTile() const noexcept {
     g_theGame->SetCurrentCursorById(CursorId::Yellow_Corner_Box);
-    if(auto* tile = this->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0)) {
-        if(tile) {
-            if(!tile->CanSee()) {
-                g_theGame->SetCurrentCursorById(CursorId::Question);
-            } else if(tile->actor) {
-                SetCursorForFaction(tile->actor);
-            }
+    if(auto* tile = this->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr) {
+        if(!tile->CanSee()) {
+            g_theGame->SetCurrentCursorById(CursorId::Question);
+        } else if(tile->actor) {
+            SetCursorForFaction(tile->actor);
         }
     }
 }
