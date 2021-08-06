@@ -527,7 +527,7 @@ bool Game::DoFade(const Rgba& color, TimeUtils::FPSeconds fadeTime, FullscreenEf
 
     curFadeTime += g_theRenderer->GetGameFrameTime();
     const auto isDone = _fullscreen_data.fadePercent == 1.0f;
-    if(isDone) {
+    if(isDone && _fullscreen_callback) {
         _fullscreen_callback();
     }
     return isDone;
