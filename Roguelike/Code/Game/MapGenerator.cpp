@@ -284,52 +284,15 @@ void RoomsMapGenerator::FillRoomsWithFloorTiles() noexcept {
 }
 
 void RoomsMapGenerator::LoadItems(const XMLElement& elem) {
-    if(auto* xml_items = elem.FirstChildElement("items")) {
-        DataUtils::ValidateXmlElement(*xml_items, "items", "item", "");
-        DataUtils::ForEachChildElement(*xml_items, "item", [this](const XMLElement& elem) {
-            DataUtils::ValidateXmlElement(elem, "item", "", "name,position");
-            const auto name = DataUtils::ParseXmlAttribute(elem, "name", std::string{});
-            const auto pos = DataUtils::ParseXmlAttribute(elem, "position", IntVector2{-1, -1});
-            if(auto* tile = _map->GetTile(IntVector3(pos, 0))) {
-                tile->AddItem(Item::GetItem(name));
-            } else {
-                const std::string error_msg{"Invalid tile " + StringUtils::to_string(pos) + " for item \"" + name + "\" placement."};
-                g_theFileLogger->LogLineAndFlush(error_msg);
-            }
-            });
-    }
+    _map->LoadItemsForMap(elem);
 }
 
 void RoomsMapGenerator::LoadActors(const XMLElement& elem) {
-    if(auto* xml_actors = elem.FirstChildElement("actors")) {
-        DataUtils::ValidateXmlElement(*xml_actors, "actors", "actor", "");
-        DataUtils::ForEachChildElement(*xml_actors, "actor",
-            [this](const XMLElement& elem) {
-                auto* actor = Actor::CreateActor(_map, elem);
-                auto actor_name = StringUtils::ToLowerCase(actor->name);
-                bool is_player = actor_name == "player";
-                GUARANTEE_OR_DIE(!(_map->player && is_player), "Map failed to load. Multiplayer not yet supported.");
-                actor->SetFaction(Faction::Enemy);
-                if(is_player) {
-                    _map->player = actor;
-                    _map->player->SetFaction(Faction::Player);
-                }
-                _map->_entities.push_back(actor);
-                _map->_actors.push_back(actor);
-            });
-    }
+    _map->LoadActorsForMap(elem);
 }
 
 void RoomsMapGenerator::LoadFeatures(const XMLElement& elem) {
-    if(auto* xml_features = elem.FirstChildElement("features")) {
-        DataUtils::ValidateXmlElement(*xml_features, "features", "feature", "");
-        DataUtils::ForEachChildElement(*xml_features, "feature",
-            [this](const XMLElement& elem) {
-                auto* feature = Feature::CreateFeature(_map, elem);
-                _map->_entities.push_back(feature);
-                _map->_features.push_back(feature);
-            });
-    }
+    _map->LoadFeaturesForMap(elem);
 }
 
 void RoomsMapGenerator::PlaceActors() noexcept {
