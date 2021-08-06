@@ -102,7 +102,7 @@ void Tile::ChangeTypeFromName(const std::string& name) {
 }
 
 void Tile::ChangeTypeFromGlyph(char glyph) {
-    if(const auto* my_def = TileDefinition::GetTileDefinitionByName(_type); my_def && my_def->glyph == glyph) {
+    if(const auto* my_def = TileDefinition::GetTileDefinitionByGlyph(glyph); my_def && my_def->glyph == glyph) {
         return;
     }
     if(auto* new_def = TileDefinition::GetTileDefinitionByGlyph(glyph)) {
