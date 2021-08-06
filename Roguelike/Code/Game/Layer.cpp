@@ -4,6 +4,7 @@
 #include "Engine/Core/DataUtils.hpp"
 #include "Engine/Core/Image.hpp"
 
+#include "Engine/Math/Vector2.hpp"
 #include "Engine/Math/Vector3.hpp"
 
 #include "Game/Cursor.hpp"
@@ -18,6 +19,11 @@
 #include <algorithm>
 #include <iterator>
 #include <numeric>
+#include <tuple>
+
+static std::tuple<Vector2, Vector2, Vector2, Vector2> VertsFromTileCoords(const IntVector2& tile_coords) noexcept;
+static std::tuple<Vector2, Vector2, Vector2, Vector2> UVsFromUVCoords(const AABB2& uv_coords) noexcept;
+
 
 Layer::Layer(Map* map, const XMLElement& elem)
     : _map(map)
@@ -157,25 +163,8 @@ void Layer::AppendToMesh(const Entity* const entity) noexcept {
 }
 
 void Layer::AppendToMesh(const IntVector2& tile_coords, const AABB2& uv_coords, const uint32_t light_value, Material* material) noexcept {
-    const auto vert_left = tile_coords.x + 0.0f;
-    const auto vert_right = tile_coords.x + 1.0f;
-    const auto vert_top = tile_coords.y + 0.0f;
-    const auto vert_bottom = tile_coords.y + 1.0f;
-
-    const auto vert_bl = Vector2(vert_left, vert_bottom);
-    const auto vert_tl = Vector2(vert_left, vert_top);
-    const auto vert_tr = Vector2(vert_right, vert_top);
-    const auto vert_br = Vector2(vert_right, vert_bottom);
-
-    const auto tx_left = uv_coords.mins.x;
-    const auto tx_right = uv_coords.maxs.x;
-    const auto tx_top = uv_coords.mins.y;
-    const auto tx_bottom = uv_coords.maxs.y;
-
-    const auto tx_bl = Vector2(tx_left, tx_bottom);
-    const auto tx_tl = Vector2(tx_left, tx_top);
-    const auto tx_tr = Vector2(tx_right, tx_top);
-    const auto tx_br = Vector2(tx_right, tx_bottom);
+    const auto&& [vert_bl, vert_tl, vert_tr, vert_br] = VertsFromTileCoords(tile_coords);
+    const auto&& [tx_bl, tx_tl, tx_tr, tx_br] = UVsFromUVCoords(uv_coords);
 
     const float z = static_cast<float>(z_index);
     const Rgba layer_color = color;
@@ -244,29 +233,11 @@ void Layer::AppendToMesh(const Cursor* cursor) noexcept {
     if(cursor == nullptr) {
         return;
     }
-    const auto& tile_coords = cursor->GetCoords();
-    const auto vert_left = tile_coords.x + 0.0f;
-    const auto vert_right = tile_coords.x + 1.0f;
-    const auto vert_top = tile_coords.y + 0.0f;
-    const auto vert_bottom = tile_coords.y + 1.0f;
-
-    const auto vert_bl = Vector2(vert_left, vert_bottom);
-    const auto vert_tl = Vector2(vert_left, vert_top);
-    const auto vert_tr = Vector2(vert_right, vert_top);
-    const auto vert_br = Vector2(vert_right, vert_bottom);
+    const auto&& [vert_bl, vert_tl, vert_tr, vert_br] = VertsFromTileCoords(cursor->GetCoords());
 
     const auto& sprite = cursor->GetDefinition()->GetSprite();
     const auto& uv_coords = sprite->GetCurrentTexCoords();
-
-    const auto tx_left = uv_coords.mins.x;
-    const auto tx_right = uv_coords.maxs.x;
-    const auto tx_top = uv_coords.mins.y;
-    const auto tx_bottom = uv_coords.maxs.y;
-
-    const auto tx_bl = Vector2(tx_left, tx_bottom);
-    const auto tx_tl = Vector2(tx_left, tx_top);
-    const auto tx_tr = Vector2(tx_right, tx_top);
-    const auto tx_br = Vector2(tx_right, tx_bottom);
+    const auto&& [tx_bl, tx_tl, tx_tr, tx_br] = UVsFromUVCoords(uv_coords);
 
     auto& builder = GetMeshBuilder();
     builder.Begin(PrimitiveType::Triangles);
@@ -557,4 +528,20 @@ Tile* Layer::GetTile(std::size_t index) noexcept {
 
 std::size_t Layer::GetTileIndex(std::size_t x, std::size_t y) const noexcept {
     return x + (y * tileDimensions.x);
+}
+
+std::tuple<Vector2, Vector2, Vector2, Vector2> VertsFromTileCoords(const IntVector2& tile_coords) noexcept {
+    const auto vert_left = tile_coords.x + 0.0f;
+    const auto vert_right = tile_coords.x + 1.0f;
+    const auto vert_top = tile_coords.y + 0.0f;
+    const auto vert_bottom = tile_coords.y + 1.0f;
+    return {Vector2(vert_left, vert_bottom),Vector2(vert_left, vert_top),Vector2(vert_right, vert_top),Vector2(vert_right, vert_bottom)};
+}
+
+std::tuple<Vector2, Vector2, Vector2, Vector2> UVsFromUVCoords(const AABB2& uv_coords) noexcept {
+    const auto tx_left = uv_coords.mins.x;
+    const auto tx_right = uv_coords.maxs.x;
+    const auto tx_top = uv_coords.mins.y;
+    const auto tx_bottom = uv_coords.maxs.y;
+    return {Vector2(tx_left, tx_bottom),Vector2(tx_left, tx_top),Vector2(tx_right, tx_top),Vector2(tx_right, tx_bottom)};
 }
