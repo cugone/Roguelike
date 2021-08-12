@@ -854,7 +854,7 @@ void Game::HandleDebugKeyboardInput() {
         g_theRenderer->RequestScreenShot();
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::P)) {
-        _adventure->currentMap->SetPriorityLayer(static_cast<std::size_t>(MathUtils::GetRandomIntLessThan(static_cast<int>(_adventure->currentMap->GetLayerCount()))));
+        _adventure->currentMap->SetPriorityLayer(MathUtils::GetRandomLessThan(_adventure->currentMap->GetLayerCount()));
     }
 
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::G)) {

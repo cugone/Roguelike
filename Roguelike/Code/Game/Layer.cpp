@@ -360,9 +360,9 @@ void Layer::SetModelViewProjectionBounds() const {
     Camera2D& base_camera = _map->cameraController.GetCamera();
     Camera2D shakyCam = _map->cameraController.GetCamera();
     const float shake = shakyCam.GetShake();
-    const float shaky_angle = currentGraphicsOptions.MaxShakeAngle * shake * MathUtils::GetRandomFloatNegOneToOne();
-    const float shaky_offsetX = currentGraphicsOptions.MaxShakeOffsetHorizontal * shake * MathUtils::GetRandomFloatNegOneToOne();
-    const float shaky_offsetY = currentGraphicsOptions.MaxShakeOffsetVertical * shake * MathUtils::GetRandomFloatNegOneToOne();
+    const float shaky_angle = currentGraphicsOptions.MaxShakeAngle * shake * MathUtils::GetRandomNegOneToOne<float>();
+    const float shaky_offsetX = currentGraphicsOptions.MaxShakeOffsetHorizontal * shake * MathUtils::GetRandomNegOneToOne<float>();
+    const float shaky_offsetY = currentGraphicsOptions.MaxShakeOffsetVertical * shake * MathUtils::GetRandomNegOneToOne<float>();
     shakyCam.orientation_degrees = base_camera.orientation_degrees + shaky_angle;
     shakyCam.position = base_camera.position + Vector2{shaky_offsetX, shaky_offsetY};
 
