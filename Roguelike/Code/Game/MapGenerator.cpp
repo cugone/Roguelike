@@ -196,10 +196,10 @@ void RoomsMapGenerator::Generate() {
     const int height = std::clamp(DataUtils::ParseXmlAttribute(_xml_element, "height", 1), 1, Map::max_dimension);
     rooms.reserve(room_count);
     for(int i = 0; i < room_count; ++i) {
-        const auto w = MathUtils::GetRandomIntInRange(min_size, max_size);
-        const auto h = MathUtils::GetRandomIntInRange(min_size, max_size);
-        const auto x = MathUtils::GetRandomIntInRange(w, width - (2 * w));
-        const auto y = MathUtils::GetRandomIntInRange(h, height - (2 * h));
+        const auto w = MathUtils::GetRandomInRange(min_size, max_size);
+        const auto h = MathUtils::GetRandomInRange(min_size, max_size);
+        const auto x = MathUtils::GetRandomInRange(w, width - (2 * w));
+        const auto y = MathUtils::GetRandomInRange(h, height - (2 * h));
         rooms.push_back(AABB2{Vector2{(float)x, (float)y}, (float)w, (float)h});
     }
     for(int i = 0; i < room_count - 1; ++i) {
@@ -328,9 +328,9 @@ void RoomsMapGenerator::PlaceActors() noexcept {
 void RoomsMapGenerator::PlaceFeatures() noexcept {
     const auto map_dims = _map->CalcMaxDimensions();
     for(auto* feature : _map->_features) {
-        const auto x = MathUtils::GetRandomIntLessThan(static_cast<int>(map_dims.x));
-        const auto y = MathUtils::GetRandomIntLessThan(static_cast<int>(map_dims.y));
-        const auto tile_pos = IntVector2{x, y};
+        const auto x = MathUtils::GetRandomLessThan(map_dims.x);
+        const auto y = MathUtils::GetRandomLessThan(map_dims.y);
+        const auto tile_pos = IntVector2{Vector2{x, y}};
         feature->SetPosition(tile_pos);
     }
 }
@@ -394,10 +394,10 @@ void RoomsOnlyMapGenerator::Generate() {
     //Step 2.
     //Step 3.
     {
-        const auto w = MathUtils::GetRandomIntInRange(min_size, max_size);
-        const auto h = MathUtils::GetRandomIntInRange(min_size, max_size);
-        const auto x = MathUtils::GetRandomIntLessThan(width);
-        const auto y = MathUtils::GetRandomIntLessThan(height);
+        const auto w = MathUtils::GetRandomInRange(min_size, max_size);
+        const auto h = MathUtils::GetRandomInRange(min_size, max_size);
+        const auto x = MathUtils::GetRandomLessThan(width);
+        const auto y = MathUtils::GetRandomLessThan(height);
         rooms.push_back(AABB2{(float)x, (float)y, (float)x + (float)w, (float)y + +(float)h});
     }
     const auto calcTileCoverage = [&]() {
@@ -411,14 +411,14 @@ void RoomsOnlyMapGenerator::Generate() {
     //Step 4.
     while(calcTileCoverage() < max_tile_coverage) {
         //Step 5.
-        const auto base_room_index = MathUtils::GetRandomIntLessThan(static_cast<int>(rooms.size()));
+        const auto base_room_index = MathUtils::GetRandomLessThan(rooms.size());
         auto& base_room = rooms[base_room_index];
         //Step 6.
         const auto new_room_position_offset = [&]() {
             const auto base_room_center = IntVector2(base_room.CalcCenter());
             const auto base_room_half_extents = IntVector2(base_room.CalcDimensions()) / 2;
             auto result = IntVector2{};
-            switch(MathUtils::GetRandomIntLessThan(4)) {
+            switch(MathUtils::GetRandomLessThan(4)) {
             case 0: {result.x = base_room_center.x - base_room_half_extents.x; break; } //West wall
             case 1: {result.x = base_room_center.x + base_room_half_extents.x; break; } //East wall
             case 2: {result.y = base_room_center.y - base_room_half_extents.y; break; } //North wall
@@ -428,17 +428,17 @@ void RoomsOnlyMapGenerator::Generate() {
         }();
         //Step 7.
         auto new_room = AABB2{};
-        const auto w = MathUtils::GetRandomIntInRange(min_size, max_size);
-        const auto h = MathUtils::GetRandomIntInRange(min_size, max_size);
+        const auto w = MathUtils::GetRandomInRange(min_size, max_size);
+        const auto h = MathUtils::GetRandomInRange(min_size, max_size);
         new_room.maxs = Vector2{static_cast<float>(w), static_cast<float>(h)};
         //Step 8.
         auto new_position = new_room_position_offset;
         if(new_room_position_offset.x != 0) {
             new_position.x += (w / 2) * (new_room_position_offset.x < 0 ? -1 : 1);
-            new_position.y += MathUtils::GetRandomIntLessThan((h / 2));
+            new_position.y += MathUtils::GetRandomLessThan((h / 2));
         } else if(new_room_position_offset.y != 0) {
             new_position.y += (h / 2) * (new_room_position_offset.y < 0 ? -1 : 1);
-            new_position.x += MathUtils::GetRandomIntLessThan((w / 2));
+            new_position.x += MathUtils::GetRandomLessThan((w / 2));
         }
         new_room.Translate(Vector2(new_position));
         //Step 9.
@@ -599,11 +599,11 @@ bool RoomsAndCorridorsMapGenerator::GenerateExitAndEntrance() noexcept {
             bool needs_restart = false;
             do {
                 const auto roomCountAsInt = static_cast<int>(rooms.size());
-                const auto room_id_with_down = MathUtils::GetRandomIntLessThan(roomCountAsInt);
+                const auto room_id_with_down = MathUtils::GetRandomLessThan(roomCountAsInt);
                 const auto room_id_with_up = [roomCountAsInt, room_id_with_down]()->int {
-                    auto result = MathUtils::GetRandomIntLessThan(roomCountAsInt);
+                    auto result = MathUtils::GetRandomLessThan(roomCountAsInt);
                     while(result == room_id_with_down) {
-                        result = MathUtils::GetRandomIntLessThan(roomCountAsInt);
+                        result = MathUtils::GetRandomLessThan(roomCountAsInt);
                     }
                     return result;
                 }();
