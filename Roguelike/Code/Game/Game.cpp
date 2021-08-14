@@ -258,6 +258,7 @@ void Game::Render_Main() const {
     g_theRenderer->BeginHUDRender(ui_camera, Vector2::ZERO, currentGraphicsOptions.WindowHeight);
 
     if(g_theApp->LostFocus()) {
+        g_theRenderer->DrawQuad2D(Matrix4::CreateScaleMatrix(Vector2{currentGraphicsOptions.WindowWidth, currentGraphicsOptions.WindowHeight}), Rgba{0.0f, 0.0f, 0.0f, 0.5f});
         g_theRenderer->SetModelMatrix(Matrix4::I);
         g_theRenderer->DrawTextLine(ingamefont, "PAUSED");
     }
