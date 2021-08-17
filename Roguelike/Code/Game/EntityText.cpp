@@ -3,6 +3,7 @@
 #include "Engine/Core/KerningFont.hpp"
 
 #include "Game/GameCommon.hpp"
+#include "Game/Map.hpp"
 
 #include <algorithm>
 

@@ -120,9 +120,6 @@
     <ClCompile Include="WanderBehavior.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="App.cpp">
-      <Filter>General</Filter>
-    </ClCompile>
     <ClCompile Include="GameCommon.cpp">
       <Filter>General</Filter>
     </ClCompile>
@@ -238,9 +235,6 @@
     </ClInclude>
     <ClInclude Include="WanderBehavior.hpp">
       <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="App.hpp">
-      <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="GameCommon.hpp">
       <Filter>General</Filter>

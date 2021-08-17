@@ -2,6 +2,7 @@
 
 #include "Engine/Core/ErrorWarningAssert.hpp"
 
+#include "Game/Game.hpp"
 #include "Game/Behavior.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/Inventory.hpp"
@@ -179,7 +180,7 @@ void Actor::ApplyDamage(DamageType type, long amount, bool crit) {
     }
     //Make damage text
     TextEntityDesc desc{};
-    desc.font = g_theGame->ingamefont;
+    desc.font = GetGameAs<Game>()->ingamefont;
     desc.color = amount < 0 ? Rgba::Green : (crit ? Rgba::Yellow : Rgba::White);
     std::ostringstream ss;
     ss << std::fixed << std::setprecision(1) << std::abs(amount);
@@ -189,7 +190,7 @@ void Actor::ApplyDamage(DamageType type, long amount, bool crit) {
 
 void Actor::AttackerMissed() {
     TextEntityDesc desc{};
-    desc.font = g_theGame->ingamefont;
+    desc.font = GetGameAs<Game>()->ingamefont;
     desc.color = Rgba::White;
     desc.text = "MISS";
     map->CreateTextEntityAt(tile->GetCoords(), desc);

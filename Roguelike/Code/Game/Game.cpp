@@ -1,5 +1,6 @@
 #include "Game/Game.hpp"
 
+#include "Engine/Core/App.hpp"
 #include "Engine/Core/ArgumentParser.hpp"
 #include "Engine/Core/BuildConfig.hpp"
 #include "Engine/Core/DataUtils.hpp"
@@ -38,6 +39,83 @@
 #include <numeric>
 #include <string>
 
+void GameOptions::SaveToConfig(Config& config) noexcept {
+    GameSettings::SaveToConfig(config);
+    config.SetValue("soundVolume", _windowWidth);
+    config.SetValue("musicVolume", _windowHeight);
+    config.SetValue("cameraShakeStr", _fov);
+    config.SetValue("cameraSpeed", _invertMouseY);
+}
+
+void GameOptions::SetToDefault() noexcept {
+    _soundVolume = _defaultSoundVolume;
+    _musicVolume = _defaultMusicVolume;
+    _cameraShakeStrength = _defaultCameraShakeStrength;
+    _camSpeed = _defaultCamSpeed;
+}
+
+void GameOptions::SetSoundVolume(uint8_t newSoundVolume) noexcept {
+    _soundVolume = newSoundVolume;
+}
+
+uint8_t GameOptions::GetSoundVolume() const noexcept {
+    return _soundVolume;
+}
+
+uint8_t GameOptions::DefaultSoundVolume() const noexcept {
+    return _defaultSoundVolume;
+}
+
+void GameOptions::SetMusicVolume(uint8_t newMusicVolume) noexcept {
+    _musicVolume = newMusicVolume;
+}
+
+uint8_t GameOptions::GetMusicVolume() const noexcept {
+    return _musicVolume;
+}
+
+uint8_t GameOptions::DefaultMusicVolume() const noexcept {
+    return _defaultMusicVolume;
+}
+
+void GameOptions::SetCameraShakeStrength(float newCameraShakeStrength) noexcept {
+    _cameraShakeStrength = newCameraShakeStrength;
+}
+
+float GameOptions::GetCameraShakeStrength() const noexcept {
+    return _cameraShakeStrength;
+}
+
+float GameOptions::DefaultCameraShakeStrength() const noexcept {
+    return _defaultCameraShakeStrength;
+}
+
+
+void GameOptions::SetCameraSpeed(float newCameraSpeed) noexcept {
+    _camSpeed = newCameraSpeed;
+}
+
+float GameOptions::GetCameraSpeed() const noexcept {
+    return _camSpeed;
+}
+
+float GameOptions::DefaultCameraSpeed() const noexcept {
+    return _defaultCamSpeed;
+}
+
+float GameOptions::GetMaxShakeOffsetHorizontal() const noexcept {
+    return _maxShakeOffsetHorizontal;
+}
+
+float GameOptions::GetMaxShakeOffsetVertical() const noexcept {
+    return _maxShakeOffsetVertical;
+}
+
+float GameOptions::GetMaxShakeAngle() const noexcept {
+    return _maxShakeAngle;
+}
+
+
 Game::Game()
     : _player_requested_wait{0}
     , _done_loading{0}
@@ -74,7 +152,7 @@ Game::~Game() noexcept {
     TileDefinition::ClearTileDefinitions();
 }
 
-void Game::Initialize() {
+void Game::Initialize() noexcept {
     if(!g_theConfig->AppendFromFile("Data/Config/options.dat")) {
         g_theFileLogger->LogWarnLine("options file not found at Data/Config/options.dat");
     }
@@ -163,7 +241,8 @@ void Game::BeginFrame_Main() {
 
 void Game::Update_Title(TimeUtils::FPSeconds /*deltaSeconds*/) {
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::Esc)) {
-        g_theApp->SetIsQuitting(true);
+        auto& app = ServiceLocator::get<IAppService>();
+        app.SetIsQuitting(true);
         return;
     }
     if(g_theInputSystem->WasAnyKeyPressed()) {
@@ -188,7 +267,8 @@ void Game::Update_Main(TimeUtils::FPSeconds deltaSeconds) {
         ChangeGameState(GameState::Title);
         return;
     }
-    if(g_theApp->LostFocus()) {
+    auto& app = ServiceLocator::get<IAppService>();
+    if(app.LostFocus()) {
         deltaSeconds = TimeUtils::FPSeconds::zero();
     }
     g_theRenderer->UpdateGameTime(deltaSeconds);
@@ -250,14 +330,15 @@ void Game::Render_Main() const {
     };
     g_theRenderer->Draw(PrimitiveType::Triangles, vbo, 3);
 
-    if(g_theApp->LostFocus()) {
+    auto& app = ServiceLocator::get<IAppService>();
+    if(app.LostFocus()) {
         g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
         g_theRenderer->DrawQuad2D(Vector2::ZERO, Vector2::ONE, Rgba(0, 0, 0, 128));
     }
 
     g_theRenderer->BeginHUDRender(ui_camera, Vector2::ZERO, currentGraphicsOptions.WindowHeight);
 
-    if(g_theApp->LostFocus()) {
+    if(app.LostFocus()) {
         g_theRenderer->DrawQuad2D(Matrix4::CreateScaleMatrix(Vector2{currentGraphicsOptions.WindowWidth, currentGraphicsOptions.WindowHeight}), Rgba{0.0f, 0.0f, 0.0f, 0.5f});
         g_theRenderer->SetModelMatrix(Matrix4::I);
         g_theRenderer->DrawTextLine(ingamefont, "PAUSED");
@@ -490,7 +571,7 @@ void Game::LoadItemsFromFile(const std::filesystem::path& src) {
     }
 }
 
-void Game::BeginFrame() {
+void Game::BeginFrame() noexcept {
     if(_nextGameState != _currentGameState) {
         OnExitState(_currentGameState);
         _currentGameState = _nextGameState;
@@ -504,7 +585,7 @@ void Game::BeginFrame() {
     }
 }
 
-void Game::Update(TimeUtils::FPSeconds deltaSeconds) {
+void Game::Update(TimeUtils::FPSeconds deltaSeconds) noexcept {
     switch(_currentGameState) {
     case GameState::Title:   Update_Title(deltaSeconds); break;
     case GameState::Loading: Update_Loading(deltaSeconds); break;
@@ -622,7 +703,7 @@ void Game::UpdateFullscreenEffect(const FullscreenEffect& effect) {
     }
 }
 
-void Game::Render() const {
+void Game::Render() const noexcept {
     switch(_currentGameState) {
     case GameState::Title:   Render_Title(); break;
     case GameState::Loading: Render_Loading(); break;
@@ -631,7 +712,7 @@ void Game::Render() const {
     }
 }
 
-void Game::EndFrame() {
+void Game::EndFrame() noexcept {
     g_theRenderer->SetVSync(currentGraphicsOptions.vsync);
     switch(_currentGameState) {
     case GameState::Title:   EndFrame_Title(); break;
@@ -782,7 +863,7 @@ void Game::HandlePlayerControllerInput() {
     auto& controller = g_theInputSystem->GetXboxController(0);
     Vector2 rthumb = controller.GetRightThumbPosition();
     rthumb.y *= currentGraphicsOptions.InvertMouseY ? 1.0f : -1.0f;
-    _adventure->currentMap->cameraController.Translate(_cam_speed * rthumb * g_theRenderer->GetGameFrameTime().count());
+    _adventure->currentMap->cameraController.Translate(gameOptions.GetCameraSpeed() * rthumb * g_theRenderer->GetGameFrameTime().count());
 
     if(controller.WasButtonJustPressed(XboxController::Button::RightThumb)) {
         _adventure->currentMap->FocusEntity(_adventure->currentMap->player);

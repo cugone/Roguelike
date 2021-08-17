@@ -3,6 +3,9 @@
 #include "Engine/Core/Console.hpp"
 #include "Engine/Core/TimeUtils.hpp"
 
+#include "Engine/Game/GameBase.hpp"
+#include "Engine/Game/GameSettings.hpp"
+
 #include "Engine/Renderer/Camera2D.hpp"
 
 #include "Engine/UI/UICanvas.hpp"
@@ -55,7 +58,57 @@ enum class CursorId {
     , Max = Last_
 };
 
-class Game {
+class GameOptions : public GameSettings {
+public:
+    GameOptions() noexcept = default;
+    GameOptions(const GameOptions& other) noexcept = default;
+    GameOptions(GameOptions&& other) noexcept = default;
+    virtual ~GameOptions() noexcept = default;
+    GameOptions& operator=(const GameOptions& rhs) noexcept = default;
+    GameOptions& operator=(GameOptions&& rhs) noexcept = default;
+
+    virtual void SaveToConfig(Config& config) noexcept override;
+    virtual void SetToDefault() noexcept override;
+
+    void SetSoundVolume(uint8_t newSoundVolume) noexcept;
+    uint8_t GetSoundVolume() const noexcept;
+    uint8_t DefaultSoundVolume() const noexcept;
+
+    void SetMusicVolume(uint8_t newMusicVolume) noexcept;
+    uint8_t GetMusicVolume() const noexcept;
+    uint8_t DefaultMusicVolume() const noexcept;
+
+    void SetCameraShakeStrength(float newCameraShakeStrength) noexcept;
+    float GetCameraShakeStrength() const noexcept;
+    float DefaultCameraShakeStrength() const noexcept;
+
+    void SetCameraSpeed(float newCameraSpeed) noexcept;
+    float GetCameraSpeed() const noexcept;
+    float DefaultCameraSpeed() const noexcept;
+
+    float GetMaxShakeOffsetHorizontal() const noexcept;
+    float GetMaxShakeOffsetVertical() const noexcept;
+    float GetMaxShakeAngle() const noexcept;
+
+protected:
+
+    uint8_t _soundVolume{5};
+    uint8_t _defaultSoundVolume{5};
+    uint8_t _musicVolume{5};
+    uint8_t _defaultMusicVolume{5};
+    float _cameraShakeStrength{1.0f};
+    float _defaultCameraShakeStrength{1.0f};
+    float _camSpeed{5.0f};
+    float _defaultCamSpeed{5.0f};
+
+private:
+    float _maxShakeOffsetHorizontal{50.0f};
+    float _maxShakeOffsetVertical{50.0f};
+    float _maxShakeAngle{10.0f};
+};
+
+
+class Game : public GameBase {
 public:
     Game();
     Game(const Game& other) = default;
@@ -64,11 +117,11 @@ public:
     Game& operator=(Game&& other) = default;
     ~Game() noexcept;
 
-    void Initialize();
-    void BeginFrame();
-    void Update(TimeUtils::FPSeconds deltaSeconds);
-    void Render() const;
-    void EndFrame();
+    void Initialize() noexcept override;
+    void BeginFrame() noexcept override;
+    void Update([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept override;
+    void Render() const noexcept override;
+    void EndFrame() noexcept override;
 
     bool HasCursor(const std::string& name) const noexcept;
     bool HasCursor(CursorId id) const noexcept;
@@ -79,6 +132,7 @@ public:
     Cursor* current_cursor{};
     CursorId current_cursorId{};
     mutable Camera2D ui_camera{};
+    GameOptions gameOptions{};
 protected:
 private:
 
@@ -198,10 +252,6 @@ private:
     std::shared_ptr<SpriteSheet> _item_sheet{};
     std::unique_ptr<UIWidget> _widgetLoading{};
     std::vector<Cursor> _cursors{};
-    float _cam_speed = 5.0f;
-    float _max_shake_angle = 0.0f;
-    float _max_shake_x = 0.0f;
-    float _max_shake_y = 0.0f;
     float _debug_fadeInTime = 1.0f;
     float _debug_fadeOutTime = 1.0f;
     float _debug_fadeOutInTime = 1.0f;

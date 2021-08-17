@@ -7,6 +7,7 @@
 #include "Engine/Math/Vector2.hpp"
 #include "Engine/Math/Vector3.hpp"
 
+#include "Game/Game.hpp"
 #include "Game/Cursor.hpp"
 #include "Game/CursorDefinition.hpp"
 #include "Game/GameCommon.hpp"
@@ -360,9 +361,9 @@ void Layer::SetModelViewProjectionBounds() const {
     Camera2D& base_camera = _map->cameraController.GetCamera();
     Camera2D shakyCam = _map->cameraController.GetCamera();
     const float shake = shakyCam.GetShake();
-    const float shaky_angle = currentGraphicsOptions.MaxShakeAngle * shake * MathUtils::GetRandomNegOneToOne<float>();
-    const float shaky_offsetX = currentGraphicsOptions.MaxShakeOffsetHorizontal * shake * MathUtils::GetRandomNegOneToOne<float>();
-    const float shaky_offsetY = currentGraphicsOptions.MaxShakeOffsetVertical * shake * MathUtils::GetRandomNegOneToOne<float>();
+    const float shaky_angle = GetGameAs<Game>()->gameOptions.GetMaxShakeAngle() * shake * MathUtils::GetRandomNegOneToOne<float>();
+    const float shaky_offsetX = GetGameAs<Game>()->gameOptions.GetMaxShakeOffsetHorizontal() * shake * MathUtils::GetRandomNegOneToOne<float>();
+    const float shaky_offsetY = GetGameAs<Game>()->gameOptions.GetMaxShakeOffsetVertical() * shake * MathUtils::GetRandomNegOneToOne<float>();
     shakyCam.orientation_degrees = base_camera.orientation_degrees + shaky_angle;
     shakyCam.position = base_camera.position + Vector2{shaky_offsetX, shaky_offsetY};
 

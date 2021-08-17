@@ -149,7 +149,6 @@
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="Adventure.cpp" />
-    <ClCompile Include="App.cpp" />
     <ClCompile Include="Behavior.cpp" />
     <ClCompile Include="Cursor.cpp" />
     <ClCompile Include="CursorDefinition.cpp" />
@@ -189,7 +188,6 @@
     <ClInclude Include="Actor.hpp" />
     <ClInclude Include="ActorCommand.hpp" />
     <ClInclude Include="Adventure.hpp" />
-    <ClInclude Include="App.hpp" />
     <ClInclude Include="Behavior.hpp" />
     <ClInclude Include="Command.hpp" />
     <ClInclude Include="Cursor.hpp" />

@@ -14,6 +14,7 @@
 #include "Game/Map.hpp"
 #include "Game/TileDefinition.hpp"
 
+#include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 
 void Tile::ClearLightDirty() noexcept {
@@ -78,7 +79,7 @@ void Tile::Update(TimeUtils::FPSeconds deltaSeconds) {
 void Tile::DebugRender() const {
 #ifdef UI_DEBUG
     Entity* entity = (actor ? dynamic_cast<Entity*>(actor) : (feature ? dynamic_cast<Entity*>(feature) : nullptr));
-    if(g_theGame->_debug_show_all_entities && entity) {
+    if(GetGameAs<Game>()->_debug_show_all_entities && entity) {
         auto tile_bounds = GetBounds();
         g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
         g_theRenderer->SetModelMatrix(Matrix4::I);

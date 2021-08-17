@@ -26,6 +26,7 @@
 #include "Game/EntityText.hpp"
 #include "Game/EntityDefinition.hpp"
 #include "Game/Feature.hpp"
+#include "Game/Game.hpp"
 #include "Game/GameCommon.hpp"
 #include "Game/GameConfig.hpp"
 #include "Game/Inventory.hpp"
@@ -56,28 +57,28 @@ const Rgba& Map::GetSkyColorForCave() noexcept {
 void Map::SetCursorForFaction(const Actor* actor) const noexcept {
     switch(actor->GetFaction()) {
     case Faction::None:
-        g_theGame->SetCurrentCursorById(CursorId::Yellow_Corner_Box);
+        GetGameAs<Game>()->SetCurrentCursorById(CursorId::Yellow_Corner_Box);
         break;
     case Faction::Player:
-        g_theGame->SetCurrentCursorById(CursorId::Yellow_Corner_Box);
+        GetGameAs<Game>()->SetCurrentCursorById(CursorId::Yellow_Corner_Box);
         break;
     case Faction::Enemy:
-        g_theGame->SetCurrentCursorById(CursorId::Red_Crosshair_Box);
+        GetGameAs<Game>()->SetCurrentCursorById(CursorId::Red_Crosshair_Box);
         break;
     case Faction::Neutral:
-        g_theGame->SetCurrentCursorById(CursorId::Yellow_Corner_Box);
+        GetGameAs<Game>()->SetCurrentCursorById(CursorId::Yellow_Corner_Box);
         break;
     default:
-        g_theGame->SetCurrentCursorById(CursorId::Green_Box);
+        GetGameAs<Game>()->SetCurrentCursorById(CursorId::Green_Box);
         break;
     }
 }
 
 void Map::SetCursorForTile() const noexcept {
-    g_theGame->SetCurrentCursorById(CursorId::Yellow_Corner_Box);
+    GetGameAs<Game>()->SetCurrentCursorById(CursorId::Yellow_Corner_Box);
     if(auto* tile = this->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr) {
         if(!tile->CanSee()) {
-            g_theGame->SetCurrentCursorById(CursorId::Question);
+            GetGameAs<Game>()->SetCurrentCursorById(CursorId::Question);
         } else if(tile->actor) {
             SetCursorForFaction(tile->actor);
         }
@@ -378,17 +379,17 @@ void Map::FocusCameraOnPlayer(TimeUtils::FPSeconds deltaSeconds) noexcept {
 
 void Map::UpdateCursor(TimeUtils::FPSeconds deltaSeconds) noexcept {
     if(const auto& tiles = PickTilesFromMouseCoords(g_theInputSystem->GetMouseCoords()); tiles.has_value()) {
-        if(g_theGame->current_cursor) {
-            g_theGame->current_cursor->SetCoords((*tiles).back()->GetCoords());
-            g_theGame->current_cursor->Update(deltaSeconds);
+        if(GetGameAs<Game>()->current_cursor) {
+            GetGameAs<Game>()->current_cursor->SetCoords((*tiles).back()->GetCoords());
+            GetGameAs<Game>()->current_cursor->Update(deltaSeconds);
         }
     }
 }
 
 void Map::AddCursorToTopLayer() noexcept {
-    if(g_theGame->current_cursor) {
+    if(GetGameAs<Game>()->current_cursor) {
         if(auto* layer = GetLayer(GetLayerCount() - std::size_t{1u}); layer) {
-            layer->AppendToMesh(g_theGame->current_cursor);
+            layer->AppendToMesh(GetGameAs<Game>()->current_cursor);
         }
     }
 }
@@ -586,8 +587,8 @@ void Map::RenderStatsBlock(Actor* actor) const noexcept {
         ss << "Lck: " << stats.GetStat(StatsID::Luck);
         return ss.str();
     }();
-    const auto text_height = g_theGame->ingamefont->CalculateTextHeight(text);
-    const auto text_width = g_theGame->ingamefont->CalculateTextWidth(text);
+    const auto text_height = GetGameAs<Game>()->ingamefont->CalculateTextHeight(text);
+    const auto text_width = GetGameAs<Game>()->ingamefont->CalculateTextWidth(text);
     AABB2 bounds{};
     const auto dims_w = text_width;
     const auto dims_h = text_height;
@@ -599,13 +600,13 @@ void Map::RenderStatsBlock(Actor* actor) const noexcept {
     bounds.StretchToIncludePoint(bottom_right);
     bounds.Translate(Vector2{50.0f, 50.0f});
     const auto text_position = bounds.mins + padding;
-    g_theRenderer->DrawAABB2(bounds, actor->GetFactionAsColor(), Rgba{50, 50, 50, 128}, border_padding);
+    g_theRenderer->DrawAABB2(bounds, actor->GetFactionAsColor(), Rgba(50, 50, 50, 128), border_padding);
     auto S = Matrix4::I;
     auto R = Matrix4::I;
     auto T = Matrix4::CreateTranslationMatrix(text_position);
     auto M = Matrix4::MakeSRT(S, R, T);
     g_theRenderer->SetModelMatrix(M);
-    g_theRenderer->DrawMultilineText(g_theGame->ingamefont, text);
+    g_theRenderer->DrawMultilineText(GetGameAs<Game>()->ingamefont, text);
 }
 
 void Map::SetPriorityLayer(std::size_t i) {
@@ -638,11 +639,11 @@ void Map::Render() const {
         layer->Render();
     }
 
-    auto& ui_camera = g_theGame->ui_camera;
+    auto& ui_camera = GetGameAs<Game>()->ui_camera;
 
     //2D View / HUD
-    const float ui_view_height = currentGraphicsOptions.WindowHeight;
-    const float ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
+    const auto ui_view_height = static_cast<float>(GetGameAs<Game>()->gameOptions.GetWindowHeight());
+    const auto ui_view_width = ui_view_height * ui_camera.GetAspectRatio();
     const auto ui_view_extents = Vector2{ui_view_width, ui_view_height};
     const auto ui_view_half_extents = ui_view_extents * 0.5f;
 
@@ -665,42 +666,47 @@ void Map::DebugRender() const {
     for(const auto& layer : _layers) {
         layer->DebugRender();
     }
-    if(!g_theGame->_debug_render) {
+    if(auto* game = GetGameAs<Game>(); game == nullptr) {
         return;
-    }
-    if(g_theGame->_debug_show_grid) {
-        g_theRenderer->SetModelMatrix(Matrix4::I);
-        const auto* layer = GetLayer(0);
-        g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
-        g_theRenderer->DrawWorldGrid2D(layer->tileDimensions, layer->debug_grid_color);
-    }
-    if(g_theGame->_debug_show_room_bounds) {
-        if(auto* generator = dynamic_cast<RoomsMapGenerator*>(_map_generator.get()); generator != nullptr) {
-            for(auto& room : generator->rooms) {
-                g_theRenderer->SetModelMatrix(Matrix4::I);
-                g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
-                g_theRenderer->DrawAABB2(room, Rgba::Cyan, Rgba::NoAlpha);
+    } else {
+
+        if(!game->_debug_render) {
+            return;
+        }
+        if(game->_debug_show_grid) {
+            g_theRenderer->SetModelMatrix(Matrix4::I);
+            const auto* layer = GetLayer(0);
+            g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+            g_theRenderer->DrawWorldGrid2D(layer->tileDimensions, layer->debug_grid_color);
+        }
+        if(game->_debug_show_room_bounds) {
+            if(auto* generator = dynamic_cast<RoomsMapGenerator*>(_map_generator.get()); generator != nullptr) {
+                for(auto& room : generator->rooms) {
+                    g_theRenderer->SetModelMatrix(Matrix4::I);
+                    g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+                    g_theRenderer->DrawAABB2(room, Rgba::Cyan, Rgba::NoAlpha);
+                }
             }
         }
-    }
-    if(g_theGame->_debug_show_world_bounds) {
-        auto bounds = CalcWorldBounds();
-        g_theRenderer->SetModelMatrix(Matrix4::I);
-        g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
-        g_theRenderer->DrawAABB2(bounds, Rgba::Cyan, Rgba::NoAlpha);
-    }
-    if(g_theGame->_debug_show_camera_bounds) {
-        auto bounds = CalcCameraBounds();
-        g_theRenderer->SetModelMatrix(Matrix4::I);
-        g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
-        g_theRenderer->DrawAABB2(bounds, Rgba::Orange, Rgba::NoAlpha);
-    }
-    if(g_theGame->_debug_show_camera) {
-        const auto& cam_pos = cameraController.GetCamera().GetPosition();
-        g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
-        g_theRenderer->DrawCircle2D(cam_pos, 0.5f, Rgba::Cyan);
-        g_theRenderer->DrawAABB2(GetLayer(0)->CalcViewBounds(cam_pos), Rgba::Green, Rgba::NoAlpha);
-        g_theRenderer->DrawAABB2(GetLayer(0)->CalcCullBounds(cam_pos), Rgba::Blue, Rgba::NoAlpha);
+        if(game->_debug_show_world_bounds) {
+            auto bounds = CalcWorldBounds();
+            g_theRenderer->SetModelMatrix(Matrix4::I);
+            g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+            g_theRenderer->DrawAABB2(bounds, Rgba::Cyan, Rgba::NoAlpha);
+        }
+        if(game->_debug_show_camera_bounds) {
+            auto bounds = CalcCameraBounds();
+            g_theRenderer->SetModelMatrix(Matrix4::I);
+            g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+            g_theRenderer->DrawAABB2(bounds, Rgba::Orange, Rgba::NoAlpha);
+        }
+        if(game->_debug_show_camera) {
+            const auto& cam_pos = cameraController.GetCamera().GetPosition();
+            g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+            g_theRenderer->DrawCircle2D(cam_pos, 0.5f, Rgba::Cyan);
+            g_theRenderer->DrawAABB2(GetLayer(0)->CalcViewBounds(cam_pos), Rgba::Green, Rgba::NoAlpha);
+            g_theRenderer->DrawAABB2(GetLayer(0)->CalcCullBounds(cam_pos), Rgba::Blue, Rgba::NoAlpha);
+        }
     }
 #endif
 }
@@ -883,7 +889,7 @@ void Map::FocusTileAt(const IntVector3& position) {
 void Map::FocusEntity(const Entity* entity) {
     if(entity) {
         FocusTileAt(IntVector3(entity->tile->GetCoords(), entity->layer->z_index));
-        g_theGame->current_cursor->SetCoords(entity->tile->GetCoords());
+        GetGameAs<Game>()->current_cursor->SetCoords(entity->tile->GetCoords());
     }
 }
 
@@ -1161,8 +1167,8 @@ void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
 
 void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
-    g_theGame->ThrowIfSourceFileNotFound(src);
-    if(tinyxml2::XMLDocument doc{}; auto* xml_root = g_theGame->ThrowIfSourceFileNotLoaded(doc, src)) {
+    GetGameAs<Game>()->ThrowIfSourceFileNotFound(src);
+    if(tinyxml2::XMLDocument doc{}; auto* xml_root = GetGameAs<Game>()->ThrowIfSourceFileNotLoaded(doc, src)) {
         DataUtils::ValidateXmlElement(*xml_root, "tileDefinitions", "spritesheet,tileDefinition", "");
         if(auto xml_spritesheet = xml_root->FirstChildElement("spritesheet")) {
             if(_tileset_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet); _tileset_sheet) {
