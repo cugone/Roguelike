@@ -261,7 +261,7 @@ void ItemBuilder::LoadFromXml(const XMLElement& elem, std::weak_ptr<SpriteSheet>
         }
     }
     if(DataUtils::HasAttribute(elem, "index")) {
-        auto startIndex = DataUtils::ParseXmlAttribute(elem, "index", IntVector2::ONE * -1);
+        auto startIndex = DataUtils::ParseXmlAttribute(elem, "index", IntVector2::One * -1);
         if(auto* xml_animsprite = elem.FirstChildElement("animation")) {
             AnimateSprite(g_theRenderer->CreateAnimatedSprite(_itemSheet, *xml_animsprite));
         } else {

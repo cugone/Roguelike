@@ -94,7 +94,7 @@ bool EntityDefinition::LoadFromXml(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "entityDefinition", "", "name,index", "animation,attachPoints,inventory,stats,equipment,behaviors");
 
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
-    _index = DataUtils::ParseXmlAttribute(elem, "index", IntVector2::ZERO);
+    _index = DataUtils::ParseXmlAttribute(elem, "index", IntVector2::Zero);
     LoadStats(elem);
     LoadAnimation(elem);
     LoadAttachPoints(elem);

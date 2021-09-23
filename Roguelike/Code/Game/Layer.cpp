@@ -54,23 +54,23 @@ Layer::Layer(Map* map, const IntVector2& dimensions)
 const Tile* Layer::GetNeighbor(const NeighborDirection& direction) {
     switch(direction) {
     case NeighborDirection::Self:
-        return GetNeighbor(IntVector2::ZERO);
+        return GetNeighbor(IntVector2::Zero);
     case NeighborDirection::East:
-        return GetNeighbor(IntVector2::X_AXIS);
+        return GetNeighbor(IntVector2::X_Axis);
     case NeighborDirection::NorthEast:
         return GetNeighbor(IntVector2{1, -1});
     case NeighborDirection::North:
-        return GetNeighbor(-IntVector2::Y_AXIS);
+        return GetNeighbor(-IntVector2::Y_Axis);
     case NeighborDirection::NorthWest:
-        return GetNeighbor(-IntVector2::XY_AXIS);
+        return GetNeighbor(-IntVector2::XY_Axis);
     case NeighborDirection::West:
-        return GetNeighbor(-IntVector2::X_AXIS);
+        return GetNeighbor(-IntVector2::X_Axis);
     case NeighborDirection::SouthWest:
         return GetNeighbor(IntVector2{-1, 1});
     case NeighborDirection::South:
-        return GetNeighbor(IntVector2::Y_AXIS);
+        return GetNeighbor(IntVector2::Y_Axis);
     case NeighborDirection::SouthEast:
-        return GetNeighbor(IntVector2::XY_AXIS);
+        return GetNeighbor(IntVector2::XY_Axis);
     default:
         return nullptr;
     }
@@ -176,7 +176,7 @@ void Layer::AppendToMesh(const IntVector2& tile_coords, const AABB2& uv_coords, 
         clr.ScaleRGB(MathUtils::RangeMap(static_cast<float>(light_value), static_cast<float>(min_light_value), static_cast<float>(max_light_value), min_light_scale, max_light_scale));
         return clr;
     }(); //IIIL
-    const auto normal = -Vector3::Z_AXIS;
+    const auto normal = -Vector3::Z_Axis;
 
     builder.Begin(PrimitiveType::Triangles);
     builder.SetColor(newColor);
@@ -243,7 +243,7 @@ void Layer::AppendToMesh(const Cursor* cursor) noexcept {
     auto& builder = GetMeshBuilder();
     builder.Begin(PrimitiveType::Triangles);
     builder.SetColor(color);
-    builder.SetNormal(-Vector3::Z_AXIS);
+    builder.SetNormal(-Vector3::Z_Axis);
 
     builder.SetUV(tx_bl);
     builder.AddVertex(Vector3{vert_bl, 0.0f});

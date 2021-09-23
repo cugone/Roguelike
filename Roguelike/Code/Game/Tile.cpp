@@ -83,7 +83,7 @@ void Tile::DebugRender() const {
         auto tile_bounds = GetBounds();
         g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
         g_theRenderer->SetModelMatrix(Matrix4::I);
-        g_theRenderer->DrawAABB2(tile_bounds, Rgba::Red, Rgba::NoAlpha, Vector2::ONE * 0.0625f);
+        g_theRenderer->DrawAABB2(tile_bounds, Rgba::Red, Rgba::NoAlpha, Vector2::One * 0.0625f);
     }
 #endif
 }
@@ -115,7 +115,7 @@ void Tile::ChangeTypeFromGlyph(char glyph) {
 }
 
 AABB2 Tile::GetBounds() const {
-    return {Vector2(GetCoords()), Vector2(GetCoords() + IntVector2::ONE)};
+    return {Vector2(GetCoords()), Vector2(GetCoords() + IntVector2::One)};
 }
 
 bool Tile::IsVisible() const {

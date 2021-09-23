@@ -283,7 +283,7 @@ void Game::Render_Title() const {
 
     g_theRenderer->BeginRender();
 
-    g_theRenderer->BeginHUDRender(ui_camera, Vector2::ZERO, static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight()));
+    g_theRenderer->BeginHUDRender(ui_camera, Vector2::Zero, static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight()));
 
     g_theRenderer->SetModelMatrix(Matrix4::I);
     g_theRenderer->DrawTextLine(ingamefont, "RogueLike");
@@ -294,7 +294,7 @@ void Game::Render_Loading() const {
 
     g_theRenderer->BeginRender();
 
-    g_theRenderer->BeginHUDRender(ui_camera, Vector2::ZERO, static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight()));
+    g_theRenderer->BeginHUDRender(ui_camera, Vector2::Zero, static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight()));
 
     g_theRenderer->SetModelMatrix(Matrix4::I);
     g_theRenderer->DrawTextLine(ingamefont, "LOADING");
@@ -324,7 +324,7 @@ void Game::Render_Main() const {
     g_theRenderer->SetConstantBuffer(3, _fullscreen_cb.get());
     std::vector<Vertex3D> vbo =
     {
-        Vertex3D{Vector3::ZERO}
+        Vertex3D{Vector3::Zero}
         ,Vertex3D{Vector3{3.0f, 0.0f, 0.0f}}
         ,Vertex3D{Vector3{0.0f, 3.0f, 0.0f}}
     };
@@ -333,10 +333,10 @@ void Game::Render_Main() const {
     auto& app = ServiceLocator::get<IAppService>();
     if(app.LostFocus()) {
         g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
-        g_theRenderer->DrawQuad2D(Vector2::ZERO, Vector2::ONE, Rgba(0, 0, 0, 128));
+        g_theRenderer->DrawQuad2D(Vector2::Zero, Vector2::One, Rgba(0, 0, 0, 128));
     }
 
-    g_theRenderer->BeginHUDRender(ui_camera, Vector2::ZERO, static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight()));
+    g_theRenderer->BeginHUDRender(ui_camera, Vector2::Zero, static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight()));
 
     if(app.LostFocus()) {
         const auto w = static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowWidth());
@@ -673,7 +673,7 @@ void Game::StopFullscreenEffect() {
     static TimeUtils::FPSeconds curFadeTime{};
     _fullscreen_data.effectIndex = -1;
     _fullscreen_data.fadePercent = 0.0f;
-    _fullscreen_data.fadeColor = Vector4::W_AXIS;
+    _fullscreen_data.fadeColor = Vector4::W_Axis;
     _fullscreen_cb->Update(*g_theRenderer->GetDeviceContext(), &_fullscreen_data);
 }
 
@@ -792,15 +792,15 @@ void Game::HandlePlayerKeyboardInput() {
 
     if(is_shift) {
         if(is_right_held) {
-            _adventure->currentMap->cameraController.Translate(Vector2::X_AXIS);
+            _adventure->currentMap->cameraController.Translate(Vector2::X_Axis);
         } else if(is_left_held) {
-            _adventure->currentMap->cameraController.Translate(-Vector2::X_AXIS);
+            _adventure->currentMap->cameraController.Translate(-Vector2::X_Axis);
         }
 
         if(is_up_held) {
-            _adventure->currentMap->cameraController.Translate(-Vector2::Y_AXIS);
+            _adventure->currentMap->cameraController.Translate(-Vector2::Y_Axis);
         } else if(is_down_held) {
-            _adventure->currentMap->cameraController.Translate(Vector2::Y_AXIS);
+            _adventure->currentMap->cameraController.Translate(Vector2::Y_Axis);
         }
         return;
     }
@@ -1348,7 +1348,7 @@ void Game::ShowTileInspectorTableUI(const std::vector<Tile*>& tiles, const uint8
                         cur_def = TileDefinition::GetTileDefinitionByName("void");
                     }
                     if(const auto* cur_sprite = cur_def->GetSprite()) {
-                        ShowInspectedElementImageUI(cur_sprite, Vector2::ONE * 100.0f, cur_sprite->GetCurrentTexCoords());
+                        ShowInspectedElementImageUI(cur_sprite, Vector2::One * 100.0f, cur_sprite->GetCurrentTexCoords());
                         if(ImGui::IsItemHovered()) {
                             ImGui::BeginTooltip();
                             ShowTileInspectorStatsTableUI(cur_def, cur_tile);
@@ -1588,7 +1588,7 @@ void Game::ShowEntityInspectorInventoryColumnUI(Entity* const cur_entity) {
 void Game::ShowEntityInspectorImageUI(const AnimatedSprite* cur_sprite, const Entity* cur_entity) {
     ShowInspectedActorEquipmentOnlyImageUI(cur_sprite, cur_entity, EquipSlot::Cape);
     ImGui::SameLine(8.0f);
-    ShowInspectedElementImageUI(cur_sprite, Vector2::ONE * 100.0f, cur_sprite->GetCurrentTexCoords());
+    ShowInspectedElementImageUI(cur_sprite, Vector2::One * 100.0f, cur_sprite->GetCurrentTexCoords());
     ShowInspectedActorEquipmentExceptImageUI(cur_sprite, cur_entity, EquipSlot::Cape);
 }
 
@@ -1599,7 +1599,7 @@ void Game::ShowInspectedActorEquipmentExceptImageUI(const AnimatedSprite* cur_sp
                 ImGui::SameLine(8.0f);
                 ImGui::SetItemAllowOverlap();
                 const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
-                ShowInspectedElementImageUI(cur_sprite, Vector2::ONE * 100.0f, eq_coords);
+                ShowInspectedElementImageUI(cur_sprite, Vector2::One * 100.0f, eq_coords);
             }
         }
     }
@@ -1612,7 +1612,7 @@ void Game::ShowInspectedActorEquipmentOnlyImageUI(const AnimatedSprite* cur_spri
                 ImGui::SameLine(8.0f);
                 ImGui::SetItemAllowOverlap();
                 const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
-                ShowInspectedElementImageUI(cur_sprite, Vector2::ONE * 100.0f, eq_coords);
+                ShowInspectedElementImageUI(cur_sprite, Vector2::One * 100.0f, eq_coords);
             }
         }
     }

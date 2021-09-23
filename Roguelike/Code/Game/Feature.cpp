@@ -21,7 +21,7 @@ Feature* Feature::CreateFeature(Map* map, const XMLElement& elem) {
 }
 
 FeatureInstance Feature::CreateInstanceFromFeature(Feature* feature) noexcept {
-    return CreateInstanceFromFeatureAt(feature, IntVector2::ZERO);
+    return CreateInstanceFromFeatureAt(feature, IntVector2::Zero);
 }
 
 FeatureInstance Feature::CreateInstanceFromFeatureAt(Feature* feature, const IntVector2& position) noexcept {
@@ -110,7 +110,7 @@ bool Feature::LoadFromXml(const XMLElement& elem) {
     }
 
     if(DataUtils::HasAttribute(elem, "position")) {
-        SetPosition(DataUtils::ParseXmlAttribute(elem, "position", IntVector2::ZERO));
+        SetPosition(DataUtils::ParseXmlAttribute(elem, "position", IntVector2::Zero));
         parent_tile = map->GetTile(IntVector3{GetPosition(), layer->z_index});
     }
 

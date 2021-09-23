@@ -92,7 +92,7 @@ bool Actor::LoadFromXml(const XMLElement& elem) {
         }
     }
     if(DataUtils::HasAttribute(elem, "position")) {
-        SetPosition(DataUtils::ParseXmlAttribute(elem, "position", IntVector2::ZERO));
+        SetPosition(DataUtils::ParseXmlAttribute(elem, "position", IntVector2::Zero));
     }
     return true;
 }

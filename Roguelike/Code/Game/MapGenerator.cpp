@@ -221,8 +221,8 @@ void RoomsMapGenerator::Generate() {
     world_bounds.maxs.x = static_cast<float>(width);
     world_bounds.maxs.y = static_cast<float>(height);
     for(const auto& room : rooms) {
-        world_bounds.StretchToIncludePoint(room.mins - Vector2::ONE);
-        world_bounds.StretchToIncludePoint(room.maxs + Vector2::ONE);
+        world_bounds.StretchToIncludePoint(room.mins - Vector2::One);
+        world_bounds.StretchToIncludePoint(room.maxs + Vector2::One);
     }
     const auto map_width = static_cast<int>(world_bounds.CalcDimensions().x);
     const auto map_height = static_cast<int>(world_bounds.CalcDimensions().y);
@@ -619,8 +619,8 @@ bool RoomsAndCorridorsMapGenerator::GenerateExitAndEntrance() noexcept {
         closed_set.insert(std::make_pair(up_id, down_id));
         const auto& room_with_exit = rooms[down_id];
         const auto& room_with_entrance = rooms[up_id];
-        const auto exit_loc = IntVector2{room_with_exit.mins + Vector2::ONE};
-        const auto enter_loc = IntVector2{room_with_entrance.mins + Vector2::ONE};
+        const auto exit_loc = IntVector2{room_with_exit.mins + Vector2::One};
+        const auto enter_loc = IntVector2{room_with_entrance.mins + Vector2::One};
         start = enter_loc;
         end = exit_loc;
     } while(!VerifyExitIsReachable(start, end));

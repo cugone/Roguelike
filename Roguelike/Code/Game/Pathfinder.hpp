@@ -25,7 +25,7 @@ public:
         Node* parent{nullptr};
         float f = std::numeric_limits<float>::infinity();
         float g = std::numeric_limits<float>::infinity();
-        IntVector2 coords = IntVector2::ZERO;
+        IntVector2 coords = IntVector2::Zero;
         bool visited = false;
     };
 

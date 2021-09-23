@@ -246,7 +246,7 @@ const std::vector<EntityText*>& Map::GetTextEntities() const noexcept {
 }
 
 AABB2 Map::CalcWorldBounds() const {
-    return {Vector2::ZERO, CalcMaxDimensions()};
+    return {Vector2::Zero, CalcMaxDimensions()};
 }
 
 AABB2 Map::CalcCameraBounds() const {

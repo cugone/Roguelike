@@ -19,7 +19,7 @@ void Cursor::Update(TimeUtils::FPSeconds deltaSeconds) {
 }
 
 AABB2 Cursor::GetBounds() const {
-    return {Vector2(_tile_coords), Vector2(_tile_coords + IntVector2::ONE)};
+    return {Vector2(_tile_coords), Vector2(_tile_coords + IntVector2::One)};
 }
 
 const CursorDefinition* Cursor::GetDefinition() const {
