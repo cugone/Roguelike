@@ -131,7 +131,7 @@ Stats::Stats(std::initializer_list<decltype(_stats)::value_type> l) {
         }
     }
     for(; id != StatsID::Last_; ++id) {
-        SetStat(id, 0L);
+        SetStat(id, decltype(_stats)::value_type{0});
     }
 }
 
