@@ -53,10 +53,10 @@ public:
     decltype(_stats)::value_type AdjustStat(const StatsID& id, long value) noexcept;
     decltype(_stats)::value_type MultiplyStat(const StatsID& id, long double value) noexcept;
 
-    Stats operator+(const Stats& b) const;
-    Stats& operator+=(const Stats& b);
-    Stats operator-(const Stats& b) const;
-    Stats& operator-=(const Stats& b);
+    Stats operator+(const Stats& rhs) const;
+    Stats& operator+=(const Stats& rhs);
+    Stats operator-(const Stats& rhs) const;
+    Stats& operator-=(const Stats& rhs);
     Stats operator-();
 
 protected:

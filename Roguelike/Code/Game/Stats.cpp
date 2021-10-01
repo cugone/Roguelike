@@ -26,28 +26,28 @@ StatsID operator--(StatsID& a, int) {
     return result;
 }
 
-Stats Stats::operator+(const Stats& b) const {
+Stats Stats::operator+(const Stats& rhs) const {
     auto result = *this;
-    result += b;
+    result += rhs;
     return result;
 }
 
-Stats& Stats::operator+=(const Stats& b) {
+Stats& Stats::operator+=(const Stats& rhs) {
     for(auto id = StatsID::First_; id != StatsID::Last_; ++id) {
-        AdjustStat(id, b.GetStat(id));
+        AdjustStat(id, rhs.GetStat(id));
     }
     return *this;
 }
 
-Stats Stats::operator-(const Stats& b) const {
+Stats Stats::operator-(const Stats& rhs) const {
     auto result = *this;
-    result -= b;
+    result -= rhs;
     return result;
 }
 
-Stats& Stats::operator-=(const Stats& b) {
+Stats& Stats::operator-=(const Stats& rhs) {
     for(auto id = StatsID::First_; id != StatsID::Last_; ++id) {
-        AdjustStat(id, -b.GetStat(id));
+        AdjustStat(id, -rhs.GetStat(id));
     }
     return *this;
 }
