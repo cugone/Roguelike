@@ -326,11 +326,6 @@ public:
     void CreateTextEntity(const TextEntityDesc& desc) noexcept;
     void CreateTextEntityAt(const IntVector2& tileCoords, TextEntityDesc desc) noexcept;
 
-    template<typename F>
-    void ShakeCamera(F&& f) noexcept {
-        cameraController.DoCameraShake(std::forward<F>(f));
-    }
-
     std::size_t DebugTilesInViewCount() const;
     std::size_t DebugVisibleTilesInViewCount() const;
 
