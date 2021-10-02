@@ -946,7 +946,7 @@ void Game::HandleDebugKeyboardInput() {
     }
 
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::B)) {
-        _adventure->currentMap->ShakeCamera([]()->float { const auto t = g_theRenderer->GetGameTime().count(); return std::cos(t) * std::sin(t); });
+        _adventure->currentMap->cameraController.DoCameraShake([]()->float { const auto t = g_theRenderer->GetGameTime().count(); return std::cos(t) * std::sin(t); });
     }
 #endif
 }
