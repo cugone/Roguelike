@@ -37,6 +37,9 @@
     <Filter Include="Data\Maps">
       <UniqueIdentifier>{43faf59d-145e-4c43-b149-6cf96c9c4dc3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Editor">
+      <UniqueIdentifier>{6b7d1112-6730-4c82-af48-80552b88d582}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp">
@@ -146,6 +149,9 @@
     </ClCompile>
     <ClCompile Include="Adventure.cpp">
       <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Editor\MapEditor.cpp">
+      <Filter>Editor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -259,6 +265,9 @@
     </ClInclude>
     <ClInclude Include="Adventure.hpp">
       <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Editor\MapEditor.hpp">
+      <Filter>Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
