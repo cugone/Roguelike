@@ -45,6 +45,7 @@ public:
 
 
     Map() noexcept = default;
+    explicit Map(const std::filesystem::path& filepath) noexcept;
     explicit Map(const XMLElement& elem) noexcept;
     Map(const Map& other) = default;
     Map(Map&& other) = default;
@@ -340,6 +341,7 @@ public:
 
 protected:
 private:
+    void Initialize(const XMLElement& elem) noexcept;
     void SetParentAdventure(Adventure* parent) noexcept;
 
     bool LoadFromXML(const XMLElement& elem);
@@ -388,7 +390,8 @@ private:
     std::string _name{};
     std::vector<std::unique_ptr<Layer>> _layers{};
     ThreadSafeQueue<TileInfo> _lightingQueue{};
-    const XMLElement& _root_xml_element;
+    tinyxml2::XMLDocument _xml_doc;
+    XMLElement* _root_xml_element{};
     Adventure* _parent_adventure{};
     Material* _default_tileMaterial{};
     Material* _current_tileMaterial{};

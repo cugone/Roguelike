@@ -22,6 +22,7 @@
 
 class KerningFont;
 class AnimatedSprite;
+class MapEditor;
 
 struct fullscreen_cb_t {
     int effectIndex = -1;
@@ -46,6 +47,8 @@ enum class GameState {
     Title
     , Loading
     , Main
+    , Editor
+    , Editor_Main
 };
 
 enum class CursorId {
@@ -133,32 +136,45 @@ public:
     CursorId current_cursorId{};
     mutable Camera2D ui_camera{};
     GameOptions gameOptions{};
+    bool IsDebugging() const noexcept;
 protected:
 private:
 
     void OnEnter_Title();
     void OnEnter_Loading();
     void OnEnter_Main();
+    void OnEnter_Editor();
+    void OnEnter_EditorMain();
 
     void OnExit_Title();
     void OnExit_Loading();
     void OnExit_Main();
+    void OnExit_Editor();
+    void OnExit_EditorMain();
 
     void BeginFrame_Title();
     void BeginFrame_Loading();
     void BeginFrame_Main();
+    void BeginFrame_Editor();
+    void BeginFrame_EditorMain();
 
     void Update_Title(TimeUtils::FPSeconds deltaSeconds);
     void Update_Loading(TimeUtils::FPSeconds deltaSeconds);
     void Update_Main(TimeUtils::FPSeconds deltaSeconds);
+    void Update_Editor(TimeUtils::FPSeconds deltaSeconds);
+    void Update_EditorMain(TimeUtils::FPSeconds deltaSeconds);
 
     void Render_Title() const;
     void Render_Loading() const;
     void Render_Main() const;
+    void Render_Editor() const;
+    void Render_EditorMain() const;
 
     void EndFrame_Title();
     void EndFrame_Loading();
     void EndFrame_Main();
+    void EndFrame_Editor();
+    void EndFrame_EditorMain();
 
     void ChangeGameState(const GameState& newState);
     void OnEnterState(const GameState& state);
@@ -270,11 +286,17 @@ private:
     Console::CommandList _consoleCommands;
     GameState _currentGameState = GameState::Title;
     GameState _nextGameState = GameState::Title;
+    Stopwatch _filewatcherUpdateRate{1.0f};
+    std::thread _filewatcher_worker{};
+    std::condition_variable _filewatcher_signal{};
     std::condition_variable _loading_signal{};
+    std::filesystem::path m_requested_map_to_load{};
+    std::unique_ptr<MapEditor> _editor{};
     uint8_t _player_requested_wait : 1;
     uint8_t _done_loading : 1;
     uint8_t _reset_loading_flag : 1;
     uint8_t _skip_frame : 1;
+    uint8_t _menu_id : 1;
 #ifdef UI_DEBUG
     uint8_t _debug_has_picked_entity_with_click : 1;
     uint8_t _debug_has_picked_feature_with_click : 1;

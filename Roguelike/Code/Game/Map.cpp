@@ -323,16 +323,22 @@ bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
     }
 }
 
+Map::Map(const std::filesystem::path& filepath) noexcept
+: _pathfinder(std::make_unique<Pathfinder>())
+{
+    if(const auto xml_success = _xml_doc.LoadFile(filepath.string().c_str()); xml_success == tinyxml2::XML_SUCCESS) {
+        _root_xml_element = _xml_doc.RootElement();
+    } else {
+        ERROR_AND_DIE("Bad path for Map constructor");
+    }
+    Initialize(*_root_xml_element);
+}
+
 Map::Map(const XMLElement& elem) noexcept
-    : _root_xml_element(elem)
+    : _root_xml_element(const_cast<XMLElement*>(&elem))
     , _pathfinder(std::make_unique<Pathfinder>())
 {
-    GUARANTEE_OR_DIE(LoadFromXML(elem), "Could not load map.");
-    cameraController = OrthographicCameraController{};
-    cameraController.SetZoomLevelRange(Vector2{8.0f, 16.0f});
-    for(auto& layer : _layers) {
-        InitializeLighting(layer.get());
-    }
+    Initialize(*_root_xml_element);
 }
 
 Map::~Map() noexcept {
@@ -732,6 +738,15 @@ bool Map::IsPlayerOnExit() const noexcept {
 
 bool Map::IsPlayerOnEntrance() const noexcept {
     return player->tile->IsEntrance();
+}
+
+void Map::Initialize(const XMLElement& elem) noexcept {
+    GUARANTEE_OR_DIE(LoadFromXML(elem), "Could not load map.");
+    cameraController = OrthographicCameraController{};
+    cameraController.SetZoomLevelRange(Vector2{8.0f, 16.0f});
+    for(auto& layer : _layers) {
+        InitializeLighting(layer.get());
+    }
 }
 
 void Map::SetParentAdventure(Adventure* parent) noexcept {

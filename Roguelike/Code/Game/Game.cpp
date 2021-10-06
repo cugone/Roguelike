@@ -11,9 +11,11 @@
 #include "Engine/Math/Vector2.hpp"
 #include "Engine/Math/Vector4.hpp"
 
-#include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/AnimatedSprite.hpp"
+#include "Engine/Renderer/ConstantBuffer.hpp"
+#include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
+#include "Engine/Renderer/Shader.hpp"
 #include "Engine/Renderer/Texture.hpp"
 #include "Engine/Renderer/Window.hpp"
 
@@ -29,6 +31,7 @@
 #include "Game/EntityDefinition.hpp"
 #include "Game/Layer.hpp"
 #include "Game/Map.hpp"
+#include "Game/Editor/MapEditor.hpp"
 #include "Game/Tile.hpp"
 #include "Game/TileDefinition.hpp"
 #include "Game/Item.hpp"
@@ -38,6 +41,7 @@
 #include <array>
 #include <numeric>
 #include <string>
+#include <utility>
 
 void GameOptions::SaveToConfig(Config& config) noexcept {
     GameSettings::SaveToConfig(config);
@@ -121,6 +125,7 @@ Game::Game()
     , _done_loading{0}
     , _reset_loading_flag{0}
     , _skip_frame{0}
+    , _menu_id{0}
 #ifdef UI_DEBUG
     , _debug_has_picked_entity_with_click{0}
     , _debug_has_picked_feature_with_click{0}
@@ -206,6 +211,17 @@ void Game::OnEnter_Main() {
     g_theInputSystem->LockMouseToWindowViewport();
 }
 
+void Game::OnEnter_Editor() {
+    g_theInputSystem->ShowMouseCursor();
+}
+
+void Game::OnEnter_EditorMain() {
+    g_theInputSystem->ShowMouseCursor();
+    _editor = std::make_unique<MapEditor>(m_requested_map_to_load);
+    _filewatcherUpdateRate.SetSeconds(TimeUtils::FPSeconds{1.0f});
+    _filewatcherUpdateRate.Reset();
+}
+
 void Game::OnExit_Title() {
     /* DO NOTHING */
 }
@@ -227,6 +243,15 @@ void Game::OnExit_Main() {
     TileDefinition::ClearTileDefinitions();
 }
 
+void Game::OnExit_Editor() {
+    g_theInputSystem->HideMouseCursor();
+}
+
+void Game::OnExit_EditorMain() {
+    g_theInputSystem->HideMouseCursor();
+    _editor.reset(nullptr);
+}
+
 void Game::BeginFrame_Title() {
     /* DO NOTHING */
 }
@@ -239,14 +264,78 @@ void Game::BeginFrame_Main() {
     _adventure->currentMap->BeginFrame();
 }
 
+void Game::BeginFrame_Editor() {
+    /* DO NOTHING */
+}
+
+void Game::BeginFrame_EditorMain() {
+    _editor->BeginFrame_Editor();
+}
+
+static const auto MenuId_Start = uint8_t{0};
+static const auto MenuId_Editor = uint8_t{1};
+static const auto MenuId_Exit = uint8_t{2};
+
 void Game::Update_Title(TimeUtils::FPSeconds /*deltaSeconds*/) {
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::Esc)) {
         auto& app = ServiceLocator::get<IAppService>();
         app.SetIsQuitting(true);
         return;
     }
-    if(g_theInputSystem->WasAnyKeyPressed()) {
-        ChangeGameState(GameState::Loading);
+    const auto down = []() {
+        const auto keys = g_theInputSystem->WasKeyJustPressed(KeyCode::Down) || g_theInputSystem->WasKeyJustPressed(KeyCode::S);
+        if(const auto controller = g_theInputSystem->GetXboxController(0); controller.IsConnected()) {
+            const auto buttons = controller.WasButtonJustPressed(XboxController::Button::Down);
+            return keys || buttons;
+        }
+        return keys;
+    }();
+    const auto up = []() {
+        const auto keys = g_theInputSystem->WasKeyJustPressed(KeyCode::Up) || g_theInputSystem->WasKeyJustPressed(KeyCode::W);
+        if(const auto controller = g_theInputSystem->GetXboxController(0); controller.IsConnected()) {
+            const auto buttons = controller.WasButtonJustPressed(XboxController::Button::Up);
+            return keys || buttons;
+        }
+        return keys;
+    }();
+    const auto select = []() {
+        const auto keys = g_theInputSystem->WasKeyJustPressed(KeyCode::Enter);
+        if(const auto controller = g_theInputSystem->GetXboxController(0); controller.IsConnected()) {
+            const auto buttons = controller.WasButtonJustPressed(XboxController::Button::Start);
+            return keys || buttons;
+        }
+        return keys;
+    }();
+    const auto GetSelectedMenuId = [&]()-> uint8_t {
+        if(up) {
+            _menu_id = (std::max)(--_menu_id, MenuId_Start);
+        } else if(down) {
+            _menu_id = (std::min)(++_menu_id, uint8_t{MenuId_Exit + 1});
+        }
+        return _menu_id;
+    };
+    GetSelectedMenuId();
+    if(select) {
+        switch(GetSelectedMenuId()) {
+        case MenuId_Start:
+        {
+            ChangeGameState(GameState::Loading);
+            break;
+        }
+        case MenuId_Editor:
+        {
+            ChangeGameState(GameState::Editor);
+            break;
+        }
+        case MenuId_Exit:
+        {
+            auto& app = ServiceLocator::get<IAppService>();
+            app.SetIsQuitting(true);
+            break;
+        }
+        default:
+            break;
+        }
     }
 }
 
@@ -279,14 +368,69 @@ void Game::Update_Main(TimeUtils::FPSeconds deltaSeconds) {
     _adventure->currentMap->Update(deltaSeconds);
 }
 
+void Game::Update_Editor([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) {
+    if(ImGui::Begin("Map Setup")) {
+        static std::string mapPath{};
+        ImGui::InputText("##MapFilepath", &mapPath, ImGuiInputTextFlags_AutoSelectAll);
+        ImGui::SameLine();
+        auto selected_idx = 0;
+        std::vector<std::filesystem::path> paths{};
+        if(ImGui::Button("...##btnMapSetupOFD")) {
+            if(ImGui::Begin("Open Map")) {
+                const auto initialPath = FileUtils::GetKnownFolderPath(FileUtils::KnownPathID::GameData) / std::filesystem::path{"Definitions"};
+                paths = FileUtils::GetAllPathsInFolders(initialPath, ".xml", true);
+                const auto item_count = paths.empty() ? std::size_t{1u} : paths.size();
+                if(ImGui::BeginListBox("##lstFilepathOFD")) {
+                    for(int n = 0; n < item_count; n++) {
+                        const bool is_selected = (selected_idx == n);
+                        if(ImGui::Selectable(paths[n].string().c_str(), is_selected)) {
+                            selected_idx = n;
+                        }
+
+                        // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                        if(is_selected) {
+                            ImGui::SetItemDefaultFocus();
+                        }
+                    }
+                    ImGui::EndListBox();
+                }
+                ImGui::End();
+
+            }
+        }
+        if(ImGui::Button("OK")) {
+            m_requested_map_to_load = std::filesystem::path{mapPath};
+            LoadUI();
+            LoadItems();
+            LoadEntities();
+            ChangeGameState(GameState::Editor_Main);
+        }
+        ImGui::SameLine();
+        if(ImGui::Button("Cancel")) {
+            ChangeGameState(GameState::Title);
+        }
+        ImGui::End();
+    }
+}
+
+void Game::Update_EditorMain(TimeUtils::FPSeconds deltaSeconds) {
+    _editor->Update_Editor(deltaSeconds);
+}
+
 void Game::Render_Title() const {
 
     g_theRenderer->BeginRender();
 
     g_theRenderer->BeginHUDRender(ui_camera, Vector2::Zero, static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight()));
 
-    g_theRenderer->SetModelMatrix(Matrix4::I);
-    g_theRenderer->DrawTextLine(ingamefont, "RogueLike");
+    static const auto line_height = ingamefont->CalculateTextHeight("X");
+    //g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+    //g_theRenderer->DrawFilledCircle2D(Vector2::X_Axis * -20.0f, 10.0f);
+    g_theRenderer->DrawTextLine(Matrix4::CreateTranslationMatrix(Vector2{0.0f, line_height * 0.0f}), ingamefont, "RogueLike");
+
+    g_theRenderer->DrawTextLine(Matrix4::CreateTranslationMatrix(Vector2{0.0f, line_height * 2.0f}), ingamefont, "Start", _menu_id == MenuId_Start ? Rgba::Yellow : Rgba::White);
+    g_theRenderer->DrawTextLine(Matrix4::CreateTranslationMatrix(Vector2{0.0f, line_height * 4.0f}), ingamefont, "Map Editor", _menu_id == MenuId_Editor ? Rgba::Yellow : Rgba::White);
+    g_theRenderer->DrawTextLine(Matrix4::CreateTranslationMatrix(Vector2{0.0f, line_height * 5.0f}), ingamefont, "Exit", _menu_id == MenuId_Exit ? Rgba::Yellow : Rgba::White);
 
 }
 
@@ -345,6 +489,14 @@ void Game::Render_Main() const {
         g_theRenderer->SetModelMatrix(Matrix4::I);
         g_theRenderer->DrawTextLine(ingamefont, "PAUSED");
     }
+}
+
+void Game::Render_Editor() const {
+    g_theRenderer->BeginRenderToBackbuffer(Rgba::NoAlpha);
+}
+
+void Game::Render_EditorMain() const {
+    _editor->Render_Editor();
 }
 
 void Game::EndFrame_Title() {
@@ -437,24 +589,36 @@ void Game::EndFrame_Main() {
     OnMapEnter.Trigger();
 }
 
+void Game::EndFrame_Editor() {
+    /* DO NOTHING */
+}
+
+void Game::EndFrame_EditorMain() {
+    _editor->EndFrame_Editor();
+}
+
 void Game::ChangeGameState(const GameState& newState) {
     _nextGameState = newState;
 }
 
 void Game::OnEnterState(const GameState& state) {
     switch(state) {
-    case GameState::Title:    OnEnter_Title();   break;
-    case GameState::Loading:  OnEnter_Loading(); break;
-    case GameState::Main:     OnEnter_Main();    break;
+    case GameState::Title:         OnEnter_Title();   break;
+    case GameState::Loading:       OnEnter_Loading(); break;
+    case GameState::Main:          OnEnter_Main();    break;
+    case GameState::Editor:        OnEnter_Editor();  break;
+    case GameState::Editor_Main:   OnEnter_EditorMain();  break;
     default: ERROR_AND_DIE("ON ENTER UNDEFINED GAME STATE") break;
     }
 }
 
 void Game::OnExitState(const GameState& state) {
     switch(state) {
-    case GameState::Title:    OnExit_Title();   break;
-    case GameState::Loading:  OnExit_Loading(); break;
-    case GameState::Main:     OnExit_Main();    break;
+    case GameState::Title:         OnExit_Title();   break;
+    case GameState::Loading:       OnExit_Loading(); break;
+    case GameState::Main:          OnExit_Main();    break;
+    case GameState::Editor:        OnExit_Editor();  break;
+    case GameState::Editor_Main:   OnExit_EditorMain();  break;
     default: ERROR_AND_DIE("ON ENTER UNDEFINED GAME STATE") break;
     }
 }
@@ -580,9 +744,11 @@ void Game::BeginFrame() noexcept {
         OnEnterState(_currentGameState);
     }
     switch(_currentGameState) {
-    case GameState::Title:   BeginFrame_Title(); break;
-    case GameState::Loading: BeginFrame_Loading(); break;
-    case GameState::Main:    BeginFrame_Main(); break;
+    case GameState::Title:       BeginFrame_Title(); break;
+    case GameState::Loading:     BeginFrame_Loading(); break;
+    case GameState::Main:        BeginFrame_Main(); break;
+    case GameState::Editor:      BeginFrame_Editor(); break;
+    case GameState::Editor_Main: BeginFrame_EditorMain(); break;
     default:                 ERROR_AND_DIE("BEGIN FRAME UNDEFINED GAME STATE"); break;
     }
 }
@@ -592,6 +758,8 @@ void Game::Update(TimeUtils::FPSeconds deltaSeconds) noexcept {
     case GameState::Title:   Update_Title(deltaSeconds); break;
     case GameState::Loading: Update_Loading(deltaSeconds); break;
     case GameState::Main:    Update_Main(deltaSeconds); break;
+    case GameState::Editor:  Update_Editor(deltaSeconds); break;
+    case GameState::Editor_Main:  Update_EditorMain(deltaSeconds); break;
     default:                 ERROR_AND_DIE("UPDATE UNDEFINED GAME STATE"); break;
     }
 }
@@ -707,9 +875,11 @@ void Game::UpdateFullscreenEffect(const FullscreenEffect& effect) {
 
 void Game::Render() const noexcept {
     switch(_currentGameState) {
-    case GameState::Title:   Render_Title(); break;
-    case GameState::Loading: Render_Loading(); break;
-    case GameState::Main:    Render_Main(); break;
+    case GameState::Title:       Render_Title(); break;
+    case GameState::Loading:     Render_Loading(); break;
+    case GameState::Main:        Render_Main(); break;
+    case GameState::Editor:      Render_Editor(); break;
+    case GameState::Editor_Main: Render_EditorMain(); break;
     default:                 ERROR_AND_DIE("RENDER UNDEFINED GAME STATE"); break;
     }
 }
@@ -717,9 +887,11 @@ void Game::Render() const noexcept {
 void Game::EndFrame() noexcept {
     g_theRenderer->SetVSync(GetGameAs<Game>()->GetSettings().IsVsyncEnabled());
     switch(_currentGameState) {
-    case GameState::Title:   EndFrame_Title(); break;
-    case GameState::Loading: EndFrame_Loading(); break;
-    case GameState::Main:    EndFrame_Main(); break;
+    case GameState::Title:       EndFrame_Title(); break;
+    case GameState::Loading:     EndFrame_Loading(); break;
+    case GameState::Main:        EndFrame_Main(); break;
+    case GameState::Editor:      EndFrame_Editor(); break;
+    case GameState::Editor_Main: EndFrame_EditorMain(); break;
     default:                 ERROR_AND_DIE("END FRAME UNDEFINED GAME STATE"); break;
     }
 }
@@ -744,6 +916,10 @@ void Game::SetCurrentCursorByName(const std::string& name) noexcept {
 void Game::SetCurrentCursorById(CursorId id) noexcept {
     GUARANTEE_OR_DIE(!_cursors.empty(), "Cursors array is empty!!");
     current_cursor = &_cursors[static_cast<std::size_t>(id)];
+}
+
+bool Game::IsDebugging() const noexcept {
+    return _debug_render;
 }
 
 void Game::HandlePlayerInput() {

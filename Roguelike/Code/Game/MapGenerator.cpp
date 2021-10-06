@@ -135,9 +135,9 @@ void XmlMapGenerator::Generate() {
     DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "layers", "");
     LoadLayersFromXml(_xml_element);
     _map->GetPathfinder()->Initialize(IntVector2{_map->CalcMaxDimensions()});
-    LoadFeatures(_map->_root_xml_element);
-    LoadActors(_map->_root_xml_element);
-    LoadItems(_map->_root_xml_element);
+    LoadFeatures(*_map->_root_xml_element);
+    LoadActors(*_map->_root_xml_element);
+    LoadItems(*_map->_root_xml_element);
 }
 
 void XmlMapGenerator::LoadLayersFromXml(const XMLElement& elem) {
@@ -469,9 +469,9 @@ void RoomsOnlyMapGenerator::Generate() {
     }
     FillRoomsWithFloorTiles();
     _map->GetPathfinder()->Initialize(IntVector2{_map->CalcMaxDimensions()});
-    LoadFeatures(_map->_root_xml_element);
-    LoadActors(_map->_root_xml_element);
-    LoadItems(_map->_root_xml_element);
+    LoadFeatures(*_map->_root_xml_element);
+    LoadActors(*_map->_root_xml_element);
+    LoadItems(*_map->_root_xml_element);
     PlaceActors();
     PlaceFeatures();
     PlaceItems();
@@ -489,9 +489,9 @@ void RoomsAndCorridorsMapGenerator::Generate() {
         GenerateCorridors();
         _map->GetPathfinder()->Initialize(IntVector2{_map->CalcMaxDimensions()});
     } while(!GenerateExitAndEntrance());
-    LoadFeatures(_map->_root_xml_element);
-    LoadActors(_map->_root_xml_element);
-    LoadItems(_map->_root_xml_element);
+    LoadFeatures(*_map->_root_xml_element);
+    LoadActors(*_map->_root_xml_element);
+    LoadItems(*_map->_root_xml_element);
     PlaceActors();
     PlaceFeatures();
     PlaceItems();
