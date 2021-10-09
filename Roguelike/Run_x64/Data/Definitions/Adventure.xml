@@ -1,6 +1,0 @@
-<adventure name="Test">
-    <maps>
-        <map src="Data/Definitions/Map00.xml" />
-        <map src="Data/Definitions/Map01.xml" />
-    </maps>
-</adventure>

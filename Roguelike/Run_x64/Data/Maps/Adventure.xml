@@ -1,0 +1,6 @@
+<adventure name="Test">
+    <maps>
+        <map src="Data/Maps/Map00.xml" />
+        <map src="Data/Maps/Map01.xml" />
+    </maps>
+</adventure>

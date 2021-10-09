@@ -286,13 +286,13 @@
     <Xml Include="..\..\Run_x64\Data\Definitions\UI.xml">
       <Filter>Data\Definitions</Filter>
     </Xml>
-    <Xml Include="..\..\Run_x64\Data\Definitions\Map01.xml">
+    <Xml Include="..\..\Run_x64\Data\Maps\Adventure.xml">
       <Filter>Data\Maps</Filter>
     </Xml>
-    <Xml Include="..\..\Run_x64\Data\Definitions\Map00.xml">
+    <Xml Include="..\..\Run_x64\Data\Maps\Map00.xml">
       <Filter>Data\Maps</Filter>
     </Xml>
-    <Xml Include="..\..\Run_x64\Data\Definitions\Adventure.xml">
+    <Xml Include="..\..\Run_x64\Data\Maps\Map01.xml">
       <Filter>Data\Maps</Filter>
     </Xml>
   </ItemGroup>
