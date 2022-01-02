@@ -29,27 +29,27 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugProfile|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FinalBuild|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
     <VcpkgConfiguration>Release</VcpkgConfiguration>
@@ -61,27 +61,27 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.Default.props" />
-    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.Debug.Default.props" />
-    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Game.Abrams2019.Default.props" />
+    <Import Project="..\..\..\..\Abrams2022\Engine\Code\Engine\Abrams2022.Default.props" />
+    <Import Project="..\..\..\..\Abrams2022\Engine\Code\Engine\Abrams2022.Debug.Default.props" />
+    <Import Project="..\..\..\..\Abrams2022\Engine\Code\Engine\Game.Abrams2022.Default.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.Default.props" />
-    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.Release.Default.props" />
-    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Game.Abrams2019.Default.props" />
+    <Import Project="..\..\..\..\Abrams2022\Engine\Code\Engine\Abrams2022.Default.props" />
+    <Import Project="..\..\..\..\Abrams2022\Engine\Code\Engine\Abrams2022.Release.Default.props" />
+    <Import Project="..\..\..\..\Abrams2022\Engine\Code\Engine\Game.Abrams2022.Default.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugProfile|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.Default.props" />
-    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.DebugProfile.Default.props" />
-    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Game.Abrams2019.Default.props" />
+    <Import Project="..\..\..\..\Abrams2022\Engine\Code\Engine\Abrams2022.Default.props" />
+    <Import Project="..\..\..\..\Abrams2022\Engine\Code\Engine\Abrams2022.DebugProfile.Default.props" />
+    <Import Project="..\..\..\..\Abrams2022\Engine\Code\Engine\Game.Abrams2022.Default.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='FinalBuild|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.Default.props" />
-    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Abrams2019.FinalBuild.Default.props" />
-    <Import Project="..\..\..\..\Abrams2019\Engine\Code\Engine\Game.Abrams2019.Default.props" />
+    <Import Project="..\..\..\..\Abrams2022\Engine\Code\Engine\Abrams2022.Default.props" />
+    <Import Project="..\..\..\..\Abrams2022\Engine\Code\Engine\Abrams2022.FinalBuild.Default.props" />
+    <Import Project="..\..\..\..\Abrams2022\Engine\Code\Engine\Game.Abrams2022.Default.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -270,11 +270,6 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Abrams2019\Engine\Code\Engine\Engine.vcxproj">
-      <Project>{acbda225-83de-4fba-a746-0135429fb391}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Image Include="..\..\Run_x64\Data\Fonts\TrebuchetMS32_0.png" />
     <Image Include="..\..\Run_x64\Data\Images\heightmap.png" />
     <Image Include="..\..\Run_x64\Data\Images\Tileset.png" />
@@ -282,6 +277,11 @@
   <ItemGroup>
     <Media Include="..\..\Run_x64\Data\Audio\Crit.wav" />
     <Media Include="..\..\Run_x64\Data\Audio\Hit.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Abrams2022\Engine\Code\Engine\Engine.vcxproj">
+      <Project>{acbda225-83de-4fba-a746-0135429fb391}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
