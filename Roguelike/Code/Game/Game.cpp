@@ -637,7 +637,7 @@ void Game::LoadUI() {
 
 void Game::LoadMaps() {
     //auto str_path = std::string{"Data/Definitions/Map01.xml"};
-    auto str_path = std::string{"Data/Definitions/Adventure.xml"};
+    auto str_path = std::string{"Data/Maps/Adventure.xml"};
     if(FileUtils::IsSafeReadPath(str_path)) {
         if(auto str_buffer = FileUtils::ReadStringBufferFromFile(str_path)) {
             tinyxml2::XMLDocument xml_doc;
