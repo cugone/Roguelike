@@ -306,17 +306,16 @@ void Game::Update_Title(TimeUtils::FPSeconds /*deltaSeconds*/) {
         }
         return keys;
     }();
-    const auto GetSelectedMenuId = [&]()-> uint8_t {
+    const auto GetSelectedMenuId = [&]()-> void {
         if(up) {
-            _menu_id = (std::max)(--_menu_id, MenuId_Start);
+            _menu_id = (std::min)(--_menu_id, MenuId_Start);
         } else if(down) {
-            _menu_id = (std::min)(++_menu_id, uint8_t{MenuId_Exit + 1});
+            _menu_id = (std::min)(++_menu_id, MenuId_Exit);
         }
-        return _menu_id;
     };
     GetSelectedMenuId();
     if(select) {
-        switch(GetSelectedMenuId()) {
+        switch(_menu_id) {
         case MenuId_Start:
         {
             ChangeGameState(GameState::Loading);
