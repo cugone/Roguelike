@@ -469,17 +469,6 @@ void Game::Render_Main() const {
     }
 #endif
 
-    g_theRenderer->BeginRenderToBackbuffer(Rgba::NoAlpha);
-    g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("Fullscreen"));
-    g_theRenderer->SetConstantBuffer(3, _fullscreen_cb.get());
-    std::vector<Vertex3D> vbo =
-    {
-        Vertex3D{Vector3::Zero}
-        ,Vertex3D{Vector3{3.0f, 0.0f, 0.0f}}
-        ,Vertex3D{Vector3{0.0f, 3.0f, 0.0f}}
-    };
-    g_theRenderer->Draw(PrimitiveType::Triangles, vbo, 3);
-
     auto& app = ServiceLocator::get<IAppService>();
     if(app.LostFocus()) {
         g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
