@@ -7,6 +7,7 @@
 #include "Engine/Game/GameSettings.hpp"
 
 #include "Engine/Renderer/Camera2D.hpp"
+#include "Engine/Renderer/FrameBuffer.hpp"
 
 #include "Engine/UI/UICanvas.hpp"
 #include "Engine/UI/UILabel.hpp"
@@ -292,6 +293,7 @@ private:
     std::condition_variable _loading_signal{};
     std::filesystem::path m_requested_map_to_load{};
     std::unique_ptr<MapEditor> _editor{};
+    std::shared_ptr<FrameBuffer> _fullscreen_framebuffer{};
     uint8_t _menu_id{ 0u };
     uint8_t _player_requested_wait : 1;
     uint8_t _done_loading : 1;
