@@ -914,7 +914,11 @@ void Game::SetCurrentCursorById(CursorId id) noexcept {
 }
 
 bool Game::IsDebugging() const noexcept {
+#ifdef DEBUG_BUILD
     return _debug_render;
+#else
+    return false;
+#endif
 }
 
 void Game::HandlePlayerInput() {
