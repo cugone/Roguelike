@@ -926,7 +926,7 @@ bool Game::IsDebugging() const noexcept {
 
 void Game::HandlePlayerInput() {
     HandlePlayerKeyboardInput();
-    //HandlePlayerControllerInput();
+    HandlePlayerControllerInput();
     HandlePlayerMouseInput();
 }
 
