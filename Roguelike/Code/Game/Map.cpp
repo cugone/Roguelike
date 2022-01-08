@@ -134,6 +134,21 @@ void Map::SetGlobalLightFromSkyColor() noexcept {
     }
 }
 
+void Map::SetSkyColorFromGlobalLight() noexcept {
+    _current_sky_color = MathUtils::Interpolate(GetSkyColorForDay(), GetSkyColorForNight(), 1.0f - (static_cast<float>(_current_global_light) / static_cast<float>(max_light_value)));
+}
+
+void Map::DebugDisableLighting([[maybe_unused]] bool disableLighting) noexcept {
+    _allow_lighting_calculations_during_day = disableLighting;
+    SetDebugGlobalLight(max_light_value);
+    SetSkyColorFromGlobalLight();
+    for (auto& layer : _layers) {
+        InitializeLighting(layer.get());
+    }
+    CalculateLightingForLayers(TimeUtils::FPSeconds{ 0.0f });
+    UpdateLighting(TimeUtils::FPSeconds{ 0.0f });
+}
+
 Rgba Map::SkyColor() const noexcept {
     return _current_sky_color;
 }
@@ -219,6 +234,14 @@ void Map::ZoomIn() noexcept {
 void Map::SetDebugGridColor(const Rgba& gridColor) {
     auto* layer = GetLayer(0);
     layer->debug_grid_color = gridColor;
+}
+
+void Map::SetDebugGlobalLight(uint32_t lightValue) {
+    _current_global_light = lightValue;
+}
+
+int Map::GetCurrentGlobalLightValue() const noexcept {
+    return _current_global_light;
 }
 
 void Map::KillEntity(Entity& e) {

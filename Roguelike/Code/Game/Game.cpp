@@ -1358,6 +1358,22 @@ void Game::ShowWorldInspectorUI() {
         ImGui::Checkbox("Show raycasts", &show_raycasts);
         _debug_show_raycasts = show_raycasts;
         _debug_render = _debug_show_room_bounds || _debug_show_camera || _debug_show_grid || _debug_show_world_bounds || _debug_show_camera_bounds || _debug_show_all_entities || _debug_show_raycasts;
+        static int light_level = this->_adventure->currentMap->GetCurrentGlobalLightValue();
+        if (ImGui::SliderInt("Global Light", &light_level, min_light_value, max_light_value, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat)) {
+            if (_adventure->currentMap->AllowLightingDuringDay()) {
+                if (auto* m = this->_adventure->currentMap) {
+                    m->SetDebugGlobalLight(light_level);
+                    m->SetSkyColorFromGlobalLight();
+                }
+            }
+        }
+        static bool always_daytime = true;
+        if (ImGui::Checkbox("Disable lighting", &always_daytime)) {
+            if (auto* m = this->_adventure->currentMap) {
+                m->DebugDisableLighting(!always_daytime);
+            }
+            
+        }
         ImGui::EndTabItem();
     }
 }

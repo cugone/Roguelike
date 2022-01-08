@@ -159,6 +159,8 @@ public:
         return results;
     }
 
+    void DebugDisableLighting(bool disableLighting) noexcept;
+
     Rgba SkyColor() const noexcept;
     void SetSkyColorToDay() noexcept;
     void SetSkyColorToNight() noexcept;
@@ -311,7 +313,7 @@ public:
     bool MoveOrAttack(Actor* actor, Tile* tile);
 
     void SetDebugGridColor(const Rgba& gridColor);
-    void SetDebugGlobalLight(int lightValue);
+    void SetDebugGlobalLight(uint32_t lightValue);
     int GetCurrentGlobalLightValue() const noexcept;
 
     OrthographicCameraController cameraController{};
