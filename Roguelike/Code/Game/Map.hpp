@@ -149,8 +149,9 @@ public:
         std::vector<Tile*> results;
         for(auto& tile : *layer0) {
             const auto& end_coords = tile.GetCoords();
-            const bool pLessD = std::invoke(std::forward<Pr>(predicate), start_coords, end_coords) < distance;
-            const bool dLessP = distance < std::invoke(std::forward<Pr>(predicate), start_coords, end_coords);
+            const auto predicateResult = std::invoke(std::forward<Pr>(predicate), start_coords, end_coords);
+            const bool pLessD = predicateResult < distance;
+            const bool dLessP = distance < predicateResult;
             if(!pLessD && !dLessP) {
                 results.push_back(&tile);
             }
