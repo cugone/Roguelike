@@ -23,7 +23,41 @@ void MapEditor::BeginFrame_Editor() noexcept {
 }
 
 void MapEditor::Update_Editor([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept {
-    if(ImGui::Begin("Map Editor")) {
+    ShowMainMenu(deltaSeconds);
+    ShowViewport(deltaSeconds);
+    ShowProperties(deltaSeconds);
+}
+
+void MapEditor::ShowMainMenu([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept {
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("New...", "Ctrl+N")) {
+
+            }
+            if (ImGui::MenuItem("Open...", "Ctrl+O")) {
+
+            }
+            if (ImGui::MenuItem("Save", "Ctrl+S")) {
+
+            }
+            if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) {
+
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+}
+
+void MapEditor::ShowViewport([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept {
+    const auto size = ImGui::GetContentRegionAvail();
+    ImGui::Begin("Viewport");
+    ImGui::Image(m_viewport_fb->GetTexture(), size, Vector2{}, Vector2{}, Rgba::White, Rgba::NavyBlue);
+    ImGui::End();
+}
+
+void MapEditor::ShowProperties([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept {
+    if(ImGui::Begin("Properties", nullptr)) {
         ImGui::End();
     }
 }
