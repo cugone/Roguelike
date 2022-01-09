@@ -378,47 +378,75 @@ void Game::Update_Main(TimeUtils::FPSeconds deltaSeconds) {
 }
 
 void Game::Update_Editor([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) {
-    if(ImGui::Begin("Map Setup")) {
-        static std::string mapPath{};
-        ImGui::InputText("##MapFilepath", &mapPath, ImGuiInputTextFlags_AutoSelectAll);
-        ImGui::SameLine();
-        auto selected_idx = 0;
-        std::vector<std::filesystem::path> paths{};
-        if(ImGui::Button("...##btnMapSetupOFD")) {
-            if(ImGui::Begin("Open Map")) {
-                const auto initialPath = FileUtils::GetKnownFolderPath(FileUtils::KnownPathID::GameData) / std::filesystem::path{"Definitions"};
-                paths = FileUtils::GetAllPathsInFolders(initialPath, ".xml", true);
-                const auto item_count = paths.empty() ? std::size_t{1u} : paths.size();
-                if(ImGui::BeginListBox("##lstFilepathOFD")) {
-                    for(int n = 0; n < item_count; n++) {
-                        const bool is_selected = (selected_idx == n);
-                        if(ImGui::Selectable(paths[n].string().c_str(), is_selected)) {
-                            selected_idx = n;
-                        }
+    static bool showNew = false;
+    if(ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("New...", "Ctrl+N")) {
+                showNew = true;
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Exit")) {
+                ChangeGameState(GameState::Title);
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+    if (showNew) {
+        if (ImGui::Begin("Map Setup")) {
+            static std::string mapPath{};
+            ImGui::InputText("##MapFilepath", &mapPath, ImGuiInputTextFlags_AutoSelectAll);
+            ImGui::SameLine();
+            auto selected_idx = 0;
+            std::vector<std::filesystem::path> paths{};
+            static bool showListBox = false;
+            static bool showOFD = false;
+            if (ImGui::Button("...##btnMapSetupOFD")) {
+                showOFD = true;
+            }
+            if (showOFD) {
+                if (ImGui::Begin("Open Map")) {
+                    const auto initialPath = FileUtils::GetKnownFolderPath(FileUtils::KnownPathID::GameData) / std::filesystem::path{ "Maps" };
+                    paths = FileUtils::GetAllPathsInFolders(initialPath, ".xml", true);
+                    const auto item_count = paths.empty() ? std::size_t{ 1u } : paths.size();
+                    if (ImGui::BeginListBox("##lstFilepathOFD")) {
+                        for (int n = 0; n < item_count; n++) {
+                            const bool is_selected = (selected_idx == n);
+                            if (ImGui::Selectable(paths[n].string().c_str(), is_selected)) {
+                                selected_idx = n;
+                            }
 
-                        // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-                        if(is_selected) {
-                            ImGui::SetItemDefaultFocus();
+                            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                            if (is_selected) {
+                                ImGui::SetItemDefaultFocus();
+                            }
                         }
+                        ImGui::EndListBox();
                     }
-                    ImGui::EndListBox();
+                    if (ImGui::Button("OK##OFD")) {
+                        mapPath = paths[selected_idx].string();
+                        showOFD = false;
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Cancel##OFD")) {
+                        showOFD = false;
+                    }
                 }
                 ImGui::End();
-
             }
+            if (ImGui::Button("OK##OMD")) {
+                m_requested_map_to_load = std::filesystem::path{ mapPath };
+                LoadUI();
+                LoadItems();
+                LoadEntities();
+                ChangeGameState(GameState::Editor_Main);
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel##OMD")) {
+                showNew = false;
+            }
+            ImGui::End();
         }
-        if(ImGui::Button("OK")) {
-            m_requested_map_to_load = std::filesystem::path{mapPath};
-            LoadUI();
-            LoadItems();
-            LoadEntities();
-            ChangeGameState(GameState::Editor_Main);
-        }
-        ImGui::SameLine();
-        if(ImGui::Button("Cancel")) {
-            ChangeGameState(GameState::Title);
-        }
-        ImGui::End();
     }
 }
 
