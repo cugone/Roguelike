@@ -11,6 +11,8 @@
 #include "Engine/Math/Vector2.hpp"
 #include "Engine/Math/Vector4.hpp"
 
+#include "Engine/Platform/PlatformUtils.hpp"
+
 #include "Engine/Renderer/AnimatedSprite.hpp"
 #include "Engine/Renderer/ConstantBuffer.hpp"
 #include "Engine/Renderer/Renderer.hpp"
@@ -379,11 +381,23 @@ void Game::Update_Main(TimeUtils::FPSeconds deltaSeconds) {
 
 void Game::Update_Editor([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) {
     static bool showNew = false;
+    static std::string mapPath{};
     if(ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("New...", "Ctrl+N")) {
                 showNew = true;
             }
+            if(ImGui::MenuItem("Open...", "Ctrl+O")) {
+                if (const auto ofdResult = FileDialogs::OpenFile("Map file (*.xml)\0*.xml\0\0"); !ofdResult.empty()) {
+                    mapPath = ofdResult;
+                    m_requested_map_to_load = std::filesystem::path{ mapPath };
+                    LoadUI();
+                    LoadItems();
+                    LoadEntities();
+                    ChangeGameState(GameState::Editor_Main);
+                }
+            }
+            ImGui::Separator();
             ImGui::Separator();
             if (ImGui::MenuItem("Exit")) {
                 ChangeGameState(GameState::Title);
