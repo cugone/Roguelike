@@ -10,6 +10,10 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/UI/UISystem.hpp"
 
+constexpr uint8_t min_map_width = 3;
+constexpr uint8_t min_map_height = 3;
+constexpr uint8_t max_map_width = 3;
+constexpr uint8_t max_map_height = 3;
 constexpr int min_light_value = 0;
 constexpr int day_light_value = 15;
 constexpr int night_light_value = 3;
