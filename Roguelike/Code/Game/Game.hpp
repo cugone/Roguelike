@@ -319,5 +319,6 @@ private:
     friend class Map;
     friend class Layer;
     friend class Tile;
+    friend class MapEditor;
 };
 
