@@ -26,6 +26,9 @@ private:
 
     Map m_editorMap;
     std::shared_ptr<FrameBuffer> m_viewport_fb{};
+    uint32_t m_ViewportWidth{1600u};
+    uint32_t m_ViewportHeight{900u};
     OrthographicCameraController m_cameraController;
+    bool m_hasUnsavedChanges{ false };
     mutable Camera2D m_uiCamera;
 };

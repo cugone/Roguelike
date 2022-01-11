@@ -15,7 +15,7 @@
 MapEditor::MapEditor(const std::filesystem::path& mapPath) noexcept
     : m_editorMap{mapPath}
 {
-
+    m_viewport_fb = FrameBuffer::Create(FrameBufferDesc{});
 }
 
 void MapEditor::BeginFrame_Editor() noexcept {
@@ -55,9 +55,14 @@ void MapEditor::ShowMainMenu([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds)
 }
 
 void MapEditor::ShowViewport([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept {
-    const auto size = ImGui::GetContentRegionAvail();
     ImGui::Begin("Viewport");
-    ImGui::Image(m_viewport_fb->GetTexture(), size, Vector2{}, Vector2{}, Rgba::White, Rgba::NavyBlue);
+    const auto viewportSize = ImGui::GetContentRegionAvail();
+    if (viewportSize.x != m_ViewportWidth || viewportSize.y != m_ViewportHeight) {
+        m_ViewportWidth = static_cast<uint32_t>(std::floor(viewportSize.x));
+        m_ViewportHeight = static_cast<uint32_t>(std::floor(viewportSize.y));
+        m_viewport_fb->Resize(m_ViewportWidth, m_ViewportHeight);
+    }
+    ImGui::Image(m_viewport_fb->GetTexture(), viewportSize, Vector2::Zero, Vector2::One, Rgba::White, Rgba::NavyBlue);
     ImGui::End();
 }
 
