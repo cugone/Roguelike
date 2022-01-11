@@ -410,46 +410,10 @@ void Game::Update_Editor([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) {
     }
     if (showNew) {
         if (ImGui::Begin("Map Setup")) {
-            static std::string mapPath{};
-            ImGui::InputText("##MapFilepath", &mapPath, ImGuiInputTextFlags_AutoSelectAll);
-            ImGui::SameLine();
-            auto selected_idx = 0;
-            std::vector<std::filesystem::path> paths{};
-            static bool showListBox = false;
-            static bool showOFD = false;
-            if (ImGui::Button("...##btnMapSetupOFD")) {
-                showOFD = true;
-            }
-            if (showOFD) {
-                if (ImGui::Begin("Open Map")) {
-                    const auto initialPath = FileUtils::GetKnownFolderPath(FileUtils::KnownPathID::GameData) / std::filesystem::path{ "Maps" };
-                    paths = FileUtils::GetAllPathsInFolders(initialPath, ".xml", true);
-                    const auto item_count = paths.empty() ? std::size_t{ 1u } : paths.size();
-                    if (ImGui::BeginListBox("##lstFilepathOFD")) {
-                        for (int n = 0; n < item_count; n++) {
-                            const bool is_selected = (selected_idx == n);
-                            if (ImGui::Selectable(paths[n].string().c_str(), is_selected)) {
-                                selected_idx = n;
-                            }
-
-                            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-                            if (is_selected) {
-                                ImGui::SetItemDefaultFocus();
-                            }
-                        }
-                        ImGui::EndListBox();
-                    }
-                    if (ImGui::Button("OK##OFD")) {
-                        mapPath = paths[selected_idx].string();
-                        showOFD = false;
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("Cancel##OFD")) {
-                        showOFD = false;
-                    }
-                }
-                ImGui::End();
-            }
+            static int newWidth = min_map_width;
+            static int newHeight = min_map_height;
+            ImGui::SliderInt("Width", &newWidth, min_map_width, max_map_width, "%d", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::SliderInt("Height", &newHeight, min_map_width, max_map_width, "%d", ImGuiSliderFlags_AlwaysClamp);
             if (ImGui::Button("OK##OMD")) {
                 m_requested_map_to_load = std::filesystem::path{ mapPath };
                 LoadUI();
