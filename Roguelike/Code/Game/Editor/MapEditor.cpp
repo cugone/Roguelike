@@ -74,7 +74,11 @@ void MapEditor::ShowProperties([[maybe_unused]] TimeUtils::FPSeconds deltaSecond
 
 void MapEditor::Render_Editor() const noexcept {
     auto& renderer = ServiceLocator::get<IRendererService>();
-    renderer.BeginRenderToBackbuffer();
+
+    renderer.BeginRender(m_viewport_fb->GetTexture(), Rgba::Black, m_viewport_fb->GetDepthStencil());
+
+    renderer.SetOrthoProjectionFromCamera(Camera3D{ m_editorCamera.GetCamera() });
+    renderer.SetCamera(m_editorCamera.GetCamera());
 
     m_editorMap.Render();
 
@@ -84,6 +88,8 @@ void MapEditor::Render_Editor() const noexcept {
         m_editorMap.DebugRender();
     }
 #endif
+
+    renderer.BeginRenderToBackbuffer();
 
     auto& app = ServiceLocator::get<IAppService>();
     if(app.LostFocus()) {
