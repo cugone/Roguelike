@@ -37,12 +37,14 @@ void MapEditor::ShowMainMenu([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds)
             if (ImGui::MenuItem("Open...", "Ctrl+O")) {
 
             }
+            ImGui::Separator();
             if (ImGui::MenuItem("Save", "Ctrl+S")) {
 
             }
             if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) {
 
             }
+            ImGui::Separator();
             if (ImGui::MenuItem("Exit", "")) {
                 GetGameAs<Game>()->ChangeGameState(GameState::Editor);
             }
