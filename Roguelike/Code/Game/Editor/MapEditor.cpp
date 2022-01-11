@@ -19,7 +19,7 @@ MapEditor::MapEditor(const std::filesystem::path& mapPath) noexcept
 }
 
 void MapEditor::BeginFrame_Editor() noexcept {
-
+    ImGui::DockSpaceOverViewport();
 }
 
 void MapEditor::Update_Editor([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept {
