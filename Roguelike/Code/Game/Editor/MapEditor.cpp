@@ -23,6 +23,7 @@ void MapEditor::BeginFrame_Editor() noexcept {
 }
 
 void MapEditor::Update_Editor([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept {
+    m_editorMap.Update(deltaSeconds);
     ShowMainMenu(deltaSeconds);
     ShowViewport(deltaSeconds);
     ShowProperties(deltaSeconds);
