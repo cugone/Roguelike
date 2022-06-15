@@ -641,17 +641,17 @@ void Game::LoadUI() {
     LoadCursorsFromFile("Data/Definitions/UI.xml");
 }
 
-void Game::LoadMaps() {
-    //auto str_path = std::string{"Data/Definitions/Map01.xml"};
-    auto str_path = std::string{"Data/Maps/Adventure.xml"};
-    if(FileUtils::IsSafeReadPath(str_path)) {
-        if(auto str_buffer = FileUtils::ReadStringBufferFromFile(str_path)) {
-            tinyxml2::XMLDocument xml_doc;
-            if(auto parse_result = xml_doc.Parse(str_buffer->c_str(), str_buffer->size()); parse_result == tinyxml2::XML_SUCCESS) {
-                _adventure = std::move(std::make_unique<Adventure>(*xml_doc.RootElement()));
-            }
+void Game::LoadAdventureFromFile(const std::filesystem::path& src) {
+    ThrowIfSourceFileNotFound(src);
+    if(FileUtils::IsSafeReadPath(src)) {
+        if(tinyxml2::XMLDocument doc{}; auto* xml_root = ThrowIfSourceFileNotLoaded(doc, src)) {
+            _adventure = std::move(std::make_unique<Adventure>(*xml_root));
         }
     }
+}
+
+void Game::LoadMaps() {
+    LoadAdventureFromFile(std::filesystem::path{"Data/Maps/Adventure.xml"});
 }
 
 void Game::LoadEntities() {
@@ -664,6 +664,7 @@ void Game::LoadItems() {
 
 void Game::LoadCursorsFromFile(const std::filesystem::path& src) {
     LoadCursorDefinitionsFromFile(src);
+    _cursors.clear();
     for(const auto& c : CursorDefinition::GetLoadedDefinitions()) {
         _cursors.emplace_back(*c);
     }
@@ -674,6 +675,8 @@ void Game::LoadCursorDefinitionsFromFile(const std::filesystem::path& src) {
     ThrowIfSourceFileNotFound(src);
     if(tinyxml2::XMLDocument doc{}; auto* xml_root = ThrowIfSourceFileNotLoaded(doc, src)) {
         DataUtils::ValidateXmlElement(*xml_root, "UI", "spritesheet", "", "cursors,overlays");
+        _cursor_sheet.reset();
+        CursorDefinition::DestroyCursorDefinitions();
         auto* xml_spritesheet = xml_root->FirstChildElement("spritesheet");
         _cursor_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet);
         if(auto* xml_cursors = xml_root->FirstChildElement("cursors")) {
@@ -719,8 +722,10 @@ void Game::LoadEntityDefinitionsFromFile(const std::filesystem::path& src) {
     ThrowIfSourceFileNotFound(src);
     if(tinyxml2::XMLDocument doc{}; auto* xml_root = ThrowIfSourceFileNotLoaded(doc, src)) {
         DataUtils::ValidateXmlElement(*xml_root, "entityDefinitions", "spritesheet,entityDefinition", "");
+        _entity_sheet.reset();
         auto* xml_spritesheet = xml_root->FirstChildElement("spritesheet");
         _entity_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet);
+        EntityDefinition::ClearEntityRegistry();
         DataUtils::ForEachChildElement(*xml_root, "entityDefinition",
             [this](const XMLElement& elem) {
                 EntityDefinition::CreateEntityDefinition(elem, _entity_sheet);
@@ -734,6 +739,8 @@ void Game::LoadItemsFromFile(const std::filesystem::path& src) {
     tinyxml2::XMLDocument doc{};
     if(auto* xml_root = ThrowIfSourceFileNotLoaded(doc, src)) {
         DataUtils::ValidateXmlElement(*xml_root, "items", "spritesheet,item", "");
+        _item_sheet.reset();
+        Item::ClearItemRegistry();
         auto* xml_item_sheet = xml_root->FirstChildElement("spritesheet");
         _item_sheet = g_theRenderer->CreateSpriteSheet(*xml_item_sheet);
         DataUtils::ForEachChildElement(*xml_root, "item", [this](const XMLElement& elem) {

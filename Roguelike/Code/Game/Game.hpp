@@ -226,6 +226,7 @@ private:
     const bool IsDebugWindowOpen() const noexcept;
 
     void LoadUI();
+    void LoadAdventureFromFile(const std::filesystem::path& src);
     void LoadMaps();
     void LoadEntities();
     void LoadItems();
