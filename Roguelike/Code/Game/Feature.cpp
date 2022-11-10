@@ -14,8 +14,14 @@ std::map<std::string, std::unique_ptr<Feature>> Feature::s_registry{};
 Feature* Feature::CreateFeature(Map* map, const XMLElement& elem) {
     auto new_feature = std::make_unique<Feature>(map, elem);
     std::string new_feature_name = new_feature->name;
-    if(auto&& [where, inserted] = s_registry.try_emplace(new_feature_name, std::move(new_feature)); inserted) {
-        return where->second.get();
+    if(const auto where_inserted = s_registry.try_emplace(new_feature_name, std::move(new_feature)); where_inserted.second) {
+        if(const auto found = s_registry.find(new_feature_name); found != std::end(s_registry)) {
+            return found->second.get();
+        }
+    } else {
+        if(const auto found = s_registry.find(new_feature_name); found != std::end(s_registry)) {
+            return found->second.get();
+        }
     }
     return nullptr;
 }
