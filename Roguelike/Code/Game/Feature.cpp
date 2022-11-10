@@ -8,9 +8,6 @@
 
 #include <sstream>
 
-std::map<std::string, std::unique_ptr<Feature>> Feature::s_registry{};
-
-
 Feature* Feature::CreateFeature(Map* map, const XMLElement& elem) {
     auto new_feature = std::make_unique<Feature>(map, elem);
     std::string new_feature_name = new_feature->name;
