@@ -78,11 +78,10 @@ void Entity::LoadFromXml(const XMLElement& elem) {
 }
 
 std::string Entity::ParseEntityDefinitionName(const XMLElement& xml_definition) const {
-    return StringUtils::Join(std::vector<std::string>{
+    return std::format("{}.{}.{}",
         DataUtils::ParseXmlAttribute(xml_definition, "species", std::string{})
-            , DataUtils::ParseXmlAttribute(xml_definition, "subspecies", std::string{})
-            , DataUtils::ParseXmlAttribute(xml_definition, "sex", std::string{})
-    }, '.', false);
+        , DataUtils::ParseXmlAttribute(xml_definition, "subspecies", std::string{})
+        , DataUtils::ParseXmlAttribute(xml_definition, "sex", std::string{}));
 }
 
 void Entity::AddVertsForCapeEquipment() const noexcept {
