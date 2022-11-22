@@ -5,6 +5,7 @@
 #include "Engine/Renderer/Camera2D.hpp"
 #include "Engine/Renderer/FrameBuffer.hpp"
 
+#include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
 
 class MapEditor {

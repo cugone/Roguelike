@@ -74,12 +74,12 @@ void MapEditor::ShowProperties([[maybe_unused]] TimeUtils::FPSeconds deltaSecond
 }
 
 void MapEditor::Render_Editor() const noexcept {
-    auto& renderer = ServiceLocator::get<IRendererService>();
+    auto* renderer = ServiceLocator::get<IRendererService>();
 
-    renderer.BeginRender(m_viewport_fb->GetTexture(), Rgba::Black, m_viewport_fb->GetDepthStencil());
+    renderer->BeginRender(m_viewport_fb->GetTexture(), Rgba::Black, m_viewport_fb->GetDepthStencil());
 
-    renderer.SetOrthoProjectionFromCamera(Camera3D{ m_editorCamera.GetCamera() });
-    renderer.SetCamera(m_editorCamera.GetCamera());
+    renderer->SetOrthoProjectionFromCamera(Camera3D{ m_editorCamera.GetCamera() });
+    renderer->SetCamera(m_editorCamera.GetCamera());
 
     m_editorMap.Render();
 
@@ -90,21 +90,21 @@ void MapEditor::Render_Editor() const noexcept {
     }
 #endif
 
-    renderer.BeginRenderToBackbuffer();
+    renderer->BeginRenderToBackbuffer();
 
-    auto& app = ServiceLocator::get<IAppService>();
-    if(app.LostFocus()) {
-        renderer.SetMaterial(g_theRenderer->GetMaterial("__2D"));
-        renderer.DrawQuad2D(Vector2::Zero, Vector2::One, Rgba(0, 0, 0, 128));
+    auto* app = ServiceLocator::get<IAppService>();
+    if(app->LostFocus()) {
+        renderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+        renderer->DrawQuad2D(Vector2::Zero, Vector2::One, Rgba(0, 0, 0, 128));
     }
 
-    renderer.BeginHUDRender(m_uiCamera, Vector2::Zero, static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight()));
+    renderer->BeginHUDRender(m_uiCamera, Vector2::Zero, static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight()));
 
-    if(app.LostFocus()) {
+    if(app->LostFocus()) {
         const auto w = static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowWidth());
         const auto h = static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight());
-        renderer.DrawQuad2D(Matrix4::CreateScaleMatrix(Vector2{w, h}), Rgba{0.0f, 0.0f, 0.0f, 0.5f});
-        renderer.DrawTextLine(Matrix4::I, renderer.GetFont("System32"), "PAUSED");
+        renderer->DrawQuad2D(Matrix4::CreateScaleMatrix(Vector2{w, h}), Rgba{0.0f, 0.0f, 0.0f, 0.5f});
+        renderer->DrawTextLine(Matrix4::I, renderer->GetFont("System32"), "PAUSED");
     }
 }
 
