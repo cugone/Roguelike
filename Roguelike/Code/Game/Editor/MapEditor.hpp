@@ -2,6 +2,8 @@
 
 #include "Engine/Core/TimeUtils.hpp"
 
+#include "Engine/Math/IntVector2.hpp"
+
 #include "Engine/Renderer/Camera2D.hpp"
 #include "Engine/Renderer/FrameBuffer.hpp"
 
@@ -10,6 +12,8 @@
 
 class MapEditor {
 public:
+    MapEditor() noexcept = default;
+    explicit MapEditor(IntVector2 dimensions = IntVector2{min_map_width, min_map_height}) noexcept;
     explicit MapEditor(const std::filesystem::path& mapPath) noexcept;
     void BeginFrame_Editor() noexcept;
     void Update_Editor(TimeUtils::FPSeconds deltaSeconds) noexcept;

@@ -12,10 +12,18 @@
 
 #include "Thirdparty/Imgui/imgui.h"
 
+MapEditor::MapEditor(IntVector2 dimensions /*= IntVector2{ min_map_width, min_map_height }*/) noexcept
+: m_editorMap{dimensions}
+{
+    m_editorMap.DebugDisableLighting(true);
+    m_editorMap.DebugShowInvisibleTiles(true);
+}
+
 MapEditor::MapEditor(const std::filesystem::path& mapPath) noexcept
     : m_editorMap{mapPath}
 {
-    m_viewport_fb = FrameBuffer::Create(FrameBufferDesc{});
+    m_editorMap.DebugDisableLighting(true);
+
 }
 
 void MapEditor::BeginFrame_Editor() noexcept {
