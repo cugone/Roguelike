@@ -14,15 +14,17 @@ Adventure::Adventure(const XMLElement& elem) noexcept
 {
     GUARANTEE_OR_DIE(LoadFromXml(elem), "Adventure failed to load.");
     _current_map_iter = std::begin(_maps);
-    currentMap = (*_current_map_iter).get();
-    player = currentMap->player;
+    player = _current_map_iter->player;
+}
+
+std::vector<Map>::iterator Adventure::CurrentMap() const noexcept {
+    return _current_map_iter;
 }
 
 void Adventure::NextMap() noexcept {
     if(_current_map_iter != std::end(_maps) - 1) {
         ++_current_map_iter;
-        currentMap = (*_current_map_iter).get();
-        currentMap->player = player;
+        _current_map_iter->player = player;
         PlacePlayerNearEntrance();
     }
 }
@@ -30,15 +32,14 @@ void Adventure::NextMap() noexcept {
 void Adventure::PreviousMap() noexcept {
     if(_current_map_iter != std::begin(_maps)) {
         --_current_map_iter;
-        currentMap = (*_current_map_iter).get();
-        currentMap->player = player;
+        _current_map_iter->player = player;
         PlacePlayerNearExit();
     }
 }
 
 void Adventure::PlacePlayerNearEntrance() noexcept {
     const auto* placement = [this]() -> const Tile* {
-        if(auto* layer = currentMap->player->layer; layer != nullptr) {
+        if(auto* layer = _current_map_iter->player->layer; layer != nullptr) {
             Tile* entrance_tile{nullptr};
             for(auto& tile : (*layer)) {
                 if(tile.IsEntrance()) {
@@ -59,17 +60,17 @@ void Adventure::PlacePlayerNearEntrance() noexcept {
     {
         const auto error_msg = [this]() {
             std::ostringstream ss{};
-            ss << currentMap->_name << " has no valid entrance placement.\n";
+            ss << _current_map_iter->_name << " has no valid entrance placement.\n";
             return ss.str();
         }(); //IIIL
         GUARANTEE_OR_DIE(placement, error_msg.c_str());
     }
-    currentMap->player->SetPosition(placement->GetCoords());
+    _current_map_iter->player->SetPosition(placement->GetCoords());
 }
 
 void Adventure::PlacePlayerNearExit() noexcept {
     const auto* placement = [this]() -> const Tile* {
-        if(auto* layer = currentMap->player->layer; layer != nullptr) {
+        if(auto* layer = _current_map_iter->player->layer; layer != nullptr) {
             Tile* exit_tile{nullptr};
             for(auto& tile : (*layer)) {
                 if(tile.IsExit()) {
@@ -90,12 +91,12 @@ void Adventure::PlacePlayerNearExit() noexcept {
     {
         const auto error_msg = [this]() {
             std::ostringstream ss{};
-            ss << currentMap->_name << " has no valid exit placement.\n";
+            ss << _current_map_iter->_name << " has no valid exit placement.\n";
             return ss.str();
         }(); //IIIL
         GUARANTEE_OR_DIE(placement, error_msg.c_str());
     }
-    currentMap->player->SetPosition(placement->GetCoords());
+    _current_map_iter->player->SetPosition(placement->GetCoords());
 }
 
 bool Adventure::LoadFromXml(const XMLElement& elem) noexcept {
@@ -107,17 +108,11 @@ bool Adventure::LoadFromXml(const XMLElement& elem) noexcept {
         DataUtils::ForEachChildElement(*xml_maps, "map", [this, map_count](const XMLElement& xml_map) {
             DataUtils::ValidateXmlElement(xml_map, "map", "", "src");
             const auto map_src = DataUtils::ParseXmlAttribute(xml_map, "src", std::string{});
-            tinyxml2::XMLDocument doc{};
-            if(auto load_result = doc.LoadFile(map_src.c_str()); load_result == tinyxml2::XML_SUCCESS) {
-                auto newMap = std::make_unique<Map>(*doc.RootElement());
-                newMap->SetParentAdventure(this);
-                _maps.emplace_back(std::move(newMap));
-            }
+            _maps.emplace_back(map_src);
+            _maps.back().SetParentAdventure(this);
         });
     } else {
-        std::ostringstream ss{};
-        ss << "Adventure \"" << _name << "\" contains no maps.";
-        DebuggerPrintf(ss.str().c_str());
+        DebuggerPrintf(std::format("Adventure \"{}\" contains no maps.", _name));
         return false;
     }
     return true;

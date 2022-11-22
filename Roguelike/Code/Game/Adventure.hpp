@@ -2,11 +2,12 @@
 
 #include "Engine/Core/DataUtils.hpp"
 
+#include "Game/Map.hpp"
+
 #include <memory>
 #include <vector>
 
 class Actor;
-class Map;
 class Renderer;
 
 class Adventure {
@@ -21,18 +22,19 @@ public:
     explicit Adventure(const XMLElement& elem) noexcept;
 
     Actor* player{};
-    Map* currentMap{};
 
+    std::vector<Map>::iterator CurrentMap() const noexcept;
     void NextMap() noexcept;
     void PreviousMap() noexcept;
 
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem) noexcept;
+
     void PlacePlayerNearEntrance() noexcept;
     void PlacePlayerNearExit() noexcept;
 
     std::string _name{"UNKNOWN ADVENTURE"};
-    std::vector<std::unique_ptr<class Map>> _maps{};
-    decltype(_maps)::iterator _current_map_iter{};
+    std::vector<Map> _maps{};
+    std::vector<Map>::iterator _current_map_iter{};
 };
