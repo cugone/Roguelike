@@ -25,7 +25,7 @@ private:
     void ShowProperties([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept;
 
     Map m_editorMap;
-    std::shared_ptr<FrameBuffer> m_viewport_fb{};
+    std::shared_ptr<FrameBuffer> m_viewport_fb{FrameBuffer::Create(FrameBufferDesc{})};
     uint32_t m_ViewportWidth{1600u};
     uint32_t m_ViewportHeight{900u};
     OrthographicCameraController m_editorCamera{};
