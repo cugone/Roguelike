@@ -23,8 +23,8 @@ Feature* Feature::CreateFeature(Map* map, const XMLElement& elem) {
     return nullptr;
 }
 
-FeatureInstance Feature::CreateInstanceFromFeature(Feature* feature) noexcept {
-    return CreateInstanceFromFeatureAt(feature, IntVector2::Zero);
+FeatureInstance Feature::CreateInstanceFromFeature(const Feature* feature) noexcept {
+    return CreateInstanceFromFeatureAt(feature, feature->GetPosition());
 }
 
 FeatureInstance Feature::CreateInstanceFromFeatureAt(Feature* feature, const IntVector2& position) noexcept {
