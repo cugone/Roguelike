@@ -26,7 +26,7 @@ Entity::Entity(const XMLElement& elem) noexcept
 Entity::Entity(EntityDefinition* definition) noexcept
     : sprite(definition->GetSprite())
     , inventory(definition->inventory)
-    , stats(definition->GetBaseStats())
+    , m_stats(definition->GetBaseStats())
 {
     /* DO NOTHING */
 }
@@ -60,11 +60,11 @@ Stats Entity::GetStatModifiers() const noexcept {
 }
 
 const Stats& Entity::GetBaseStats() const noexcept {
-    return stats;
+    return m_stats;
 }
 
 Stats& Entity::GetBaseStats() noexcept {
-    return stats;
+    return m_stats;
 }
 
 void Entity::LoadFromXml(const XMLElement& elem) {
@@ -74,7 +74,7 @@ void Entity::LoadFromXml(const XMLElement& elem) {
     auto definition_name = ParseEntityDefinitionName(*xml_definition);
     auto* def = EntityDefinition::GetEntityDefinitionByName(definition_name);
     sprite = def->GetSprite();
-    stats = def->GetBaseStats();
+    m_stats = def->GetBaseStats();
 }
 
 std::string Entity::ParseEntityDefinitionName(const XMLElement& xml_definition) const {

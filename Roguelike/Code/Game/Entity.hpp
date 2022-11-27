@@ -99,7 +99,7 @@ private:
     void LoadFromXml(const XMLElement& elem);
     std::string ParseEntityDefinitionName(const XMLElement& xml_definition) const;
 
-    Stats stats{1,1,1};
+    Stats m_stats{1,1,1};
     Stats stat_modifiers{};
 
 };
