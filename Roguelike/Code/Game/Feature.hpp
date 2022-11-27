@@ -65,7 +65,10 @@ public:
     FeatureInstance CreateInstanceAt(const IntVector2& position) const noexcept;
 
 protected:
-    virtual void ResolveAttack(Entity& attacker, Entity& defender) override;
+    void ResolveAttack(Entity& attacker, Entity& defender) override;
+    void ApplyDamage(DamageType type, long amount, bool crit) override;
+    void AttackerMissed() override;
+    void OnDestroyed() override;
 
 private:
     bool LoadFromXml(const XMLElement& elem);

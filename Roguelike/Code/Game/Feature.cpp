@@ -71,6 +71,9 @@ Feature::Feature(Map* map, const XMLElement& elem) noexcept
     this->layer = this->map->GetLayer(0);
     GUARANTEE_OR_DIE(LoadFromXml(elem), "Feature failed to load.");
     OnFight.Subscribe_method(this, &Feature::ResolveAttack);
+    OnDamage.Subscribe_method(this, &Feature::ApplyDamage);
+    OnMiss.Subscribe_method(this, &Feature::AttackerMissed);
+    OnDestroy.Subscribe_method(this, &Feature::OnDestroyed);
 }
 
 //TODO: Refactor for instancing
@@ -163,6 +166,24 @@ void Feature::ResolveAttack(Entity& attacker, Entity& defender) {
             defenderAsFeature->SetState("open");
         }
     }
+}
+
+void Feature::ApplyDamage(DamageType type, long amount, bool crit) {
+    if(type == DamageType::Physical) {
+        auto stats = this->GetStats();
+        if(const auto newHealth = stats.AdjustStat(StatsID::Health, -amount); crit || newHealth <= 0L) {
+            OnDestroy.Trigger();
+        }
+    }
+}
+
+void Feature::AttackerMissed() {
+    /* DO NOTHING */
+}
+
+void Feature::OnDestroyed() {
+    auto info = FeatureInfo{ layer, parent_tile->GetIndexFromCoords() };
+    info.SetState("open");
 }
 
 FeatureInstance Feature::CreateInstance() const noexcept {
