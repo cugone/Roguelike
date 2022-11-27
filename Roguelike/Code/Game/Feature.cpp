@@ -222,13 +222,7 @@ FeatureInstance Feature::CreateInstance() const noexcept {
 }
 
 FeatureInstance Feature::CreateInstanceAt(const IntVector2& position) const noexcept {
-    FeatureInstance inst{};
-    inst.feature = this;
-    inst.layer = layer;
-    inst.index = layer->GetTileIndex(position.x, position.y);
-    //inst.states.push_back();
-    inst.current_state = std::begin(inst.states);
-    return inst;
+    return Feature::CreateInstanceFromFeatureAt(this, position);
 }
 
 void Feature::CalculateLightValue() noexcept {
