@@ -168,8 +168,7 @@ void Actor::ApplyDamage(DamageType type, long amount, bool crit) {
     case DamageType::Physical:
     {
         auto my_total_stats = GetStats();
-        const auto new_health = my_total_stats.AdjustStat(StatsID::Health, -amount);
-        if(new_health <= 0L) {
+        if(const auto new_health = my_total_stats.AdjustStat(StatsID::Health, -amount); new_health <= 0L) {
             OnDestroy.Trigger();
             map->KillEntity(*this);
         }
