@@ -235,10 +235,10 @@ void Feature::CalculateLightValue() noexcept {
 }
 
 Tile* FeatureInstance::GetParentTile() const noexcept {
-    if(layer || feature) {
+    if(!feature) {
         return nullptr;
     }
-    return layer->GetTile(index);
+    return feature->map->GetLayer(layer_index)->GetTile(index);
 }
 
 void FeatureInstance::AddState() noexcept {
