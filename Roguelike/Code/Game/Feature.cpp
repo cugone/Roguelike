@@ -28,10 +28,15 @@ FeatureInstance Feature::CreateInstanceFromFeatureAt(const Feature* feature, con
         const auto tileCount = feature->layer->tileDimensions.x * feature->layer->tileDimensions.y;
         if(const auto index = feature->layer->GetTileIndex(position.x, position.y); index >= tileCount) {
             return {};
+        } else {
+            FeatureInstance inst{};
+            inst.feature = feature;
+            inst.layer_index = feature->layer->z_index;
+            inst.index = index;
+            inst.states = feature->_states;
+            inst.current_state = std::begin(inst.states);
+            return inst;
         }
-        FeatureInstance inst{};
-        inst.feature = feature;
-        inst.layer = feature->layer;
     }
     return {};
 }
