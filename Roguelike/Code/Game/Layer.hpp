@@ -83,6 +83,8 @@ public:
     const Mesh::Builder& GetMeshBuilder() const noexcept;
     Mesh::Builder& GetMeshBuilder() noexcept;
 
+    void DebugShowInvisibleTiles(bool show) noexcept;
+
     void AppendToMesh(const Tile* const tile) noexcept;
     void AppendToMesh(const Entity* const entity) noexcept;
     void AppendToMesh(const Item* const item, const IntVector2& tile_coords) noexcept;
@@ -108,4 +110,5 @@ private:
     Mesh::Builder _mesh_builder{};
     bool meshDirty = true;
     bool meshNeedsRebuild = true;
+    bool m_showInvisibleTiles = false;
 };
