@@ -77,4 +77,21 @@ private:
     std::vector<std::string> _states{};
     decltype(_states)::iterator _current_state{};
     static inline std::map<std::string, std::unique_ptr<Feature>> s_registry = std::map<std::string, std::unique_ptr<Feature>>{};
+
+    friend class FeatureInfo;
+};
+
+class FeatureInfo {
+public:
+    Layer* layer{nullptr};
+    std::size_t index{0u};
+
+    bool HasState(std::string stateName) const noexcept;
+    bool HasStates() const noexcept;
+    std::vector<std::string> GetStates() const noexcept;
+    bool SetState(std::string newState) noexcept;
+    std::string GetCurrentState() const noexcept;
+
+protected:
+private:
 };

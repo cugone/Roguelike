@@ -239,3 +239,57 @@ void FeatureInstance::SetStatebyName(const std::string& name) noexcept {
     }
 }
 
+bool FeatureInfo::HasState(std::string stateName) const noexcept {
+    if(!HasStates()) {
+        return false;
+    }
+    auto* feature = layer->GetTile(index)->feature;
+    return std::find(std::cbegin(feature->_states), std::cend(feature->_states), std::format("{}.{}", feature->name, stateName)) != std::cend(feature->_states);
+}
+
+bool FeatureInfo::HasStates() const noexcept {
+    if(layer == nullptr) {
+        return false;
+    }
+    if(auto* tile = layer->GetTile(index); tile == nullptr) {
+        return false;
+    } else {
+        if(auto* feature = tile->feature; feature == nullptr) {
+            return false;
+        } else {
+            return !feature->_states.empty();
+        }
+    }
+}
+
+std::vector<std::string> FeatureInfo::GetStates() const noexcept {
+    if(layer == nullptr) {
+        return {};
+    }
+    if(auto* tile = layer->GetTile(index)) {
+        if(auto* feature = tile->feature) {
+            return feature->_states;
+        }
+    }
+    return {};
+}
+
+bool FeatureInfo::SetState(std::string newState) noexcept {
+    if(!HasState(newState)) {
+        return false;
+    }
+    layer->GetTile(index)->feature->SetState(newState);
+    return true;
+}
+
+std::string FeatureInfo::GetCurrentState() const noexcept {
+    if(!HasStates()) {
+        return {};
+    }
+    if(auto* tile = layer->GetTile(index)) {
+        if(auto* feature = tile->feature) {
+            return *(feature->_current_state);
+        }
+    }
+    return {};
+}
