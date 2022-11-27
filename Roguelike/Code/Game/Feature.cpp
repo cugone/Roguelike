@@ -2,6 +2,9 @@
 
 #include "Engine/Core/ErrorWarningAssert.hpp"
 
+#include "Engine/Services/ServiceLocator.hpp"
+#include "Engine/Services/IFileLoggerService.hpp"
+
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
 #include "Game/TileDefinition.hpp"
@@ -128,6 +131,10 @@ bool Feature::LoadFromXml(const XMLElement& elem) {
         sprite = tile_def->GetSprite();
         _light_value = tile_def->light;
         _self_illumination = tile_def->self_illumination;
+    } else {
+        auto* logger = ServiceLocator::get<IFileLoggerService>();
+        logger->LogLineAndFlush(std::format("Feature \"{}\" does not have a state for {}.", featureName, definitionName));
+        return false;
     }
 
     if(DataUtils::HasAttribute(elem, "position")) {
@@ -170,7 +177,7 @@ void Feature::SetState(const std::string& stateName) {
         sprite = new_def->GetSprite();
         return;
     }
-    DebuggerPrintf("Attempting to set Feature to invalid state: %s\n", stateName.c_str());
+    DebuggerPrintf(std::format("Attempting to set Feature to invalid state: {}\n", stateName));
 }
 
 void Feature::ResolveAttack(Entity& attacker, Entity& defender) {
