@@ -130,6 +130,18 @@ void Entity::ResolveAttack(Entity& /*attacker*/, Entity& /*defender*/) {
     /* DO NOTHING */
 }
 
+void Entity::ApplyDamage(DamageType /*type*/, long /*amount*/, bool /*crit*/) {
+    /* DO NOTHING */
+}
+
+void Entity::AttackerMissed() {
+    /* DO NOTHING */
+}
+
+void Entity::OnDestroyed() {
+    /* DO NOTHING */
+}
+
 bool Entity::IsVisible() const noexcept {
     return !IsNotVisible();
 }

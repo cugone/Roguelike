@@ -86,6 +86,10 @@ public:
 
 protected:
     virtual void ResolveAttack(Entity& attacker, Entity& defender);
+    virtual void ApplyDamage(DamageType type, long amount, bool crit);
+    virtual void AttackerMissed();
+    virtual void OnDestroyed();
+
     Stats GetStatModifiers() const noexcept;
     const Stats& GetBaseStats() const noexcept;
     Stats& GetBaseStats() noexcept;
