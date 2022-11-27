@@ -52,7 +52,7 @@ void EntityText::EndFrame() {
             e = nullptr;
         }
     }
-    s_registry.erase(std::remove_if(std::begin(s_registry), std::end(s_registry), [this](const auto& t)->bool { return (t.get() == this) && t->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(s_registry));
+    std::erase_if(s_registry, [this](const auto& t)->bool { return (t.get() == this) && t->GetStats().GetStat(StatsID::Health) <= 0; });
 }
 
 EntityText* EntityText::CreateTextEntity(const TextEntityDesc& desc) {
