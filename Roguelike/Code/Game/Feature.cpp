@@ -11,16 +11,9 @@
 Feature* Feature::CreateFeature(Map* map, const XMLElement& elem) {
     auto new_feature = std::make_unique<Feature>(map, elem);
     std::string new_feature_name = new_feature->name;
-    if(const auto where_inserted = s_registry.try_emplace(new_feature_name, std::move(new_feature)); where_inserted.second) {
-        if(const auto found = s_registry.find(new_feature_name); found != std::end(s_registry)) {
-            return found->second.get();
-        }
-    } else {
-        if(const auto found = s_registry.find(new_feature_name); found != std::end(s_registry)) {
-            return found->second.get();
-        }
-    }
-    return nullptr;
+    auto* ptr = new_feature.get();
+    s_registry.emplace(new_feature_name, std::move(new_feature));
+    return ptr;
 }
 
 FeatureInstance Feature::CreateInstanceFromFeature(const Feature* feature) noexcept {
@@ -109,7 +102,10 @@ bool Feature::LoadFromXml(const XMLElement& elem) {
         std::string initialState = std::string(attr ? attr : "");
         const auto valid_initialState = has_initialState && !initialState.empty();
         if(!valid_initialState) {
-            DebuggerPrintf("Feature initialState attribute is empty or missing. Defaulting to first state.");
+            auto* logger = ServiceLocator::get<IFileLoggerService>();
+            const auto iter = std::begin(_states);
+            const auto first_state_name = iter->substr(iter->find_last_of('.') + 1);
+            logger->LogLineAndFlush(std::format("Feature initialState attribute for feature \"{}\" is empty or missing. Defaulting to first state: {}.", featureName, first_state_name));
         }
         initialState = featureName + "." + initialState;
         if(auto found = std::find(std::begin(_states), std::end(_states), initialState); found != std::end(_states)) {

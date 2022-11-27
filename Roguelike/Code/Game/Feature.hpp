@@ -76,7 +76,7 @@ private:
 
     std::vector<std::string> _states{};
     decltype(_states)::iterator _current_state{};
-    static inline std::map<std::string, std::unique_ptr<Feature>> s_registry = std::map<std::string, std::unique_ptr<Feature>>{};
+    static inline std::multimap<std::string, std::unique_ptr<Feature>> s_registry = std::multimap<std::string, std::unique_ptr<Feature>>{};
 
     friend class FeatureInfo;
 };
