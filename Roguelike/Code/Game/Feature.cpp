@@ -43,6 +43,20 @@ FeatureInstance Feature::CreateInstanceFromFeatureAt(const Feature* feature, con
     return {};
 }
 
+std::optional<FeatureInstance> Feature::CreateInstanceFromFeatureByName(std::string name) noexcept {
+    if(auto* f = GetFeatureByName(name); f != nullptr) {
+        return CreateInstanceFromFeature(f);
+    }
+    return std::nullopt;
+}
+
+std::optional<FeatureInstance> Feature::CreateInstanceFromFeatureByNameAt(std::string name, const IntVector2& position) noexcept {
+    if(auto* f = GetFeatureByName(name); f != nullptr) {
+        return CreateInstanceFromFeatureAt(f, position);
+    }
+    return std::nullopt;
+}
+
 void Feature::ClearFeatureRegistry() {
     s_registry.clear();
 }

@@ -41,6 +41,8 @@ public:
     static Feature* CreateFeature(Map* map, const XMLElement& elem);
     static FeatureInstance CreateInstanceFromFeature(const Feature* feature) noexcept;
     static FeatureInstance CreateInstanceFromFeatureAt(const Feature* feature, const IntVector2& position) noexcept;
+    static std::optional<FeatureInstance> CreateInstanceFromFeatureByName(std::string name) noexcept;
+    static std::optional<FeatureInstance> CreateInstanceFromFeatureByNameAt(std::string name, const IntVector2& position) noexcept;
     static void ClearFeatureRegistry();
 
     static Feature* GetFeatureByName(const std::string& name);
