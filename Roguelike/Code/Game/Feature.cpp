@@ -27,7 +27,7 @@ FeatureInstance Feature::CreateInstanceFromFeature(const Feature* feature) noexc
     return CreateInstanceFromFeatureAt(feature, feature->GetPosition());
 }
 
-FeatureInstance Feature::CreateInstanceFromFeatureAt(Feature* feature, const IntVector2& position) noexcept {
+FeatureInstance Feature::CreateInstanceFromFeatureAt(const Feature* feature, const IntVector2& position) noexcept {
     if(feature == nullptr) {
         return {};
     }
