@@ -227,6 +227,11 @@ FeatureInstance Feature::CreateInstanceAt(const IntVector2& position) const noex
 
 void Feature::CalculateLightValue() noexcept {
     SetLightValue(_light_value);
+    for(auto* neighbor : tile->GetCardinalNeighbors()) {
+        if(neighbor) {
+            neighbor->DirtyLight();
+        }
+    }
 }
 
 Tile* FeatureInstance::GetParentTile() const noexcept {
