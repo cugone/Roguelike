@@ -172,10 +172,18 @@ void Feature::SetPosition(const IntVector2& position) {
 }
 
 void Feature::SetState(const std::string& stateName) {
-    if(auto* new_def = TileDefinition::GetTileDefinitionByName(name + "." + stateName)) {
+    const auto fully_qualified_name = std::format("{}.{}", name, stateName);
+    if(auto* new_def = TileDefinition::GetTileDefinitionByName(fully_qualified_name)) {
+        //Tile::ChangeTypeFromName(stateName);
         TileInfo ti{layer, layer->GetTileIndex(_position.x, _position.y)};
-        ti.SetLightDirty();
         sprite = new_def->GetSprite();
+        _light_value = new_def->light;
+        _self_illumination = new_def->self_illumination;
+        ti.SetLightDirty();
+        CalculateLightValue();
+        if(auto iter = std::find_if(std::begin(_states), std::end(_states), [fully_qualified_name](const std::string& state) { return fully_qualified_name == state; }); iter != std::end(_states)) {
+            _current_state = iter;
+        }
         return;
     }
     DebuggerPrintf(std::format("Attempting to set Feature to invalid state: {}\n", stateName));
