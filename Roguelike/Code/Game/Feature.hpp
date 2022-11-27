@@ -19,8 +19,8 @@ public:
     void SetState(std::vector<std::string>::iterator iterator) noexcept;
     void SetStatebyName(const std::string& name) noexcept;
 
-    Layer* layer{};
     const Feature* feature{};
+    std::size_t layer_index{};
     std::size_t index{};
 private:
     std::vector<std::string> states{};
@@ -28,7 +28,6 @@ private:
 
     friend class Feature;
 };
-
 
 class Feature : public Entity {
 public:
