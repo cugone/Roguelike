@@ -105,10 +105,10 @@ private:
 
     void UpdateTiles(TimeUtils::FPSeconds deltaSeconds);
 
-    std::vector<Tile> _tiles{};
-    Map* _map = nullptr;
-    Mesh::Builder _mesh_builder{};
-    bool meshDirty = true;
-    bool meshNeedsRebuild = true;
+    std::vector<Tile> m_tiles{};
+    Map* m_map = nullptr;
+    Mesh::Builder m_mesh_builder{};
+    bool m_meshDirty = true;
+    bool m_meshNeedsRebuild = true;
     bool m_showInvisibleTiles = false;
 };

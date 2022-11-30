@@ -27,27 +27,27 @@ static std::tuple<Vector2, Vector2, Vector2, Vector2> UVsFromUVCoords(const AABB
 
 
 Layer::Layer(Map* map, const XMLElement& elem)
-    : _map(map)
+    : m_map(map)
 {
     GUARANTEE_OR_DIE(LoadFromXml(elem), "Invalid Layer");
 }
 
 Layer::Layer(Map* map, const Image& img)
-    : _map(map)
+    : m_map(map)
 {
     GUARANTEE_OR_DIE(LoadFromImage(img), "Invalid Layer");
 }
 
 Layer::Layer(Map* map, const IntVector2& dimensions)
-    : _map(map)
-    , tileDimensions(dimensions)
+: m_map(map)
+, tileDimensions(dimensions)
 {
     const auto layer_width = tileDimensions.x;
     const auto layer_height = tileDimensions.y;
-    _tiles.resize(static_cast<std::size_t>(layer_width) * layer_height);
-    for(std::size_t index{0u}; index != _tiles.size(); ++index) {
-        _tiles[index].layer = this;
-        _tiles[index].SetCoords(index);
+    m_tiles.resize(static_cast<std::size_t>(layer_width) * layer_height);
+    for(std::size_t index{0u}; index != m_tiles.size(); ++index) {
+        m_tiles[index].layer = this;
+        m_tiles[index].SetCoords(index);
     }
 }
 
@@ -81,44 +81,44 @@ const Tile* Layer::GetNeighbor(const IntVector2& direction) {
 }
 
 void Layer::DirtyMesh() noexcept {
-    meshDirty = true;
+    m_meshDirty = true;
 }
 
 std::vector<Tile>::const_iterator Layer::cbegin() const noexcept {
-    return _tiles.cbegin();
+    return m_tiles.cbegin();
 }
 
 std::vector<Tile>::const_iterator Layer::cend() const noexcept {
-    return _tiles.cend();
+    return m_tiles.cend();
 
 }
 
 std::vector<Tile>::reverse_iterator Layer::rbegin() noexcept {
-    return _tiles.rbegin();
+    return m_tiles.rbegin();
 }
 
 std::vector<Tile>::reverse_iterator Layer::rend() noexcept {
-    return _tiles.rend();
+    return m_tiles.rend();
 }
 
 std::vector<Tile>::const_reverse_iterator Layer::crbegin() const noexcept {
-    return _tiles.crbegin();
+    return m_tiles.crbegin();
 }
 
 std::vector<Tile>::const_reverse_iterator Layer::crend() const noexcept {
-    return _tiles.crend();
+    return m_tiles.crend();
 }
 
 std::vector<Tile>::iterator Layer::begin() noexcept {
-    return _tiles.begin();
+    return m_tiles.begin();
 }
 
 std::vector<Tile>::iterator Layer::end() noexcept {
-    return _tiles.end();
+    return m_tiles.end();
 }
 
 const Mesh::Builder& Layer::GetMeshBuilder() const noexcept {
-    return _mesh_builder;
+    return m_mesh_builder;
 }
 
 Mesh::Builder& Layer::GetMeshBuilder() noexcept {
@@ -281,10 +281,10 @@ bool Layer::LoadFromImage(const Image& img) {
     tileDimensions = img.GetDimensions();
     const auto layer_width = tileDimensions.x;
     const auto layer_height = tileDimensions.y;
-    _tiles.resize(static_cast<std::size_t>(layer_width) * layer_height);
+    m_tiles.resize(static_cast<std::size_t>(layer_width) * layer_height);
     int tile_x = 0;
     int tile_y = 0;
-    for(auto& t : _tiles) {
+    for(auto& t : m_tiles) {
         t.layer = this;
         t.color = img.GetTexel(IntVector2{tile_x, tile_y});
         t.SetCoords(tile_x++, tile_y);
@@ -297,9 +297,9 @@ bool Layer::LoadFromImage(const Image& img) {
 }
 
 void Layer::InitializeTiles(const std::size_t layer_width, const std::size_t layer_height, const std::vector<std::string>& glyph_strings) {
-    _tiles.resize(layer_width * layer_height);
+    m_tiles.resize(layer_width * layer_height);
     tileDimensions.SetXY(static_cast<int>(layer_width), static_cast<int>(layer_height));
-    auto tile_iter = std::begin(_tiles);
+    auto tile_iter = std::begin(m_tiles);
     int tile_x = 0;
     int tile_y = 0;
     for(const auto& str : glyph_strings) {
@@ -355,11 +355,11 @@ void Layer::SetModelViewProjectionBounds() const {
     g_theRenderer->SetViewMatrix(Matrix4::I);
     const auto leftBottom = Vector2{ortho_bounds.mins.x, ortho_bounds.maxs.y};
     const auto rightTop = Vector2{ortho_bounds.maxs.x, ortho_bounds.mins.y};
-    _map->cameraController.GetCamera().SetupView(leftBottom, rightTop, Vector2(0.0f, 1000.0f));
-    g_theRenderer->SetCamera(_map->cameraController.GetCamera());
+    m_map->cameraController.GetCamera().SetupView(leftBottom, rightTop, Vector2(0.0f, 1000.0f));
+    g_theRenderer->SetCamera(m_map->cameraController.GetCamera());
 
-    Camera2D& base_camera = _map->cameraController.GetCamera();
-    Camera2D shakyCam = _map->cameraController.GetCamera();
+    Camera2D& base_camera = m_map->cameraController.GetCamera();
+    Camera2D shakyCam = m_map->cameraController.GetCamera();
     const float shake = shakyCam.GetShake();
     const float shaky_angle = GetGameAs<Game>()->gameOptions.GetMaxShakeAngle() * shake * MathUtils::GetRandomNegOneToOne<float>();
     const float shaky_offsetX = GetGameAs<Game>()->gameOptions.GetMaxShakeOffsetHorizontal() * shake * MathUtils::GetRandomNegOneToOne<float>();
@@ -379,15 +379,15 @@ void Layer::SetModelViewProjectionBounds() const {
 
 void Layer::RenderTiles() const {
     g_theRenderer->SetModelMatrix(Matrix4::I);
-    Mesh::Render(_mesh_builder);
+    Mesh::Render(m_mesh_builder);
 }
 
 void Layer::DebugRenderTiles() const {
     g_theRenderer->SetModelMatrix(Matrix4::I);
 
-    AABB2 cullbounds = CalcCullBounds(_map->cameraController.GetCamera().position);
+    AABB2 cullbounds = CalcCullBounds(m_map->cameraController.GetCamera().position);
 
-    for(auto& t : _tiles) {
+    for(auto& t : m_tiles) {
         AABB2 tile_bounds = t.GetBounds();
         if(MathUtils::DoAABBsOverlap(cullbounds, tile_bounds)) {
             t.DebugRender();
@@ -430,7 +430,7 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
     for(auto& tile : visibleTiles) {
         tile->SetCanSee();
     }
-    if(meshNeedsRebuild) {
+    if(m_meshNeedsRebuild) {
         for(auto& tile : viewableTiles) {
             ++debug_tiles_in_view_count;
             if(tile->CanSee()) {
@@ -438,7 +438,7 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
             }
             AppendToMesh(tile);
         }
-        meshNeedsRebuild = false;
+        m_meshNeedsRebuild = false;
     }
     for(auto& tile : viewableTiles) {
         if(tile->GetLightValue()) {
@@ -448,7 +448,7 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
 }
 
 void Layer::BeginFrame() {
-    for(auto& tile : _tiles) {
+    for(auto& tile : m_tiles) {
         tile.ClearCanSee();
     }
 }
@@ -468,15 +468,15 @@ void Layer::DebugRender() const {
 }
 
 void Layer::EndFrame() {
-    if(meshDirty) {
-        meshNeedsRebuild = true;
-        _mesh_builder.Clear();
+    if(m_meshDirty) {
+        m_meshNeedsRebuild = true;
+        m_mesh_builder.Clear();
     }
 }
 
 AABB2 Layer::CalcOrthoBounds() const {
     float half_view_height = this->GetMap()->cameraController.GetCamera().GetViewHeight() * 0.5f;
-    float half_view_width = half_view_height * _map->cameraController.GetAspectRatio();
+    float half_view_width = half_view_height * m_map->cameraController.GetAspectRatio();
     auto ortho_mins = Vector2{-half_view_width, -half_view_height};
     auto ortho_maxs = Vector2{half_view_width, half_view_height};
     return AABB2{ortho_mins, ortho_maxs};
@@ -501,11 +501,11 @@ AABB2 Layer::CalcCullBoundsFromOrthoBounds() const {
 }
 
 const Map* Layer::GetMap() const {
-    return _map;
+    return m_map;
 }
 
 Map* Layer::GetMap() {
-    return _map;
+    return m_map;
 }
 
 const Tile* Layer::GetTile(std::size_t x, std::size_t y) const noexcept {
@@ -517,10 +517,10 @@ Tile* Layer::GetTile(std::size_t x, std::size_t y) noexcept {
 }
 
 const Tile* Layer::GetTile(std::size_t index) const noexcept {
-    if(index >= _tiles.size()) {
+    if(index >= m_tiles.size()) {
         return nullptr;
     }
-    return &_tiles[index];
+    return &m_tiles[index];
 }
 
 Tile* Layer::GetTile(std::size_t index) noexcept {
