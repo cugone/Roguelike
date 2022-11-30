@@ -370,6 +370,18 @@ Map::Map(const XMLElement& elem) noexcept
     Initialize(*_root_xml_element);
 }
 
+Map::Map(IntVector2 dimensions) noexcept
+{
+    dimensions.x = std::clamp(dimensions.x, static_cast<int>(min_map_width), static_cast<int>(max_map_width));
+    dimensions.y = std::clamp(dimensions.y, static_cast<int>(min_map_height), static_cast<int>(max_map_height));
+    _layers.emplace_back(std::move(std::make_unique<Layer>(this, dimensions)));
+    for(auto& layer : _layers) {
+        InitializeLighting(layer.get());
+    }
+    _pathfinder.Initialize(dimensions);
+    cameraController.SetZoomLevelRange(Vector2{ 8.0f, 16.0f });
+}
+
 Map::~Map() noexcept {
     _entities.clear();
     _entities.shrink_to_fit();

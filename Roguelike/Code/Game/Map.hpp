@@ -45,6 +45,7 @@ public:
 
 
     Map() noexcept = default;
+    explicit Map(IntVector2 dimensions) noexcept;
     explicit Map(const std::filesystem::path& filepath) noexcept;
     explicit Map(const XMLElement& elem) noexcept;
     Map(const Map& other) = default;
