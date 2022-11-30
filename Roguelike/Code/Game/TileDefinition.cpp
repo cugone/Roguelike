@@ -168,12 +168,12 @@ bool TileDefinition::LoadFromXml(const XMLElement& elem) {
     if(auto xml_selflight = elem.FirstChildElement("selflight")) {
         self_illumination = DataUtils::ParseXmlAttribute(*xml_selflight, "value", self_illumination);
     }
-    auto& renderer = ServiceLocator::get<IRendererService>();
+    auto* renderer = ServiceLocator::get<IRendererService>();
     if(auto xml_animation = elem.FirstChildElement("animation")) {
         is_animated = true;
-        _sprite = std::move(renderer.CreateAnimatedSprite(_sheet, *xml_animation));
+        _sprite = std::move(renderer->CreateAnimatedSprite(_sheet, *xml_animation));
     } else {
-        _sprite = std::move(renderer.CreateAnimatedSprite(_sheet, _index));
+        _sprite = std::move(renderer->CreateAnimatedSprite(_sheet, _index));
     }
     return true;
 }
