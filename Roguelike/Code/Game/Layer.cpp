@@ -125,6 +125,10 @@ Mesh::Builder& Layer::GetMeshBuilder() noexcept {
     return const_cast<Mesh::Builder&>(static_cast<const Layer&>(*this).GetMeshBuilder());
 }
 
+void Layer::DebugShowInvisibleTiles(bool show) noexcept {
+    m_showInvisibleTiles = show;
+}
+
 void Layer::AppendToMesh(const Tile* const tile) noexcept {
     if(tile->IsInvisible()) {
         return;
