@@ -130,7 +130,7 @@ void Layer::DebugShowInvisibleTiles(bool show) noexcept {
 }
 
 void Layer::AppendToMesh(const Tile* const tile) noexcept {
-    if(tile->IsInvisible()) {
+    if(!m_showInvisibleTiles && tile->IsInvisible()) {
         return;
     }
     const auto* def = TileDefinition::GetTileDefinitionByName(tile->GetType());
