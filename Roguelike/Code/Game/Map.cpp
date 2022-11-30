@@ -549,10 +549,7 @@ void Map::UpdateTileLighting(TileInfo& ti) noexcept {
         ti.SetLightValue(idealLighting);
         ti.SetLightDirty();
         if(ti.IsOpaque()) {
-            DirtyNeighborLighting(ti, Layer::NeighborDirection::North);
-            DirtyNeighborLighting(ti, Layer::NeighborDirection::East);
-            DirtyNeighborLighting(ti, Layer::NeighborDirection::South);
-            DirtyNeighborLighting(ti, Layer::NeighborDirection::West);
+            DirtyCardinalNeighbors(ti);
         }
     }
 }
