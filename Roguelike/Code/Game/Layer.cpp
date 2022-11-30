@@ -306,13 +306,12 @@ void Layer::InitializeTiles(const std::size_t layer_width, const std::size_t lay
     m_tiles.resize(layer_width * layer_height);
     tileDimensions.SetXY(static_cast<int>(layer_width), static_cast<int>(layer_height));
     auto tile_iter = std::begin(m_tiles);
-    int tile_x = 0;
-    int tile_y = 0;
     for(const auto& str : glyph_strings) {
         for(const auto& c : str) {
             tile_iter->layer = this;
             tile_iter->ChangeTypeFromGlyph(c);
-            tile_iter->SetCoords(tile_x, tile_y);
+            const std::size_t index = std::distance(std::begin(m_tiles), tile_iter);
+            tile_iter->SetCoords(static_cast<int>(index % layer_width), static_cast<int>(index / layer_width));
             if(auto* def = TileDefinition::GetTileDefinitionByName(tile_iter->GetType()); def && def->is_entrance) {
                 tile_iter->SetEntrance();
             }
@@ -320,12 +319,8 @@ void Layer::InitializeTiles(const std::size_t layer_width, const std::size_t lay
                 tile_iter->SetExit();
             }
             ++tile_iter;
-            ++tile_x;
         }
-        ++tile_y;
-        tile_x = 0;
     }
-    tile_y = 0;
 }
 
 std::size_t Layer::NormalizeLayerRows(std::vector<std::string>& glyph_strings) {
