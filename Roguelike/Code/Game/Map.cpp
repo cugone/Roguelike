@@ -650,10 +650,10 @@ void Map::RenderStatsBlock(Actor* actor) const noexcept {
     bounds.Translate(Vector2{50.0f, 50.0f});
     const auto text_position = bounds.mins + padding;
     g_theRenderer->DrawAABB2(bounds, actor->GetFactionAsColor(), Rgba(50, 50, 50, 128), border_padding);
-    auto S = Matrix4::I;
-    auto R = Matrix4::I;
-    auto T = Matrix4::CreateTranslationMatrix(text_position);
-    auto M = Matrix4::MakeSRT(S, R, T);
+    const auto S = Matrix4::I;
+    const auto R = Matrix4::I;
+    const auto T = Matrix4::CreateTranslationMatrix(text_position);
+    const auto M = Matrix4::MakeSRT(S, R, T);
     g_theRenderer->SetModelMatrix(M);
     g_theRenderer->DrawMultilineText(GetGameAs<Game>()->ingamefont, text);
 }
