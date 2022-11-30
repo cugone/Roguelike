@@ -135,7 +135,7 @@ Stats::Stats(std::initializer_list<decltype(_stats)::value_type> l) {
     }
 }
 
-auto Stats::GetStat(const StatsID& id) const noexcept -> decltype(_stats)::value_type{
+constexpr auto Stats::GetStat(const StatsID& id) const noexcept -> decltype(_stats)::value_type{
     return _stats[static_cast<std::size_t>(id)];
 }
 
@@ -143,13 +143,13 @@ void Stats::SetStat(const StatsID& id, decltype(_stats)::value_type value) noexc
     _stats[static_cast<std::size_t>(id)] = value;
 }
 
-decltype(Stats::_stats)::value_type Stats::AdjustStat(const StatsID& id, long value) noexcept {
+auto Stats::AdjustStat(const StatsID& id, long value) noexcept -> decltype(_stats)::value_type {
     const auto i = static_cast<std::size_t>(id);
     _stats[i] += static_cast<decltype(_stats)::value_type>(value);
     return _stats[i];
 }
 
-decltype(Stats::_stats)::value_type Stats::MultiplyStat(const StatsID& id, long double value) noexcept {
+auto Stats::MultiplyStat(const StatsID& id, long double value) noexcept -> decltype(Stats::_stats)::value_type {
     const auto i = static_cast<std::size_t>(id);
     _stats[i] *= static_cast<decltype(_stats)::value_type>(std::floor(value));
     return _stats[i];

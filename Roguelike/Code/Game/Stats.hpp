@@ -48,10 +48,10 @@ public:
 
     explicit Stats(const XMLElement& elem);
 
-    auto GetStat(const StatsID& id) const noexcept -> decltype(_stats)::value_type;
+    constexpr auto GetStat(const StatsID& id) const noexcept -> decltype(_stats)::value_type;
     void SetStat(const StatsID& id, decltype(_stats)::value_type value) noexcept;
-    decltype(_stats)::value_type AdjustStat(const StatsID& id, long value) noexcept;
-    decltype(_stats)::value_type MultiplyStat(const StatsID& id, long double value) noexcept;
+    auto AdjustStat(const StatsID& id, long value) noexcept -> decltype(_stats)::value_type;
+    auto MultiplyStat(const StatsID& id, long double value) noexcept -> decltype(Stats::_stats)::value_type;
 
     Stats operator+(const Stats& rhs) const;
     Stats& operator+=(const Stats& rhs);
