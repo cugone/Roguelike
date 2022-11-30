@@ -360,9 +360,9 @@ private:
     void LoadNameForMap(const XMLElement& elem);
     void LoadMaterialsForMap(const XMLElement& elem);
     void LoadGenerator(const XMLElement& elem);
-    void CreateGeneratorFromTypename(const XMLElement& elem);
+
     void LoadTileDefinitionsForMap(const XMLElement& elem);
-    void LoadTileDefinitionsFromFile(const std::filesystem::path& src);
+    void LoadMaterialFromFile(const std::filesystem::path& src) noexcept;
     void LoadActorsForMap(const XMLElement& elem);
     void LoadFeaturesForMap(const XMLElement& elem);
     void LoadItemsForMap(const XMLElement& elem);

@@ -1186,26 +1186,17 @@ void Map::LoadMaterialsForMap(const XMLElement& elem) {
     }
 }
 
-void Map::LoadGenerator(const XMLElement& elem) {
-    const auto* xml_generator = elem.FirstChildElement("mapGenerator");
-    CreateGeneratorFromTypename(*xml_generator);
+void Map::LoadMaterialFromFile(const std::filesystem::path& src) noexcept {
+    _default_tileMaterial = g_theRenderer->GetMaterial(src.string());
+    _current_tileMaterial = _default_tileMaterial;
 }
 
-void Map::CreateGeneratorFromTypename(const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "mapGenerator", "", "", "", "type");
-    const auto xml_type = DataUtils::ParseXmlAttribute(elem, "type", std::string{});
-    if(xml_type == "heightmap") {
-        _map_generator = std::make_unique<HeightMapGenerator>(this, elem);
-        _map_generator->Generate();
-    } else if(xml_type == "file") {
-        _map_generator = std::make_unique<FileMapGenerator>(this, elem);
-        _map_generator->Generate();
-    } else if(xml_type == "maze") {
-        MazeMapGenerator::Generate(this, elem);
-    } else {
-        _map_generator = std::make_unique<XmlMapGenerator>(this, elem);
-        _map_generator->Generate();
-    }
+void Map::LoadGenerator(const XMLElement& elem) {
+    const auto* xml_generator = elem.FirstChildElement("mapGenerator");
+    DataUtils::ValidateXmlElement(*xml_generator, "mapGenerator", "", "type");
+    _map_generator.SetParentMap(this);
+    _map_generator.SetRootXmlElement(*xml_generator);
+    _map_generator.Generate();
 }
 
 void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
@@ -1213,24 +1204,7 @@ void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
         DataUtils::ValidateXmlElement(*xml_tileset, "tiles", "", "src");
         const auto src = DataUtils::ParseXmlAttribute(*xml_tileset, "src", std::string{});
         GUARANTEE_OR_DIE(!src.empty(), "Map tiles source is empty.");
-        LoadTileDefinitionsFromFile(src);
-    }
-}
-
-void Map::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
-    namespace FS = std::filesystem;
-    GetGameAs<Game>()->ThrowIfSourceFileNotFound(src);
-    if(tinyxml2::XMLDocument doc{}; auto* xml_root = GetGameAs<Game>()->ThrowIfSourceFileNotLoaded(doc, src)) {
-        DataUtils::ValidateXmlElement(*xml_root, "tileDefinitions", "spritesheet,tileDefinition", "");
-        if(auto xml_spritesheet = xml_root->FirstChildElement("spritesheet")) {
-            if(_tileset_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet); _tileset_sheet) {
-                DataUtils::ForEachChildElement(*xml_root, "tileDefinition",
-                    [this](const XMLElement& elem) {
-                        auto* def = TileDefinition::CreateOrGetTileDefinition(elem, _tileset_sheet);
-                        def->GetSprite()->SetMaterial(_current_tileMaterial);
-                    });
-            }
-        }
+        GetGameAs<Game>()->LoadTileDefinitionsFromFile(src);
     }
 }
 
