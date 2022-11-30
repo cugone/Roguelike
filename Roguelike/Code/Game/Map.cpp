@@ -765,12 +765,10 @@ void Map::EndFrame() {
     for(auto& e : _text_entities) {
         e->EndFrame();
     }
-
-    _entities.erase(std::remove_if(std::begin(_entities), std::end(_entities), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_entities));
-    _text_entities.erase(std::remove_if(std::begin(_text_entities), std::end(_text_entities), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_text_entities));
-    _actors.erase(std::remove_if(std::begin(_actors), std::end(_actors), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_actors));
-    _features.erase(std::remove_if(std::begin(_features), std::end(_features), [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; }), std::end(_features));
-
+    std::erase_if(_entities, [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; });
+    std::erase_if(_text_entities, [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; });
+    std::erase_if(_actors, [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; });
+    std::erase_if(_features, [](const auto& e)->bool { return !e || e->GetStats().GetStat(StatsID::Health) <= 0; });
 }
 
 bool Map::IsPlayerOnExit() const noexcept {
