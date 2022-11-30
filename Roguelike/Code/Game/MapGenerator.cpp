@@ -19,8 +19,9 @@
 
 #include <cmath>
 #include <random>
+#include <utility>
 
-MapGenerator::MapGenerator(Map* map, const XMLElement& elem) noexcept
+MapGenerator::MapGenerator(Map* map, XMLElement* elem) noexcept
     : _xml_element(elem)
     , _map(map)
 { /* DO NOTHING */
@@ -30,9 +31,8 @@ void MapGenerator::LoadLayers(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "layers", "layer", "");
     std::size_t layer_count = DataUtils::GetChildElementCount(elem, "layer");
     if(layer_count > _map->max_layers) {
-        const auto ss = std::string{"Layer count of map "} + _map->_name + " is greater than the maximum allowed (" + std::to_string(_map->max_layers) + ")."
-            "\nOnly the first " + std::to_string(_map->max_layers) + " layers will be used.";
-        g_theFileLogger->LogLine(ss);
+        const auto err_str = std::format("Layer count of map {0} is greater than the maximum allowed ({1}).\nOnly the first {1} layers will be used.", _map->_name, _map->max_layers);
+        g_theFileLogger->LogLine(err_str);
     }
 
     auto layer_index = 0;
@@ -44,33 +44,119 @@ void MapGenerator::LoadLayers(const XMLElement& elem) {
                 _map->_layers.back()->z_index = layer_index++;
             }
         });
-    _map->_layers.shrink_to_fit();
 }
 
-HeightMapGenerator::HeightMapGenerator(Map* map, const XMLElement& elem) noexcept
-    : MapGenerator(map, elem)
-{
-    /* DO NOTHING */
+void MapGenerator::LoadItems(const XMLElement& elem) noexcept {
+    _map->LoadItemsForMap(elem);
 }
 
-void HeightMapGenerator::Generate() {
-    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "glyph", "type,src");
-    const auto src = DataUtils::ParseXmlAttribute(_xml_element, "src", std::string{});
-    Image img(std::filesystem::path{src});
+void MapGenerator::LoadActors(const XMLElement& elem) noexcept {
+    _map->LoadActorsForMap(elem);
+}
+
+void MapGenerator::LoadFeatures(const XMLElement& elem) noexcept {
+    _map->LoadFeaturesForMap(elem);
+}
+
+void MapGenerator::PlaceActors() noexcept {
+    auto open_set = [this]() {
+        auto result = std::vector<std::size_t>{};
+        result.resize(rooms.size());
+        std::iota(std::begin(result), std::end(result), std::size_t{ 0u });
+        std::random_device rd;
+        std::mt19937_64 g(rd());
+        std::shuffle(std::begin(result), std::end(result), g);
+        return result;
+    }(); //IIIL
+    for(auto* actor : _map->_actors) {
+        if(open_set.empty()) {
+            break;
+        }
+        const auto room_idx = [&]() {
+            auto idx = open_set.back();
+            open_set.pop_back();
+            return idx;
+        }();
+        actor->SetPosition(IntVector2{ rooms[room_idx].CalcCenter() });
+        if(auto* b = actor->GetCurrentBehavior(); b && b->GetName() == "pursue") {
+            if(auto* bAsPursue = dynamic_cast<PursueBehavior*>(b)) {
+                bAsPursue->SetTarget(_map->player);
+            }
+        }
+    }
+    //TODO: Determine enter/exit tile
+    //player->SetPosition(_map->GetTile());
+}
+
+void MapGenerator::PlaceFeatures() noexcept {
+    const auto map_dims = _map->CalcMaxDimensions();
+    for(auto* feature : _map->_features) {
+        const auto x = MathUtils::GetRandomLessThan(map_dims.x);
+        const auto y = MathUtils::GetRandomLessThan(map_dims.y);
+        const auto tile_pos = IntVector2{ Vector2{x, y} };
+        feature->SetPosition(tile_pos);
+    }
+}
+
+void MapGenerator::PlaceItems() noexcept {
+
+}
+
+void MapGenerator::SetRootXmlElement(const XMLElement& root_element) noexcept {
+    _xml_element = const_cast<XMLElement*>(&root_element);
+}
+
+void MapGenerator::SetParentMap(Map* map) noexcept {
+    if(map) {
+        _map = map;
+    }
+}
+
+void MapGenerator::Generate() noexcept {
+    DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "", "type");
+    DataUtils::ValidateXmlAttribute(*_xml_element, "type", "heightmap,file,maze,xml");
+    const auto isHeightMap = DataUtils::GetAttributeAsString(*_xml_element, "type") == std::string_view{ "heightmap" };
+    const auto isFileMap = DataUtils::GetAttributeAsString(*_xml_element, "type") == std::string_view{ "file" };
+    const auto isMazeMap = DataUtils::GetAttributeAsString(*_xml_element, "type") == std::string_view{ "maze" };
+    const auto isXmlMap = DataUtils::GetAttributeAsString(*_xml_element, "type") == std::string_view{ "xml" };
+    if(isHeightMap) {
+        GenerateFromHeightMap();
+    } else if(isFileMap) {
+        GenerateFromFile();
+    } else if(isMazeMap) {
+        GenerateMaze();
+    } else if(isXmlMap) {
+        DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "layers", "");
+        if(auto xml_layers = _xml_element->FirstChildElement("layers")) {
+            LoadLayers(*xml_layers);
+        }
+        _map->GetPathfinder()->Initialize(IntVector2{ _map->CalcMaxDimensions() });
+    } else {
+
+    }
+    LoadFeatures(*_map->_root_xml_element);
+    LoadActors(*_map->_root_xml_element);
+    LoadItems(*_map->_root_xml_element);
+
+}
+
+void MapGenerator::GenerateFromHeightMap() noexcept {
+    const auto src = DataUtils::ParseXmlAttribute(*_xml_element, "src", std::string{});
+    Image img(std::filesystem::path{ src });
     _map->_layers.emplace_back(std::make_unique<Layer>(_map, img));
     auto* layer = _map->_layers.back().get();
     for(auto& t : *layer) {
         int closest_height = 257;
         char smallest_value = ' ';
-        DataUtils::ForEachChildElement(_xml_element, "glyph",
+        DataUtils::ForEachChildElement(*_xml_element, "glyph",
             [&t, &closest_height, &smallest_value, layer](const XMLElement& elem) {
-                const auto glyph_value = DataUtils::ParseXmlAttribute(elem, "value", ' ');
-                const auto glyph_height = DataUtils::ParseXmlAttribute(elem, "height", 0);
-                if(t.color.r <= glyph_height) {
-                    closest_height = glyph_height;
-                    smallest_value = glyph_value;
-                }
-            });
+            const auto glyph_value = DataUtils::ParseXmlAttribute(elem, "value", ' ');
+            const auto glyph_height = DataUtils::ParseXmlAttribute(elem, "height", 0);
+            if(t.color.r <= glyph_height) {
+                closest_height = glyph_height;
+                smallest_value = glyph_value;
+            }
+        });
         t.ChangeTypeFromGlyph(smallest_value);
         t.color = Rgba::White;
         t.layer = layer;
@@ -78,31 +164,9 @@ void HeightMapGenerator::Generate() {
     layer->z_index = 0;
 }
 
-void HeightMapGenerator::LoadItems(const XMLElement& elem) {
-    _map->LoadItemsForMap(elem);
-}
-
-void HeightMapGenerator::LoadActors(const XMLElement& elem) {
-    _map->LoadActorsForMap(elem);
-}
-
-void HeightMapGenerator::LoadFeatures(const XMLElement& elem) {
-    _map->LoadFeaturesForMap(elem);
-}
-
-FileMapGenerator::FileMapGenerator(Map* map, const XMLElement& elem) noexcept
-    : MapGenerator(map, elem)
-{
-    /* DO NOTHING */
-}
-
-void FileMapGenerator::Generate() {
-    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "", "src", "", "");
-    LoadLayersFromFile(_xml_element);
-}
-
-void FileMapGenerator::LoadLayersFromFile(const XMLElement& elem) {
-    const auto xml_src = DataUtils::ParseXmlAttribute(elem, "src", std::string{});
+void MapGenerator::GenerateFromFile() noexcept {
+    DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "", "src", "", "");
+    const auto xml_src = DataUtils::ParseXmlAttribute(*_xml_element, "src", std::string{});
     if(auto src = FileUtils::ReadStringBufferFromFile(xml_src)) {
         GUARANTEE_OR_DIE(!src.value().empty(), "Loading Map from file with empty or invalid source attribute.");
         tinyxml2::XMLDocument doc;
@@ -113,94 +177,41 @@ void FileMapGenerator::LoadLayersFromFile(const XMLElement& elem) {
     }
 }
 
-void FileMapGenerator::LoadItems(const XMLElement& elem) {
-    _map->LoadItemsForMap(elem);
-}
-
-void FileMapGenerator::LoadActors(const XMLElement& elem) {
-    _map->LoadActorsForMap(elem);
-}
-
-void FileMapGenerator::LoadFeatures(const XMLElement& elem) {
-    _map->LoadFeaturesForMap(elem);
-}
-
-XmlMapGenerator::XmlMapGenerator(Map* map, const XMLElement& elem) noexcept
-    : MapGenerator(map, elem)
-{
-    /* DO NOTHING */
-}
-
-void XmlMapGenerator::Generate() {
-    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "layers", "");
-    LoadLayersFromXml(_xml_element);
-    _map->GetPathfinder()->Initialize(IntVector2{_map->CalcMaxDimensions()});
-    LoadFeatures(*_map->_root_xml_element);
-    LoadActors(*_map->_root_xml_element);
-    LoadItems(*_map->_root_xml_element);
-}
-
-void XmlMapGenerator::LoadLayersFromXml(const XMLElement& elem) {
-    if(auto xml_layers = elem.FirstChildElement("layers")) {
-        LoadLayers(*xml_layers);
-    }
-}
-
-
-void XmlMapGenerator::LoadItems(const XMLElement& elem) {
-    _map->LoadItemsForMap(elem);
-}
-
-void XmlMapGenerator::LoadActors(const XMLElement& elem) {
-    _map->LoadActorsForMap(elem);
-}
-
-void XmlMapGenerator::LoadFeatures(const XMLElement& elem) {
-    _map->LoadFeaturesForMap(elem);
-}
-
-MazeMapGenerator::MazeMapGenerator(Map* map, const XMLElement& elem) noexcept
-    : MapGenerator(map, elem)
-{
-    /* DO NOTHING */
-}
-
-void MazeMapGenerator::Generate(Map* map, const XMLElement& elem) {
-    DataUtils::ValidateXmlElement(elem, "mapGenerator", "", "algorithm");
-    const auto algoName = DataUtils::ParseXmlAttribute(elem, "algorithm", std::string{});
+void MapGenerator::GenerateMaze() noexcept {
+    DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "", "algorithm");
+    const auto algoName = DataUtils::ParseXmlAttribute(*_xml_element, "algorithm", std::string{});
     GUARANTEE_OR_DIE(!algoName.empty(), "Maze Generator algorithm type specifier cannot be empty.");
     if(algoName == "rooms") {
-        map->_map_generator = std::make_unique<RoomsMapGenerator>(map, elem);
-        map->_map_generator->Generate();
+        GenerateRandomRooms();
+        return;
     } else if(algoName == "roomsOnly") {
-        map->_map_generator = std::make_unique<RoomsOnlyMapGenerator>(map, elem);
-        map->_map_generator->Generate();
+        GenerateRooms();
     } else if(algoName == "roomsAndCorridors") {
-        map->_map_generator = std::make_unique<RoomsAndCorridorsMapGenerator>(map, elem);
-        map->_map_generator->Generate();
+        do {
+            GenerateRooms();
+            GenerateCorridors();
+            _map->GetPathfinder()->Initialize(IntVector2{ _map->CalcMaxDimensions() });
+        } while(!GenerateExitAndEntrance());
+        PlaceActors();
+        PlaceFeatures();
+        PlaceItems();
     }
 }
 
-RoomsMapGenerator::RoomsMapGenerator(Map* map, const XMLElement& elem) noexcept
-    : MazeMapGenerator(map, elem)
-{
-    /* DO NOTHING */
-}
-
-void RoomsMapGenerator::Generate() {
-    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "minSize,maxSize", "count,floor,wall,default", "", "down,up,enter,exit,width,height");
-    const auto min_size = std::clamp([&]()->const int { const auto* xml_min = _xml_element.FirstChildElement("minSize"); int result = DataUtils::ParseXmlElementText(*xml_min, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
-    const auto max_size = std::clamp([&]()->const int { const auto* xml_max = _xml_element.FirstChildElement("maxSize"); int result = DataUtils::ParseXmlElementText(*xml_max, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
-    const int room_count = DataUtils::ParseXmlAttribute(_xml_element, "count", 1);
-    const int width = std::clamp(DataUtils::ParseXmlAttribute(_xml_element, "width", 1), 1, Map::max_dimension);
-    const int height = std::clamp(DataUtils::ParseXmlAttribute(_xml_element, "height", 1), 1, Map::max_dimension);
+void MapGenerator::GenerateRandomRooms() noexcept {
+    DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "minSize,maxSize", "count,floor,wall,default", "", "down,up,enter,exit,width,height");
+    const auto min_size = std::clamp([&]()->const int { const auto* xml_min = _xml_element->FirstChildElement("minSize"); int result = DataUtils::ParseXmlElementText(*xml_min, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
+    const auto max_size = std::clamp([&]()->const int { const auto* xml_max = _xml_element->FirstChildElement("maxSize"); int result = DataUtils::ParseXmlElementText(*xml_max, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
+    const int room_count = DataUtils::ParseXmlAttribute(*_xml_element, "count", 1);
+    const int width = std::clamp(DataUtils::ParseXmlAttribute(*_xml_element, "width", 1), 1, Map::max_dimension);
+    const int height = std::clamp(DataUtils::ParseXmlAttribute(*_xml_element, "height", 1), 1, Map::max_dimension);
     rooms.reserve(room_count);
     for(int i = 0; i < room_count; ++i) {
         const auto w = MathUtils::GetRandomInRange(min_size, max_size);
         const auto h = MathUtils::GetRandomInRange(min_size, max_size);
         const auto x = MathUtils::GetRandomInRange(w, width - (2 * w));
         const auto y = MathUtils::GetRandomInRange(h, height - (2 * h));
-        rooms.push_back(AABB2{Vector2{(float)x, (float)y}, (float)w, (float)h});
+        rooms.push_back(AABB2{ Vector2{(float)x, (float)y}, (float)w, (float)h });
     }
     for(int i = 0; i < room_count - 1; ++i) {
         for(int j = 1; j < room_count; ++j) {
@@ -227,125 +238,30 @@ void RoomsMapGenerator::Generate() {
     const auto map_width = static_cast<int>(world_bounds.CalcDimensions().x);
     const auto map_height = static_cast<int>(world_bounds.CalcDimensions().y);
     if(_map->_layers.empty()) {
-        _map->_layers.emplace_back(std::make_unique<Layer>(_map, IntVector2{map_width, map_height}));
+        _map->_layers.emplace_back(std::make_unique<Layer>(_map, IntVector2{ map_width, map_height }));
     } else {
-        if(_map->_layers[0]->tileDimensions != IntVector2{map_width, map_height}) {
-            _map->_layers[0] = std::move(std::make_unique<Layer>(_map, IntVector2{map_width, map_height}));
+        if(_map->_layers[0]->tileDimensions != IntVector2{ map_width, map_height }) {
+            _map->_layers[0] = std::move(std::make_unique<Layer>(_map, IntVector2{ map_width, map_height }));
         }
     }
-    GetTileTypes();
-
+    floorType = DataUtils::ParseXmlAttribute(*_xml_element, "floor", floorType);
+    wallType = DataUtils::ParseXmlAttribute(*_xml_element, "wall", wallType);
+    defaultType = DataUtils::ParseXmlAttribute(*_xml_element, "default", defaultType);
+    stairsDownType = DataUtils::ParseXmlAttribute(*_xml_element, "down", stairsDownType);
+    stairsUpType = DataUtils::ParseXmlAttribute(*_xml_element, "up", stairsUpType);
+    enterType = DataUtils::ParseXmlAttribute(*_xml_element, "enter", enterType);
+    exitType = DataUtils::ParseXmlAttribute(*_xml_element, "exit", exitType);
 
     if(auto* layer = _map->GetLayer(0); layer != nullptr) {
         for(auto& tile : *layer) {
             tile.ChangeTypeFromName(defaultType);
         }
     }
-    for(auto& room : rooms) {
-        const auto roomWallTiles = _map->GetTilesInArea(room);
-        for(auto& tile : roomWallTiles) {
-            if(tile) {
-                tile->ChangeTypeFromName(wallType);
-            }
-        }
-    }
+    FillRoomsWithWallTiles();
     FillRoomsWithFloorTiles();
 }
 
-void RoomsMapGenerator::GetTileTypes() noexcept {
-    floorType = DataUtils::ParseXmlAttribute(_xml_element, "floor", floorType);
-    wallType = DataUtils::ParseXmlAttribute(_xml_element, "wall", wallType);
-    defaultType = DataUtils::ParseXmlAttribute(_xml_element, "default", defaultType);
-    stairsDownType = DataUtils::ParseXmlAttribute(_xml_element, "down", stairsDownType);
-    stairsUpType = DataUtils::ParseXmlAttribute(_xml_element, "up", stairsUpType);
-    enterType = DataUtils::ParseXmlAttribute(_xml_element, "enter", enterType);
-    exitType = DataUtils::ParseXmlAttribute(_xml_element, "exit", exitType);
-}
-
-void RoomsMapGenerator::CreateOrOverwriteLayer(const int width, const int height) noexcept {
-    if(_map->_layers.empty()) {
-        _map->_layers.emplace_back(std::make_unique<Layer>(_map, IntVector2{width, height}));
-    } else {
-        if(_map->_layers[0]->tileDimensions != IntVector2{width, height}) {
-            _map->_layers[0] = std::move(std::make_unique<Layer>(_map, IntVector2{width, height}));
-        }
-    }
-}
-
-void RoomsMapGenerator::FillRoomsWithFloorTiles() noexcept {
-    for(auto& room : rooms) {
-        const auto roomFloorTiles = _map->GetTilesInArea(room);
-        for(auto& tile : roomFloorTiles) {
-            if(tile) {
-                tile->ChangeTypeFromName(floorType);
-            }
-        }
-    }
-}
-
-void RoomsMapGenerator::LoadItems(const XMLElement& elem) {
-    _map->LoadItemsForMap(elem);
-}
-
-void RoomsMapGenerator::LoadActors(const XMLElement& elem) {
-    _map->LoadActorsForMap(elem);
-}
-
-void RoomsMapGenerator::LoadFeatures(const XMLElement& elem) {
-    _map->LoadFeaturesForMap(elem);
-}
-
-void RoomsMapGenerator::PlaceActors() noexcept {
-    auto open_set = [this]() {
-        auto result = std::vector<std::size_t>{};
-        result.resize(rooms.size());
-        std::iota(std::begin(result), std::end(result), std::size_t{0u});
-        std::random_device rd;
-        std::mt19937_64 g(rd());
-        std::shuffle(std::begin(result), std::end(result), g);
-        return result;
-    }(); //IIIL
-    for(auto* actor : _map->_actors) {
-        if(open_set.empty()) {
-            break;
-        }
-        const auto room_idx = [&]() {
-            auto idx = open_set.back();
-            open_set.pop_back();
-            return idx;
-        }();
-        actor->SetPosition(IntVector2{rooms[room_idx].CalcCenter()});
-        if(auto* b = actor->GetCurrentBehavior(); b && b->GetName() == "pursue") {
-            if(auto* bAsPursue = dynamic_cast<PursueBehavior*>(b)) {
-                bAsPursue->SetTarget(_map->player);
-            }
-        }
-    }
-    //TODO: Determine enter/exit tile
-    //player->SetPosition(_map->GetTile());
-}
-
-void RoomsMapGenerator::PlaceFeatures() noexcept {
-    const auto map_dims = _map->CalcMaxDimensions();
-    for(auto* feature : _map->_features) {
-        const auto x = MathUtils::GetRandomLessThan(map_dims.x);
-        const auto y = MathUtils::GetRandomLessThan(map_dims.y);
-        const auto tile_pos = IntVector2{Vector2{x, y}};
-        feature->SetPosition(tile_pos);
-    }
-}
-
-void RoomsMapGenerator::PlaceItems() noexcept {
-    /* DO NOTHING */
-}
-
-RoomsOnlyMapGenerator::RoomsOnlyMapGenerator(Map* map, const XMLElement& elem) noexcept
-    : RoomsMapGenerator(map, elem)
-{
-    /* DO NOTHING */
-}
-
-void RoomsOnlyMapGenerator::Generate() {
+void MapGenerator::GenerateRooms() noexcept {
     //Ref: Using "floorplan" algorithm here: https://www.reddit.com/r/roguelikedev/comments/310ae2/looking_for_a_bit_of_help_on_a_dungeon_generator/cpxrfbh?utm_source=share&utm_medium=web2x&context=3
     //1.  Make up some general constraints, like maximum and minimum room width & height.
     //2.  You need some sort of generic "room" construct, abstract from the map.
@@ -376,17 +292,33 @@ void RoomsOnlyMapGenerator::Generate() {
     //the longer the algorithm will take to find that one last tiny,
     //perfectly-shaped room to fit and bump you over the percentage requirement.
 
-    DataUtils::ValidateXmlElement(_xml_element, "mapGenerator", "minSize,maxSize", "floor,wall", "", "coverage,down,up,enter,exit,width,height");
+    DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "minSize,maxSize", "floor,wall", "", "coverage,down,up,enter,exit,width,height");
     //Step 1.
-    const auto max_tile_coverage = DataUtils::ParseXmlAttribute(_xml_element, "coverage", 0.10f);
+    const auto max_tile_coverage = DataUtils::ParseXmlAttribute(*_xml_element, "coverage", 0.10f);
     GUARANTEE_OR_DIE(0.0f <= max_tile_coverage && max_tile_coverage <= 1.0f, "RoomsOnlyMapGenerator: coverage value out of [0.0, 1.0f] range.");
-    const auto min_size = std::clamp([&]()->const int { const auto* xml_min = _xml_element.FirstChildElement("minSize"); int result = DataUtils::ParseXmlElementText(*xml_min, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
-    const auto max_size = std::clamp([&]()->const int { const auto* xml_max = _xml_element.FirstChildElement("maxSize"); int result = DataUtils::ParseXmlElementText(*xml_max, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
-    const int width = std::clamp(DataUtils::ParseXmlAttribute(_xml_element, "width", 1), 1, Map::max_dimension);
-    const int height = std::clamp(DataUtils::ParseXmlAttribute(_xml_element, "height", 1), 1, Map::max_dimension);
-    GetTileTypes();
+    const auto min_size = std::clamp([&]()->const int { const auto* xml_min = _xml_element->FirstChildElement("minSize"); int result = DataUtils::ParseXmlElementText(*xml_min, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
+    const auto max_size = std::clamp([&]()->const int { const auto* xml_max = _xml_element->FirstChildElement("maxSize"); int result = DataUtils::ParseXmlElementText(*xml_max, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
+    const int width = std::clamp(DataUtils::ParseXmlAttribute(*_xml_element, "width", 1), 1, Map::max_dimension);
+    const int height = std::clamp(DataUtils::ParseXmlAttribute(*_xml_element, "height", 1), 1, Map::max_dimension);
+
+    floorType = DataUtils::ParseXmlAttribute(*_xml_element, "floor", floorType);
+    wallType = DataUtils::ParseXmlAttribute(*_xml_element, "wall", wallType);
+    defaultType = DataUtils::ParseXmlAttribute(*_xml_element, "default", defaultType);
+    stairsDownType = DataUtils::ParseXmlAttribute(*_xml_element, "down", stairsDownType);
+    stairsUpType = DataUtils::ParseXmlAttribute(*_xml_element, "up", stairsUpType);
+    enterType = DataUtils::ParseXmlAttribute(*_xml_element, "enter", enterType);
+    exitType = DataUtils::ParseXmlAttribute(*_xml_element, "exit", exitType);
+
+
     defaultType = wallType;
-    CreateOrOverwriteLayer(width, height);
+
+    if(_map->_layers.empty()) {
+        _map->_layers.emplace_back(std::make_unique<Layer>(_map, IntVector2{ width, height }));
+    } else {
+        if(_map->_layers[0]->tileDimensions != IntVector2{ width, height }) {
+            _map->_layers[0] = std::move(std::make_unique<Layer>(_map, IntVector2{ width, height }));
+        }
+    }
 
     for(auto& tile : *_map->GetLayer(0)) {
         tile.ChangeTypeFromName(defaultType);
@@ -398,10 +330,10 @@ void RoomsOnlyMapGenerator::Generate() {
         const auto h = MathUtils::GetRandomInRange(min_size, max_size);
         const auto x = MathUtils::GetRandomLessThan(width);
         const auto y = MathUtils::GetRandomLessThan(height);
-        rooms.push_back(AABB2{(float)x, (float)y, (float)x + (float)w, (float)y + +(float)h});
+        rooms.push_back(AABB2{ (float)x, (float)y, (float)x + (float)w, (float)y + +(float)h });
     }
     const auto calcTileCoverage = [&]() {
-        int count{0};
+        int count{ 0 };
         for(const auto& room : rooms) {
             count += static_cast<int>(_map->GetTilesInArea(room).size());
         }
@@ -419,10 +351,10 @@ void RoomsOnlyMapGenerator::Generate() {
             const auto base_room_half_extents = IntVector2(base_room.CalcDimensions()) / 2;
             auto result = IntVector2{};
             switch(MathUtils::GetRandomLessThan(4)) {
-            case 0: {result.x = base_room_center.x - base_room_half_extents.x; break; } //West wall
-            case 1: {result.x = base_room_center.x + base_room_half_extents.x; break; } //East wall
-            case 2: {result.y = base_room_center.y - base_room_half_extents.y; break; } //North wall
-            case 3: {result.y = base_room_center.y + base_room_half_extents.y; break; } //South wall
+            case 0: { result.x = base_room_center.x - base_room_half_extents.x; break; } //West wall
+            case 1: { result.x = base_room_center.x + base_room_half_extents.x; break; } //East wall
+            case 2: { result.y = base_room_center.y - base_room_half_extents.y; break; } //North wall
+            case 3: { result.y = base_room_center.y + base_room_half_extents.y; break; } //South wall
             }
             return result;
         }();
@@ -430,7 +362,7 @@ void RoomsOnlyMapGenerator::Generate() {
         auto new_room = AABB2{};
         const auto w = MathUtils::GetRandomInRange(min_size, max_size);
         const auto h = MathUtils::GetRandomInRange(min_size, max_size);
-        new_room.maxs = Vector2{static_cast<float>(w), static_cast<float>(h)};
+        new_room.maxs = Vector2{ static_cast<float>(w), static_cast<float>(h) };
         //Step 8.
         auto new_position = new_room_position_offset;
         if(new_room_position_offset.x != 0) {
@@ -442,7 +374,7 @@ void RoomsOnlyMapGenerator::Generate() {
         }
         new_room.Translate(Vector2(new_position));
         //Step 9.
-        const auto world_bounds = AABB2{0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)};
+        const auto world_bounds = AABB2{ 0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height) };
         if(!MathUtils::Contains(world_bounds, new_room)) {
             continue;
         }
@@ -454,12 +386,12 @@ void RoomsOnlyMapGenerator::Generate() {
                 }
             }
             return false;
-            }()) //IIIL
+        }()) //IIIL
         {
             continue;
         }
-        rooms.push_back(new_room);
-        doors.push_back(new_room_position_offset);
+            rooms.push_back(new_room);
+            doors.push_back(new_room_position_offset);
     }
     for(auto& door : doors) {
         if(auto* tile = _map->GetTile(door.x, door.y, 0); tile != nullptr) {
@@ -468,7 +400,8 @@ void RoomsOnlyMapGenerator::Generate() {
         //TODO: Feature Instancing!! (Doors).
     }
     FillRoomsWithFloorTiles();
-    _map->GetPathfinder()->Initialize(IntVector2{_map->CalcMaxDimensions()});
+
+    _map->GetPathfinder()->Initialize(IntVector2{ _map->CalcMaxDimensions() });
     LoadFeatures(*_map->_root_xml_element);
     LoadActors(*_map->_root_xml_element);
     LoadItems(*_map->_root_xml_element);
@@ -477,29 +410,30 @@ void RoomsOnlyMapGenerator::Generate() {
     PlaceItems();
 }
 
-RoomsAndCorridorsMapGenerator::RoomsAndCorridorsMapGenerator(Map* map, const XMLElement& elem) noexcept
-    : RoomsMapGenerator(map, elem)
-{
-    /* DO NOTHING */
+void MapGenerator::FillAreaWithTileType(const AABB2& area, std::string typeName) noexcept {
+    for(auto* tile : _map->GetTilesInArea(area)) {
+        tile->ChangeTypeFromName(typeName);
+    }
+
+}
+void MapGenerator::FillRoomsWithTileType(std::string typeName) noexcept {
+    for(const auto& room : rooms) {
+        FillAreaWithTileType(room, typeName);
+    }
 }
 
-void RoomsAndCorridorsMapGenerator::Generate() {
-    do {
-        RoomsMapGenerator::Generate();
-        GenerateCorridors();
-        _map->GetPathfinder()->Initialize(IntVector2{_map->CalcMaxDimensions()});
-    } while(!GenerateExitAndEntrance());
-    LoadFeatures(*_map->_root_xml_element);
-    LoadActors(*_map->_root_xml_element);
-    LoadItems(*_map->_root_xml_element);
-    PlaceActors();
-    PlaceFeatures();
-    PlaceItems();
+
+void MapGenerator::FillRoomsWithWallTiles() noexcept {
+    FillRoomsWithTileType(wallType);
 }
 
-void RoomsAndCorridorsMapGenerator::GenerateCorridors() noexcept {
+void MapGenerator::FillRoomsWithFloorTiles() noexcept {
+    FillRoomsWithTileType(floorType);
+}
+
+void MapGenerator::GenerateCorridors() noexcept {
     const auto roomCount = rooms.size();
-    for(auto i = std::size_t{0u}; i != roomCount; ++i) {
+    for(auto i = std::size_t{ 0u }; i != roomCount; ++i) {
         const auto& r1 = rooms[i % roomCount];
         const auto& r2 = rooms[(i + 1u) % roomCount];
         const auto horizontal_first = MathUtils::GetRandomBool();
@@ -514,7 +448,7 @@ void RoomsAndCorridorsMapGenerator::GenerateCorridors() noexcept {
     FillRoomsWithFloorTiles();
 }
 
-void RoomsAndCorridorsMapGenerator::MakeVerticalCorridor(const AABB2& from, const AABB2& to) noexcept {
+void MapGenerator::MakeVerticalCorridor(const AABB2& from, const AABB2& to) noexcept {
     const auto [start, end] = [&]() {
         auto start = from.CalcCenter().y;
         auto end = to.CalcCenter().y;
@@ -530,7 +464,7 @@ void RoomsAndCorridorsMapGenerator::MakeVerticalCorridor(const AABB2& from, cons
     }
 }
 
-void RoomsAndCorridorsMapGenerator::MakeHorizontalCorridor(const AABB2& from, const AABB2& to) noexcept {
+void MapGenerator::MakeHorizontalCorridor(const AABB2& from, const AABB2& to) noexcept {
     const auto [start, end] = [&]() {
         auto start = from.CalcCenter().x;
         auto end = to.CalcCenter().x;
@@ -546,7 +480,7 @@ void RoomsAndCorridorsMapGenerator::MakeHorizontalCorridor(const AABB2& from, co
     }
 }
 
-void RoomsAndCorridorsMapGenerator::MakeCorridorSegmentAt(float x, const float y) const noexcept {
+void MapGenerator::MakeCorridorSegmentAt(float x, const float y) const noexcept {
     if(auto* tile = _map->GetTile(IntVector3{static_cast<int>(x), static_cast<int>(y), 0})) {
         tile->ChangeTypeFromName(floorType);
         const auto neighbors = tile->GetNeighbors();
@@ -558,7 +492,7 @@ void RoomsAndCorridorsMapGenerator::MakeCorridorSegmentAt(float x, const float y
     }
 }
 
-bool RoomsAndCorridorsMapGenerator::VerifyExitIsReachable(const IntVector2& enter_loc, const IntVector2& exit_loc) const noexcept {
+bool MapGenerator::VerifyExitIsReachable(const IntVector2& enter_loc, const IntVector2& exit_loc) const noexcept {
     const auto viable = [this](const IntVector2& a)->bool {
         return this->_map->IsTilePassable(a);
     };
@@ -577,11 +511,11 @@ bool RoomsAndCorridorsMapGenerator::VerifyExitIsReachable(const IntVector2& ente
     }
 }
 
-bool RoomsAndCorridorsMapGenerator::CanTileBeCorridorWall(const std::string& name) const noexcept {
+bool MapGenerator::CanTileBeCorridorWall(const std::string& name) const noexcept {
     return name != this->floorType;
 }
 
-bool RoomsAndCorridorsMapGenerator::GenerateExitAndEntrance() noexcept {
+bool MapGenerator::GenerateExitAndEntrance() noexcept {
     IntVector2 start{};
     IntVector2 end{};
     std::set<std::pair<int, int>> closed_set{};

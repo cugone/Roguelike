@@ -216,11 +216,15 @@ std::size_t Map::DebugVisibleTilesInViewCount() const {
 }
 
 void Map::RegenerateMap() noexcept {
-    _map_generator->Generate();
+    _map_generator.Generate();
 }
 
-Pathfinder* Map::GetPathfinder() const noexcept {
-    return _pathfinder.get();
+const Pathfinder* Map::GetPathfinder() const noexcept {
+    return &_pathfinder;
+}
+
+Pathfinder* Map::GetPathfinder() noexcept {
+    return &_pathfinder;
 }
 
 void Map::ZoomOut() noexcept {
@@ -353,10 +357,10 @@ bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
 }
 
 Map::Map(const std::filesystem::path& filepath) noexcept
-: _pathfinder(std::make_unique<Pathfinder>())
 {
-    if(const auto xml_success = _xml_doc.LoadFile(filepath.string().c_str()); xml_success == tinyxml2::XML_SUCCESS) {
-        _root_xml_element = _xml_doc.RootElement();
+    _xml_doc = std::make_shared<tinyxml2::XMLDocument>();
+    if(const auto xml_success = _xml_doc->LoadFile(filepath.string().c_str()); xml_success == tinyxml2::XML_SUCCESS) {
+        _root_xml_element = _xml_doc->RootElement();
     } else {
         ERROR_AND_DIE("Bad path for Map constructor");
     }
@@ -365,7 +369,6 @@ Map::Map(const std::filesystem::path& filepath) noexcept
 
 Map::Map(const XMLElement& elem) noexcept
     : _root_xml_element(const_cast<XMLElement*>(&elem))
-    , _pathfinder(std::make_unique<Pathfinder>())
 {
     Initialize(*_root_xml_element);
 }
@@ -383,6 +386,7 @@ Map::Map(IntVector2 dimensions) noexcept
 }
 
 Map::~Map() noexcept {
+    _xml_doc.reset();
     _entities.clear();
     _entities.shrink_to_fit();
 }
@@ -727,12 +731,10 @@ void Map::DebugRender() const {
             g_theRenderer->DrawWorldGrid2D(layer->tileDimensions, layer->debug_grid_color);
         }
         if(game->_debug_show_room_bounds) {
-            if(auto* generator = dynamic_cast<RoomsMapGenerator*>(_map_generator.get()); generator != nullptr) {
-                for(auto& room : generator->rooms) {
-                    g_theRenderer->SetModelMatrix(Matrix4::I);
-                    g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
-                    g_theRenderer->DrawAABB2(room, Rgba::Cyan, Rgba::NoAlpha);
-                }
+            for(auto& room : _map_generator.rooms) {
+                g_theRenderer->SetModelMatrix(Matrix4::I);
+                g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+                g_theRenderer->DrawAABB2(room, Rgba::Cyan, Rgba::NoAlpha);
             }
         }
         if(game->_debug_show_world_bounds) {

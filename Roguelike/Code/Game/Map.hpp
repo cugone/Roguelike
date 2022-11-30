@@ -7,16 +7,21 @@
 #include "Engine/Core/OrthographicCameraController.hpp"
 
 #include "Engine/Math/Vector2.hpp"
+
 #include "Engine/Renderer/Camera2D.hpp"
 
+#include "Game/GameCommon.hpp"
 #include "Game/EntityDefinition.hpp"
 #include "Game/EntityText.hpp"
 #include "Game/Inventory.hpp"
 #include "Game/Layer.hpp"
+#include "Game/MapGenerator.hpp"
+#include "Game/Pathfinder.hpp"
 
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <queue>
 #include <set>
 #include <stack>
 #include <vector>
@@ -338,11 +343,12 @@ public:
     void GenerateMap(const XMLElement& elem) noexcept;
     void RegenerateMap() noexcept;
 
-    Pathfinder* GetPathfinder() const noexcept;
+    const Pathfinder* GetPathfinder() const noexcept;
+    Pathfinder* GetPathfinder() noexcept;
     
     void DirtyTileLight(TileInfo& ti) noexcept;
 
-    std::unique_ptr<MapGenerator> _map_generator{};
+    MapGenerator _map_generator;
 
 protected:
 private:
@@ -393,16 +399,16 @@ private:
     static const Rgba& GetSkyColorForCave() noexcept;
 
     std::string _name{};
-    std::vector<std::unique_ptr<Layer>> _layers{};
-    ThreadSafeQueue<TileInfo> _lightingQueue{};
-    tinyxml2::XMLDocument _xml_doc;
+    std::vector<std::shared_ptr<Layer>> _layers{};
+    std::queue<TileInfo> _lightingQueue{};
+    std::shared_ptr<tinyxml2::XMLDocument> _xml_doc{};
     XMLElement* _root_xml_element{};
     Adventure* _parent_adventure{};
     Material* _default_tileMaterial{};
     Material* _current_tileMaterial{};
     Rgba _current_sky_color{};
     uint32_t _current_global_light{};
-    std::unique_ptr<Pathfinder> _pathfinder{};
+    Pathfinder _pathfinder{};
     std::vector<Entity*> _entities{};
     std::vector<EntityText*> _text_entities{};
     std::vector<Actor*> _actors{};
