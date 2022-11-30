@@ -96,7 +96,7 @@ void Tile::ChangeTypeFromName(const std::string& name) {
     if(!def) {
         return;
     }
-    _flags_coords_lightvalue &= ~def->GetLightingBits();
+    _flags_coords_lightvalue &= ~tile_flags_opaque_solid_mask;
     _flags_coords_lightvalue |= def->GetLightingBits();
     _type = name;
     layer->DirtyMesh();
@@ -108,7 +108,7 @@ void Tile::ChangeTypeFromGlyph(char glyph) {
     }
     if(const auto* new_def = TileDefinition::GetTileDefinitionByGlyph(glyph)) {
         _type = new_def->name;
-        _flags_coords_lightvalue &= ~new_def->GetLightingBits();
+        _flags_coords_lightvalue &= ~tile_flags_opaque_solid_mask;
         _flags_coords_lightvalue |= new_def->GetLightingBits();
         layer->DirtyMesh();
     }
