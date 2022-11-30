@@ -9,7 +9,7 @@
     <features>
         <feature name="glowstone" position="[12,5]" />
     </features>
-    <mapGenerator>
+    <mapGenerator type="xml">
         <layers>
             <layer>
                 <row glyphs="##########################" />
