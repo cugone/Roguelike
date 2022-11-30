@@ -430,7 +430,20 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
             tile->SetCanSee();
         }
     }
-    const auto& visibleTiles = _map->GetVisibleTilesWithinDistance(*_map->player->tile, _map->player->GetLightValue());
+    const auto& visibleTiles = [&]()->std::vector<Tile*> {
+        if(m_map) {
+            if(m_map->player && m_map->player->tile) {
+                return m_map->GetVisibleTilesWithinDistance(*m_map->player->tile, m_map->player->GetLightValue());
+            } else {
+                if(const auto* layer = m_map->GetLayer(0); layer != nullptr) {
+                    if(Tile* t = m_map->GetTile(layer->tileDimensions.x / 2, layer->tileDimensions.y / 2, 0); t != nullptr) {
+                        return m_map->GetVisibleTilesWithinDistance(*t, 1.0f + (std::max)(layer->tileDimensions.x, layer->tileDimensions.y));
+                    }
+                }
+            }
+        }
+        return {};
+    }();
     for(auto& tile : visibleTiles) {
         tile->SetCanSee();
     }
