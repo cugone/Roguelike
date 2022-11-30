@@ -1142,7 +1142,6 @@ Tile* Map::GetTile(int x, int y, int z) const {
 }
 
 bool Map::LoadFromXML(const XMLElement& elem) {
-
     DataUtils::ValidateXmlElement(elem, "map", "tiles,material,mapGenerator", "name", "actors,features,items", "timeOfDay,allowLightingDuringDay");
     LoadTimeOfDayForMap(elem);
     LoadNameForMap(elem);
