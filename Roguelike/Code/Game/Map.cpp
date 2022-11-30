@@ -1013,14 +1013,12 @@ std::vector<Tile*> Map::GetTilesWithinDistance(const Tile& startTile, float dist
 std::vector<Tile*> Map::GetVisibleTilesWithinDistance(const Tile& startTile, unsigned int manhattanDist) const {
     std::vector<Tile*> results = GetTilesWithinDistance(startTile, manhattanDist);
     results.erase(std::remove_if(std::begin(results), std::end(results), [this, &startTile](Tile* tile) { return tile->IsInvisible(); }), std::end(results));
-    results.shrink_to_fit();
     return results;
 }
 
 std::vector<Tile*> Map::GetVisibleTilesWithinDistance(const Tile& startTile, float dist) const {
     std::vector<Tile*> results = GetTilesWithinDistance(startTile, dist);
     results.erase(std::remove_if(std::begin(results), std::end(results), [this, &startTile](Tile* tile) { return tile->IsInvisible(); }), std::end(results));
-    results.shrink_to_fit();
     return results;
 }
 
