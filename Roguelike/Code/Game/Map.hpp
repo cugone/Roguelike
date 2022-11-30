@@ -160,6 +160,7 @@ public:
     }
 
     void DebugDisableLighting(bool disableLighting) noexcept;
+    void DebugShowInvisibleTiles(bool show) noexcept;
 
     Rgba SkyColor() const noexcept;
     void SetSkyColorToDay() noexcept;

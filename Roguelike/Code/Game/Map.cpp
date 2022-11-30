@@ -149,6 +149,12 @@ void Map::DebugDisableLighting([[maybe_unused]] bool disableLighting) noexcept {
     UpdateLighting(TimeUtils::FPSeconds{ 0.0f });
 }
 
+void Map::DebugShowInvisibleTiles(bool show) noexcept {
+    for(auto& layer : _layers) {
+        layer->DebugShowInvisibleTiles(show);
+    }
+}
+
 Rgba Map::SkyColor() const noexcept {
     return _current_sky_color;
 }
