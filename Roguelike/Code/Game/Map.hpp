@@ -32,8 +32,19 @@ class SpriteSheet;
 class Entity;
 class Actor;
 class TileDefinition;
-class MapGenerator;
-class Pathfinder;
+
+enum class TimeOfDay {
+    Cave
+    ,Day
+    ,Night
+};
+
+struct NewMapOptions {
+    std::string name{"NewMap"};
+    TimeOfDay time{TimeOfDay::Day};
+    IntVector2 dimensions{min_map_width, min_map_height};
+    IntVector2 player_start{0,0};
+};
 
 class Map {
 public:
