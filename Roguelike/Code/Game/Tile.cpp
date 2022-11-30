@@ -450,7 +450,7 @@ bool TileInfo::IsLightDirty() const noexcept {
 }
 
 void TileInfo::ClearLightDirty() noexcept {
-    if(layer) {
+    if(layer == nullptr) {
         return;
     }
     if(auto* tile = layer->GetTile(index)) {
@@ -459,7 +459,7 @@ void TileInfo::ClearLightDirty() noexcept {
 }
 
 void TileInfo::SetLightDirty() noexcept {
-    if(layer) {
+    if(layer == nullptr) {
         return;
     }
     if(auto* tile = layer->GetTile(index)) {
