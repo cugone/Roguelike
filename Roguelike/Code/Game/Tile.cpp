@@ -142,7 +142,8 @@ bool Tile::IsLightDirty() const {
 }
 
 bool Tile::IsOpaque() const {
-    return (_flags_coords_lightvalue & tile_flags_opaque_mask) == tile_flags_opaque_mask;
+    const auto my_opaque = (_flags_coords_lightvalue & tile_flags_opaque_mask) == tile_flags_opaque_mask;
+    return my_opaque || (feature && feature->IsOpaque());
 }
 
 bool Tile::IsTransparent() const {
