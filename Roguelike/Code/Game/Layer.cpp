@@ -154,7 +154,7 @@ void Layer::AppendToMesh(const Tile* const tile) noexcept {
 }
 
 void Layer::AppendToMesh(const Entity* const entity) noexcept {
-    if(!entity->sprite || entity->IsInvisible()) {
+    if(!entity || (entity && !entity->sprite) || entity->IsInvisible()) {
         return;
     }
     const auto& coords = entity->sprite->GetCurrentTexCoords();
