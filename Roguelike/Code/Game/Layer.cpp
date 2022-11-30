@@ -133,22 +133,24 @@ void Layer::AppendToMesh(const Tile* const tile) noexcept {
     if(!m_showInvisibleTiles && tile->IsInvisible()) {
         return;
     }
-    const auto* def = TileDefinition::GetTileDefinitionByName(tile->GetType());
-    const auto* sprite = def->GetSprite();
-    const auto& coords = sprite->GetCurrentTexCoords();
-    auto* material = sprite->GetMaterial();
-    const auto& tile_coords = tile->GetCoords();
-    AppendToMesh(tile_coords, coords, tile->GetLightValue(), material);
-    if(tile->feature) {
-        AppendToMesh(tile->feature);
+    if(const auto* sprite = [&]()->AnimatedSprite* { if(auto* def = TileDefinition::GetTileDefinitionByName(tile->GetType())) { return def->GetSprite(); } else { return nullptr; } }(); sprite == nullptr) {
+        return;
+    } else {
+        const auto& coords = sprite->GetCurrentTexCoords();
+        const auto& tile_coords = tile->GetCoords();
+        if(auto* material = sprite->GetMaterial()) {
+            AppendToMesh(tile_coords, coords, tile->GetLightValue(), material);
+        }
+        if(tile->feature) {
+            AppendToMesh(tile->feature);
+        }
+        if(tile->HasInventory()) {
+            AppendToMesh(tile->inventory.get(), tile->GetCoords());
+        }
+        if(tile->actor) {
+            AppendToMesh(tile->actor);
+        }
     }
-    if(tile->HasInventory()) {
-        AppendToMesh(tile->inventory.get(), tile->GetCoords());
-    }
-    if(tile->actor) {
-        AppendToMesh(tile->actor);
-    }
-    return;
 }
 
 void Layer::AppendToMesh(const Entity* const entity) noexcept {
