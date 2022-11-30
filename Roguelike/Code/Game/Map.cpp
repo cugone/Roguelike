@@ -623,20 +623,19 @@ void Map::RenderStatsBlock(Actor* actor) const noexcept {
     }
     const auto& stats = actor->GetStats();
     g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+//clang-format off
+    const auto text = std::format("Lvl: {}\nHP: {}\nMax HP: {}\nXP: {}\nAtk: {}\nDef: {}\nSpd: {}\nEva: {}\nLck: {}"
+                                 ,stats.GetStat(StatsID::Level)
+                                 ,stats.GetStat(StatsID::Health)
+                                 ,stats.GetStat(StatsID::Health_Max)
+                                 ,stats.GetStat(StatsID::Experience)
+                                 ,stats.GetStat(StatsID::Attack)
+                                 ,stats.GetStat(StatsID::Defense)
+                                 ,stats.GetStat(StatsID::Speed)
+                                 ,stats.GetStat(StatsID::Evasion)
+                                 ,stats.GetStat(StatsID::Luck));
+//clang-format on
 
-    const auto text = [&]()->std::string {
-        std::ostringstream ss{};
-        ss << "Lvl: " << stats.GetStat(StatsID::Level) << '\n';
-        ss << "HP: " << stats.GetStat(StatsID::Health) << '\n';
-        ss << "Max HP: " << stats.GetStat(StatsID::Health_Max) << '\n';
-        ss << "XP: " << stats.GetStat(StatsID::Experience) << '\n';
-        ss << "Atk: " << stats.GetStat(StatsID::Attack) << '\n';
-        ss << "Def: " << stats.GetStat(StatsID::Defense) << '\n';
-        ss << "Spd: " << stats.GetStat(StatsID::Speed) << '\n';
-        ss << "Eva: " << stats.GetStat(StatsID::Evasion) << '\n';
-        ss << "Lck: " << stats.GetStat(StatsID::Luck);
-        return ss.str();
-    }();
     const auto text_height = GetGameAs<Game>()->ingamefont->CalculateTextHeight(text);
     const auto text_width = GetGameAs<Game>()->ingamefont->CalculateTextWidth(text);
     AABB2 bounds{};
