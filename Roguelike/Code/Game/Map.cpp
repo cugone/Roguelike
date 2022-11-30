@@ -423,9 +423,11 @@ void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
 }
 
 void Map::FocusCameraOnPlayer(TimeUtils::FPSeconds deltaSeconds) noexcept {
-    cameraController.TranslateTo(Vector2{player->tile->GetCoords()} + Vector2{0.5f, 0.5f}, deltaSeconds);
-    const auto clamped_camera_position = MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
-    cameraController.SetPosition(clamped_camera_position);
+    if(player && player->tile) {
+        cameraController.TranslateTo(Vector2{ player->tile->GetCoords() } + Vector2{ 0.5f, 0.5f }, deltaSeconds);
+        const auto clamped_camera_position = MathUtils::CalcClosestPoint(cameraController.GetCamera().GetPosition(), CalcCameraBounds());
+        cameraController.SetPosition(clamped_camera_position);
+    }
 }
 
 void Map::UpdateCursor(TimeUtils::FPSeconds deltaSeconds) noexcept {
