@@ -308,16 +308,16 @@ Tile* Map::PickTileFromWorldCoords(const Vector2& worldCoords, int layerIndex) c
 }
 
 std::optional<std::vector<Tile*>> Map::PickTilesFromMouseCoords(const Vector2& mouseCoords) const {
-    const auto& world_coords = ServiceLocator::get<IRendererService>().ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
+    const auto& world_coords = ServiceLocator::get<IRendererService>()->ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
     return PickTilesFromWorldCoords(world_coords);
 }
 
 Vector2 Map::WorldCoordsToScreenCoords(const Vector2& worldCoords) const {
-    return ServiceLocator::get<IRendererService>().ConvertWorldToScreenCoords(cameraController.GetCamera(), worldCoords);
+    return ServiceLocator::get<IRendererService>()->ConvertWorldToScreenCoords(cameraController.GetCamera(), worldCoords);
 }
 
 Vector2 Map::ScreenCoordsToWorldCoords(const Vector2& screenCoords) const {
-    return ServiceLocator::get<IRendererService>().ConvertScreenToWorldCoords(cameraController.GetCamera(), screenCoords);
+    return ServiceLocator::get<IRendererService>()->ConvertScreenToWorldCoords(cameraController.GetCamera(), screenCoords);
 }
 
 IntVector2 Map::TileCoordsFromWorldCoords(const Vector2& worldCoords) const {
@@ -325,12 +325,12 @@ IntVector2 Map::TileCoordsFromWorldCoords(const Vector2& worldCoords) const {
 }
 
 Tile* Map::PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) const {
-    const auto& world_coords = ServiceLocator::get<IRendererService>().ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
+    const auto& world_coords = ServiceLocator::get<IRendererService>()->ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
     return PickTileFromWorldCoords(world_coords, layerIndex);
 }
 
 Vector2 Map::GetSubTileLocationFromMouseCoords(const Vector2& mouseCoords) const noexcept {
-    const auto& world_coords = ServiceLocator::get<IRendererService>().ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
+    const auto& world_coords = ServiceLocator::get<IRendererService>()->ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
     const auto&& [x_int, x_frac] = MathUtils::SplitFloatingPointValue(world_coords.x);
     const auto&& [y_int, y_frac] = MathUtils::SplitFloatingPointValue(world_coords.y);
     return Vector2{x_frac, y_frac};
