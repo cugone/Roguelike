@@ -26,6 +26,7 @@ void Pathfinder::ResetNavMap() noexcept {
     for(auto& node : _navMap) {
         node = Node{};
     }
+    already_initialized = false;
     Initialize(_dimensions);
 }
 
