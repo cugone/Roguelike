@@ -402,8 +402,8 @@ void Layer::DebugRenderTiles() const {
 void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
     debug_tiles_in_view_count = 0;
     debug_visible_tiles_in_view_count = 0;
-    const auto& viewableTiles = [this]() {
-        const auto view_area = CalcCullBounds(_map->cameraController.GetCamera().GetPosition());
+    const auto viewableTiles = [this]() {
+        const auto view_area = CalcCullBounds(m_map->cameraController.GetCamera().GetPosition());
         const auto dims = view_area.CalcDimensions();
         const auto width = static_cast<std::size_t>(dims.x);
         const auto height = static_cast<std::size_t>(dims.y);
