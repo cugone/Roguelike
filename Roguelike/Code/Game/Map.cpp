@@ -1232,10 +1232,11 @@ void Map::LoadFeaturesForMap(const XMLElement& elem) {
         DataUtils::ValidateXmlElement(*xml_features, "features", "feature", "");
         DataUtils::ForEachChildElement(*xml_features, "feature",
             [this](const XMLElement& elem) {
-                if(auto* feature = Feature::CreateFeature(this, elem)) {
-                    _entities.push_back(feature);
-                    _features.push_back(feature);
-                }
+            if(auto* feature = Feature::CreateFeature(this, elem); feature != nullptr) {
+                //const auto instance = Feature::CreateInstanceFromFeature(feature);
+                _entities.push_back(feature);
+                _features.push_back(feature);
+            }
             });
     }
 }
