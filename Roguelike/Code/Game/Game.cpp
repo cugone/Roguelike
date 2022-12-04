@@ -799,6 +799,27 @@ void Game::LoadItemsFromFile(const std::filesystem::path& src) {
     }
 }
 
+void Game::LoadTileDefinitionsFromFile(const std::filesystem::path& src) {
+    namespace FS = std::filesystem;
+    ThrowIfSourceFileNotFound(src);
+    if(tinyxml2::XMLDocument doc{}; auto * xml_root = ThrowIfSourceFileNotLoaded(doc, src)) {
+        DataUtils::ValidateXmlElement(*xml_root, "tileDefinitions", "spritesheet,tileDefinition", "");
+        if(auto* xml_spritesheet = xml_root->FirstChildElement("spritesheet")) {
+            if(_tileset_sheet) {
+                return;
+            }
+            if(_tileset_sheet = g_theRenderer->CreateSpriteSheet(*xml_spritesheet); _tileset_sheet) {
+                DataUtils::ForEachChildElement(*xml_root, "tileDefinition",
+                    [&](const XMLElement& elem) {
+                    if(auto* def = TileDefinition::CreateOrGetTileDefinition(elem, _tileset_sheet); def && def->GetSprite() && !def->GetSprite()->GetMaterial()) {
+                        def->GetSprite()->SetMaterial(GetDefaultTileMaterial());
+                    }
+                });
+            }
+        }
+    }
+}
+
 void Game::BeginFrame() noexcept {
     if(_nextGameState != _currentGameState) {
         OnExitState(_currentGameState);

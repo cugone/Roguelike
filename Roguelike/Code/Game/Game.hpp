@@ -241,6 +241,8 @@ private:
     void LoadEntityDefinitionsFromFile(const std::filesystem::path& src);
     void LoadItemsFromFile(const std::filesystem::path& src);
 
+    void LoadTileDefinitionsFromFile(const std::filesystem::path& src);
+
     void RequestScreenShot() const noexcept;
     void UpdateFullscreenEffect(const FullscreenEffect& effect);
     bool DoFade(const Rgba& color, TimeUtils::FPSeconds fadeTime, FullscreenEffect fadeType);
@@ -272,6 +274,7 @@ private:
     std::shared_ptr<SpriteSheet> _cursor_sheet{};
     std::shared_ptr<SpriteSheet> _entity_sheet{};
     std::shared_ptr<SpriteSheet> _item_sheet{};
+    std::shared_ptr<SpriteSheet> _tileset_sheet{};
     std::unique_ptr<UIWidget> _widgetLoading{};
     std::vector<Cursor> _cursors{};
     float _debug_fadeInTime = 1.0f;
