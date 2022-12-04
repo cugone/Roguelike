@@ -197,7 +197,7 @@ void Game::OnEnter_Loading() {
     _done_loading = false;
     _reset_loading_flag = false;
     _skip_frame = true;
-    g_theUISystem->LoadUiWidget("loading");
+    //g_theUISystem->LoadUiWidget("loading");
     //_cnvLoading = std::make_unique<UI::Canvas>(*g_theRenderer);
 
     //_pnlLoading = _cnvLoading->CreateChild<UI::Panel>();
@@ -236,7 +236,7 @@ void Game::OnExit_Title() {
 }
 
 void Game::OnExit_Loading() {
-    g_theUISystem->UnloadUiWidget("loading");
+    //g_theUISystem->UnloadUiWidget("loading");
     _reset_loading_flag = true;
 }
 
