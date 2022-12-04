@@ -1621,16 +1621,16 @@ void Game::ShowTileInspectorTableUI(const std::vector<Tile*>& tiles, const uint8
                 if(const auto* cur_tile = tiles[index]; cur_tile == nullptr) {
                     continue;
                 } else {
-                    const auto* cur_def = TileDefinition::GetTileDefinitionByName(cur_tile->GetType());
-                    if(cur_def == nullptr) {
+                    if(const auto* cur_def = TileDefinition::GetTileDefinitionByName(cur_tile->GetType()); cur_def == nullptr) {
                         cur_def = TileDefinition::GetTileDefinitionByName("void");
-                    }
-                    if(const auto* cur_sprite = cur_def->GetSprite()) {
-                        ShowInspectedElementImageUI(cur_sprite, Vector2::One * 100.0f, cur_sprite->GetCurrentTexCoords());
-                        if(ImGui::IsItemHovered()) {
-                            ImGui::BeginTooltip();
-                            ShowTileInspectorStatsTableUI(cur_def, cur_tile);
-                            ImGui::EndTooltip();
+                    } else {
+                        if(const auto* cur_sprite = cur_def->GetSprite()) {
+                            ShowInspectedElementImageUI(cur_sprite, Vector2::One * 100.0f, cur_sprite->GetCurrentTexCoords());
+                            if(ImGui::IsItemHovered()) {
+                                ImGui::BeginTooltip();
+                                ShowTileInspectorStatsTableUI(cur_def, cur_tile);
+                                ImGui::EndTooltip();
+                            }
                         }
                     }
                 }
