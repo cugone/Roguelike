@@ -227,7 +227,11 @@ void Game::OnEnter_Editor() {
 
 void Game::OnEnter_EditorMain() {
     g_theInputSystem->ShowMouseCursor();
-    _editor = std::make_unique<MapEditor>(m_requested_map_to_load);
+    if(m_requested_map_to_load.empty()) {
+        _editor = std::make_unique<MapEditor>(m_new_dimensions);
+    } else {
+        _editor = std::make_unique<MapEditor>(m_requested_map_to_load);
+    }
     _filewatcherUpdateRate.SetSeconds(TimeUtils::FPSeconds{1.0f});
     _filewatcherUpdateRate.Reset();
 }
