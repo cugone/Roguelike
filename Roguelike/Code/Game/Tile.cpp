@@ -753,17 +753,17 @@ uint32_t TileInfo::GetMaxLightValueFromNeighbors() const noexcept {
     }
     const auto max_light = [this]()->uint32_t {
         auto idealLighting = uint32_t{0u};
-        if(const auto n = GetEastNeighbor(); !n.IsOpaque()) {
-            idealLighting = (std::max)(idealLighting, n.GetLightValue());
+        if(const auto e = GetEastNeighbor(); !e.IsOpaque()) {
+            idealLighting = (std::max)(idealLighting, e.GetLightValue());
         }
-        if(const auto n = GetWestNeighbor(); !n.IsOpaque()) {
-            idealLighting = (std::max)(idealLighting, n.GetLightValue());
+        if(const auto w = GetWestNeighbor(); !w.IsOpaque()) {
+            idealLighting = (std::max)(idealLighting, w.GetLightValue());
         }
         if(const auto n = GetNorthNeighbor(); !n.IsOpaque()) {
             idealLighting = (std::max)(idealLighting, n.GetLightValue());
         }
-        if(const auto n = GetSouthNeighbor(); !n.IsOpaque()) {
-            idealLighting = (std::max)(idealLighting, n.GetLightValue());
+        if(const auto s = GetSouthNeighbor(); !s.IsOpaque()) {
+            idealLighting = (std::max)(idealLighting, s.GetLightValue());
         }
         return idealLighting;
     }(); //IIIL
