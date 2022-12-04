@@ -295,6 +295,7 @@ private:
     std::condition_variable _filewatcher_signal{};
     std::condition_variable _loading_signal{};
     std::filesystem::path m_requested_map_to_load{};
+    IntVector2 m_new_dimensions{min_map_width, min_map_height};
     std::unique_ptr<MapEditor> _editor{};
     std::shared_ptr<FrameBuffer> _fullscreen_framebuffer{};
     uint8_t _menu_id{ 0u };
