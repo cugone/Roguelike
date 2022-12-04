@@ -679,7 +679,7 @@ const bool Game::IsDebugWindowOpen() const noexcept {
 }
 
 void Game::LoadUI() {
-    LoadCursorsFromFile("Data/Definitions/UI.xml");
+    LoadCursorsFromFile(default_ui_src);
 }
 
 void Game::LoadAdventureFromFile(const std::filesystem::path& src) {
@@ -692,15 +692,15 @@ void Game::LoadAdventureFromFile(const std::filesystem::path& src) {
 }
 
 void Game::LoadMaps() {
-    LoadAdventureFromFile(std::filesystem::path{"Data/Maps/Adventure.xml"});
+    LoadAdventureFromFile(default_adventure_src);
 }
 
 void Game::LoadEntities() {
-    LoadEntitiesFromFile("Data/Definitions/Entities.xml");
+    LoadEntitiesFromFile(default_entities_definition_src);
 }
 
 void Game::LoadItems() {
-    LoadItemsFromFile("Data/Definitions/Items.xml");
+    LoadItemsFromFile(default_item_definition_src);
 }
 
 void Game::LoadCursorsFromFile(const std::filesystem::path& src) {
