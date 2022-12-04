@@ -8,6 +8,7 @@
 #include "Engine/Core/KerningFont.hpp"
 #include "Engine/Core/Utilities.hpp"
 
+#include "Engine/Math/MathUtils.hpp"
 #include "Engine/Math/Vector2.hpp"
 #include "Engine/Math/Vector4.hpp"
 
@@ -515,6 +516,42 @@ void Game::LoadData(void* /*user_data*/) {
     LoadEntities();
     LoadMaps();
     _done_loading = true;
+}
+
+void Game::CreateEmptyMapAt(const std::filesystem::path& src, const NewMapOptions& opts) noexcept {
+    const auto xml_map_prefix = std::format(
+R"(<map name="{}" timeOfDay="day">
+    <material name="Tile" />
+    <tiles src="Data/Definitions/Tiles.xml" />
+    <actors>
+        <actor name="player" lookAndFeel="human..male" position="[{},{}]" />
+    </actors>
+    <mapGenerator type="xml">
+        <layers>
+            <layer>)"
+, opts.name
+, opts.player_start.x
+, opts.player_start.y
+);
+
+    const auto xml_map_suffix = std::string {
+R"(
+            </layer>
+        </layers>
+    </mapGenerator>
+</map>
+)"
+    };
+    using namespace std::literals;
+    std::string xml_map_layers{};
+    xml_map_layers.reserve(std::size_t{35u + MathUtils::DigitLength(opts.dimensions.x)} * static_cast<std::size_t>(opts.dimensions.y));
+    for(int i = 0; i != opts.dimensions.y; ++i) {
+        xml_map_layers += std::vformat("\n{0:16}<row glyphs=\"{1:.>{2}}\" />"sv, std::make_format_args("", "", opts.dimensions.x));
+    }
+    const auto xml = xml_map_prefix + xml_map_layers + xml_map_suffix;
+    if(auto success = FileUtils::WriteBufferToFile(xml, src); !success) {
+        g_theFileLogger->LogErrorLine(std::format("Could not create map at \"{}\".", src.string()));
+    }
 }
 
 void Game::SetFullscreenEffect(FullscreenEffect effect, const std::function<void()>& onDoneCallback) {

@@ -256,6 +256,8 @@ private:
 
     void LoadData(void* user_data);
 
+    void CreateEmptyMapAt(const std::filesystem::path& src, const NewMapOptions& opts) noexcept;
+
     void MapEntered() noexcept;
     void MapExited() noexcept;
 
