@@ -216,8 +216,8 @@ void Game::OnEnter_Loading() {
 
 void Game::OnEnter_Main() {
     RegisterCommands();
-    _adventure->currentMap->FocusEntity(_adventure->currentMap->player);
-    current_cursor->SetCoords(_adventure->currentMap->player->tile->GetCoords());
+    _adventure->CurrentMap()->FocusEntity(_adventure->CurrentMap()->player);
+    current_cursor->SetCoords(_adventure->CurrentMap()->player->tile->GetCoords());
     g_theInputSystem->LockMouseToWindowViewport();
 }
 
@@ -275,7 +275,7 @@ void Game::BeginFrame_Loading() {
 }
 
 void Game::BeginFrame_Main() {
-    _adventure->currentMap->BeginFrame();
+    _adventure->CurrentMap()->BeginFrame();
 }
 
 void Game::BeginFrame_Editor() {
@@ -381,7 +381,7 @@ void Game::Update_Main(TimeUtils::FPSeconds deltaSeconds) {
     HandlePlayerInput();
 
     UpdateFullscreenEffect(_current_fs_effect);
-    _adventure->currentMap->Update(deltaSeconds);
+    _adventure->CurrentMap()->Update(deltaSeconds);
 }
 
 void Game::Update_Editor([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) {
@@ -475,13 +475,13 @@ void Game::Render_Loading() const {
 
 void Game::Render_Main() const {
 
-    g_theRenderer->BeginRenderToBackbuffer(_adventure->currentMap->SkyColor());
+    g_theRenderer->BeginRenderToBackbuffer(_adventure->CurrentMap()->SkyColor());
 
-    _adventure->currentMap->Render();
+    _adventure->CurrentMap()->Render();
 
 #ifdef UI_DEBUG
     if(_debug_render) {
-        _adventure->currentMap->DebugRender();
+        _adventure->CurrentMap()->DebugRender();
     }
 #endif
 
@@ -584,7 +584,7 @@ void Game::EndFrame_Loading() {
         , _reset_loading_flag);
     } else {
         SetCurrentCursorById(CursorId::Yellow_Corner_Box);
-        _adventure->currentMap->cameraController.SetPosition(Vector2{_adventure->currentMap->player->GetPosition()} + Vector2{0.5f, 0.5f});
+        _adventure->CurrentMap()->cameraController.SetPosition(Vector2{_adventure->CurrentMap()->player->GetPosition()} + Vector2{0.5f, 0.5f});
     }
 }
 
@@ -598,7 +598,7 @@ void Game::UnRegisterCommands() {
 
 void Game::MapEntered() noexcept {
     static bool requested_enter = false;
-    if(_adventure->currentMap->IsPlayerOnEntrance()) {
+    if(_adventure->CurrentMap()->IsPlayerOnEntrance()) {
         requested_enter = true;
     }
     if(requested_enter) {
@@ -615,7 +615,7 @@ void Game::MapEntered() noexcept {
 
 void Game::MapExited() noexcept {
     static bool requested_exit = false;
-    if(_adventure->currentMap->IsPlayerOnExit()) {
+    if(_adventure->CurrentMap()->IsPlayerOnExit()) {
         requested_exit = true;
     }
     if(requested_exit) {
@@ -631,7 +631,7 @@ void Game::MapExited() noexcept {
 }
 
 void Game::EndFrame_Main() {
-    _adventure->currentMap->EndFrame();
+    _adventure->CurrentMap()->EndFrame();
     OnMapExit.Trigger();
     OnMapEnter.Trigger();
 }
@@ -1026,43 +1026,43 @@ void Game::HandlePlayerKeyboardInput() {
 
     if(is_shift) {
         if(is_right_held) {
-            _adventure->currentMap->cameraController.Translate(Vector2::X_Axis);
+            _adventure->CurrentMap()->cameraController.Translate(Vector2::X_Axis);
         } else if(is_left_held) {
-            _adventure->currentMap->cameraController.Translate(-Vector2::X_Axis);
+            _adventure->CurrentMap()->cameraController.Translate(-Vector2::X_Axis);
         }
 
         if(is_up_held) {
-            _adventure->currentMap->cameraController.Translate(-Vector2::Y_Axis);
+            _adventure->CurrentMap()->cameraController.Translate(-Vector2::Y_Axis);
         } else if(is_down_held) {
-            _adventure->currentMap->cameraController.Translate(Vector2::Y_Axis);
+            _adventure->CurrentMap()->cameraController.Translate(Vector2::Y_Axis);
         }
         return;
     }
 
-    auto player = _adventure->currentMap->player;
+    auto player = _adventure->CurrentMap()->player;
     if(is_rest) {
         player->Act();
         return;
     }
     if(is_upright) {
-        _adventure->currentMap->MoveOrAttack(player, player->tile->GetNorthEastNeighbor());
+        _adventure->CurrentMap()->MoveOrAttack(player, player->tile->GetNorthEastNeighbor());
     } else if(is_upleft) {
-        _adventure->currentMap->MoveOrAttack(player, player->tile->GetNorthWestNeighbor());
+        _adventure->CurrentMap()->MoveOrAttack(player, player->tile->GetNorthWestNeighbor());
     } else if(is_downright) {
-        _adventure->currentMap->MoveOrAttack(player, player->tile->GetSouthEastNeighbor());
+        _adventure->CurrentMap()->MoveOrAttack(player, player->tile->GetSouthEastNeighbor());
     } else if(is_downleft) {
-        _adventure->currentMap->MoveOrAttack(player, player->tile->GetSouthWestNeighbor());
+        _adventure->CurrentMap()->MoveOrAttack(player, player->tile->GetSouthWestNeighbor());
     } else {
         if(is_right) {
-            _adventure->currentMap->MoveOrAttack(player, player->tile->GetEastNeighbor());
+            _adventure->CurrentMap()->MoveOrAttack(player, player->tile->GetEastNeighbor());
         } else if(is_left) {
-            _adventure->currentMap->MoveOrAttack(player, player->tile->GetWestNeighbor());
+            _adventure->CurrentMap()->MoveOrAttack(player, player->tile->GetWestNeighbor());
         }
 
         if(is_up) {
-            _adventure->currentMap->MoveOrAttack(player, player->tile->GetNorthNeighbor());
+            _adventure->CurrentMap()->MoveOrAttack(player, player->tile->GetNorthNeighbor());
         } else if(is_down) {
-            _adventure->currentMap->MoveOrAttack(player, player->tile->GetSouthNeighbor());
+            _adventure->CurrentMap()->MoveOrAttack(player, player->tile->GetSouthNeighbor());
         }
     }
 }
@@ -1099,10 +1099,10 @@ void Game::HandlePlayerControllerInput() {
     auto& controller = g_theInputSystem->GetXboxController(0);
     Vector2 rthumb = controller.GetRightThumbPosition();
     rthumb.y *= static_cast<float>(GetGameAs<Game>()->GetSettings().IsMouseInvertedY()) ? 1.0f : -1.0f;
-    _adventure->currentMap->cameraController.Translate(gameOptions.GetCameraSpeed() * rthumb * g_theRenderer->GetGameFrameTime().count());
+    _adventure->CurrentMap()->cameraController.Translate(gameOptions.GetCameraSpeed() * rthumb * g_theRenderer->GetGameFrameTime().count());
 
     if(controller.WasButtonJustPressed(XboxController::Button::RightThumb)) {
-        _adventure->currentMap->FocusEntity(_adventure->currentMap->player);
+        _adventure->CurrentMap()->FocusEntity(_adventure->CurrentMap()->player);
     }
 
     auto ltrigger = controller.GetLeftTriggerPosition();
@@ -1116,11 +1116,11 @@ void Game::HandlePlayerControllerInput() {
 }
 
 void Game::ZoomOut() {
-    _adventure->currentMap->ZoomOut();
+    _adventure->CurrentMap()->ZoomOut();
 }
 
 void Game::ZoomIn() {
-    _adventure->currentMap->ZoomIn();
+    _adventure->CurrentMap()->ZoomIn();
 }
 
 void Game::HandleDebugInput() {
@@ -1172,15 +1172,15 @@ void Game::HandleDebugKeyboardInput() {
         g_theRenderer->RequestScreenShot();
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::P)) {
-        _adventure->currentMap->SetPriorityLayer(MathUtils::GetRandomLessThan(_adventure->currentMap->GetLayerCount()));
+        _adventure->CurrentMap()->SetPriorityLayer(MathUtils::GetRandomLessThan(_adventure->CurrentMap()->GetLayerCount()));
     }
 
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::G)) {
-        _adventure->currentMap->RegenerateMap();
+        _adventure->CurrentMap()->RegenerateMap();
     }
 
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::B)) {
-        _adventure->currentMap->cameraController.DoCameraShake([]()->float { const auto t = g_theRenderer->GetGameTime().count(); return std::cos(t) * std::sin(t); });
+        _adventure->CurrentMap()->cameraController.DoCameraShake([]()->float { const auto t = g_theRenderer->GetGameTime().count(); return std::cos(t) * std::sin(t); });
     }
 #endif
 }
@@ -1208,12 +1208,12 @@ void Game::HandleDebugMouseInput() {
         }
     }
     if(g_theInputSystem->IsKeyDown(KeyCode::RButton)) {
-        if(const auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr) {
-            _adventure->currentMap->player->SetPosition(tile->GetCoords());
+        if(const auto* tile = _adventure->CurrentMap()->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr) {
+            _adventure->CurrentMap()->player->SetPosition(tile->GetCoords());
         }
     }
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::MButton)) {
-        if(auto* tile = _adventure->currentMap->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr) {
+        if(auto* tile = _adventure->CurrentMap()->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr) {
             tile->SetEntity(Feature::GetFeatureByName("flamePedestal"));
         }
     }
@@ -1380,17 +1380,17 @@ void Game::ShowFrameInspectorUI() {
 
 void Game::ShowWorldInspectorUI() {
     if(ImGui::BeginTabItem("World", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | ImGuiTabItemFlags_NoReorder)) {
-        ImGui::Text("View height: %.0f", _adventure->currentMap->cameraController.GetCamera().GetViewHeight());
-        ImGui::Text("World dimensions: %.0f, %.0f", _adventure->currentMap->CalcMaxDimensions().x, _adventure->currentMap->CalcMaxDimensions().y);
-        ImGui::Text("Camera: [%.1f,%.1f]", _adventure->currentMap->cameraController.GetCamera().position.x, _adventure->currentMap->cameraController.GetCamera().position.y);
+        ImGui::Text("View height: %.0f", _adventure->CurrentMap()->cameraController.GetCamera().GetViewHeight());
+        ImGui::Text("World dimensions: %.0f, %.0f", _adventure->CurrentMap()->CalcMaxDimensions().x, _adventure->CurrentMap()->CalcMaxDimensions().y);
+        ImGui::Text("Camera: [%.1f,%.1f]", _adventure->CurrentMap()->cameraController.GetCamera().position.x, _adventure->CurrentMap()->cameraController.GetCamera().position.y);
         {
-            const auto& mouse_coords = g_theRenderer->ConvertScreenToWorldCoords(_adventure->currentMap->cameraController.GetCamera(), g_theInputSystem->GetMouseCoords());
+            const auto& mouse_coords = g_theRenderer->ConvertScreenToWorldCoords(_adventure->CurrentMap()->cameraController.GetCamera(), g_theInputSystem->GetMouseCoords());
             ImGui::Text("Mouse: [%.1f,%.1f]", mouse_coords.x, mouse_coords.y);
             const auto& cursor_coords = current_cursor->GetCoords();
             ImGui::Text("Cursor: [%d,%d]", cursor_coords.x, cursor_coords.y);
         }
-        ImGui::Text("Tiles in view: %llu", _adventure->currentMap->DebugTilesInViewCount());
-        ImGui::Text("Tiles visible in view: %llu", _adventure->currentMap->DebugVisibleTilesInViewCount());
+        ImGui::Text("Tiles in view: %llu", _adventure->CurrentMap()->DebugTilesInViewCount());
+        ImGui::Text("Tiles visible in view: %llu", _adventure->CurrentMap()->DebugVisibleTilesInViewCount());
         static bool show_camera = false;
         ImGui::Checkbox("Show Camera", &show_camera);
         _debug_show_camera = show_camera;
@@ -1399,7 +1399,7 @@ void Game::ShowWorldInspectorUI() {
         _debug_show_grid = show_grid;
         ImGui::SameLine();
         if(ImGui::ColorEdit4("Grid Color##Picker", _grid_color, ImGuiColorEditFlags_NoLabel)) {
-            _adventure->currentMap->SetDebugGridColor(_grid_color);
+            _adventure->CurrentMap()->SetDebugGridColor(_grid_color);
         }
         static bool show_world_bounds = false;
         ImGui::Checkbox("World Bounds", &show_world_bounds);
@@ -1417,20 +1417,18 @@ void Game::ShowWorldInspectorUI() {
         ImGui::Checkbox("Show raycasts", &show_raycasts);
         _debug_show_raycasts = show_raycasts;
         _debug_render = _debug_show_room_bounds || _debug_show_camera || _debug_show_grid || _debug_show_world_bounds || _debug_show_camera_bounds || _debug_show_all_entities || _debug_show_raycasts;
-        static int light_level = this->_adventure->currentMap->GetCurrentGlobalLightValue();
+        static int light_level = this->_adventure->CurrentMap()->GetCurrentGlobalLightValue();
         if (ImGui::SliderInt("Global Light", &light_level, min_light_value, max_light_value, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat)) {
-            if (_adventure->currentMap->AllowLightingDuringDay()) {
-                if (auto* m = this->_adventure->currentMap) {
-                    m->SetDebugGlobalLight(light_level);
-                    m->SetSkyColorFromGlobalLight();
-                }
+            if (_adventure->CurrentMap()->AllowLightingDuringDay()) {
+                auto& m = *(this->_adventure->CurrentMap());
+                m.SetDebugGlobalLight(light_level);
+                m.SetSkyColorFromGlobalLight();
             }
         }
         static bool always_daytime = true;
         if (ImGui::Checkbox("Disable lighting", &always_daytime)) {
-            if (auto* m = this->_adventure->currentMap) {
-                m->DebugDisableLighting(!always_daytime);
-            }
+            auto& m = *(this->_adventure->CurrentMap());
+            m.DebugDisableLighting(!always_daytime);
             
         }
         ImGui::EndTabItem();
@@ -1622,7 +1620,7 @@ std::optional<std::vector<Tile*>> Game::DebugGetTilesFromCursor() {
     }
     if(_debug_has_picked_tile_with_click) {
         static std::optional<std::vector<Tile*>> picked_tiles{};
-        if(picked_tiles = _adventure->currentMap->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()}); !picked_tiles.has_value()) {
+        if(picked_tiles = _adventure->CurrentMap()->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()}); !picked_tiles.has_value()) {
             return {};
         }
         auto* tile_actor = (*picked_tiles)[0]->actor;
@@ -1637,7 +1635,7 @@ std::optional<std::vector<Tile*>> Game::DebugGetTilesFromCursor() {
         }
         return picked_tiles;
     }
-    return _adventure->currentMap->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});
+    return _adventure->CurrentMap()->PickTilesFromWorldCoords(Vector2{current_cursor->GetCoords()});
 }
 
 void Game::ShowEntityInspectorUI() {
