@@ -292,8 +292,8 @@ static const auto MenuId_Exit = uint8_t{2};
 
 void Game::Update_Title(TimeUtils::FPSeconds /*deltaSeconds*/) {
     if(g_theInputSystem->WasKeyJustPressed(KeyCode::Esc)) {
-        auto& app = ServiceLocator::get<IAppService>();
-        app.SetIsQuitting(true);
+        auto* app = ServiceLocator::get<IAppService>();
+        app->SetIsQuitting(true);
         return;
     }
     const auto down = []() {
@@ -345,8 +345,8 @@ void Game::Update_Title(TimeUtils::FPSeconds /*deltaSeconds*/) {
         }
         case MenuId_Exit:
         {
-            auto& app = ServiceLocator::get<IAppService>();
-            app.SetIsQuitting(true);
+            auto* app = ServiceLocator::get<IAppService>();
+            app->SetIsQuitting(true);
             break;
         }
         default:
@@ -372,8 +372,8 @@ void Game::Update_Main(TimeUtils::FPSeconds deltaSeconds) {
         ChangeGameState(GameState::Title);
         return;
     }
-    auto& app = ServiceLocator::get<IAppService>();
-    if(app.LostFocus()) {
+    auto* app = ServiceLocator::get<IAppService>();
+    if(app->LostFocus()) {
         deltaSeconds = TimeUtils::FPSeconds::zero();
     }
     g_theRenderer->UpdateGameTime(deltaSeconds);
@@ -485,15 +485,15 @@ void Game::Render_Main() const {
     }
 #endif
 
-    auto& app = ServiceLocator::get<IAppService>();
-    if(app.LostFocus()) {
+    auto* app = ServiceLocator::get<IAppService>();
+    if(app->LostFocus()) {
         g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
         g_theRenderer->DrawQuad2D(Vector2::Zero, Vector2::One, Rgba(0, 0, 0, 128));
     }
 
     g_theRenderer->BeginHUDRender(ui_camera, Vector2::Zero, static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight()));
 
-    if(app.LostFocus()) {
+    if(app->LostFocus()) {
         const auto w = static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowWidth());
         const auto h = static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight());
         g_theRenderer->DrawQuad2D(Matrix4::CreateScaleMatrix(Vector2{w, h}), Rgba{0.0f, 0.0f, 0.0f, 0.5f});
