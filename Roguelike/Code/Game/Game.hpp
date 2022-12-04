@@ -217,6 +217,7 @@ private:
     void ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const AnimatedSprite* cur_sprite);
     void ShowEntityInspectorInventoryColumnUI(Entity* const cur_entity);
     void ShowFeatureInspectorUI();
+    void ShowFeatureInspectorFeatureStatesUI(const Entity* cur_entity);
     void ShowEntityInspectorImageUI(const AnimatedSprite* cur_sprite, const Entity* cur_entity);
     void ShowInspectedActorEquipmentExceptImageUI(const AnimatedSprite* cur_sprite, const Entity* cur_entity, const EquipSlot& skip_equip_slot = EquipSlot::None) noexcept;
     void ShowInspectedActorEquipmentOnlyImageUI(const AnimatedSprite* cur_sprite, const Entity* cur_entity, const EquipSlot& equip_slot) noexcept;

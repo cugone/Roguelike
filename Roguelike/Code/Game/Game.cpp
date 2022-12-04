@@ -1734,11 +1734,42 @@ void Game::ShowFeatureInspectorUI() {
                 ImGui::PopID();
                 ImGui::NewLine();
                 ShowEntityInspectorImageUI(cur_sprite, cur_entity);
+                ImGui::SameLine();
+                ShowFeatureInspectorFeatureStatesUI(cur_entity);
             }
         }
     }
 }
 
+void Game::ShowFeatureInspectorFeatureStatesUI(const Entity* cur_entity) {
+    if(const auto* feature = dynamic_cast<const Feature*>(cur_entity); feature != nullptr) {
+        auto info = FeatureInfo{feature->layer, feature->parent_tile->GetIndexFromCoords()};
+        if(info.HasStates()) {
+            if(ImGui::BeginTable("FeatureInspectorTable", 2, ImGuiTableFlags_Borders)) {
+                ImGui::TableSetupColumn("Active");
+                ImGui::TableSetupColumn("States");
+                ImGui::TableHeadersRow();
+                for(const auto& state : info.GetStates()) {
+                        ImGui::TableNextColumn();
+                        if(const auto disable = info.GetCurrentState() == state; disable) {
+                            ImGui::BeginDisabled(disable);
+                            ImGui::Button("Set##FeatureInspectorTableDeactivatedButton");
+                            ImGui::EndDisabled();
+                        } else {
+                            ImGui::BeginDisabled(disable);
+                            if(ImGui::Button("Set##FeatureInspectorTableActivatedButton")) {
+                                info.SetState(state);
+                            }
+                            ImGui::EndDisabled();
+                        }
+                        ImGui::TableNextColumn();
+                        ImGui::Text(state.c_str());
+                    }
+                }
+            ImGui::EndTable();
+        }
+    }
+}
 
 void Game::ShowEntityInspectorEntityColumnUI(const Entity* cur_entity, const AnimatedSprite* cur_sprite) {
     std::ostringstream ss;
