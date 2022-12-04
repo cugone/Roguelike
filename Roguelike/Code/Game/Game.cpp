@@ -733,6 +733,10 @@ void Game::LoadCursorDefinitionsFromFile(const std::filesystem::path& src) {
     }
 }
 
+Material* Game::GetDefaultTileMaterial() const noexcept {
+    return g_theRenderer->GetMaterial("Tile");
+}
+
 void Game::ThrowIfSourceFileNotFound(const std::filesystem::path& src) {
     namespace FS = std::filesystem;
     const auto error_msg = src.string() + " could not be found.";

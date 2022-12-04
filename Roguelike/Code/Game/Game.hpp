@@ -233,6 +233,7 @@ private:
     void LoadDefaultTileDefinitions();
     void LoadCursorsFromFile(const std::filesystem::path& src);
     void LoadCursorDefinitionsFromFile(const std::filesystem::path& src);
+    Material* GetDefaultTileMaterial() const noexcept;
 
     void ThrowIfSourceFileNotFound(const std::filesystem::path& src);
     void LoadEntitiesFromFile(const std::filesystem::path& src);
