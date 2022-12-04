@@ -10,6 +10,8 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/UI/UISystem.hpp"
 
+#include <filesystem>
+
 constexpr uint8_t min_map_width{3u};
 constexpr uint8_t min_map_height{3u};
 constexpr uint8_t max_map_width{255u};
@@ -39,3 +41,9 @@ constexpr uint32_t tile_y_offset{16u};
 constexpr uint32_t tile_x_offset{8u};
 constexpr uint32_t tile_flags_offset{4u};
 constexpr uint32_t tile_light_offset{0u};
+
+static inline const std::filesystem::path default_tile_definition_src{ "Data/Definitions/Tiles.xml" };
+static inline const std::filesystem::path default_item_definition_src{ "Data/Definitions/Items.xml" };
+static inline const std::filesystem::path default_entities_definition_src{ "Data/Definitions/Entities.xml" };
+static inline const std::filesystem::path default_adventure_src{ "Data/Maps/Adventure.xml" };
+static inline const std::filesystem::path default_ui_src{ "Data/Definitions/UI.xml" };
