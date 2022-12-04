@@ -703,6 +703,10 @@ void Game::LoadItems() {
     LoadItemsFromFile(default_item_definition_src);
 }
 
+void Game::LoadDefaultTileDefinitions() {
+    LoadTileDefinitionsFromFile(default_tile_definition_src);
+}
+
 void Game::LoadCursorsFromFile(const std::filesystem::path& src) {
     LoadCursorDefinitionsFromFile(src);
     _cursors.clear();

@@ -230,6 +230,7 @@ private:
     void LoadMaps();
     void LoadEntities();
     void LoadItems();
+    void LoadDefaultTileDefinitions();
     void LoadCursorsFromFile(const std::filesystem::path& src);
     void LoadCursorDefinitionsFromFile(const std::filesystem::path& src);
 
