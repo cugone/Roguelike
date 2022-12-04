@@ -47,10 +47,10 @@
 
 void GameOptions::SaveToConfig(Config& config) noexcept {
     GameSettings::SaveToConfig(config);
-    config.SetValue("soundVolume", _windowWidth);
-    config.SetValue("musicVolume", _windowHeight);
-    config.SetValue("cameraShakeStr", _fov);
-    config.SetValue("cameraSpeed", _invertMouseY);
+    config.SetValue("soundVolume", _soundVolume);
+    config.SetValue("musicVolume", _musicVolume);
+    config.SetValue("cameraShakeStr", _cameraShakeStrength);
+    config.SetValue("cameraSpeed", _camSpeed);
 }
 
 void GameOptions::SetToDefault() noexcept {
