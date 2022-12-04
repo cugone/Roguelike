@@ -417,17 +417,34 @@ void Game::Update_Editor([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) {
         if (ImGui::Begin("Map Setup")) {
             static int newWidth = min_map_width;
             static int newHeight = min_map_height;
-            ImGui::SliderInt("Width", &newWidth, min_map_width, max_map_width, "%d", ImGuiSliderFlags_AlwaysClamp);
-            ImGui::SliderInt("Height", &newHeight, min_map_width, max_map_width, "%d", ImGuiSliderFlags_AlwaysClamp);
+            static std::string name_str{"Map_Name"};
+            ImGui::InputText("Name##MapNameMain", &name_str);
+            if(ImGui::SliderInt("Width", &newWidth, min_map_width, max_map_width, "%d", ImGuiSliderFlags_AlwaysClamp)) {
+                m_new_dimensions.x = newWidth;
+            }
+            if(ImGui::SliderInt("Height", &newHeight, min_map_width, max_map_width, "%d", ImGuiSliderFlags_AlwaysClamp)) {
+                m_new_dimensions.y = newHeight;
+            }
             if (ImGui::Button("OK##OMD")) {
+                showNew = false;
+                mapPath = std::format("Data/Maps/{}.xml", name_str);
+                NewMapOptions opts{};
+                opts.name = name_str;
+                opts.time = TimeOfDay::Day;
+                if(!std::filesystem::exists(mapPath)) {
+                    CreateEmptyMapAt(mapPath, opts);
+                }
                 m_requested_map_to_load = std::filesystem::path{ mapPath };
                 LoadUI();
                 LoadItems();
                 LoadEntities();
+                LoadDefaultTileDefinitions();
                 ChangeGameState(GameState::Editor_Main);
             }
             ImGui::SameLine();
             if (ImGui::Button("Cancel##OMD")) {
+                name_str.clear();
+                name_str.shrink_to_fit();
                 showNew = false;
             }
             ImGui::End();
