@@ -761,7 +761,7 @@ void Game::LoadEntitiesFromFile(const std::filesystem::path& src) {
 
 XMLElement* Game::ThrowIfSourceFileNotLoaded(tinyxml2::XMLDocument& doc, const std::filesystem::path& src) {
     auto xml_result = doc.LoadFile(src.string().c_str());
-    const auto error_msg = std::string{"Entities source file at "} + src.string() + " could not be loaded.";
+    const auto error_msg = std::format("Entities source file at \"{}\" could not be loaded.", src.string());
     GUARANTEE_OR_DIE(xml_result == tinyxml2::XML_SUCCESS, error_msg.c_str());
     return doc.RootElement();
 }
