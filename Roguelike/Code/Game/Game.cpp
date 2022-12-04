@@ -1386,7 +1386,7 @@ void Game::ShowFrameInspectorUI() {
     static constexpr std::size_t max_histogram_count = 60;
     static std::array<float, max_histogram_count> histogram{};
     static std::size_t histogramIndex = 0;
-    static const std::string histogramLabel = "Last " + std::to_string(max_histogram_count) + " Frames";
+    static const std::string histogramLabel = std::format("Last {} Frames", max_histogram_count);
     if(ImGui::BeginTabItem("Frame Data", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton | ImGuiTabItemFlags_NoReorder)) {
         const auto frameTime = g_theRenderer->GetGameFrameTime().count();
         histogram[histogramIndex++] = frameTime;
