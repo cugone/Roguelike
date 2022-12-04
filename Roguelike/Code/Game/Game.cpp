@@ -1397,8 +1397,9 @@ void Game::ShowFrameInspectorUI() {
         ImGui::Text("Max: %0.7f", *std::max_element(std::begin(histogram), std::end(histogram)));
         ImGui::Text("Avg: %0.7f", std::reduce(std::begin(histogram), std::end(histogram), 0.0f) / max_histogram_count);
         static bool is_vsync_enabled = GetGameAs<Game>()->GetSettings().IsVsyncEnabled();
-        ImGui::Checkbox("Vsync", &is_vsync_enabled);
-        GetGameAs<Game>()->GetSettings().SetVsyncEnabled(is_vsync_enabled);
+        if(ImGui::Checkbox("Vsync", &is_vsync_enabled)) {
+            GetGameAs<Game>()->GetSettings().SetVsyncEnabled(is_vsync_enabled);
+        }
         if(ImGui::Button("Take Screenshot")) {
             RequestScreenShot();
         }
