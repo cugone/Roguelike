@@ -555,20 +555,16 @@ void Map::UpdateTileLighting(TileInfo& ti) noexcept {
 }
 
 void Map::DirtyValidNeighbors(TileInfo& ti) noexcept {
-    auto n = ti.GetNorthNeighbor();
-    if(!n.IsSky() && !n.IsOpaque()) {
+    if(auto n = ti.GetNorthNeighbor(); !n.IsSky() && !n.IsOpaque()) {
         DirtyTileLight(n);
     }
-    auto e = ti.GetEastNeighbor();
-    if(!e.IsSky() && !e.IsOpaque()) {
+    if(auto e = ti.GetEastNeighbor(); !e.IsSky() && !e.IsOpaque()) {
         DirtyTileLight(e);
     }
-    auto s = ti.GetSouthNeighbor();
-    if(!s.IsSky() && !s.IsOpaque()) {
+    if(auto s = ti.GetSouthNeighbor(); !s.IsSky() && !s.IsOpaque()) {
         DirtyTileLight(s);
     }
-    auto w = ti.GetWestNeighbor();
-    if(!w.IsSky() && !w.IsOpaque()) {
+    if(auto w = ti.GetWestNeighbor(); !w.IsSky() && !w.IsOpaque()) {
         DirtyTileLight(w);
     }
 }
