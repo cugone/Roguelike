@@ -417,7 +417,7 @@ void Game::Update_Editor([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) {
         if (ImGui::Begin("Map Setup")) {
             static int newWidth = min_map_width;
             static int newHeight = min_map_height;
-            static std::string name_str{"Map_Name"};
+            static std::string name_str{};
             ImGui::InputText("Name##MapNameMain", &name_str);
             if(ImGui::SliderInt("Width", &newWidth, min_map_width, max_map_width, "%d", ImGuiSliderFlags_AlwaysClamp)) {
                 m_new_dimensions.x = newWidth;
