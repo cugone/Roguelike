@@ -216,8 +216,8 @@ Item* Tile::AddItem(const std::string& name) noexcept {
 }
 
 void Tile::SetCoords(std::size_t index) {
-    const auto x = static_cast<int>(index / layer->tileDimensions.x);
-    const auto y = static_cast<int>(index % layer->tileDimensions.x);
+    const auto x = static_cast<int>(index % layer->tileDimensions.x);
+    const auto y = static_cast<int>(index / layer->tileDimensions.x);
     SetCoords(x, y);
 }
 
