@@ -153,6 +153,12 @@
     <ClCompile Include="Editor\MapEditor.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
+    <ClCompile Include="TmxReader.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="TsxReader.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.hpp">
@@ -268,6 +274,12 @@
     </ClInclude>
     <ClInclude Include="Editor\MapEditor.hpp">
       <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxReader.hpp">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="TsxReader.hpp">
+      <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
