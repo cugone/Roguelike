@@ -137,7 +137,11 @@ public:
     CursorId current_cursorId{};
     mutable Camera2D ui_camera{};
     GameOptions gameOptions{};
+
     bool IsDebugging() const noexcept;
+
+
+
 protected:
 private:
 
@@ -330,5 +334,7 @@ private:
     friend class Layer;
     friend class Tile;
     friend class MapEditor;
+    friend class TsxReader;
+    friend class TmxReader;
 };
 
