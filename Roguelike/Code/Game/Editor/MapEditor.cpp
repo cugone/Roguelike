@@ -64,7 +64,11 @@ void MapEditor::ShowMainMenu([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds)
 }
 
 void MapEditor::ShowViewport([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept {
-    ImGui::Begin("Viewport");
+    const auto viewport_name = m_hasUnsavedChanges ? std::vformat("* {}{}", std::make_format_args(m_map_path.stem(), m_map_path.extension())) : std::vformat("{}{}", std::make_format_args(m_map_path.stem(), m_map_path.extension()));
+    if(!ImGui::Begin(viewport_name.c_str())) {
+        ImGui::End();
+        return;
+    }
     const auto viewportSize = ImGui::GetContentRegionAvail();
     if (viewportSize.x != m_ViewportWidth || viewportSize.y != m_ViewportHeight) {
         m_ViewportWidth = static_cast<uint32_t>(std::floor(viewportSize.x));
