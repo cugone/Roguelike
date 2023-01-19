@@ -80,13 +80,15 @@ void MapEditor::ShowViewport([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds)
 }
 
 void MapEditor::ShowProperties([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept {
-    if(ImGui::Begin("Properties", nullptr)) {
-        //ImGui::Text("Tileset:");
-        //ImGui::SameLine();
-        static std::string tileset_str{ default_tile_definition_src.string()};
-        ImGui::InputText("Tileset##MapEditorTileset", &tileset_str);
+    if(!ImGui::Begin("Properties", nullptr)) {
         ImGui::End();
+        return;
     }
+    //ImGui::Text("Tileset:");
+    //ImGui::SameLine();
+    static std::string tileset_str{ default_tile_definition_src.string()};
+    ImGui::InputText("Tileset##MapEditorTileset", &tileset_str);
+    ImGui::End();
 }
 
 void MapEditor::Render_Editor() const noexcept {
