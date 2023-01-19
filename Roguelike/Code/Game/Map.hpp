@@ -312,6 +312,7 @@ public:
     void ResetTileMaterial();
     std::size_t GetLayerCount() const;
     Layer* GetLayer(std::size_t index) const;
+    std::optional<std::vector<Tile*>> GetTiles(std::size_t index) const noexcept;
     std::optional<std::vector<Tile*>> GetTiles(const IntVector2& location) const;
     std::optional<std::vector<Tile*>> GetTiles(int x, int y) const;
     std::size_t ConvertLocationToIndex(int x, int y) const noexcept;

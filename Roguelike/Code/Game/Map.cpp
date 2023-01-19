@@ -1128,6 +1128,10 @@ std::optional<std::vector<Tile*>> Map::GetTiles(const IntVector2& location) cons
     return GetTiles(location.x, location.y);
 }
 
+std::optional<std::vector<Tile*>> Map::GetTiles(std::size_t index) const noexcept {
+    return GetTiles(ConvertIndexToLocation(index));
+}
+
 Tile* Map::GetTile(const IntVector3& locationAndLayerIndex) const {
     return GetTile(locationAndLayerIndex.x, locationAndLayerIndex.y, locationAndLayerIndex.z);
 }
