@@ -10,6 +10,8 @@
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
 
+#include <filesystem>
+
 class MapEditor {
 public:
     MapEditor() noexcept = default;
@@ -20,8 +22,8 @@ public:
     void Render_Editor() const noexcept;
     void EndFrame_Editor() noexcept;
 
-    bool SerializeMap(const Map& map) const noexcept;
-    bool DeserializeMap(Map& map) noexcept;
+    bool SerializeMap(const Map& map, std::filesystem::path filepath) const noexcept;
+    bool DeserializeMap(Map& map, std::filesystem::path filepath) noexcept;
 
 protected:
 private:
@@ -29,7 +31,21 @@ private:
     void ShowViewport([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept;
     void ShowProperties([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept;
 
+    void DoSave() noexcept;
+    void DoSaveAs() noexcept;
+
+    bool ExportAsXml(const Map& map, const std::filesystem::path& filepath) const noexcept;
+    bool ExportAsTmx(const Map& map, const std::filesystem::path& filepath) const noexcept;
+    bool ExportAsBin(const Map& map, const std::filesystem::path& filepath) const noexcept;
+
+
+    bool ImportAsXml(Map& map, const std::filesystem::path& filepath) noexcept;
+    bool ImportAsTmx(Map& map, const std::filesystem::path& filepath) noexcept;
+    bool ImportAsBin(Map& map, const std::filesystem::path& filepath) noexcept;
+
+
     Map m_editorMap;
+    std::filesystem::path m_map_path{};
     std::shared_ptr<FrameBuffer> m_viewport_fb{FrameBuffer::Create(FrameBufferDesc{})};
     uint32_t m_ViewportWidth{1600u};
     uint32_t m_ViewportHeight{900u};

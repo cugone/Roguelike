@@ -6,6 +6,7 @@
 #include "Engine/Math/MathUtils.hpp"
 
 #include "Engine/Profiling/ProfileLogScope.hpp"
+#include "Engine/Profiling/Instrumentor.hpp"
 
 #include "Game/Actor.hpp"
 #include "Game/GameCommon.hpp"
@@ -16,6 +17,8 @@
 #include "Game/Pathfinder.hpp"
 
 #include "Game/PursueBehavior.hpp"
+
+#include "Game/TmxReader.hpp"
 
 #include <cmath>
 #include <random>
@@ -59,6 +62,7 @@ void MapGenerator::LoadFeatures(const XMLElement& elem) noexcept {
 }
 
 void MapGenerator::PlaceActors() noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     auto open_set = [this]() {
         auto result = std::vector<std::size_t>{};
         result.resize(rooms.size());
@@ -89,6 +93,7 @@ void MapGenerator::PlaceActors() noexcept {
 }
 
 void MapGenerator::PlaceFeatures() noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     const auto map_dims = _map->CalcMaxDimensions();
     for(auto* feature : _map->_features) {
         const auto x = MathUtils::GetRandomLessThan(map_dims.x);
@@ -99,7 +104,7 @@ void MapGenerator::PlaceFeatures() noexcept {
 }
 
 void MapGenerator::PlaceItems() noexcept {
-
+    PROFILE_BENCHMARK_FUNCTION();
 }
 
 void MapGenerator::SetRootXmlElement(const XMLElement& root_element) noexcept {
@@ -113,12 +118,14 @@ void MapGenerator::SetParentMap(Map* map) noexcept {
 }
 
 void MapGenerator::Generate() noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "", "type");
     DataUtils::ValidateXmlAttribute(*_xml_element, "type", "heightmap,file,maze,xml");
-    const auto isHeightMap = DataUtils::GetAttributeAsString(*_xml_element, "type") == std::string_view{ "heightmap" };
-    const auto isFileMap = DataUtils::GetAttributeAsString(*_xml_element, "type") == std::string_view{ "file" };
-    const auto isMazeMap = DataUtils::GetAttributeAsString(*_xml_element, "type") == std::string_view{ "maze" };
-    const auto isXmlMap = DataUtils::GetAttributeAsString(*_xml_element, "type") == std::string_view{ "xml" };
+    const auto type = DataUtils::GetAttributeAsString(*_xml_element, "type");
+    const auto isHeightMap = type == std::string_view{ "heightmap" };
+    const auto isFileMap = type == std::string_view{ "file" };
+    const auto isMazeMap = type == std::string_view{ "maze" };
+    const auto isXmlMap = type == std::string_view{ "xml" };
     if(isHeightMap) {
         GenerateFromHeightMap();
     } else if(isFileMap) {
@@ -126,13 +133,10 @@ void MapGenerator::Generate() noexcept {
     } else if(isMazeMap) {
         GenerateMaze();
     } else if(isXmlMap) {
-        DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "layers", "");
-        if(auto xml_layers = _xml_element->FirstChildElement("layers")) {
-            LoadLayers(*xml_layers);
-        }
-        _map->GetPathfinder()->Initialize(IntVector2{ _map->CalcMaxDimensions() });
+        GenerateFromEmbeddedXml();
     } else {
-
+        const auto msg = std::format("Could not generate map: \"{}\" is not a known type.", type);
+        ERROR_AND_DIE(msg.c_str());
     }
     LoadFeatures(*_map->_root_xml_element);
     LoadActors(*_map->_root_xml_element);
@@ -140,7 +144,17 @@ void MapGenerator::Generate() noexcept {
 
 }
 
+void MapGenerator::GenerateFromEmbeddedXml() noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
+    DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "layers", "");
+    if(auto xml_layers = _xml_element->FirstChildElement("layers")) {
+        LoadLayers(*xml_layers);
+    }
+    _map->GetPathfinder()->Initialize(IntVector2{ _map->CalcMaxDimensions() });
+}
+
 void MapGenerator::GenerateFromHeightMap() noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     const auto src = DataUtils::ParseXmlAttribute(*_xml_element, "src", std::string{});
     Image img(std::filesystem::path{ src });
     _map->_layers.emplace_back(std::make_unique<Layer>(_map, img));
@@ -165,19 +179,53 @@ void MapGenerator::GenerateFromHeightMap() noexcept {
 }
 
 void MapGenerator::GenerateFromFile() noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "", "src", "", "");
-    const auto xml_src = DataUtils::ParseXmlAttribute(*_xml_element, "src", std::string{});
-    if(auto src = FileUtils::ReadStringBufferFromFile(xml_src)) {
-        GUARANTEE_OR_DIE(!src.value().empty(), "Loading Map from file with empty or invalid source attribute.");
-        tinyxml2::XMLDocument doc;
-        if(tinyxml2::XML_SUCCESS == doc.Parse(src.value().c_str(), src.value().size())) {
-            auto* xml_layers = doc.RootElement();
-            LoadLayers(*xml_layers);
+    const auto src = DataUtils::ParseXmlAttribute(*_xml_element, "src", std::string{});
+    GUARANTEE_OR_DIE(!src.empty(), "Loading Map from file with empty or invalid source attribute.");
+    if(auto path = std::filesystem::path{ src }; std::filesystem::exists(path) && path.has_extension()) {
+        std::error_code ec{};
+        if(path = std::filesystem::canonical(path, ec); ec) {
+            const auto msg = std::format("Error canonicalizing path: \"{}\"", path.string());
+            ERROR_AND_DIE(msg.c_str());
+        }
+        const auto isTmx = path.extension() == ".tmx";
+        const auto isMap = path.extension() == ".map";
+        const auto isXml = path.extension() == ".xml";
+        if(isTmx) {
+            GenerateFromTmxFile(path);
+        } else if(isMap) {
+            GenerateFromBinFile(path);
+        } else if(isXml) {
+            GenerateFromXmlFile(path);
+        } else {
+            const auto msg = std::format("Error: {} is not a valid map file extension.", path.extension().string());
+            ERROR_AND_DIE(msg.c_str());
         }
     }
 }
 
+void MapGenerator::GenerateFromXmlFile(const std::filesystem::path& path) noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
+    tinyxml2::XMLDocument doc;
+    if(tinyxml2::XML_SUCCESS == doc.LoadFile(path.string().c_str())) {
+        auto* xml_layers = doc.RootElement();
+        LoadLayers(*xml_layers);
+    }
+}
+
+void MapGenerator::GenerateFromTmxFile(const std::filesystem::path& path) noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
+    TmxReader reader{ path };
+    reader.Parse(*_map);
+}
+
+void MapGenerator::GenerateFromBinFile(const std::filesystem::path& /*path*/) noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
+}
+
 void MapGenerator::GenerateMaze() noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "", "algorithm");
     const auto algoName = DataUtils::ParseXmlAttribute(*_xml_element, "algorithm", std::string{});
     GUARANTEE_OR_DIE(!algoName.empty(), "Maze Generator algorithm type specifier cannot be empty.");
@@ -199,6 +247,7 @@ void MapGenerator::GenerateMaze() noexcept {
 }
 
 void MapGenerator::GenerateRandomRooms() noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "minSize,maxSize", "count,floor,wall,default", "", "down,up,enter,exit,width,height");
     const auto min_size = std::clamp([&]()->const int { const auto* xml_min = _xml_element->FirstChildElement("minSize"); int result = DataUtils::ParseXmlElementText(*xml_min, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
     const auto max_size = std::clamp([&]()->const int { const auto* xml_max = _xml_element->FirstChildElement("maxSize"); int result = DataUtils::ParseXmlElementText(*xml_max, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
@@ -262,6 +311,7 @@ void MapGenerator::GenerateRandomRooms() noexcept {
 }
 
 void MapGenerator::GenerateRooms() noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     //Ref: Using "floorplan" algorithm here: https://www.reddit.com/r/roguelikedev/comments/310ae2/looking_for_a_bit_of_help_on_a_dungeon_generator/cpxrfbh?utm_source=share&utm_medium=web2x&context=3
     //1.  Make up some general constraints, like maximum and minimum room width & height.
     //2.  You need some sort of generic "room" construct, abstract from the map.
@@ -411,12 +461,14 @@ void MapGenerator::GenerateRooms() noexcept {
 }
 
 void MapGenerator::FillAreaWithTileType(const AABB2& area, std::string typeName) noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     for(auto* tile : _map->GetTilesInArea(area)) {
         tile->ChangeTypeFromName(typeName);
     }
 
 }
 void MapGenerator::FillRoomsWithTileType(std::string typeName) noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     for(const auto& room : rooms) {
         FillAreaWithTileType(room, typeName);
     }
@@ -424,14 +476,17 @@ void MapGenerator::FillRoomsWithTileType(std::string typeName) noexcept {
 
 
 void MapGenerator::FillRoomsWithWallTiles() noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     FillRoomsWithTileType(wallType);
 }
 
 void MapGenerator::FillRoomsWithFloorTiles() noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     FillRoomsWithTileType(floorType);
 }
 
 void MapGenerator::GenerateCorridors() noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     const auto roomCount = rooms.size();
     for(auto i = std::size_t{ 0u }; i != roomCount; ++i) {
         const auto& r1 = rooms[i % roomCount];

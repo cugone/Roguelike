@@ -4,6 +4,8 @@
 #include "Engine/Core/EngineCommon.hpp"
 #include "Engine/Core/TimeUtils.hpp"
 
+#include "Engine/Platform/PlatformUtils.hpp"
+
 #include "Engine/Services/ServiceLocator.hpp"
 #include "Engine/Services/IAppService.hpp"
 #include "Engine/Services/IRendererService.hpp"
@@ -21,6 +23,7 @@ MapEditor::MapEditor(IntVector2 dimensions /*= IntVector2{ min_map_width, min_ma
 
 MapEditor::MapEditor(const std::filesystem::path& mapPath) noexcept
     : m_editorMap{mapPath}
+    , m_map_path{mapPath}
 {
     m_editorMap.DebugDisableLighting(true);
 
@@ -37,6 +40,21 @@ void MapEditor::Update_Editor([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds
     ShowProperties(deltaSeconds);
 }
 
+void MapEditor::DoSave() noexcept {
+    if(SerializeMap(m_editorMap, m_map_path)) {
+        m_hasUnsavedChanges = false;
+    }
+}
+
+void MapEditor::DoSaveAs() noexcept {
+    if(const auto sfdResult = FileDialogs::SaveFile("Map file (*.xml)\0*.xml\0Tiled Map (*.tmx)\0*.tmx\0\0"); !sfdResult.empty()) {
+        m_map_path = sfdResult;
+        if(SerializeMap(m_editorMap, m_map_path)) {
+            m_hasUnsavedChanges = false;
+        }
+    }
+}
+
 void MapEditor::ShowMainMenu([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
@@ -44,14 +62,36 @@ void MapEditor::ShowMainMenu([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds)
 
             }
             if (ImGui::MenuItem("Open...", "Ctrl+O")) {
-
+                //if(const auto ofdResult = FileDialogs::OpenFile("Map file (*.xml)\0*.xml\0\0"); !ofdResult.empty()) {
+                //    mapPath = ofdResult;
+                //    m_requested_map_to_load = std::filesystem::path{ mapPath };
+                //    LoadUI();
+                //    LoadItems();
+                //    LoadEntities();
+                //    ChangeGameState(GameState::Editor_Main);
+                //}
             }
             ImGui::Separator();
-            if (ImGui::MenuItem("Save", "Ctrl+S")) {
-
+            if (ImGui::MenuItem("Save", "Ctrl+S", nullptr, m_hasUnsavedChanges)) {
+                m_map_path.empty() ? DoSaveAs() :  DoSave();
             }
-            if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S")) {
+            if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S", nullptr, m_hasUnsavedChanges)) {
+                DoSaveAs();
+            }
+            ImGui::Separator();
+            if(ImGui::MenuItem("Import...", nullptr, nullptr)) {
+                if(const auto ofdResult = FileDialogs::OpenFile(""); !ofdResult.empty()) {
+                    if(DeserializeMap(m_editorMap, ofdResult)) {
 
+                    }
+                }
+            }
+            if(ImGui::MenuItem("Export...", nullptr, nullptr)) {
+                if(const auto sfdResult = FileDialogs::SaveFile("Map file (*.xml)\0*.xml\0Tiled Map (*.tmx)\0*.tmx\0\0"); !sfdResult.empty()) {
+                    if(SerializeMap(m_editorMap, sfdResult)) {
+
+                    }
+                }
             }
             ImGui::Separator();
             if (ImGui::MenuItem("Exit", "")) {
@@ -130,10 +170,98 @@ void MapEditor::EndFrame_Editor() noexcept {
     /* DO NOTHING */
 }
 
-bool MapEditor::SerializeMap(const Map& /*map*/) const noexcept {
+bool MapEditor::SerializeMap(const Map& map, std::filesystem::path filepath) const noexcept {
+    {
+        std::error_code ec{};
+        if(filepath = std::filesystem::absolute(filepath, ec); ec) {
+            return false;
+        }
+    }
+    if(!filepath.has_extension()) {
+        return false;
+    }
+    if(filepath.extension() == ".xml") {
+        return ExportAsXml(map, filepath);
+    }
+    if(filepath.extension() == ".tmx") {
+        return ExportAsTmx(map, filepath);
+    }
+    if(filepath.extension() == ".map") {
+        return ExportAsBin(map, filepath);
+    }
     return false;
 }
 
-bool MapEditor::DeserializeMap(Map& /*map*/) noexcept {
+bool MapEditor::ExportAsXml(const Map& map, const std::filesystem::path& filepath) const noexcept {
+    if(map._xml_doc) {
+        if(const auto xml_result = map._xml_doc->SaveFile(filepath.string().c_str()); xml_result == tinyxml2::XML_SUCCESS) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool MapEditor::ExportAsTmx(const Map& /*map*/, const std::filesystem::path& /*filepath*/) const noexcept {
+    return false;
+}
+
+bool MapEditor::ExportAsBin(const Map& /*map*/, const std::filesystem::path& /*filepath*/) const noexcept {
+    return false;
+}
+
+bool MapEditor::DeserializeMap(Map& map, std::filesystem::path filepath) noexcept {
+    if(!std::filesystem::exists(filepath)) {
+        return false;
+    }
+    {
+        std::error_code ec{};
+        if(filepath = std::filesystem::canonical(filepath, ec); ec) {
+            return false;
+        }
+    }
+    if(!filepath.has_extension()) {
+        return false;
+    }
+    if(filepath.extension() == ".xml") {
+        return ImportAsXml(map, filepath);
+    }
+    if(filepath.extension() == ".tmx") {
+        return ImportAsTmx(map, filepath);
+    }
+    if(filepath.extension() == ".map") {
+        return ImportAsBin(map, filepath);
+    }
+    return true;
+}
+
+bool MapEditor::ImportAsXml(Map& map, const std::filesystem::path& filepath) noexcept {
+
+    if(map._xml_doc) {
+        if(!FileUtils::IsSafeReadPath(filepath)) {
+            return false;
+        }
+        if(std::filesystem::exists(filepath) && filepath.has_extension() && filepath.extension() == ".xml") {
+            if(const auto xml_result = map._xml_doc->LoadFile(filepath.string().c_str()); xml_result == tinyxml2::XML_SUCCESS) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool MapEditor::ImportAsTmx(Map& map, const std::filesystem::path& filepath) noexcept {
+    if(!FileUtils::IsSafeReadPath(filepath)) {
+        return false;
+    }
+    if(map._xml_doc) {
+        if(tinyxml2::XML_SUCCESS == map._xml_doc->LoadFile(filepath.string().c_str())) {
+            auto* xml_root = map._xml_doc->RootElement();
+            map.LoadFromTmx(*xml_root);
+        }
+    }
+    return false;
+}
+
+bool MapEditor::ImportAsBin(Map& /*map*/, const std::filesystem::path& /*filepath*/) noexcept {
     return false;
 }

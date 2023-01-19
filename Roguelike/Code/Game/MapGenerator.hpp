@@ -4,6 +4,7 @@
 
 #include "Engine/Math/AABB2.hpp"
 
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
@@ -32,6 +33,10 @@ private:
 
     void GenerateFromHeightMap() noexcept;
     void GenerateFromFile() noexcept;
+    void GenerateFromTmxFile(const std::filesystem::path& path) noexcept;
+    void GenerateFromBinFile(const std::filesystem::path& path) noexcept;
+    void GenerateFromXmlFile(const std::filesystem::path& path) noexcept;
+    void GenerateFromEmbeddedXml() noexcept;
     void GenerateMaze() noexcept;
     void GenerateRandomRooms() noexcept;
     void GenerateRooms() noexcept;

@@ -406,6 +406,9 @@ void Game::Update_Editor([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) {
             ImGui::MenuItem("Save", "Ctrl+S", nullptr, false);
             ImGui::MenuItem("Save As...", "Ctrl+Shift+S", nullptr, false);
             ImGui::Separator();
+            ImGui::MenuItem("Import...", nullptr, nullptr, false);
+            ImGui::MenuItem("Export...", nullptr, nullptr, false);
+            ImGui::Separator();
             if (ImGui::MenuItem("Exit")) {
                 ChangeGameState(GameState::Title);
             }
