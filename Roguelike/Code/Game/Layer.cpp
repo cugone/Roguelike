@@ -526,7 +526,7 @@ Map* Layer::GetMap() {
 }
 
 const Tile* Layer::GetTile(std::size_t x, std::size_t y) const noexcept {
-    return GetTile(x + (y * tileDimensions.x));
+    return GetTile(GetTileIndex(x, y));
 }
 
 Tile* Layer::GetTile(std::size_t x, std::size_t y) noexcept {
