@@ -314,6 +314,9 @@ public:
     Layer* GetLayer(std::size_t index) const;
     std::optional<std::vector<Tile*>> GetTiles(const IntVector2& location) const;
     std::optional<std::vector<Tile*>> GetTiles(int x, int y) const;
+    std::size_t ConvertLocationToIndex(int x, int y) const noexcept;
+    std::size_t ConvertLocationToIndex(const IntVector2& location) const noexcept;
+    IntVector2 ConvertIndexToLocation(std::size_t index) const noexcept;
     std::optional<std::vector<Tile*>> PickTilesFromWorldCoords(const Vector2& worldCoords) const;
     std::optional<std::vector<Tile*>> PickTilesFromMouseCoords(const Vector2& mouseCoords) const;
     Vector2 WorldCoordsToScreenCoords(const Vector2& worldCoords) const;

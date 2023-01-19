@@ -291,6 +291,21 @@ AABB2 Map::CalcCameraBounds() const {
     return bounds;
 }
 
+std::size_t Map::ConvertLocationToIndex(const IntVector2& location) const noexcept {
+    return ConvertLocationToIndex(location.x, location.y);
+}
+
+std::size_t Map::ConvertLocationToIndex(int x, int y) const noexcept {
+    return x + static_cast<std::size_t>(y) * static_cast<int>(std::floor(CalcMaxDimensions().x));
+}
+
+IntVector2 Map::ConvertIndexToLocation(std::size_t index) const noexcept {
+    const auto width = static_cast<int>(CalcMaxDimensions().x);
+    const auto x = static_cast<int>(index % width);
+    const auto y = static_cast<int>(index / width);
+    return IntVector2{x, y};
+}
+
 std::optional<std::vector<Tile*>> Map::PickTilesFromWorldCoords(const Vector2& worldCoords) const {
     auto world_bounds = CalcWorldBounds();
     if(MathUtils::IsPointInside(world_bounds, worldCoords)) {
