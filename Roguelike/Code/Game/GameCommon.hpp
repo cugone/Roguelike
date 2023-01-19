@@ -12,8 +12,8 @@
 
 #include <filesystem>
 
-constexpr uint8_t min_map_width{3u};
-constexpr uint8_t min_map_height{3u};
+constexpr uint8_t min_map_width{1u};
+constexpr uint8_t min_map_height{1u};
 constexpr uint8_t max_map_width{255u};
 constexpr uint8_t max_map_height{255u};
 constexpr int min_light_value{0};
