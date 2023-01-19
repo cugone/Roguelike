@@ -114,6 +114,18 @@ void Tile::ChangeTypeFromGlyph(char glyph) {
     }
 }
 
+void Tile::ChangeTypeFromId(std::size_t id) {
+    if(const auto* my_def = TileDefinition::GetTileDefinitionByName(_type); my_def && my_def->GetIndex() == id) {
+        return;
+    }
+    if(const auto* new_def = TileDefinition::GetTileDefinitionByIndex(id)) {
+        _type = new_def->name;
+        _flags_coords_lightvalue &= ~tile_flags_opaque_solid_mask;
+        _flags_coords_lightvalue |= new_def->GetLightingBits();
+        layer->DirtyMesh();
+    }
+}
+
 AABB2 Tile::GetBounds() const {
     return {Vector2(GetCoords()), Vector2(GetCoords() + IntVector2::One)};
 }
