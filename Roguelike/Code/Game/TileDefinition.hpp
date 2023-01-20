@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Core/DataUtils.hpp"
+#include "Engine/Core/TimeUtils.hpp"
 
 #include <map>
 #include <memory>
@@ -10,6 +11,26 @@
 class AnimatedSprite;
 class SpriteSheet;
 class Texture;
+
+struct TileDefinitionDesc {
+    std::size_t tileId{4224u};
+    std::string name{"void"};
+    std::string animName{};
+    bool opaque{false};
+    bool visible{ true };
+    bool solid{ false };
+    bool animated{ false };
+    bool transparent{ false };
+    bool is_entrance{ false };
+    bool is_exit{ false };
+    bool allow_diagonal_movement{ false };
+    char glyph{' '};
+    uint32_t light{0u};
+    uint32_t self_illumination{0u};
+    int anim_start_idx{0};
+    int frame_length{0};
+    float anim_duration{TimeUtils::FPSeconds{TimeUtils::FPMilliseconds{16.0f}}.count()};
+};
 
 class TileDefinition {
 public:
