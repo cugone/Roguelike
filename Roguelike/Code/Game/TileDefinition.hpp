@@ -61,7 +61,7 @@ private:
     void SetIndex(const IntVector2& indexCoords);
     void AddOffsetToIndex(int offset);
 
-    static std::map<std::string, std::unique_ptr<TileDefinition>> s_registry;
+    static inline std::map<std::string, std::unique_ptr<TileDefinition>> s_registry{};
     std::weak_ptr<SpriteSheet> _sheet{};
     std::unique_ptr<AnimatedSprite> _sprite{};
     IntVector2 _index{};

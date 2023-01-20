@@ -12,7 +12,6 @@
 
 #include <memory>
 
-std::map<std::string, std::unique_ptr<TileDefinition>> TileDefinition::s_registry{};
 
 TileDefinition* TileDefinition::CreateOrGetTileDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
     auto new_def = std::make_unique<TileDefinition>(elem, sheet);
