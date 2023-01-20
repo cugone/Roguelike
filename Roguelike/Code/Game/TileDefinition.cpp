@@ -122,7 +122,7 @@ bool TileDefinition::LoadFromXml(const XMLElement& elem) {
     DataUtils::ValidateXmlElement(elem, "tileDefinition", "glyph", "name,index", "opaque,solid,visible,invisible,allowDiagonalMovement,animation,offset,entrance,exit,light,selflight");
 
     name = DataUtils::ParseXmlAttribute(elem, "name", name);
-    if(auto xml_randomOffset = elem.FirstChildElement("offset")) {
+    if(auto xml_randomOffset = elem.FirstChildElement("offset"); xml_randomOffset != nullptr) {
         _random_index_offset = DataUtils::ParseXmlAttribute(*xml_randomOffset, "value", _random_index_offset);
     }
     _index = DataUtils::ParseXmlAttribute(elem, "index", _index);
@@ -131,48 +131,48 @@ bool TileDefinition::LoadFromXml(const XMLElement& elem) {
     auto xml_glyph = elem.FirstChildElement("glyph");
     glyph = DataUtils::ParseXmlAttribute(*xml_glyph, "value", glyph);
 
-    if(auto xml_opaque = elem.FirstChildElement("opaque")) {
+    if(auto xml_opaque = elem.FirstChildElement("opaque"); xml_opaque != nullptr) {
         is_opaque = true;
         is_opaque = DataUtils::ParseXmlAttribute(*xml_opaque, "value", is_opaque);
     }
 
-    if(auto xml_solid = elem.FirstChildElement("solid")) {
+    if(auto xml_solid = elem.FirstChildElement("solid"); xml_solid != nullptr) {
         is_solid = true;
         is_solid = DataUtils::ParseXmlAttribute(*xml_solid, "value", is_solid);
     }
 
-    if(auto xml_visible = elem.FirstChildElement("visible")) {
+    if(auto xml_visible = elem.FirstChildElement("visible"); xml_visible != nullptr) {
         is_visible = true;
         is_visible = DataUtils::ParseXmlAttribute(*xml_visible, "value", is_visible);
     }
-    if(auto xml_invisible = elem.FirstChildElement("invisible")) {
+    if(auto xml_invisible = elem.FirstChildElement("invisible"); xml_invisible != nullptr) {
         is_visible = false;
         is_visible = DataUtils::ParseXmlAttribute(*xml_invisible, "value", is_visible);
     }
 
-    if(auto xml_diag = elem.FirstChildElement("allowDiagonalMovement")) {
+    if(auto xml_diag = elem.FirstChildElement("allowDiagonalMovement"); xml_diag != nullptr) {
         allow_diagonal_movement = true;
         allow_diagonal_movement = DataUtils::ParseXmlAttribute(*xml_diag, "value", allow_diagonal_movement);
     }
     
-    if(auto xml_enter = elem.FirstChildElement("entrance")) {
+    if(auto xml_enter = elem.FirstChildElement("entrance"); xml_enter != nullptr) {
         is_entrance = true;
         is_entrance = DataUtils::ParseXmlAttribute(*xml_enter, "value", is_entrance);
     }
 
-    if(auto xml_exit = elem.FirstChildElement("exit")) {
+    if(auto xml_exit = elem.FirstChildElement("exit"); xml_exit != nullptr) {
         is_exit = true;
         is_exit = DataUtils::ParseXmlAttribute(*xml_exit, "value", is_exit);
     }
 
-    if(auto xml_light = elem.FirstChildElement("light")) {
+    if(auto xml_light = elem.FirstChildElement("light"); xml_light != nullptr) {
         light = DataUtils::ParseXmlAttribute(*xml_light, "value", light);
     }
-    if(auto xml_selflight = elem.FirstChildElement("selflight")) {
+    if(auto xml_selflight = elem.FirstChildElement("selflight"); xml_selflight != nullptr) {
         self_illumination = DataUtils::ParseXmlAttribute(*xml_selflight, "value", self_illumination);
     }
     auto* renderer = ServiceLocator::get<IRendererService>();
-    if(auto xml_animation = elem.FirstChildElement("animation")) {
+    if(auto xml_animation = elem.FirstChildElement("animation"); xml_animation != nullptr) {
         is_animated = true;
         _sprite = std::move(renderer->CreateAnimatedSprite(_sheet, *xml_animation));
     } else {
