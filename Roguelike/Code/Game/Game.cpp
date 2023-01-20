@@ -181,7 +181,6 @@ void Game::Initialize() noexcept {
     ingamefont = g_theRenderer->GetFont("TrebuchetMS32");
 
     g_theInputSystem->HideMouseCursor();
-    //g_theUISystem->RegisterUiWidgetsFromFolder(FileUtils::GetKnownFolderPath(FileUtils::KnownPathID::GameData) / std::string{"UI"});
 
 }
 
