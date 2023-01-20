@@ -28,6 +28,7 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
+Run_*/Data/Benchmarks/
 
 # Project-specific files
 [Ss]creenshots/

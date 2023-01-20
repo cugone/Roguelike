@@ -179,6 +179,8 @@
     <ClCompile Include="Stats.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="TileDefinition.cpp" />
+    <ClCompile Include="TmxReader.cpp" />
+    <ClCompile Include="TsxReader.cpp" />
     <ClCompile Include="WanderBehavior.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -219,6 +221,8 @@
     <ClInclude Include="Stats.hpp" />
     <ClInclude Include="Tile.hpp" />
     <ClInclude Include="TileDefinition.hpp" />
+    <ClInclude Include="TmxReader.hpp" />
+    <ClInclude Include="TsxReader.hpp" />
     <ClInclude Include="WanderBehavior.hpp" />
   </ItemGroup>
   <ItemGroup>

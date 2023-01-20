@@ -7,6 +7,8 @@
 #include "Engine/Math/Vector2.hpp"
 #include "Engine/Math/Vector3.hpp"
 
+#include "Engine/Profiling/Instrumentor.hpp"
+
 #include "Game/Game.hpp"
 #include "Game/Cursor.hpp"
 #include "Game/CursorDefinition.hpp"
@@ -352,7 +354,7 @@ std::size_t Layer::NormalizeLayerRows(std::vector<std::string>& glyph_strings) {
 }
 
 void Layer::SetModelViewProjectionBounds() const {
-
+    PROFILE_BENCHMARK_FUNCTION();
     const auto ortho_bounds = CalcOrthoBounds();
 
     g_theRenderer->SetModelMatrix(Matrix4::I);
@@ -382,11 +384,13 @@ void Layer::SetModelViewProjectionBounds() const {
 }
 
 void Layer::RenderTiles() const {
+    PROFILE_BENCHMARK_FUNCTION();
     g_theRenderer->SetModelMatrix(Matrix4::I);
     Mesh::Render(m_mesh_builder);
 }
 
 void Layer::DebugRenderTiles() const {
+    PROFILE_BENCHMARK_FUNCTION();
     g_theRenderer->SetModelMatrix(Matrix4::I);
 
     AABB2 cullbounds = CalcCullBounds(m_map->cameraController.GetCamera().position);
@@ -400,6 +404,7 @@ void Layer::DebugRenderTiles() const {
 }
 
 void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
+    PROFILE_BENCHMARK_FUNCTION();
     debug_tiles_in_view_count = 0;
     debug_visible_tiles_in_view_count = 0;
     const auto viewableTiles = [this]() {
@@ -471,20 +476,24 @@ void Layer::BeginFrame() {
 }
 
 void Layer::Update(TimeUtils::FPSeconds deltaSeconds) {
+    PROFILE_BENCHMARK_FUNCTION();
     UpdateTiles(deltaSeconds);
 }
 
 void Layer::Render() const {
+    PROFILE_BENCHMARK_FUNCTION();
     SetModelViewProjectionBounds();
     RenderTiles();
 }
 
 void Layer::DebugRender() const {
+    PROFILE_BENCHMARK_FUNCTION();
     SetModelViewProjectionBounds();
     DebugRenderTiles();
 }
 
 void Layer::EndFrame() {
+    PROFILE_BENCHMARK_FUNCTION();
     if(m_meshDirty) {
         m_meshNeedsRebuild = true;
         m_mesh_builder.Clear();
@@ -526,7 +535,7 @@ Map* Layer::GetMap() {
 }
 
 const Tile* Layer::GetTile(std::size_t x, std::size_t y) const noexcept {
-    return GetTile(x + (y * tileDimensions.x));
+    return GetTile(GetTileIndex(x, y));
 }
 
 Tile* Layer::GetTile(std::size_t x, std::size_t y) noexcept {

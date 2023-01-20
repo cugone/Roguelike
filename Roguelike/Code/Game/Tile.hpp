@@ -35,6 +35,7 @@ public:
 
     void ChangeTypeFromName(const std::string& name);
     void ChangeTypeFromGlyph(char glyph);
+    void ChangeTypeFromId(std::size_t id);
 
     AABB2 GetBounds() const;
 

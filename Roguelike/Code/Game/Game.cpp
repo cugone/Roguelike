@@ -181,7 +181,6 @@ void Game::Initialize() noexcept {
     ingamefont = g_theRenderer->GetFont("TrebuchetMS32");
 
     g_theInputSystem->HideMouseCursor();
-    //g_theUISystem->RegisterUiWidgetsFromFolder(FileUtils::GetKnownFolderPath(FileUtils::KnownPathID::GameData) / std::string{"UI"});
 
 }
 
@@ -405,6 +404,9 @@ void Game::Update_Editor([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) {
             ImGui::Separator();
             ImGui::MenuItem("Save", "Ctrl+S", nullptr, false);
             ImGui::MenuItem("Save As...", "Ctrl+Shift+S", nullptr, false);
+            ImGui::Separator();
+            ImGui::MenuItem("Import...", nullptr, nullptr, false);
+            ImGui::MenuItem("Export...", nullptr, nullptr, false);
             ImGui::Separator();
             if (ImGui::MenuItem("Exit")) {
                 ChangeGameState(GameState::Title);
@@ -1530,20 +1532,26 @@ void Game::ShowTileInspectorStatsTableUI(const TileDefinition* cur_def, const Ti
 
         {
             const auto types = StringUtils::Split(cur_def->name, '.', false);
-            const auto type = [&]()->std::string { if(types.size() > 0) return types[0]; else return std::string{}; }();
-            const auto subtype = [&]()->std::string { if(types.size() > 1) return types[1]; else return std::string{}; }();
+            const auto tileClass = [&]()->std::string { if(types.size() > 0) return types[0]; else return std::string{}; }();
+            const auto tileType = [&]()->std::string { if(types.size() > 1) return types[1]; else return std::string{}; }();
+            const auto tileSubtype = [&]()->std::string { if(types.size() > 2) return types[2]; else return std::string{}; }();
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGui::Text("Class:");
+            ImGui::TableNextColumn();
+            ImGui::Text(tileClass.c_str());
 
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             ImGui::Text("Type:");
             ImGui::TableNextColumn();
-            ImGui::Text(type.c_str());
+            ImGui::Text(tileType.c_str());
 
             ImGui::TableNextRow();
             ImGui::TableNextColumn();
             ImGui::Text("SubType:");
             ImGui::TableNextColumn();
-            ImGui::Text(subtype.c_str());
+            ImGui::Text(tileSubtype.c_str());
         }
 
         ImGui::TableNextRow();

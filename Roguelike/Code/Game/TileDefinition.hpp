@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Core/DataUtils.hpp"
+#include "Engine/Core/TimeUtils.hpp"
 
 #include <map>
 #include <memory>
@@ -11,6 +12,26 @@ class AnimatedSprite;
 class SpriteSheet;
 class Texture;
 
+struct TileDefinitionDesc {
+    std::size_t tileId{4224u};
+    std::string name{"void"};
+    std::string animName{};
+    bool opaque{false};
+    bool visible{ true };
+    bool solid{ false };
+    bool animated{ false };
+    bool transparent{ false };
+    bool is_entrance{ false };
+    bool is_exit{ false };
+    bool allow_diagonal_movement{ false };
+    char glyph{' '};
+    uint32_t light{0u};
+    uint32_t self_illumination{0u};
+    int anim_start_idx{0};
+    int frame_length{0};
+    float anim_duration{TimeUtils::FPSeconds{TimeUtils::FPMilliseconds{16.0f}}.count()};
+};
+
 class TileDefinition {
 public:
     TileDefinition() = delete;
@@ -20,12 +41,13 @@ public:
     TileDefinition& operator=(TileDefinition&& other) = default;
     ~TileDefinition() = default;
 
-    static TileDefinition* CreateOrGetTileDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
-    static TileDefinition* CreateTileDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
+    static TileDefinition* CreateOrGetTileDefinition(const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet);
+    static TileDefinition* CreateTileDefinition(const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet);
     static void ClearTileDefinitions();
 
     static TileDefinition* GetTileDefinitionByName(const std::string& name);
     static TileDefinition* GetTileDefinitionByGlyph(char glyph);
+    static TileDefinition* GetTileDefinitionByIndex(std::size_t index);
 
     bool is_opaque = false;
     bool is_visible = true;
@@ -49,21 +71,21 @@ public:
     const AnimatedSprite* GetSprite() const;
     AnimatedSprite* GetSprite();
     IntVector2 GetIndexCoords() const;
-    int GetIndex() const;
+    std::size_t GetIndex() const;
 
-    TileDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
+    TileDefinition(const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet);
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);
-    void SetIndex(int index);
+    void SetIndex(std::size_t index);
     void SetIndex(int x, int y);
     void SetIndex(const IntVector2& indexCoords);
-    void AddOffsetToIndex(int offset);
+    void AddOffsetToIndex(std::size_t offset);
 
-    static std::map<std::string, std::unique_ptr<TileDefinition>> s_registry;
-    std::weak_ptr<SpriteSheet> _sheet{};
+    static inline std::map<std::string, std::unique_ptr<TileDefinition>> s_registry{};
+    std::shared_ptr<SpriteSheet> _sheet{};
     std::unique_ptr<AnimatedSprite> _sprite{};
     IntVector2 _index{};
-    int _random_index_offset = 0;
+    std::size_t _random_index_offset = 0u;
 
 };
