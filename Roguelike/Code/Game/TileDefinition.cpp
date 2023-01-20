@@ -13,7 +13,7 @@
 #include <memory>
 
 
-TileDefinition* TileDefinition::CreateOrGetTileDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
+TileDefinition* TileDefinition::CreateOrGetTileDefinition(const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet) {
     auto new_def = std::make_unique<TileDefinition>(elem, sheet);
     auto* new_def_ptr = new_def.get();
     std::string new_def_name = new_def->name;
@@ -26,7 +26,7 @@ TileDefinition* TileDefinition::CreateOrGetTileDefinition(const XMLElement& elem
     return new_def_ptr;
 }
 
-TileDefinition* TileDefinition::CreateTileDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet) {
+TileDefinition* TileDefinition::CreateTileDefinition(const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet) {
     auto new_def = std::make_unique<TileDefinition>(elem, sheet);
     auto* new_def_ptr = new_def.get();
     std::string new_def_name = new_def->name;
@@ -85,12 +85,7 @@ Texture* TileDefinition::GetTexture() {
 }
 
 const SpriteSheet* TileDefinition::GetSheet() const {
-    if(!_sheet.expired()) {
-        auto shptr = _sheet.lock();
-        auto* ptr = shptr.get();
-        return ptr;
-    }
-    return nullptr;
+    return _sheet.get();
 }
 
 SpriteSheet* TileDefinition::GetSheet() {
@@ -116,7 +111,7 @@ int TileDefinition::GetIndex() const {
     return -1;
 }
 
-TileDefinition::TileDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet)
+TileDefinition::TileDefinition(const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet)
 : _sheet(sheet)
 {
     GUARANTEE_OR_DIE(LoadFromXml(elem), "TileDefinition failed to load.\n");

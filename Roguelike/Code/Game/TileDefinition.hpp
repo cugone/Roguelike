@@ -20,8 +20,8 @@ public:
     TileDefinition& operator=(TileDefinition&& other) = default;
     ~TileDefinition() = default;
 
-    static TileDefinition* CreateOrGetTileDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
-    static TileDefinition* CreateTileDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
+    static TileDefinition* CreateOrGetTileDefinition(const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet);
+    static TileDefinition* CreateTileDefinition(const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet);
     static void ClearTileDefinitions();
 
     static TileDefinition* GetTileDefinitionByName(const std::string& name);
@@ -52,7 +52,7 @@ public:
     IntVector2 GetIndexCoords() const;
     int GetIndex() const;
 
-    TileDefinition(const XMLElement& elem, std::weak_ptr<SpriteSheet> sheet);
+    TileDefinition(const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet);
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);
@@ -62,7 +62,7 @@ private:
     void AddOffsetToIndex(int offset);
 
     static inline std::map<std::string, std::unique_ptr<TileDefinition>> s_registry{};
-    std::weak_ptr<SpriteSheet> _sheet{};
+    std::shared_ptr<SpriteSheet> _sheet{};
     std::unique_ptr<AnimatedSprite> _sprite{};
     IntVector2 _index{};
     int _random_index_offset = 0;
