@@ -1,6 +1,7 @@
 #include "Game/Map.hpp"
 
 #include "Engine/Core/BuildConfig.hpp"
+#include "Engine/Core/Base64.hpp"
 #include "Engine/Core/DataUtils.hpp"
 #include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/FileUtils.hpp"
@@ -12,6 +13,8 @@
 #include "Engine/Math/Vector4.hpp"
 #include "Engine/Math/IntVector3.hpp"
 #include "Engine/Math/MathUtils.hpp"
+
+#include "Engine/Profiling/Instrumentor.hpp"
 
 #include "Engine/Renderer/Material.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
@@ -52,6 +55,10 @@ const Rgba& Map::GetSkyColorForNight() noexcept {
 const Rgba& Map::GetSkyColorForCave() noexcept {
     static const Rgba g_clearcolor_cave = Rgba::Black;
     return g_clearcolor_cave;
+}
+
+void Map::SetCustomSkyColor(const Rgba& newColor) noexcept {
+    _current_sky_color = newColor;
 }
 
 void Map::SetCursorForFaction(const Actor* actor) const noexcept {
@@ -100,6 +107,7 @@ bool Map::AllowLightingDuringDay() const noexcept {
 }
 
 void Map::CalculateLightingForLayers([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     for(auto& layer : _layers) {
         CalculateLighting(layer.get());
     }
@@ -372,6 +380,7 @@ bool Map::MoveOrAttack(Actor* actor, Tile* tile) {
 }
 
 Map::Map(const std::filesystem::path& filepath) noexcept
+    : m_filepath{filepath}
 {
     _xml_doc = std::make_shared<tinyxml2::XMLDocument>();
     if(const auto xml_success = _xml_doc->LoadFile(filepath.string().c_str()); xml_success == tinyxml2::XML_SUCCESS) {
@@ -407,6 +416,7 @@ Map::~Map() noexcept {
 }
 
 void Map::BeginFrame() {
+    PROFILE_BENCHMARK_FUNCTION();
     for(auto& actor : _actors) {
         actor->Act(false);
     }
@@ -416,6 +426,7 @@ void Map::BeginFrame() {
 }
 
 void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
+    PROFILE_BENCHMARK_FUNCTION();
     cameraController.Update(deltaSeconds);
     UpdateLayers(deltaSeconds);
     UpdateTextEntities(deltaSeconds);
@@ -430,6 +441,7 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
 }
 
 void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
+    PROFILE_BENCHMARK_FUNCTION();
     for(auto& layer : _layers) {
         layer->Update(deltaSeconds);
     }
@@ -446,6 +458,7 @@ void Map::FocusCameraOnPlayer(TimeUtils::FPSeconds deltaSeconds) noexcept {
 }
 
 void Map::UpdateCursor(TimeUtils::FPSeconds deltaSeconds) noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     if(const auto& tiles = PickTilesFromMouseCoords(g_theInputSystem->GetMouseCoords()); tiles.has_value()) {
         if(GetGameAs<Game>()->current_cursor) {
             GetGameAs<Game>()->current_cursor->SetCoords((*tiles).back()->GetCoords());
@@ -455,6 +468,7 @@ void Map::UpdateCursor(TimeUtils::FPSeconds deltaSeconds) noexcept {
 }
 
 void Map::AddCursorToTopLayer() noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     if(GetGameAs<Game>()->current_cursor) {
         if(auto* layer = GetLayer(GetLayerCount() - std::size_t{1u}); layer) {
             layer->AppendToMesh(GetGameAs<Game>()->current_cursor);
@@ -501,6 +515,7 @@ void Map::InitializeLighting(Layer* layer) noexcept {
 }
 
 void Map::CalculateLighting(Layer* layer) noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     if(layer == nullptr) {
         return;
     }
@@ -536,6 +551,7 @@ void Map::DirtyTileLight(TileInfo& ti) noexcept {
 }
 
 void Map::UpdateTileLighting(TileInfo& ti) noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     const uint32_t idealLighting = [&]() { // Ideal Lighting of tile is highest available from self, neighbor, sky, actor, or feature...
         const auto self_value = ti.GetSelfIlluminationValue();
         const auto highestNeighborLightValue = [&]() {
@@ -695,6 +711,7 @@ void Map::BringLayerToFront(std::size_t i) {
 }
 
 void Map::Render() const {
+    PROFILE_BENCHMARK_FUNCTION();
     for(const auto& layer : _layers) {
         layer->Render();
     }
@@ -723,6 +740,7 @@ void Map::Render() const {
 
 void Map::DebugRender() const {
 #ifdef UI_DEBUG
+    PROFILE_BENCHMARK_FUNCTION();
     for(const auto& layer : _layers) {
         layer->DebugRender();
     }
@@ -770,6 +788,7 @@ void Map::DebugRender() const {
 }
 
 void Map::EndFrame() {
+    PROFILE_BENCHMARK_FUNCTION();
     for(auto& layer : _layers) {
         layer->EndFrame();
     }
@@ -791,6 +810,7 @@ bool Map::IsPlayerOnEntrance() const noexcept {
 }
 
 void Map::Initialize(const XMLElement& elem) noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     GUARANTEE_OR_DIE(LoadFromXML(elem), "Could not load map.");
     cameraController = OrthographicCameraController{};
     cameraController.SetZoomLevelRange(Vector2{8.0f, 16.0f});
@@ -1156,7 +1176,399 @@ Tile* Map::GetTile(int x, int y, int z) const {
     return nullptr;
 }
 
+bool Map::LoadFromTmx(const XMLElement& elem) {
+    PROFILE_BENCHMARK_FUNCTION();
+    DataUtils::ValidateXmlElement(elem, "map", "", "version,orientation,width,height,tilewidth,tileheight", "properties,editorsettings,tileset,layer,objectgroup,imagelayer,group", "tiledversion,class,renderorder,compressionlevel,parallaxoriginx,parallaxoriginy,backgroundcolor,nextlayerid,nextobjectid,infinite,hexsidelength,staggeraxis,staggerindex");
+
+    {
+        const auto verify_version = [](const XMLElement& elem, std::string versionAttributeName, const std::string requiredVersionString) {
+            if(const auto version_string = DataUtils::ParseXmlAttribute(elem, versionAttributeName, std::string{ "0.0" }); version_string != requiredVersionString) {
+                const auto required_versions = StringUtils::Split(requiredVersionString, '.', false);
+                const auto actual_versions = StringUtils::Split(version_string, '.', false);
+                const auto required_major_version = std::stoi(required_versions[0]);
+                const auto required_minor_version = std::stoi(required_versions[1]);
+                const auto actual_major_version = std::stoi(actual_versions[0]);
+                const auto actual_minor_version = std::stoi(actual_versions[1]);
+                if(actual_major_version < required_major_version || (actual_major_version == required_major_version && actual_minor_version < required_minor_version)) {
+                    const auto msg = std::format("ERROR: Attribute mismatch for \"{}\". Required: {} File: {}\n", versionAttributeName, requiredVersionString, version_string);
+                    ERROR_AND_DIE(msg.c_str());
+                }
+            }
+        };
+
+
+        constexpr auto required_tmx_version = "1.9";
+        verify_version(elem, "version", required_tmx_version);
+
+        constexpr auto required_tiled_version = "1.9.2";
+        verify_version(elem, "tiledversion", required_tiled_version);
+    }
+
+    if(const auto prop_count = DataUtils::GetChildElementCount(elem, "properties"); prop_count > 1) {
+        DebuggerPrintf(std::format("WARNING: TMX map file map element contains more than one \"properties\" element. Ignoring all after first.\n"));
+    }
+    if(const auto editorsettings_count = DataUtils::GetChildElementCount(elem, "editorsettings"); editorsettings_count > 1) {
+        DebuggerPrintf(std::format("WARNING: TMX map file map element contains more than one \"editorsettings\" element. Ignoring all after first.\n"));
+    }
+    if(const auto* xml_editorsettings = elem.FirstChildElement("editorsettings"); xml_editorsettings != nullptr) {
+        DataUtils::ValidateXmlElement(*xml_editorsettings, "editorsettings", "", "", "chunksize,export", "");
+        if(const auto chunksize_count = DataUtils::GetChildElementCount(*xml_editorsettings, "chunksize"); chunksize_count > 1) {
+            DebuggerPrintf(std::format("WARNING: TMX map file editorsettings element contains more than one \"chunksize\" element. Ignoring all after the first.\n"));
+        }
+        if(const auto export_count = DataUtils::GetChildElementCount(*xml_editorsettings, "export"); export_count > 1) {
+            DebuggerPrintf(std::format("WARNING: TMX map file editorsettings element contains more than one \"export\" child element. Ignoring all after the first.\n"));
+        }
+        if(const auto* xml_chunksize = xml_editorsettings->FirstChildElement("chunksize"); xml_chunksize != nullptr) {
+            DataUtils::ValidateXmlElement(*xml_chunksize, "chunksize", "", "", "", "width,height");
+            m_chunkWidth = static_cast<uint16_t>(DataUtils::ParseXmlAttribute(*xml_chunksize, "width", 16));
+            m_chunkHeight = static_cast<uint16_t>(DataUtils::ParseXmlAttribute(*xml_chunksize, "height", 16));
+        }
+        if(const auto* xml_export = xml_editorsettings->FirstChildElement("export"); xml_export != nullptr) {
+            DataUtils::ValidateXmlElement(*xml_export, "export", "", "target,format");
+            const auto target = DataUtils::GetAttributeAsString(*xml_export, "target");
+            DebuggerPrintf(std::format("Map last exported as: {}.\n", target));
+            const auto format = DataUtils::GetAttributeAsString(*xml_export, "format");
+            DebuggerPrintf(std::format("Map last formatted as: {}.\n", format));
+        }
+
+    }
+
+    const auto&& [firstgid, path] = ParseTmxTilesetElement(elem);
+    if(DataUtils::HasChild(elem, "layer")) {
+        ParseTmxTileLayerElements(elem, firstgid);
+    }
+    if(DataUtils::HasChild(elem, "objectgroup")) {
+
+    }
+    if(DataUtils::HasChild(elem, "imagelayer")) {
+
+    }
+    if(DataUtils::HasChild(elem, "group")) {
+
+    }
+    return true;
+}
+
+std::pair<int, std::filesystem::path> Map::ParseTmxTilesetElement(const XMLElement& elem) noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
+    if(!DataUtils::HasChild(elem, "tileset")) {
+        DebuggerPrintf(std::format("TMX map load failure. Map {:s} is missing the element \"tileset\".\n", _name));
+        return std::make_pair(0, std::filesystem::path{});
+    }
+    const auto* xml_tileset = elem.FirstChildElement("tileset");
+    auto firstgid = DataUtils::ParseXmlAttribute(*xml_tileset, "firstgid", 1);
+    if(!DataUtils::HasAttribute(*xml_tileset, "source")) {
+        DebuggerPrintf(std::format("TMX map load failure. Map {:s} is missing the element \"source\".\n", _name));
+        return std::make_pair(0, std::filesystem::path{});
+        //DataUtils::ValidateXmlElement(*xml_tileset, "tileset", "", "name,tilewidth,tileheight,tilecount,columns", "image,tileoffset,grid,properties,terraintypes,wangsets,transformations", "version,tiledversion,class,spacing,margin,objectalignment,tilerendersize,fillmode");
+        //LoadTmxTileset(*xml_tileset);
+    } else {
+        DataUtils::ValidateXmlElement(*xml_tileset, "tileset", "", "firstgid,source", "", "");
+        const auto src = [this, xml_tileset]() {
+            auto raw_src = std::filesystem::path{ DataUtils::ParseXmlAttribute(*xml_tileset, "source", std::string{}) };
+            if(!raw_src.has_parent_path() || (raw_src.parent_path() != m_filepath.parent_path())) {
+                raw_src = std::filesystem::canonical(m_filepath.parent_path() / raw_src);
+            }
+            raw_src.make_preferred();
+            return raw_src;
+        }();
+        firstgid = DataUtils::ParseXmlAttribute(*xml_tileset, "firstgid", 1);
+        return std::make_pair(firstgid, src);
+        //if(const auto buffer = FileUtils::ReadStringBufferFromFile(src); buffer.has_value()) {
+        //    tinyxml2::XMLDocument xml_tilesetDoc;
+        //    if(const auto result = xml_tilesetDoc.Parse(buffer->data(), buffer->size()); result == tinyxml2::XML_SUCCESS) {
+        //        const auto xml_root = xml_tilesetDoc.RootElement();
+        //DataUtils::ValidateXmlElement(*xml_root, "tileset", "", "name,tilewidth,tileheight,tilecount,columns", "image,tileoffset,grid,properties,terraintypes,wangsets,transformations", "version,tiledversion,class,spacing,margin,objectalignment,tilerendersize,fillmode");
+        //        LoadTmxTileset(*xml_root);
+        //    }
+        //}
+        //return std::make_pair(0, std::filesystem::path{});
+    }
+}
+
+bool Map::ParseTmxTileLayerElements(const XMLElement& elem, int firstgid) noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
+    const auto map_width = DataUtils::ParseXmlAttribute(elem, "width", min_map_width);
+    const auto map_height = DataUtils::ParseXmlAttribute(elem, "height", min_map_height);
+    if(const auto count = DataUtils::GetChildElementCount(elem, "layer"); count > 9) {
+        g_theFileLogger->LogWarnLine(std::format("Layer count of TMX map {0} is greater than the maximum allowed ({1}).\nOnly the first {1} layers will be used.", _name, max_layers));
+        g_theFileLogger->Flush();
+    }
+    DataUtils::ForEachChildElement(elem, "layer", [this, map_width, map_height, firstgid](const XMLElement& xml_layer) {
+        DataUtils::ValidateXmlElement(xml_layer, "layer", "", "width,height", "properties,data", "id,name,class,x,y,opacity,visible,locked,tintcolor,offsetx,offsety,parallaxx,parallaxy");
+        if(DataUtils::HasAttribute(xml_layer, "x") || DataUtils::HasAttribute(xml_layer, "y")) {
+            g_theFileLogger->LogWarnLine(std::string{ "Attributes \"x\" and \"y\" in the layer element are deprecated and unsupported. Remove both attributes to suppress this message." });
+            g_theFileLogger->Flush();
+        }
+        const auto layer_name = DataUtils::ParseXmlAttribute(xml_layer, "name", std::string{});
+        if(DataUtils::HasChild(xml_layer, "properties")) {
+            if(DataUtils::GetChildElementCount(xml_layer, "properties") > 1) {
+                g_theFileLogger->LogWarnLine(std::format("WARNING: TMX map file layer element \"{}\" contains more than one \"properties\" element. Ignoring all after the first.\n", layer_name));
+                g_theFileLogger->Flush();
+            }
+        }
+        if(DataUtils::HasChild(xml_layer, "data")) {
+            if(DataUtils::GetChildElementCount(xml_layer, "data") > 1) {
+                g_theFileLogger->LogWarnLine(std::format("WARNING: TMX map file layer element \"{}\" contains more than one \"data\" element. Ignoring all after the first.\n", layer_name));
+                g_theFileLogger->Flush();
+            }
+        }
+
+        const auto layer_width = DataUtils::ParseXmlAttribute(xml_layer, "width", map_width);
+        const auto layer_height = DataUtils::ParseXmlAttribute(xml_layer, "height", map_height);
+        _layers.emplace_back(std::move(std::make_unique<Layer>(this, IntVector2{ layer_width, layer_height })));
+        auto* layer = _layers.back().get();
+        const auto clr_str = DataUtils::ParseXmlAttribute(xml_layer, "tintcolor", std::string{});
+        layer->color.SetRGBAFromARGB(clr_str);
+        layer->z_index = static_cast<int>(_layers.size()) - std::size_t{1u};
+        if(DataUtils::HasChild(xml_layer, "data")) {
+            auto* xml_data = xml_layer.FirstChildElement("data");
+            InitializeTilesFromTmxData(layer, *xml_data, firstgid);
+        }
+    });
+    return true;
+}
+
+void Map::InitializeTilesFromTmxData(Layer* layer, const XMLElement& elem, int firstgid) noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
+    DataUtils::ValidateXmlElement(elem, "data", "", "", "tile,chunk", "encoding,compression");
+    const auto encoding = DataUtils::GetAttributeAsString(elem, "encoding");
+    const auto compression = DataUtils::GetAttributeAsString(elem, "compression");
+    const auto is_xml = encoding.empty();
+    const auto is_csv = encoding == std::string{"csv"};
+    const auto is_base64 = encoding == "base64";
+    const auto is_base64gzip = is_base64 && compression == "gzip";
+    const auto is_base64zlib = is_base64 && compression == "zlib";
+    const auto is_base64zstd = is_base64 && compression == "zstd";
+    if(is_xml) {
+        g_theFileLogger->LogWarnLine("TMX Map data as XML is deprecated.");
+        g_theFileLogger->Flush();
+        std::size_t tile_index{ 0u };
+        DataUtils::ForEachChildElement(elem, "tile", [layer, &tile_index](const XMLElement& tile_elem) {
+            if(DataUtils::HasAttribute(tile_elem, "gid")) {
+                const auto tile_gid = DataUtils::ParseXmlAttribute(tile_elem, "gid", 0);
+                if(auto* tile = layer->GetTile(tile_index); tile != nullptr) {
+                    if(tile_gid > 0 && tile_gid != std::size_t(-1)) {
+                        tile->ChangeTypeFromId(tile_gid);
+                    } else {
+                        tile->ChangeTypeFromName("void");
+                    }
+                } else {
+                    ERROR_AND_DIE("Too many tiles.");
+                }
+            } else {
+                if(auto* tile = layer->GetTile(tile_index); tile != nullptr) {
+                    tile->ChangeTypeFromName("void");
+                } else {
+                    ERROR_AND_DIE("Too many tiles.");
+                }
+            }
+            ++tile_index;
+        });
+    } else if(is_csv) {
+        const auto data_text = StringUtils::RemoveAllWhitespace(DataUtils::GetElementTextAsString(elem));
+        std::size_t tile_index{ 0u };
+        for(const auto& gid : StringUtils::Split(data_text)) {
+            if(auto* tile = layer->GetTile(tile_index); tile != nullptr) {
+                const auto gidAsId = static_cast<std::size_t>(std::stoull(gid));
+                if(gidAsId > 0) {
+                    tile->ChangeTypeFromId(gidAsId - firstgid);
+                }
+            } else {
+                ERROR_AND_DIE("Too many tiles.");
+            }
+            ++tile_index;
+        }
+    } else if(is_base64) {
+        const auto encoded_data_text = StringUtils::RemoveAllWhitespace(DataUtils::GetElementTextAsString(elem));
+        auto output = std::vector<uint8_t>{};
+        FileUtils::Base64::Decode(encoded_data_text, output);
+        const auto width  = static_cast<std::size_t>(layer->tileDimensions.x);
+        const auto height = static_cast<std::size_t>(layer->tileDimensions.y);
+        const auto valid_data_size = width * height * std::size_t{ 4u };
+        const auto err_msg = std::format("Invalid decoded Layer data: Size of data ({}) does not equal {} * {} * 4 or {}", output.size(), width, height, valid_data_size);
+        GUARANTEE_OR_DIE(output.size() == valid_data_size, err_msg.c_str());
+
+        std::size_t tile_index{ 0u };
+        constexpr auto flag_flipped_horizontally = uint32_t{ 0x80000000u };
+        constexpr auto flag_flipped_vertically   = uint32_t{ 0x40000000u };
+        constexpr auto flag_flipped_diagonally   = uint32_t{ 0x20000000u };
+        constexpr auto flag_rotated_hexagonal_120 = uint32_t{ 0x10000000u };
+        constexpr auto flag_mask = flag_flipped_horizontally | flag_flipped_vertically | flag_flipped_diagonally | flag_rotated_hexagonal_120;
+        for(std::size_t y = 0; y < height; ++y) {
+            for(std::size_t x = 0; x < width; ++x) {
+                auto gid = output[tile_index + 0] << 0  |
+                           output[tile_index + 1] << 8  |
+                           output[tile_index + 2] << 16 |
+                           output[tile_index + 3] << 24;
+                
+                tile_index += 4;
+
+                gid &= ~flag_mask;
+                if(auto* tile = layer->GetTile(layer->GetTileIndex(x, y)); tile != nullptr) {
+                    if(firstgid <= gid) {
+                        tile->ChangeTypeFromId(static_cast<std::size_t>(gid) - firstgid);
+                    }
+                }
+            }
+        }
+    } else if(is_base64gzip) {
+        ERROR_AND_DIE("Layer compression is not yet supported. Resave the .tmx file with with no compression.");
+    } else if(is_base64zlib) {
+        ERROR_AND_DIE("Layer compression is not yet supported. Resave the .tmx file with with no compression.");
+    } else if(is_base64zstd) {
+        ERROR_AND_DIE("Layer compression is not yet supported. Resave the .tmx file with with no compression.");
+    } else {
+        ERROR_AND_DIE("Layer compression is not yet supported. Resave the .tmx file with with no compression.");
+    }
+}
+
+void Map::LoadTmxTileset(const XMLElement& elem) noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
+
+    {
+        const auto verify_version = [](const XMLElement& elem, std::string versionAttributeName, const std::string requiredVersionString) {
+            if(const auto version_string = DataUtils::ParseXmlAttribute(elem, versionAttributeName, std::string{ "0.0" }); version_string != requiredVersionString) {
+                const auto required_versions = StringUtils::Split(requiredVersionString, '.', false);
+                const auto actual_versions = StringUtils::Split(version_string, '.', false);
+                const auto required_major_version = std::stoi(required_versions[0]);
+                const auto required_minor_version = std::stoi(required_versions[1]);
+                const auto actual_major_version = std::stoi(actual_versions[0]);
+                const auto actual_minor_version = std::stoi(actual_versions[1]);
+                if(actual_major_version < required_major_version || (actual_major_version == required_major_version && actual_minor_version < required_minor_version)) {
+                    const auto msg = std::format("ERROR: Attribute mismatch for \"{}\". Required: {} File: {}\n", versionAttributeName, requiredVersionString, version_string);
+                    ERROR_AND_DIE(msg.c_str());
+                }
+            }
+        };
+
+        constexpr auto required_tsx_version = "1.9";
+        verify_version(elem, "version", required_tsx_version);
+
+        constexpr auto required_tiled_version = "1.9.2";
+        verify_version(elem, "tiledversion", required_tiled_version);
+    }
+
+    TileDefinitionDesc desc{};
+    const auto tilecount = DataUtils::ParseXmlAttribute(elem, "tilecount", 1);
+    const auto columncount = DataUtils::ParseXmlAttribute(elem, "columns", 1);
+    const auto width = columncount;
+    const auto height = tilecount / columncount;
+    if(const auto* xml_image = elem.FirstChildElement("image"); xml_image != nullptr) {
+        //Attribute "id" is deprecated and unsupported. It is an error if it exists.
+        DataUtils::ValidateXmlElement(*xml_image, "image", "", "source,width,height", "data", "id,format,trans");
+        if(DataUtils::HasAttribute(elem, "id")) {
+            g_theFileLogger->LogWarnLine(std::string{"Attribute \"id\" in the image element is deprecated and unsupported. Remove the attribute to suppress this message."});
+        }
+        auto src = std::filesystem::path{DataUtils::ParseXmlAttribute(*xml_image, "source", std::string{})};
+        if(!src.has_parent_path() || (src.parent_path() != m_filepath.parent_path())) {
+            src = std::filesystem::canonical(m_filepath.parent_path() / src);
+        }
+        src.make_preferred();
+        GetGameAs<Game>()->_tileset_sheet = g_theRenderer->CreateSpriteSheet(src, width, height);
+        //TileDefinition::CreateTileDefinition();
+
+    }
+    DataUtils::ForEachChildElement(elem, "tile", [&desc, width](const XMLElement& xml_tile) {
+        const auto tile_idx = DataUtils::ParseXmlAttribute(xml_tile, "id", 0);
+        desc.tileId = std::size_t( tile_idx );
+        if(DataUtils::HasChild(xml_tile, "animation")) {
+            desc.animated = true;
+            if(const auto* xml_animation = xml_tile.FirstChildElement("animation"); xml_animation != nullptr) {
+                TimeUtils::FPSeconds duration{0.0f};
+                auto start_idx = 0;
+                const auto length = static_cast<int>((std::max)(std::size_t{0u}, DataUtils::GetChildElementCount(*xml_animation, "frame")));
+                desc.frame_length = length;
+                if(DataUtils::HasChild(*xml_animation, "frame")) {
+                    const auto xml_frame = xml_animation->FirstChildElement("frame");
+                    start_idx = DataUtils::ParseXmlAttribute(*xml_frame, "tileid", 0);
+                    GUARANTEE_OR_DIE(start_idx == tile_idx, "First animation tile index must match selected tile index.");
+                    desc.anim_start_idx = start_idx;
+                    DataUtils::ForEachChildElement(*xml_animation, "frame", [&duration](const XMLElement& frame_elem) {
+                        duration += TimeUtils::FPMilliseconds{DataUtils::ParseXmlAttribute(frame_elem, "duration", 0)};
+                    });
+                    desc.anim_duration = duration.count();
+                }
+            }
+        }
+        if(DataUtils::HasChild(xml_tile, "properties")) {
+            if(const auto* xml_properties = xml_tile.FirstChildElement("properties"); xml_properties != nullptr) {
+                DataUtils::ForEachChildElement(*xml_properties, "property", [&](const XMLElement& property_elem) {
+                    DataUtils::ValidateXmlElement(property_elem, "property", "", "name,value", "properties", "propertytype,type");
+                    if(DataUtils::HasAttribute(property_elem, "type")) {
+                        DataUtils::ValidateXmlAttribute(property_elem, "type", "bool,color,class,float,file,int,object,string");
+                        if(const auto type_str = DataUtils::ParseXmlAttribute(property_elem, "type", std::string{ "string" }); !type_str.empty()) {
+                            if(type_str == "bool") {
+                                DataUtils::ValidateXmlAttribute(property_elem, "value", "true,false");
+                                const auto name = DataUtils::ParseXmlAttribute(property_elem, "name", std::string{});
+                                const auto value = DataUtils::ParseXmlAttribute(property_elem, "value", false);
+                                if(name == "allowDiagonalMovement") {
+                                    desc.allow_diagonal_movement = value;
+                                } else if(name == "opaque") {
+                                    desc.opaque = value;
+                                } else if(name == "solid") {
+                                    desc.solid = value;
+                                } else if(name == "visible") {
+                                    desc.visible = value;
+                                } else if(name == "transparent") {
+                                    desc.transparent = value;
+                                } else if(name == "invisible") {
+                                    desc.visible = !value;
+                                } else if(name == "entrance") {
+                                    desc.is_entrance = value;
+                                } else if(name == "exit") {
+                                    desc.is_exit = value;
+                                }
+                            } else if(type_str == "int") {
+                                const auto name = DataUtils::ParseXmlAttribute(property_elem, "name", std::string{});
+                                const auto value = DataUtils::ParseXmlAttribute(property_elem, "value", 0);
+                                if(name == "light") {
+                                    desc.light = value;
+                                } else if(name == "selflight") {
+                                    desc.self_illumination = value;
+                                }
+                            } else if(type_str == "color") {
+                                //const auto name = DataUtils::ParseXmlAttribute(property_elem, "name", std::string{});
+                                //const auto value = DataUtils::ParseXmlAttribute(property_elem, "value", std::string{"#FFFFFFFF"});
+                                //if(name == "tint") {
+                                //    auto t = Rgba::NoAlpha;
+                                //    t.SetRGBAFromARGB(value.empty() ? "#FFFFFFFF" : value);
+                                //}
+                            } else if(type_str == "file") {
+
+                            } else if(type_str == "object") {
+
+                            } else if(type_str == "class") {
+                            }
+                        }
+                    } else { //No type attribute is a string
+                        const auto name = DataUtils::ParseXmlAttribute(property_elem, "name", std::string{});
+                        const auto value = DataUtils::ParseXmlAttribute(property_elem, "value", std::string{});
+                        if(name == "name") {
+                            desc.name = value;
+                        } else if(name == "animName") {
+                            desc.animName = value;
+                        } else if(name == "glyph") {
+                            desc.glyph = value.empty() ? ' ' : value.front();
+                        }
+                    }
+                });
+            }
+        }
+        constexpr auto fmt = R"(<tileDefinition name="{:s}" index="[{},{}]"><glyph value="{}" /><animation name="{:s}"><animationset startindex="{}" framelength="{}" duration="{}" loop="true" /></animation></tileDefinition>)";
+        const auto anim_str = std::vformat(fmt, std::make_format_args(desc.name, desc.tileId % width, desc.tileId / width, desc.glyph, desc.animName, desc.anim_start_idx, desc.frame_length, desc.anim_duration));
+        tinyxml2::XMLDocument d;
+        d.Parse(anim_str.c_str(), anim_str.size());
+        if(const auto* xml_root = d.RootElement(); xml_root != nullptr) {
+            if(auto* def = TileDefinition::CreateOrGetTileDefinition(*xml_root, GetGameAs<Game>()->_tileset_sheet); def && def->GetSprite() && !def->GetSprite()->GetMaterial()) {
+                def->GetSprite()->SetMaterial(GetGameAs<Game>()->GetDefaultTileMaterial());
+            }
+        }
+    });
+}
+
 bool Map::LoadFromXML(const XMLElement& elem) {
+    PROFILE_BENCHMARK_FUNCTION();
     DataUtils::ValidateXmlElement(elem, "map", "tiles,material,mapGenerator", "name", "actors,features,items", "timeOfDay,allowLightingDuringDay");
     LoadTimeOfDayForMap(elem);
     LoadNameForMap(elem);
@@ -1167,10 +1579,12 @@ bool Map::LoadFromXML(const XMLElement& elem) {
 }
 
 void Map::GenerateMap(const XMLElement& elem) noexcept {
+    PROFILE_BENCHMARK_FUNCTION();
     LoadGenerator(elem);
 }
 
 void Map::LoadTimeOfDayForMap(const XMLElement& elem) {
+    PROFILE_BENCHMARK_FUNCTION();
     const auto value = StringUtils::ToLowerCase(DataUtils::ParseXmlAttribute(elem, "timeOfDay", std::string{"night"}));
     if(value == "day") {
         _current_sky_color = GetSkyColorForDay();
@@ -1187,11 +1601,13 @@ void Map::LoadTimeOfDayForMap(const XMLElement& elem) {
 }
 
 void Map::LoadNameForMap(const XMLElement& elem) {
+    PROFILE_BENCHMARK_FUNCTION();
     const auto default_name = std::string{"MAP "} + std::to_string(++default_map_index);
     _name = DataUtils::ParseXmlAttribute(elem, "name", default_name);
 }
 
 void Map::LoadMaterialsForMap(const XMLElement& elem) {
+    PROFILE_BENCHMARK_FUNCTION();
     if(auto xml_material = elem.FirstChildElement("material")) {
         DataUtils::ValidateXmlElement(*xml_material, "material", "", "name");
         auto src = DataUtils::ParseXmlAttribute(*xml_material, "name", std::string{"__invalid"});
@@ -1206,6 +1622,7 @@ void Map::LoadMaterialFromFile(const std::filesystem::path& src) noexcept {
 }
 
 void Map::LoadGenerator(const XMLElement& elem) {
+    PROFILE_BENCHMARK_FUNCTION();
     const auto* xml_generator = elem.FirstChildElement("mapGenerator");
     DataUtils::ValidateXmlElement(*xml_generator, "mapGenerator", "", "type");
     _map_generator.SetParentMap(this);
@@ -1214,6 +1631,7 @@ void Map::LoadGenerator(const XMLElement& elem) {
 }
 
 void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
+    PROFILE_BENCHMARK_FUNCTION();
     if(auto xml_tileset = elem.FirstChildElement("tiles")) {
         DataUtils::ValidateXmlElement(*xml_tileset, "tiles", "", "src");
         const auto src = DataUtils::ParseXmlAttribute(*xml_tileset, "src", std::string{});
@@ -1223,6 +1641,7 @@ void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
 }
 
 void Map::LoadActorsForMap(const XMLElement& elem) {
+    PROFILE_BENCHMARK_FUNCTION();
     if(auto* xml_actors = elem.FirstChildElement("actors")) {
         DataUtils::ValidateXmlElement(*xml_actors, "actors", "actor", "");
         DataUtils::ForEachChildElement(*xml_actors, "actor",
@@ -1243,6 +1662,7 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
 }
 
 void Map::LoadFeaturesForMap(const XMLElement& elem) {
+    PROFILE_BENCHMARK_FUNCTION();
     if(auto* xml_features = elem.FirstChildElement("features")) {
         DataUtils::ValidateXmlElement(*xml_features, "features", "feature", "");
         DataUtils::ForEachChildElement(*xml_features, "feature",
@@ -1257,6 +1677,7 @@ void Map::LoadFeaturesForMap(const XMLElement& elem) {
 }
 
 void Map::LoadItemsForMap(const XMLElement& elem) {
+    PROFILE_BENCHMARK_FUNCTION();
     if(auto* xml_items = elem.FirstChildElement("items")) {
         DataUtils::ValidateXmlElement(*xml_items, "items", "item", "");
         DataUtils::ForEachChildElement(*xml_items, "item", [this](const XMLElement& elem) {

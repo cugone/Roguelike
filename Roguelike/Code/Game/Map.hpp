@@ -23,6 +23,7 @@
 #include <queue>
 #include <set>
 #include <stack>
+#include <utility>
 #include <vector>
 
 class Adventure;
@@ -369,6 +370,7 @@ private:
     void Initialize(const XMLElement& elem) noexcept;
     void SetParentAdventure(Adventure* parent) noexcept;
 
+    bool LoadFromTmx(const XMLElement& elem);
     bool LoadFromXML(const XMLElement& elem);
     void LoadTimeOfDayForMap(const XMLElement& elem);
     void LoadNameForMap(const XMLElement& elem);
@@ -412,7 +414,15 @@ private:
     static const Rgba& GetSkyColorForNight() noexcept;
     static const Rgba& GetSkyColorForCave() noexcept;
 
+    void SetCustomSkyColor(const Rgba& newColor) noexcept;
+
+    std::pair<int, std::filesystem::path> ParseTmxTilesetElement(const XMLElement& elem) noexcept;
+    bool ParseTmxTileLayerElements(const XMLElement& elem, int firstgid) noexcept;
+    void InitializeTilesFromTmxData(Layer* layer, const XMLElement& elem, int firstgid) noexcept;
+    void LoadTmxTileset(const XMLElement& elem) noexcept;
+
     std::string _name{};
+    std::filesystem::path m_filepath{};
     std::vector<std::shared_ptr<Layer>> _layers{};
     std::queue<TileInfo> _lightingQueue{};
     std::shared_ptr<tinyxml2::XMLDocument> _xml_doc{};
@@ -435,7 +445,9 @@ private:
     static inline unsigned long long default_map_index = 0ull;
     bool _should_render_stat_window{false};
     bool _allow_lighting_calculations_during_day{false};
-
+    bool m_isInfinite{ false };
+    uint16_t m_chunkWidth{ 16u };
+    uint16_t m_chunkHeight{ 16u };
     friend class MapGenerator;
     friend class HeightMapGenerator;
     friend class FileMapGenerator;
@@ -445,4 +457,7 @@ private:
     friend class RoomsAndCorridorsMapGenerator;
     friend class Adventure;
     friend class Game;
+    friend class MapEditor;
+    friend class TmxReader;
+    friend class TsxReader;
 };
