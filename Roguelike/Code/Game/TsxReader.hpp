@@ -6,6 +6,7 @@
 #include "Engine/Profiling/Instrumentor.hpp"
 
 #include <filesystem>
+#include <string>
 
 struct TsxDesc {
     std::filesystem::path filepath;
