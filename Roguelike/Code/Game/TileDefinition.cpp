@@ -56,6 +56,15 @@ TileDefinition* TileDefinition::GetTileDefinitionByGlyph(char glyph) {
     return nullptr;
 }
 
+TileDefinition* TileDefinition::GetTileDefinitionByIndex(std::size_t index) {
+    for(const auto& tile : s_registry) {
+        if(tile.second->GetIndex() == index) {
+            return tile.second.get();
+        }
+    }
+    return nullptr;
+}
+
 uint32_t TileDefinition::GetLightingBits() const noexcept {
     if(is_opaque && is_solid) {
         return tile_flags_opaque_mask | tile_flags_solid_mask;
