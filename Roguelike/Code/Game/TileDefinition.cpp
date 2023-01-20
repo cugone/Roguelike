@@ -104,11 +104,11 @@ IntVector2 TileDefinition::GetIndexCoords() const {
     return _index;
 }
 
-int TileDefinition::GetIndex() const {
+std::size_t TileDefinition::GetIndex() const {
     if(auto* sheet = GetSheet()) {
         return (_index.x + _random_index_offset) + _index.y * sheet->GetLayout().x;
     }
-    return -1;
+    return std::size_t(-1);
 }
 
 TileDefinition::TileDefinition(const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet)
@@ -185,11 +185,11 @@ void TileDefinition::SetIndex(const IntVector2& indexCoords) {
     _index = indexCoords;
 }
 
-void TileDefinition::SetIndex(int index) {
+void TileDefinition::SetIndex(std::size_t index) {
     if(auto sheet = GetSheet()) {
         const auto& layout = sheet->GetLayout();
-        const auto x = index % layout.x;
-        const auto y = index / layout.x;
+        const auto x = static_cast<int>(index % static_cast<std::size_t>(layout.x));
+        const auto y = static_cast<int>(index / static_cast<std::size_t>(layout.x));
         SetIndex(x, y);
     }
 }
@@ -198,8 +198,8 @@ void TileDefinition::SetIndex(int x, int y) {
     SetIndex(IntVector2{x, y});
 }
 
-void TileDefinition::AddOffsetToIndex(int offset) {
-    const auto x = _index.x + offset;
-    const auto y = _index.y;
+void TileDefinition::AddOffsetToIndex(std::size_t offset) {
+    const auto x = static_cast<int>(_index.x + offset);
+    const auto y = static_cast<int>(_index.y);
     SetIndex(x, y);
 }

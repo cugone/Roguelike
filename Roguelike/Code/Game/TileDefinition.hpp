@@ -50,21 +50,21 @@ public:
     const AnimatedSprite* GetSprite() const;
     AnimatedSprite* GetSprite();
     IntVector2 GetIndexCoords() const;
-    int GetIndex() const;
+    std::size_t GetIndex() const;
 
     TileDefinition(const XMLElement& elem, std::shared_ptr<SpriteSheet> sheet);
 protected:
 private:
     bool LoadFromXml(const XMLElement& elem);
-    void SetIndex(int index);
+    void SetIndex(std::size_t index);
     void SetIndex(int x, int y);
     void SetIndex(const IntVector2& indexCoords);
-    void AddOffsetToIndex(int offset);
+    void AddOffsetToIndex(std::size_t offset);
 
     static inline std::map<std::string, std::unique_ptr<TileDefinition>> s_registry{};
     std::shared_ptr<SpriteSheet> _sheet{};
     std::unique_ptr<AnimatedSprite> _sprite{};
     IntVector2 _index{};
-    int _random_index_offset = 0;
+    std::size_t _random_index_offset = 0u;
 
 };
