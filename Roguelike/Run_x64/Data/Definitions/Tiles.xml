@@ -56,20 +56,132 @@
         <glyph value="^" />
         <allowDiagonalMovement />
     </tileDefinition>
-    <tileDefinition name="water.cyan" index="[59,16]">
+    <tileDefinition name="water.shoals.shallow" index="[59,16]">
         <glyph value="~" />
         <solid />
         <allowDiagonalMovement />
-        <animation name="watercyanflow">
+        <animation name="water.shoals.shallow.flow">
             <animationset startindex="[59,16]" framelength="12" duration="6.0" loop="true" />
         </animation>
     </tileDefinition>
-    <tileDefinition name="ladderUp" index="[21,29]">
+    <tileDefinition name="water.shoals.deep" index="[47,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+        <animation name="water.shoals.deep.flow">
+            <animationset startindex="[47,16]" framelength="12" duration="6.0" loop="true" />
+        </animation>
+    </tileDefinition>
+    <tileDefinition name="water.shallow.waves.west" index="[46,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow.waves.south" index="[45,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow.waves.north" index="[44,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow.waves.east" index="[43,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow.waves.southwest" index="[42,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow.waves.southeast" index="[41,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow.waves.northwest" index="[40,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow.waves.northeast" index="[39,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow.edge.west" index="[30,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow.edge.south" index="[29,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow.edge.north" index="[33,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow.edge.east" index="[31,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow.edge.southwest" index="[27,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow.edge.southeast" index="[28,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow.edge.northwest" index="[32,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow.edge.northeast" index="[34,16]">
+        <glyph value="~" />
+        <solid />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="water.shallow" index="[35,16]">
+        <glyph value="*" />
+        <allowDiagonalMovement />
+        <solid />
+        <animation name="water.shallow.flow">
+            <animationset startindex="[35,16]" framelength="2" duration="1.0" loop="true" />
+        </animation>
+    </tileDefinition>
+    <tileDefinition name="water.shallow.disturbance" index="[37,16]">
+        <glyph value="*" />
+        <allowDiagonalMovement />
+        <solid />
+        <animation name="water.shallow.disturbanceflow">
+            <animationset startindex="[37,16]" framelength="2" duration="1.0" loop="true" />
+        </animation>
+    </tileDefinition>
+    <tileDefinition name="water.liquifaction" index="[25,16]">
+        <glyph value="*" />
+        <allowDiagonalMovement />
+        <solid />
+        <animation name="water.shallow.disturbanceflow">
+            <animationset startindex="[37,16]" framelength="2" duration="1.0" loop="true" />
+        </animation>
+    </tileDefinition>
+    <tileDefinition name="ladder.up" index="[21,29]">
         <glyph value="/" />
         <allowDiagonalMovement />
         <entrance />
     </tileDefinition>
-    <tileDefinition name="ladderDown" index="[0,0]">
+    <tileDefinition name="ladder.down" index="[0,0]">
         <glyph value="\" />
         <allowDiagonalMovement />
         <exit />
@@ -94,6 +206,10 @@
         <selflight value="15" />
     </tileDefinition>
     <tileDefinition name="dirt" index="[37,2]">
+        <glyph value="_" />
+        <allowDiagonalMovement />
+    </tileDefinition>
+    <tileDefinition name="tiles.brown" index="[7,0]">
         <glyph value="_" />
         <allowDiagonalMovement />
     </tileDefinition>
