@@ -30,7 +30,7 @@ bld/
 [Ll]og/
 
 # Project-specific files
-[Ss]creenshots/
+**/[Ss]creenshots/*
 **/Data/Benchmarks/*
 
 # Visual Studio 2015/2017 cache/options directory
