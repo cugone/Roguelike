@@ -28,10 +28,10 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
-Run_*/Data/Benchmarks/
 
 # Project-specific files
 [Ss]creenshots/
+**/Data/Benchmarks/*
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
