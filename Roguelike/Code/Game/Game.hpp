@@ -307,7 +307,6 @@ private:
     std::filesystem::path m_requested_map_to_load{};
     IntVector2 m_new_dimensions{min_map_width, min_map_height};
     std::unique_ptr<MapEditor> _editor{};
-    std::shared_ptr<FrameBuffer> _fullscreen_framebuffer{};
     uint8_t _menu_id{ 0u };
     uint8_t _player_requested_wait : 1;
     uint8_t _done_loading : 1;

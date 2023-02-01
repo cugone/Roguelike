@@ -168,13 +168,6 @@ void Game::Initialize() noexcept {
     OnMapEnter.Subscribe_method(this, &Game::MapEntered);
 
     _consoleCommands = Console::CommandList(g_theConsole);
-    {
-        FrameBufferDesc desc{};
-        const auto& [width, height] = g_theRenderer->GetOutput()->GetDimensions().GetXY();
-        desc.width = width;
-        desc.height = height;
-        _fullscreen_framebuffer = FrameBuffer::Create(desc);
-    }
     CreateFullscreenConstantBuffer();
     g_theRenderer->RegisterMaterialsFromFolder(std::string{"Data/Materials"});
     g_theRenderer->RegisterFontsFromFolder(std::string{"Data/Fonts"});
