@@ -15,6 +15,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     UNUSED(hInstance);
     UNUSED(hPrevInstance);
     UNUSED(nCmdShow);
+    UNUSED(pCmdLine);
     PROFILE_BENCHMARK_BEGIN("RogueLike", "Data/Benchmarks/benchmark.json");
     ProfileMetadata metadata{};
     metadata.threadName = "Main";
@@ -28,8 +29,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     Instrumentor::Get().WriteSessionData(MetaDataCategory::ProcessSortIndex, metadata);
     Instrumentor::Get().WriteSessionData(MetaDataCategory::ThreadName, metadata);
     Instrumentor::Get().WriteSessionData(MetaDataCategory::ThreadSortIndex, metadata);
-    const auto cmdString = StringUtils::ConvertUnicodeToMultiByte(std::wstring(pCmdLine ? pCmdLine : L""));
-    Engine<Game>::Initialize("RogueLike", cmdString);
+    Engine<Game>::Initialize("RogueLike");
     Engine<Game>::Run();
     Engine<Game>::Shutdown();
     PROFILE_BENCHMARK_END();
