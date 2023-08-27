@@ -353,9 +353,9 @@ Tile* Map::PickTileFromMouseCoords(const Vector2& mouseCoords, int layerIndex) c
 }
 
 Vector2 Map::GetSubTileLocationFromMouseCoords(const Vector2& mouseCoords) const noexcept {
-    const auto& world_coords = ServiceLocator::get<IRendererService>()->ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
-    const auto&& [x_int, x_frac] = MathUtils::SplitFloatingPointValue(world_coords.x);
-    const auto&& [y_int, y_frac] = MathUtils::SplitFloatingPointValue(world_coords.y);
+    auto world_coords = ServiceLocator::get<IRendererService>()->ConvertScreenToWorldCoords(cameraController.GetCamera(), mouseCoords);
+    const auto [x_int, x_frac] = MathUtils::SplitFloatingPointValue(world_coords.x);
+    const auto [y_int, y_frac] = MathUtils::SplitFloatingPointValue(world_coords.y);
     return Vector2{x_frac, y_frac};
 }
 
