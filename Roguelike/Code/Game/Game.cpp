@@ -576,10 +576,13 @@ void Game::SetFullscreenEffect(FullscreenEffect effect, const std::function<void
 }
 
 void Game::RequestScreenShot() const noexcept {
-    namespace FS = std::filesystem;
-    const auto folder = FileUtils::GetKnownFolderPath(FileUtils::KnownPathID::GameData) / FS::path{"Screenshots/"};
+    const auto folder = FileUtils::GetKnownFolderPath(FileUtils::KnownPathID::GameData) / std::filesystem::path{"Screenshots/"};
     const auto screenshot_count = FileUtils::CountFilesInFolders(folder);
-    const auto filepath = folder / FS::path{"Screenshot_" + std::to_string(screenshot_count + 1) + ".png"};
+    const auto filepath = [folder, screenshot_count]() {
+        auto f = folder / std::filesystem::path{ "Screenshot_" + std::to_string(screenshot_count + 1) + ".png" };
+        f = std::filesystem::absolute(f);
+        return f;
+    }();
     g_theRenderer->RequestScreenShot(filepath);
 }
 
