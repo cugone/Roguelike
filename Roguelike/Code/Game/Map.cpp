@@ -147,14 +147,15 @@ void Map::SetSkyColorFromGlobalLight() noexcept {
 }
 
 void Map::DebugDisableLighting([[maybe_unused]] bool disableLighting) noexcept {
-    _allow_lighting_calculations_during_day = disableLighting;
-    SetDebugGlobalLight(max_light_value);
-    SetSkyColorFromGlobalLight();
-    for (auto& layer : _layers) {
-        InitializeLighting(layer.get());
+    if (_allow_lighting_calculations_during_day = disableLighting; _allow_lighting_calculations_during_day) {
+        SetDebugGlobalLight(max_light_value);
+        SetSkyColorFromGlobalLight();
+        for (auto& layer : _layers) {
+            InitializeLighting(layer.get());
+        }
+        CalculateLightingForLayers(TimeUtils::FPSeconds{ 0.0f });
+        UpdateLighting(TimeUtils::FPSeconds{ 0.0f });
     }
-    CalculateLightingForLayers(TimeUtils::FPSeconds{ 0.0f });
-    UpdateLighting(TimeUtils::FPSeconds{ 0.0f });
 }
 
 void Map::DebugShowInvisibleTiles(bool show) noexcept {
