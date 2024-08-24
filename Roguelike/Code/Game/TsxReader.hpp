@@ -3,8 +3,6 @@
 #include "Engine/Core/DataUtils.hpp"
 #include "Engine/Core/FileUtils.hpp"
 
-#include "Engine/Profiling/Instrumentor.hpp"
-
 #include <filesystem>
 #include <string>
 

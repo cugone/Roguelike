@@ -2,8 +2,6 @@
 
 #include "Engine/Core/KerningFont.hpp"
 
-#include "Engine/Profiling/Instrumentor.hpp"
-
 #include "Game/GameCommon.hpp"
 #include "Game/Map.hpp"
 
@@ -22,7 +20,6 @@ EntityText::EntityText(const TextEntityDesc& desc) noexcept
 }
 
 void EntityText::Update(TimeUtils::FPSeconds deltaSeconds) {
-    PROFILE_BENCHMARK_FUNCTION();
     _screen_position += Vector2{0.0f, -speed} *deltaSeconds.count();
     color.a = static_cast<unsigned char>(255.0f * std::clamp(1.0f - (_currentLiveTime.count() / ttl.count()), 0.0f, 1.0f));
     _currentLiveTime += deltaSeconds;
@@ -32,7 +29,6 @@ void EntityText::Update(TimeUtils::FPSeconds deltaSeconds) {
 }
 
 void EntityText::Render() const {
-    PROFILE_BENCHMARK_FUNCTION();
     const auto S = Matrix4::I;
     const auto R = Matrix4::I;
     const auto worldCoords = _screen_position;
@@ -48,7 +44,6 @@ void EntityText::Render() const {
 }
 
 void EntityText::EndFrame() {
-    PROFILE_BENCHMARK_FUNCTION();
     for(auto* e : this->map->GetTextEntities()) {
         if(e != this) {
             continue;
@@ -61,7 +56,6 @@ void EntityText::EndFrame() {
 }
 
 EntityText* EntityText::CreateTextEntity(const TextEntityDesc& desc) {
-    PROFILE_BENCHMARK_FUNCTION();
     auto newEntityText = std::make_unique<EntityText>(desc);
     auto* ptr = newEntityText.get();
     s_registry.emplace_back(std::move(newEntityText));

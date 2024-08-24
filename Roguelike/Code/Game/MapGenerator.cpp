@@ -6,7 +6,6 @@
 #include "Engine/Math/MathUtils.hpp"
 
 #include "Engine/Profiling/ProfileLogScope.hpp"
-#include "Engine/Profiling/Instrumentor.hpp"
 
 #include "Game/Actor.hpp"
 #include "Game/GameCommon.hpp"
@@ -62,7 +61,6 @@ void MapGenerator::LoadFeatures(const XMLElement& elem) noexcept {
 }
 
 void MapGenerator::PlaceActors() noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     auto open_set = [this]() {
         auto result = std::vector<std::size_t>{};
         result.resize(rooms.size());
@@ -93,7 +91,6 @@ void MapGenerator::PlaceActors() noexcept {
 }
 
 void MapGenerator::PlaceFeatures() noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     const auto map_dims = _map->CalcMaxDimensions();
     for(auto* feature : _map->_features) {
         const auto x = MathUtils::GetRandomLessThan(map_dims.x);
@@ -104,7 +101,7 @@ void MapGenerator::PlaceFeatures() noexcept {
 }
 
 void MapGenerator::PlaceItems() noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
+    /* DO NOTHING */
 }
 
 void MapGenerator::SetRootXmlElement(const XMLElement& root_element) noexcept {
@@ -118,7 +115,6 @@ void MapGenerator::SetParentMap(Map* map) noexcept {
 }
 
 void MapGenerator::Generate() noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "", "type");
     DataUtils::ValidateXmlAttribute(*_xml_element, "type", "heightmap,file,maze,xml");
     const auto type = DataUtils::GetAttributeAsString(*_xml_element, "type");
@@ -145,7 +141,6 @@ void MapGenerator::Generate() noexcept {
 }
 
 void MapGenerator::GenerateFromEmbeddedXml() noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "layers", "");
     if(auto xml_layers = _xml_element->FirstChildElement("layers")) {
         LoadLayers(*xml_layers);
@@ -154,7 +149,6 @@ void MapGenerator::GenerateFromEmbeddedXml() noexcept {
 }
 
 void MapGenerator::GenerateFromHeightMap() noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     const auto src = DataUtils::ParseXmlAttribute(*_xml_element, "src", std::string{});
     Image img(std::filesystem::path{ src });
     _map->_layers.emplace_back(std::make_unique<Layer>(_map, img));
@@ -179,7 +173,6 @@ void MapGenerator::GenerateFromHeightMap() noexcept {
 }
 
 void MapGenerator::GenerateFromFile() noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "", "src", "", "");
     const auto src = DataUtils::ParseXmlAttribute(*_xml_element, "src", std::string{});
     GUARANTEE_OR_DIE(!src.empty(), "Loading Map from file with empty or invalid source attribute.");
@@ -206,7 +199,6 @@ void MapGenerator::GenerateFromFile() noexcept {
 }
 
 void MapGenerator::GenerateFromXmlFile(const std::filesystem::path& path) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     tinyxml2::XMLDocument doc;
     if(tinyxml2::XML_SUCCESS == doc.LoadFile(path.string().c_str())) {
         auto* xml_layers = doc.RootElement();
@@ -215,17 +207,16 @@ void MapGenerator::GenerateFromXmlFile(const std::filesystem::path& path) noexce
 }
 
 void MapGenerator::GenerateFromTmxFile(const std::filesystem::path& path) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     TmxReader reader{ path };
     reader.Parse(*_map);
 }
 
 void MapGenerator::GenerateFromBinFile(const std::filesystem::path& /*path*/) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
+    //Run-length encoding for tiles.
+    
 }
 
 void MapGenerator::GenerateMaze() noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "", "algorithm");
     const auto algoName = DataUtils::ParseXmlAttribute(*_xml_element, "algorithm", std::string{});
     GUARANTEE_OR_DIE(!algoName.empty(), "Maze Generator algorithm type specifier cannot be empty.");
@@ -247,7 +238,6 @@ void MapGenerator::GenerateMaze() noexcept {
 }
 
 void MapGenerator::GenerateRandomRooms() noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "minSize,maxSize", "count,floor,wall,default", "", "down,up,enter,exit,width,height");
     const auto min_size = std::clamp([&]()->const int { const auto* xml_min = _xml_element->FirstChildElement("minSize"); int result = DataUtils::ParseXmlElementText(*xml_min, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
     const auto max_size = std::clamp([&]()->const int { const auto* xml_max = _xml_element->FirstChildElement("maxSize"); int result = DataUtils::ParseXmlElementText(*xml_max, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
@@ -311,7 +301,6 @@ void MapGenerator::GenerateRandomRooms() noexcept {
 }
 
 void MapGenerator::GenerateRooms() noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     //Ref: Using "floorplan" algorithm here: https://www.reddit.com/r/roguelikedev/comments/310ae2/looking_for_a_bit_of_help_on_a_dungeon_generator/cpxrfbh?utm_source=share&utm_medium=web2x&context=3
     //1.  Make up some general constraints, like maximum and minimum room width & height.
     //2.  You need some sort of generic "room" construct, abstract from the map.
@@ -461,14 +450,12 @@ void MapGenerator::GenerateRooms() noexcept {
 }
 
 void MapGenerator::FillAreaWithTileType(const AABB2& area, std::string typeName) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     for(auto* tile : _map->GetTilesInArea(area)) {
         tile->ChangeTypeFromName(typeName);
     }
 
 }
 void MapGenerator::FillRoomsWithTileType(std::string typeName) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     for(const auto& room : rooms) {
         FillAreaWithTileType(room, typeName);
     }
@@ -476,17 +463,14 @@ void MapGenerator::FillRoomsWithTileType(std::string typeName) noexcept {
 
 
 void MapGenerator::FillRoomsWithWallTiles() noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     FillRoomsWithTileType(wallType);
 }
 
 void MapGenerator::FillRoomsWithFloorTiles() noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     FillRoomsWithTileType(floorType);
 }
 
 void MapGenerator::GenerateCorridors() noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     const auto roomCount = rooms.size();
     for(auto i = std::size_t{ 0u }; i != roomCount; ++i) {
         const auto& r1 = rooms[i % roomCount];

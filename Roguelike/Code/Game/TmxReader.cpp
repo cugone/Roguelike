@@ -3,8 +3,6 @@
 #include "Engine/Core/Base64.hpp"
 #include "Engine/Core/DataUtils.hpp"
 
-#include "Engine/Profiling/Instrumentor.hpp"
-
 #include "Game/Map.hpp"
 #include "Game/Layer.hpp"
 #include "Game/TsxReader.hpp"
@@ -39,7 +37,6 @@ bool TmxReader::LoadFile(std::filesystem::path filepath) noexcept {
 }
 
 void TmxReader::Parse(Map& map) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     if(m_rootXml == nullptr) {
         GUARANTEE_OR_DIE(LoadFile(m_filepath), "Failed to load TMX map file.");
     }
@@ -121,7 +118,6 @@ void TmxReader::Parse(Map& map) noexcept {
 }
 
 std::pair<int, std::filesystem::path> TmxReader::ParseTilesetElement(const XMLElement& elem) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     DataUtils::ValidateXmlElement(elem, "tileset", "", "firstgid,source", "", "");
     auto firstgid = DataUtils::ParseXmlAttribute(elem, "firstgid", 1);
     const auto src = [this, &elem]() {
@@ -136,7 +132,6 @@ std::pair<int, std::filesystem::path> TmxReader::ParseTilesetElement(const XMLEl
 }
 
 void TmxReader::ParseLayerElements(Map& map, const XMLElement& elem, const TsxDesc& tsxDescription) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     const auto map_width = DataUtils::ParseXmlAttribute(elem, "width", min_map_width);
     const auto map_height = DataUtils::ParseXmlAttribute(elem, "height", min_map_height);
     if(const auto count = DataUtils::GetChildElementCount(elem, "layer"); count > 9) {
@@ -179,7 +174,6 @@ void TmxReader::ParseLayerElements(Map& map, const XMLElement& elem, const TsxDe
 }
 
 void TmxReader::InitializeTilesFromTmxData(Layer* layer, const XMLElement& elem, int firstgid) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     DataUtils::ValidateXmlElement(elem, "data", "", "", "tile,chunk", "encoding,compression");
     const auto encoding = DataUtils::GetAttributeAsString(elem, "encoding");
     const auto compression = DataUtils::GetAttributeAsString(elem, "compression");

@@ -14,8 +14,6 @@
 #include "Engine/Math/IntVector3.hpp"
 #include "Engine/Math/MathUtils.hpp"
 
-#include "Engine/Profiling/Instrumentor.hpp"
-
 #include "Engine/Renderer/Material.hpp"
 #include "Engine/Renderer/SpriteSheet.hpp"
 
@@ -107,7 +105,6 @@ bool Map::AllowLightingDuringDay() const noexcept {
 }
 
 void Map::CalculateLightingForLayers([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     for(auto& layer : _layers) {
         CalculateLighting(layer.get());
     }
@@ -417,7 +414,6 @@ Map::~Map() noexcept {
 }
 
 void Map::BeginFrame() {
-    PROFILE_BENCHMARK_FUNCTION();
     for(auto& actor : _actors) {
         actor->Act(false);
     }
@@ -427,7 +423,6 @@ void Map::BeginFrame() {
 }
 
 void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
-    PROFILE_BENCHMARK_FUNCTION();
     cameraController.Update(deltaSeconds);
     UpdateLayers(deltaSeconds);
     UpdateTextEntities(deltaSeconds);
@@ -442,7 +437,6 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
 }
 
 void Map::UpdateLayers(TimeUtils::FPSeconds deltaSeconds) {
-    PROFILE_BENCHMARK_FUNCTION();
     for(auto& layer : _layers) {
         layer->Update(deltaSeconds);
     }
@@ -459,7 +453,6 @@ void Map::FocusCameraOnPlayer(TimeUtils::FPSeconds deltaSeconds) noexcept {
 }
 
 void Map::UpdateCursor(TimeUtils::FPSeconds deltaSeconds) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     if(const auto& tiles = PickTilesFromMouseCoords(g_theInputSystem->GetMouseCoords()); tiles.has_value()) {
         if(GetGameAs<Game>()->current_cursor) {
             GetGameAs<Game>()->current_cursor->SetCoords((*tiles).back()->GetCoords());
@@ -469,7 +462,6 @@ void Map::UpdateCursor(TimeUtils::FPSeconds deltaSeconds) noexcept {
 }
 
 void Map::AddCursorToTopLayer() noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     if(GetGameAs<Game>()->current_cursor) {
         if(auto* layer = GetLayer(GetLayerCount() - std::size_t{1u}); layer) {
             layer->AppendToMesh(GetGameAs<Game>()->current_cursor);
@@ -516,7 +508,6 @@ void Map::InitializeLighting(Layer* layer) noexcept {
 }
 
 void Map::CalculateLighting(Layer* layer) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     if(layer == nullptr) {
         return;
     }
@@ -712,7 +703,6 @@ void Map::BringLayerToFront(std::size_t i) {
 }
 
 void Map::Render() const {
-    PROFILE_BENCHMARK_FUNCTION();
     for(const auto& layer : _layers) {
         layer->Render();
     }
@@ -741,7 +731,6 @@ void Map::Render() const {
 
 void Map::DebugRender() const {
 #ifdef UI_DEBUG
-    PROFILE_BENCHMARK_FUNCTION();
     for(const auto& layer : _layers) {
         layer->DebugRender();
     }
@@ -789,7 +778,6 @@ void Map::DebugRender() const {
 }
 
 void Map::EndFrame() {
-    PROFILE_BENCHMARK_FUNCTION();
     for(auto& layer : _layers) {
         layer->EndFrame();
     }
@@ -811,7 +799,6 @@ bool Map::IsPlayerOnEntrance() const noexcept {
 }
 
 void Map::Initialize(const XMLElement& elem) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     GUARANTEE_OR_DIE(LoadFromXML(elem), "Could not load map.");
     cameraController = OrthographicCameraController{};
     cameraController.SetZoomLevelRange(Vector2{8.0f, 16.0f});
@@ -1178,7 +1165,6 @@ Tile* Map::GetTile(int x, int y, int z) const {
 }
 
 bool Map::LoadFromTmx(const XMLElement& elem) {
-    PROFILE_BENCHMARK_FUNCTION();
     DataUtils::ValidateXmlElement(elem, "map", "", "version,orientation,width,height,tilewidth,tileheight", "properties,editorsettings,tileset,layer,objectgroup,imagelayer,group", "tiledversion,class,renderorder,compressionlevel,parallaxoriginx,parallaxoriginy,backgroundcolor,nextlayerid,nextobjectid,infinite,hexsidelength,staggeraxis,staggerindex");
 
     {
@@ -1251,7 +1237,6 @@ bool Map::LoadFromTmx(const XMLElement& elem) {
 }
 
 std::pair<int, std::filesystem::path> Map::ParseTmxTilesetElement(const XMLElement& elem) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     if(!DataUtils::HasChild(elem, "tileset")) {
         DebuggerPrintf(std::format("TMX map load failure. Map {:s} is missing the element \"tileset\".\n", _name));
         return std::make_pair(0, std::filesystem::path{});
@@ -1288,7 +1273,6 @@ std::pair<int, std::filesystem::path> Map::ParseTmxTilesetElement(const XMLEleme
 }
 
 bool Map::ParseTmxTileLayerElements(const XMLElement& elem, int firstgid) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     const auto map_width = DataUtils::ParseXmlAttribute(elem, "width", min_map_width);
     const auto map_height = DataUtils::ParseXmlAttribute(elem, "height", min_map_height);
     if(const auto count = DataUtils::GetChildElementCount(elem, "layer"); count > 9) {
@@ -1331,7 +1315,6 @@ bool Map::ParseTmxTileLayerElements(const XMLElement& elem, int firstgid) noexce
 }
 
 void Map::InitializeTilesFromTmxData(Layer* layer, const XMLElement& elem, int firstgid) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     DataUtils::ValidateXmlElement(elem, "data", "", "", "tile,chunk", "encoding,compression");
     const auto encoding = DataUtils::GetAttributeAsString(elem, "encoding");
     const auto compression = DataUtils::GetAttributeAsString(elem, "compression");
@@ -1425,8 +1408,6 @@ void Map::InitializeTilesFromTmxData(Layer* layer, const XMLElement& elem, int f
 }
 
 void Map::LoadTmxTileset(const XMLElement& elem) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
-
     {
         const auto verify_version = [](const XMLElement& elem, std::string versionAttributeName, const std::string requiredVersionString) {
             if(const auto version_string = DataUtils::ParseXmlAttribute(elem, versionAttributeName, std::string{ "0.0" }); version_string != requiredVersionString) {
@@ -1569,7 +1550,6 @@ void Map::LoadTmxTileset(const XMLElement& elem) noexcept {
 }
 
 bool Map::LoadFromXML(const XMLElement& elem) {
-    PROFILE_BENCHMARK_FUNCTION();
     DataUtils::ValidateXmlElement(elem, "map", "tiles,material,mapGenerator", "name", "actors,features,items", "timeOfDay,allowLightingDuringDay");
     LoadTimeOfDayForMap(elem);
     LoadNameForMap(elem);
@@ -1580,12 +1560,10 @@ bool Map::LoadFromXML(const XMLElement& elem) {
 }
 
 void Map::GenerateMap(const XMLElement& elem) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     LoadGenerator(elem);
 }
 
 void Map::LoadTimeOfDayForMap(const XMLElement& elem) {
-    PROFILE_BENCHMARK_FUNCTION();
     const auto value = StringUtils::ToLowerCase(DataUtils::ParseXmlAttribute(elem, "timeOfDay", std::string{"night"}));
     if(value == "day") {
         _current_sky_color = GetSkyColorForDay();
@@ -1602,13 +1580,11 @@ void Map::LoadTimeOfDayForMap(const XMLElement& elem) {
 }
 
 void Map::LoadNameForMap(const XMLElement& elem) {
-    PROFILE_BENCHMARK_FUNCTION();
     const auto default_name = std::string{"MAP "} + std::to_string(++default_map_index);
     _name = DataUtils::ParseXmlAttribute(elem, "name", default_name);
 }
 
 void Map::LoadMaterialsForMap(const XMLElement& elem) {
-    PROFILE_BENCHMARK_FUNCTION();
     if(auto xml_material = elem.FirstChildElement("material")) {
         DataUtils::ValidateXmlElement(*xml_material, "material", "", "name");
         auto src = DataUtils::ParseXmlAttribute(*xml_material, "name", std::string{"__invalid"});
@@ -1623,7 +1599,6 @@ void Map::LoadMaterialFromFile(const std::filesystem::path& src) noexcept {
 }
 
 void Map::LoadGenerator(const XMLElement& elem) {
-    PROFILE_BENCHMARK_FUNCTION();
     const auto* xml_generator = elem.FirstChildElement("mapGenerator");
     DataUtils::ValidateXmlElement(*xml_generator, "mapGenerator", "", "type");
     _map_generator.SetParentMap(this);
@@ -1632,7 +1607,6 @@ void Map::LoadGenerator(const XMLElement& elem) {
 }
 
 void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
-    PROFILE_BENCHMARK_FUNCTION();
     if(auto xml_tileset = elem.FirstChildElement("tiles")) {
         DataUtils::ValidateXmlElement(*xml_tileset, "tiles", "", "src");
         const auto src = DataUtils::ParseXmlAttribute(*xml_tileset, "src", std::string{});
@@ -1642,7 +1616,6 @@ void Map::LoadTileDefinitionsForMap(const XMLElement& elem) {
 }
 
 void Map::LoadActorsForMap(const XMLElement& elem) {
-    PROFILE_BENCHMARK_FUNCTION();
     if(auto* xml_actors = elem.FirstChildElement("actors")) {
         DataUtils::ValidateXmlElement(*xml_actors, "actors", "actor", "");
         DataUtils::ForEachChildElement(*xml_actors, "actor",
@@ -1663,7 +1636,6 @@ void Map::LoadActorsForMap(const XMLElement& elem) {
 }
 
 void Map::LoadFeaturesForMap(const XMLElement& elem) {
-    PROFILE_BENCHMARK_FUNCTION();
     if(auto* xml_features = elem.FirstChildElement("features")) {
         DataUtils::ValidateXmlElement(*xml_features, "features", "feature", "");
         DataUtils::ForEachChildElement(*xml_features, "feature",
@@ -1678,7 +1650,6 @@ void Map::LoadFeaturesForMap(const XMLElement& elem) {
 }
 
 void Map::LoadItemsForMap(const XMLElement& elem) {
-    PROFILE_BENCHMARK_FUNCTION();
     if(auto* xml_items = elem.FirstChildElement("items")) {
         DataUtils::ValidateXmlElement(*xml_items, "items", "item", "");
         DataUtils::ForEachChildElement(*xml_items, "item", [this](const XMLElement& elem) {

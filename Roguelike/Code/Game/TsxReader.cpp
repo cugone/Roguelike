@@ -35,7 +35,6 @@ bool TsxReader::LoadFile(std::filesystem::path filepath) noexcept {
 }
 
 void TsxReader::LoadTmxTileset(const XMLElement& elem) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     {
         const auto verify_version = [](const XMLElement& elem, std::string versionAttributeName, const std::string requiredVersionString) {
             if(const auto version_string = DataUtils::ParseXmlAttribute(elem, versionAttributeName, std::string{ "0.0" }); version_string != requiredVersionString) {
@@ -178,7 +177,6 @@ void TsxReader::LoadTmxTileset(const XMLElement& elem) noexcept {
 }
 
 void TsxReader::Parse() noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
     if(m_rootElement == nullptr) {
         DebuggerPrintf(std::format("WARNING: TSX tileset file failed to parse. No file loaded.\n"));
         return;
