@@ -289,6 +289,17 @@ void Tile::DecrementLightValue(int value /*= 1*/) noexcept {
     DirtyLight();
     layer->DirtyMesh();
 
+}
+
+void Tile::ClearHaveSeen() noexcept {
+    _flags_coords_lightvalue &= ~tile_flags_have_seen_mask;
+}
+
+void Tile::SetHaveSeen() noexcept {
+    _flags_coords_lightvalue &= ~tile_flags_have_seen_mask;
+    _flags_coords_lightvalue |= tile_flags_have_seen_mask;
+}
+
 void Tile::ClearSky() noexcept {
     _flags_coords_lightvalue &= ~tile_flags_sky_mask;
 }

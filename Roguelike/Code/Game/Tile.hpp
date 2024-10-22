@@ -80,6 +80,9 @@ public:
     void SetLightValue(uint32_t newValue) noexcept;
     void IncrementLightValue(int value = 1) noexcept;
     void DecrementLightValue(int value = 1) noexcept;
+    
+    void ClearHaveSeen() noexcept;
+    void SetHaveSeen() noexcept;
 
     void ClearSky() noexcept;
     void SetSky() noexcept;
