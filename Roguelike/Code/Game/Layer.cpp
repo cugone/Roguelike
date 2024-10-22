@@ -471,6 +471,7 @@ void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
     }();
     for(auto& tile : visibleTiles) {
         tile->SetCanSee();
+        tile->SetHaveSeen();
     }
     if(m_meshNeedsRebuild) {
         for(auto& tile : viewableTiles) {
