@@ -793,23 +793,7 @@ uint32_t TileInfo::GetMaxLightValueFromNeighbors() const noexcept {
     if(layer == nullptr) {
         return 0;
     }
-    const auto max_light = [this]()->uint32_t {
-        auto idealLighting = uint32_t{0u};
-        if(const auto e = GetEastNeighbor(); !e.IsOpaque()) {
-            idealLighting = (std::max)(idealLighting, e.GetLightValue());
-        }
-        if(const auto w = GetWestNeighbor(); !w.IsOpaque()) {
-            idealLighting = (std::max)(idealLighting, w.GetLightValue());
-        }
-        if(const auto n = GetNorthNeighbor(); !n.IsOpaque()) {
-            idealLighting = (std::max)(idealLighting, n.GetLightValue());
-        }
-        if(const auto s = GetSouthNeighbor(); !s.IsOpaque()) {
-            idealLighting = (std::max)(idealLighting, s.GetLightValue());
-        }
-        return idealLighting;
-    }(); //IIIL
-    return max_light;
+    return std::max({GetEastNeighbor().GetLightValue(), GetWestNeighbor().GetLightValue(), GetNorthNeighbor().GetLightValue(), GetSouthNeighbor().GetLightValue()});
 }
 
 bool TileInfo::HasActor() const noexcept {
