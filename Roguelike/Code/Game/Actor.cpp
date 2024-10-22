@@ -10,6 +10,7 @@
 #include "Game/Map.hpp"
 
 #include <algorithm>
+#include <cstdlib>
 #include <format>
 #include <numeric>
 #include <sstream>
@@ -187,7 +188,8 @@ void Actor::ApplyDamage(DamageType type, long amount, bool crit) {
     TextEntityDesc desc{};
     desc.font = GetGameAs<Game>()->ingamefont;
     desc.color = amount < 0 ? Rgba::Green : (crit ? Rgba::Yellow : Rgba::White);
-    desc.text = std::vformat("{}", std::make_format_args(std::abs(amount)));
+    const auto abs_damage = std::abs(amount);
+    desc.text = std::vformat("{}", std::make_format_args(abs_damage));
     map->CreateTextEntityAt(tile->GetCoords(), desc);
 }
 
