@@ -144,16 +144,21 @@ void Actor::ResolveAttack(Entity& attacker, Entity& defender) {
             defender.OnMiss.Trigger();
             return;
         }
-        auto result = aAtt - dDef;
-        if(aAtt < dDef) {
-            result = 0L;
-        }
-        const auto chance = (std::floor((aLck + aLvl - dLvl) / 4.0f)) / 100.0f;
-        bool crit = false;
-        if(MathUtils::IsPercentChance(chance)) {
-            result *= 2;
-            crit = true;
-        }
+        const auto [result, crit] = [&]() {
+            auto result = aAtt - dDef;
+            auto crit = false;
+            if (aAtt < dDef) {
+                result = 0L;
+            }
+            else {
+                const auto chance = (std::floor((aLck + aLvl - dLvl) / 4.0f)) / 100.0f;
+                crit = MathUtils::IsPercentChance(chance);
+                if (crit) {
+                    result *= 2;
+                }
+            }
+            return std::tie(result, crit);
+        }(); //IIIL
         defender.OnDamage.Trigger(damageType, result, crit);
         break;
     }
