@@ -165,7 +165,10 @@ void TsxReader::LoadTmxTileset(const XMLElement& elem) noexcept {
         }
     }
     constexpr auto fmt = R"(<tileDefinition name="{:s}" index="[{},{}]"><glyph value="{}" /><animation name="{:s}"><animationset startindex="{}" framelength="{}" duration="{}" loop="true" /></animation></tileDefinition>)";
-    const auto anim_str = std::vformat(fmt, std::make_format_args(desc.name, desc.tileId % width, desc.tileId / width, DataUtils::EscapeGlyphToXmlCharacterEntity(desc.glyph), desc.animName, desc.anim_start_idx, desc.frame_length, desc.anim_duration));
+    const auto tileIdx = desc.tileId % width;
+    const auto tileIdy = desc.tileId / width;
+    const auto char_entity = DataUtils::EscapeGlyphToXmlCharacterEntity(desc.glyph);
+    const auto anim_str = std::vformat(fmt, std::make_format_args(desc.name, tileIdx, tileIdy, char_entity, desc.animName, desc.anim_start_idx, desc.frame_length, desc.anim_duration));
     tinyxml2::XMLDocument d;
     d.Parse(anim_str.c_str(), anim_str.size());
     if(const auto* xml_root = d.RootElement(); xml_root != nullptr) {
