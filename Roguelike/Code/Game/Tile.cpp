@@ -149,6 +149,10 @@ bool Tile::CanSee() const noexcept {
     return (_flags_coords_lightvalue & tile_flags_can_see_mask) == tile_flags_can_see_mask;
 }
 
+bool Tile::HaveSeen() const noexcept {
+    return (_flags_coords_lightvalue & tile_flags_have_seen_mask) == tile_flags_have_seen_mask;
+}
+
 bool Tile::IsLightDirty() const {
     return (_flags_coords_lightvalue & tile_flags_dirty_light_mask) == tile_flags_dirty_light_mask;
 }
