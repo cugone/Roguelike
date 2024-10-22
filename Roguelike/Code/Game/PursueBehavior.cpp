@@ -64,9 +64,8 @@ void PursueBehavior::Act(Actor* actor) noexcept {
     for(auto& node : path) {
         const auto coords = IntVector3{node->coords, 0};
         const auto* amap = actor->map;
-        auto* tile = amap->GetTile(coords);
-        if(tile) {
-            tile->color = Rgba::White;
+        if(auto* tile = amap->GetTile(coords); tile != nullptr) {
+            tile->color = Rgba::Red;
         }
     }
 
