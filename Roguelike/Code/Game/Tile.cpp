@@ -757,6 +757,7 @@ void TileInfo::SetLightValue(uint32_t newValue) noexcept {
     if(auto* t = layer->GetTile(index); t != nullptr) {
         t->SetLightValue(newValue);
     }
+    layer->DirtyMesh();
 }
 
 uint32_t TileInfo::GetSelfIlluminationValue() const noexcept {
