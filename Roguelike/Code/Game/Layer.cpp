@@ -170,8 +170,8 @@ void Layer::AppendToMesh(const Entity* const entity) noexcept {
 }
 
 void Layer::AppendToMesh(const IntVector2& tile_coords, const AABB2& uv_coords, const uint32_t light_value, Material* material) noexcept {
-    const auto&& [vert_bl, vert_tl, vert_tr, vert_br] = VertsFromTileCoords(tile_coords);
-    const auto&& [tx_bl, tx_tl, tx_tr, tx_br] = UVsFromUVCoords(uv_coords);
+    const auto [vert_bl, vert_tl, vert_tr, vert_br] = VertsFromTileCoords(tile_coords);
+    const auto [tx_bl, tx_tl, tx_tr, tx_br] = UVsFromUVCoords(uv_coords);
 
     const float z = static_cast<float>(z_index);
     const Rgba layer_color = color;
