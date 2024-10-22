@@ -284,6 +284,18 @@ void Tile::DecrementLightValue(int value /*= 1*/) noexcept {
     SetLightValue(lv);
     DirtyLight();
     layer->DirtyMesh();
+
+void Tile::ClearSky() noexcept {
+    _flags_coords_lightvalue &= ~tile_flags_sky_mask;
+}
+
+void Tile::SetSky() noexcept {
+    _flags_coords_lightvalue &= ~tile_flags_sky_mask;
+    _flags_coords_lightvalue |= tile_flags_sky_mask;
+}
+
+bool Tile::IsSky() noexcept {
+    return (_flags_coords_lightvalue & tile_flags_sky_mask) == tile_flags_sky_mask;
 }
 
 Tile* Tile::GetNeighbor(const IntVector3& directionAndLayerOffset) const {
@@ -820,6 +832,24 @@ bool TileInfo::IsSky() const noexcept {
         return tile->GetType() == "void";
     }
     return false;
+}
+
+void TileInfo::ClearSky() noexcept {
+    if (layer == nullptr) {
+        return;
+    }
+    if (auto* tile = layer->GetTile(index); tile != nullptr) {
+        tile->ClearSky();
+    }
+}
+
+void TileInfo::SetSky() noexcept {
+    if (layer == nullptr) {
+        return;
+    }
+    if (auto* tile = layer->GetTile(index); tile != nullptr) {
+        tile->SetSky();
+    }
 }
 
 bool TileInfo::IsAtEdge() const noexcept {

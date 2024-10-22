@@ -79,6 +79,10 @@ public:
     void IncrementLightValue(int value = 1) noexcept;
     void DecrementLightValue(int value = 1) noexcept;
 
+    void ClearSky() noexcept;
+    void SetSky() noexcept;
+    bool IsSky() noexcept;
+
     void ClearLightDirty() noexcept;
     void SetLightDirty() noexcept;
     void DirtyLight() noexcept;
@@ -146,6 +150,9 @@ public:
     bool HasInventory() const noexcept;
 
     bool IsSky() const noexcept;
+    void ClearSky() noexcept;
+    void SetSky() noexcept;
+
     bool IsAtEdge() const noexcept;
 
     bool IsLightDirty() const noexcept;
