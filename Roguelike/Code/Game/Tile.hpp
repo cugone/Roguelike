@@ -43,15 +43,6 @@ public:
     bool IsNotVisible() const;
     bool IsInvisible() const;
 
-    bool CanSee() const noexcept;
-
-    bool IsLightDirty() const;
-    bool IsOpaque() const;
-    bool IsTransparent() const;
-
-    bool IsSolid() const;
-    bool IsPassable() const;
-
     bool IsEntrance() const;
     bool IsExit() const;
 
@@ -74,7 +65,15 @@ public:
     uint32_t GetFlags() const noexcept;
     void SetFlags(uint32_t flags) noexcept;
 
+    bool CanSee() const noexcept;
     bool HaveSeen() const noexcept;
+
+    bool IsLightDirty() const;
+    bool IsOpaque() const;
+    bool IsTransparent() const;
+
+    bool IsSolid() const;
+    bool IsPassable() const;
 
     bool IsOpaqueOrSolid() const noexcept;
 
@@ -82,6 +81,9 @@ public:
     void SetLightValue(uint32_t newValue) noexcept;
     void IncrementLightValue(int value = 1) noexcept;
     void DecrementLightValue(int value = 1) noexcept;
+
+    void ClearCanSee() noexcept;
+    void SetCanSee() noexcept;
     
     void ClearHaveSeen() noexcept;
     void SetHaveSeen() noexcept;
@@ -99,9 +101,6 @@ public:
 
     void ClearSolid() noexcept;
     void SetSolid() noexcept;
-
-    void ClearCanSee() noexcept;
-    void SetCanSee() noexcept;
 
     std::array<Tile*, 8> GetNeighbors() const;
     std::array<Tile*, 4> GetCardinalNeighbors() const;

@@ -52,15 +52,6 @@ void Tile::SetSolid() noexcept {
     _flags_coords_lightvalue |= tile_flags_solid_mask;
 }
 
-void Tile::ClearCanSee() noexcept {
-    _flags_coords_lightvalue &= ~tile_flags_can_see_mask;
-}
-
-void Tile::SetCanSee() noexcept {
-    _flags_coords_lightvalue &= ~tile_flags_can_see_mask;
-    _flags_coords_lightvalue |= tile_flags_can_see_mask;
-}
-
 void Tile::Update(TimeUtils::FPSeconds deltaSeconds) {
     if(auto* def = TileDefinition::GetTileDefinitionByName(_type)) {
         def->GetSprite()->Update(deltaSeconds);
@@ -284,7 +275,6 @@ void Tile::IncrementLightValue(int value /*= 1*/) noexcept {
     lv = std::clamp(lv + value, min_light_value, max_light_value);
     SetLightValue(lv);
     DirtyLight();
-    layer->DirtyMesh();
 }
 
 void Tile::DecrementLightValue(int value /*= 1*/) noexcept {
@@ -292,8 +282,15 @@ void Tile::DecrementLightValue(int value /*= 1*/) noexcept {
     lv = std::clamp(lv - value, min_light_value, max_light_value);
     SetLightValue(lv);
     DirtyLight();
-    layer->DirtyMesh();
+}
 
+void Tile::ClearCanSee() noexcept {
+    _flags_coords_lightvalue &= ~tile_flags_can_see_mask;
+}
+
+void Tile::SetCanSee() noexcept {
+    _flags_coords_lightvalue &= ~tile_flags_can_see_mask;
+    _flags_coords_lightvalue |= tile_flags_can_see_mask;
 }
 
 void Tile::ClearHaveSeen() noexcept {
