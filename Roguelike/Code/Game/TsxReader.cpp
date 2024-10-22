@@ -69,13 +69,18 @@ void TsxReader::LoadTmxTileset(const XMLElement& elem) noexcept {
         if(DataUtils::HasAttribute(elem, "id")) {
             g_theFileLogger->LogWarnLine(std::string{ "Attribute \"id\" in the image element is deprecated and unsupported. Remove the attribute to suppress this message." });
         }
-        auto src = std::filesystem::path{ DataUtils::ParseXmlAttribute(*xml_image, "source", std::string{}) };
-        if(!src.has_parent_path() || (src.parent_path() != description.filepath.parent_path())) {
-            src = std::filesystem::canonical(description.filepath.parent_path() / src);
+        if (auto src = std::filesystem::path{ DataUtils::ParseXmlAttribute(*xml_image, "source", std::string{}) }; !src.empty()) {
+            const auto src_parent = src.parent_path();
+            const auto df_parent = description.filepath.parent_path();
+            if (!src.has_parent_path() || (src.has_parent_path() && src.parent_path() != description.filepath.parent_path())) {
+                src = std::filesystem::canonical(description.filepath.parent_path() / src);
+            }
+            src.make_preferred();
+            GetGameAs<Game>()->_tileset_sheet = g_theRenderer->CreateSpriteSheet(src, width, height);
+            //TileDefinition::CreateTileDefinition();
+        } else {
+            g_theFileLogger->LogWarnLine(std::string{ "No source file for image element provided." });
         }
-        src.make_preferred();
-        GetGameAs<Game>()->_tileset_sheet = g_theRenderer->CreateSpriteSheet(src, width, height);
-        //TileDefinition::CreateTileDefinition();
 
     }
     DataUtils::ForEachChildElement(elem, "tile", [&desc, width](const XMLElement& xml_tile) {
