@@ -90,9 +90,15 @@ bool CursorDefinition::LoadFromXml(const XMLElement& elem) {
 
     if(auto xml_animation = elem.FirstChildElement("animation")) {
         is_animated = true;
-        _sprite = std::move(g_theRenderer->CreateAnimatedSprite(_sheet, *xml_animation));
+        if (!_sheet.expired()) {
+            auto s = _sheet.lock();
+            _sprite = std::move(g_theRenderer->CreateAnimatedSprite(s, *xml_animation));
+        }
     } else {
-        _sprite = std::move(g_theRenderer->CreateAnimatedSprite(_sheet, _index));
+        if (!_sheet.expired()) {
+            auto s = _sheet.lock();
+            _sprite = std::move(g_theRenderer->CreateAnimatedSprite(s, _index));
+        }
     }
     return true;
 }
