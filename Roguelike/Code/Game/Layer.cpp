@@ -424,6 +424,9 @@ void Layer::DebugRenderTiles() const {
 void Layer::UpdateTiles(TimeUtils::FPSeconds deltaSeconds) {
     debug_tiles_in_view_count = 0;
     debug_visible_tiles_in_view_count = 0;
+    for (auto& tile : m_tiles) {
+        tile.ClearCanSee();
+    }
     const auto viewableTiles = [this]() {
         const auto view_area = CalcCullBounds(m_map->cameraController.GetCamera().GetPosition());
         const auto dims = view_area.CalcDimensions();
