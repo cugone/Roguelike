@@ -263,9 +263,15 @@ void ItemBuilder::LoadFromXml(const XMLElement& elem, std::weak_ptr<SpriteSheet>
     if(DataUtils::HasAttribute(elem, "index")) {
         auto startIndex = DataUtils::ParseXmlAttribute(elem, "index", IntVector2::One * -1);
         if(auto* xml_animsprite = elem.FirstChildElement("animation")) {
-            AnimateSprite(g_theRenderer->CreateAnimatedSprite(_itemSheet, *xml_animsprite));
+            if(!_itemSheet.expired()) {
+                auto s = _itemSheet.lock();
+                AnimateSprite(g_theRenderer->CreateAnimatedSprite(s, *xml_animsprite));
+            }
         } else {
-            AnimateSprite(g_theRenderer->CreateAnimatedSprite(_itemSheet, startIndex));
+            if (!_itemSheet.expired()) {
+                auto s = _itemSheet.lock();
+                AnimateSprite(g_theRenderer->CreateAnimatedSprite(s, startIndex));
+            }
         }
     }
     MaxStackSize(DataUtils::ParseXmlAttribute(elem, "maxstack", _max_stack_size));
