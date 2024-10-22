@@ -175,6 +175,11 @@ bool Tile::IsPassable() const {
     return !IsSolid();
 }
 
+bool Tile::IsOpaqueOrSolid() const noexcept {
+    const auto my_opaque_solid = (_flags_coords_lightvalue & tile_flags_opaque_solid_mask) == tile_flags_opaque_solid_mask;
+    return my_opaque_solid || actor || (feature && (feature->IsSolid() || feature->IsOpaque()));
+}
+
 void Tile::SetEntrance() noexcept {
     if(auto* def = TileDefinition::GetTileDefinitionByName(_type)) {
         def->is_entrance = true;

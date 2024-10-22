@@ -76,6 +76,8 @@ public:
 
     bool HaveSeen() const noexcept;
 
+    bool IsOpaqueOrSolid() const noexcept;
+
     uint32_t GetLightValue() const noexcept;
     void SetLightValue(uint32_t newValue) noexcept;
     void IncrementLightValue(int value = 1) noexcept;
