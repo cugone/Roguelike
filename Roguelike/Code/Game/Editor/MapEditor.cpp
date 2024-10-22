@@ -2,6 +2,7 @@
 
 #include "Engine/Core/BuildConfig.hpp"
 #include "Engine/Core/EngineCommon.hpp"
+#include "Engine/Core/FileUtils.hpp"
 #include "Engine/Core/TimeUtils.hpp"
 
 #include "Engine/Platform/PlatformUtils.hpp"
@@ -104,7 +105,9 @@ void MapEditor::ShowMainMenu([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds)
 }
 
 void MapEditor::ShowViewport([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds) noexcept {
-    const auto viewport_name = m_hasUnsavedChanges ? std::vformat("* {}{}", std::make_format_args(m_map_path.stem(), m_map_path.extension())) : std::vformat("{}{}", std::make_format_args(m_map_path.stem(), m_map_path.extension()));
+    const auto path_stem = m_map_path.stem();
+    const auto path_ext = m_map_path.extension();
+    const auto viewport_name = m_hasUnsavedChanges ? std::vformat("* {}{}", std::make_format_args(path_stem, path_ext)) : std::vformat("{}{}", std::make_format_args(path_stem, path_ext));
     if(!ImGui::Begin(viewport_name.c_str())) {
         ImGui::End();
         return;
