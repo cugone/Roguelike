@@ -184,20 +184,43 @@ void Layer::AppendToMesh(const IntVector2& tile_coords, const AABB2& uv_coords, 
     }(); //IIIL
     const auto normal = -Vector3::Z_Axis;
 
+    const auto [nc, ec, sc, wc] = [this, newColor]() {
+        auto northColor = newColor;
+        if (const auto n = GetNeighbor(Layer::NeighborDirection::North); n && n->GetLightValue() > 0u) {
+            northColor.ScaleRGB(MathUtils::RangeMap(static_cast<float>(n->GetLightValue()), static_cast<float>(min_light_value), static_cast<float>(max_light_value), min_light_scale, max_light_scale));
+        }
+        auto eastColor = newColor;
+        if (const auto e = GetNeighbor(Layer::NeighborDirection::East); e && e->GetLightValue() > 0u) {
+            eastColor.ScaleRGB(MathUtils::RangeMap(static_cast<float>(e->GetLightValue()), static_cast<float>(min_light_value), static_cast<float>(max_light_value), min_light_scale, max_light_scale));
+        }
+        auto southColor = newColor;
+        if (const auto s = GetNeighbor(Layer::NeighborDirection::South); s && s->GetLightValue() > 0u) {
+            southColor.ScaleRGB(MathUtils::RangeMap(static_cast<float>(s->GetLightValue()), static_cast<float>(min_light_value), static_cast<float>(max_light_value), min_light_scale, max_light_scale));
+        }
+        auto westColor = newColor;
+        if (const auto w = GetNeighbor(Layer::NeighborDirection::West); w && w->GetLightValue() > 0u) {
+            westColor.ScaleRGB(MathUtils::RangeMap(static_cast<float>(w->GetLightValue()), static_cast<float>(min_light_value), static_cast<float>(max_light_value), min_light_scale, max_light_scale));
+        }
+        return std::make_tuple(northColor, eastColor, southColor, westColor);
+    }(); //IIIL
+
     builder.Begin(PrimitiveType::Triangles);
-    builder.SetColor(newColor);
     builder.SetNormal(normal);
 
     builder.SetUV(tx_bl);
+    builder.SetColor(sc < wc ? wc : sc);
     builder.AddVertex(Vector3{vert_bl, z});
 
     builder.SetUV(tx_tl);
+    builder.SetColor(nc < wc ? wc : nc);
     builder.AddVertex(Vector3{vert_tl, z});
 
     builder.SetUV(tx_tr);
+    builder.SetColor(nc < ec ? ec : nc);
     builder.AddVertex(Vector3{vert_tr, z});
 
     builder.SetUV(tx_br);
+    builder.SetColor(sc < ec ? ec : sc);
     builder.AddVertex(Vector3{vert_br, z});
 
     builder.AddIndicies(Mesh::Builder::Primitive::Quad);
