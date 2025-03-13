@@ -371,6 +371,7 @@ void Actor::CalculateLightValue() noexcept {
     const auto value = _self_illumination + std::accumulate(std::cbegin(_equipment), std::cend(_equipment), uint32_t{0u}, acc_op);
     if(value != GetLightValue()) {
         SetLightValue(value);
+        tile->DirtyLight();
         for(auto* neighbor : tile->GetCardinalNeighbors()) {
             if(neighbor) {
                 neighbor->DirtyLight();

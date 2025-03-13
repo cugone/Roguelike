@@ -424,7 +424,7 @@ private:
     std::string _name{};
     std::filesystem::path m_filepath{};
     std::vector<std::shared_ptr<Layer>> _layers{};
-    std::queue<TileInfo> _lightingQueue{};
+    std::deque<TileInfo> _lightingQueue{};
     std::shared_ptr<tinyxml2::XMLDocument> _xml_doc{};
     XMLElement* _root_xml_element{};
     Adventure* _parent_adventure{};
@@ -444,7 +444,7 @@ private:
     mutable std::size_t _debug_visible_tiles_in_view_count{};
     static inline unsigned long long default_map_index = 0ull;
     bool _should_render_stat_window{false};
-    bool _allow_lighting_calculations_during_day{false};
+    bool _allow_lighting_calculations_during_day{true};
     bool m_isInfinite{ false };
     uint16_t m_chunkWidth{ 16u };
     uint16_t m_chunkHeight{ 16u };

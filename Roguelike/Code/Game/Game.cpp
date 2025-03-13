@@ -1461,20 +1461,19 @@ void Game::ShowWorldInspectorUI() {
         static bool show_raycasts = false;
         ImGui::Checkbox("Show raycasts", &show_raycasts);
         _debug_show_raycasts = show_raycasts;
-        _debug_render = _debug_show_room_bounds || _debug_show_camera || _debug_show_grid || _debug_show_world_bounds || _debug_show_camera_bounds || _debug_show_all_entities || _debug_show_raycasts;
+        _debug_render = _debug_show_room_bounds | _debug_show_camera | _debug_show_grid | _debug_show_world_bounds | _debug_show_camera_bounds | _debug_show_all_entities | _debug_show_raycasts;
         static int light_level = this->_adventure->CurrentMap()->GetCurrentGlobalLightValue();
+        static bool always_daytime = false;
         if (ImGui::SliderInt("Global Light", &light_level, min_light_value, max_light_value, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat)) {
-            if (_adventure->CurrentMap()->AllowLightingDuringDay()) {
-                auto& m = *(this->_adventure->CurrentMap());
-                m.SetDebugGlobalLight(light_level);
-                m.SetSkyColorFromGlobalLight();
-            }
+            auto& m = *(this->_adventure->CurrentMap());
+            m.CalculateLightingForLayers(TimeUtils::FPSeconds{ 0.0f });
+            m.UpdateLighting(TimeUtils::FPSeconds{ 0.0f });
+            m.SetDebugGlobalLight(always_daytime ? max_light_value : light_level);
+            m.SetSkyColorFromGlobalLight();
         }
-        static bool always_daytime = true;
         if (ImGui::Checkbox("Disable lighting", &always_daytime)) {
             auto& m = *(this->_adventure->CurrentMap());
-            m.DebugDisableLighting(!always_daytime);
-            
+            m.DebugDisableLighting(always_daytime);
         }
         ImGui::EndTabItem();
     }
@@ -1764,21 +1763,26 @@ void Game::ShowFeatureInspectorUI() {
 
 void Game::ShowFeatureInspectorFeatureStatesUI(const Entity* cur_entity) {
     if(const auto* feature = dynamic_cast<const Feature*>(cur_entity); feature != nullptr) {
-        auto info = FeatureInfo{feature->layer, feature->parent_tile->GetIndexFromCoords()};
+        auto info = FeatureInfo{feature->layer, feature->tile->GetIndexFromCoords()};
         if(info.HasStates()) {
             if(ImGui::BeginTable("FeatureInspectorTable", 2, ImGuiTableFlags_Borders)) {
                 ImGui::TableSetupColumn("Active");
                 ImGui::TableSetupColumn("States");
                 ImGui::TableHeadersRow();
-                for(const auto& state : info.GetStates()) {
+                {
+                    const auto& states = info.GetStates();
+                    for (const auto& state : states) {
                         ImGui::TableNextColumn();
-                        if(const auto disable = info.GetCurrentState() == state; disable) {
+                        if (const auto disable = info.GetCurrentState() == state; disable) {
                             ImGui::BeginDisabled(disable);
-                            ImGui::Button("Set##FeatureInspectorTableDeactivatedButton");
+                            if (ImGui::Button("Set##FeatureInspectorTableDeactivatedButton")) {
+                                info.SetState(state);
+                            }
                             ImGui::EndDisabled();
-                        } else {
+                        }
+                        else {
                             ImGui::BeginDisabled(disable);
-                            if(ImGui::Button("Set##FeatureInspectorTableActivatedButton")) {
+                            if (ImGui::Button("Set##FeatureInspectorTableActivatedButton")) {
                                 info.SetState(state);
                             }
                             ImGui::EndDisabled();
@@ -1787,6 +1791,7 @@ void Game::ShowFeatureInspectorFeatureStatesUI(const Entity* cur_entity) {
                         ImGui::Text(state.c_str());
                     }
                 }
+            }
             ImGui::EndTable();
         }
     }

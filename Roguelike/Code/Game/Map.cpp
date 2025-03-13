@@ -98,9 +98,9 @@ void Map::ShouldRenderStatWindow() noexcept {
 }
 
 bool Map::AllowLightingDuringDay() const noexcept {
-    if(_current_global_light == day_light_value) {
-        return _allow_lighting_calculations_during_day;
-    }
+    //if(_current_global_light == day_light_value) {
+    //    return _allow_lighting_calculations_during_day;
+    //}
     return true; //Not Day, lighting is a good idea.
 }
 
@@ -427,10 +427,8 @@ void Map::Update(TimeUtils::FPSeconds deltaSeconds) {
     UpdateLayers(deltaSeconds);
     UpdateTextEntities(deltaSeconds);
     UpdateEntities(deltaSeconds);
-    if(AllowLightingDuringDay()) {
-        CalculateLightingForLayers(deltaSeconds);
-        UpdateLighting(deltaSeconds);
-    }
+    CalculateLightingForLayers(deltaSeconds);
+    UpdateLighting(deltaSeconds);
     FocusCameraOnPlayer(deltaSeconds);
     ShouldRenderStatWindow();
     SetCursorForTile();
@@ -487,24 +485,31 @@ void Map::UpdateTextEntities(TimeUtils::FPSeconds deltaSeconds) {
 
 void Map::UpdateLighting(TimeUtils::FPSeconds /*deltaSeconds*/) noexcept {
     while(!_lightingQueue.empty()) {
-        auto& ti = _lightingQueue.front();
-        _lightingQueue.pop();
+        TileInfo& ti = _lightingQueue.front();
+        _lightingQueue.pop_front();
         ti.ClearLightDirty();
         UpdateTileLighting(ti);
-        ti.layer->DirtyMesh();
     }
 }
 
 void Map::InitializeLighting(Layer* layer) noexcept {
-    if(layer == nullptr) {
+    if (layer == nullptr) {
         return;
     }
-    const auto tileCount = static_cast<std::size_t>(layer->tileDimensions.x) * static_cast<std::size_t>(layer->tileDimensions.y);
-    for(auto i = std::size_t{0u}; i != tileCount; ++i) {
-        TileInfo ti{layer, i};
-        ti.SetLightValue(_current_global_light);
-    }
     layer->DirtyMesh();
+    const auto tileCount = layer->tileDimensions.x * layer->tileDimensions.y;
+    for (int i = 0; i < tileCount; ++i) {
+        auto* currentTile = layer->GetTile(i);
+        currentTile->SetLightValue(0);
+        currentTile->SetLightDirty();
+        //if (const auto* def = TileDefinition::GetTileDefinitionByName(currentTile->GetType()); def && def->self_illumination > 0) {
+            TileInfo ti{};
+            ti.index = i;
+            ti.layer = layer;
+            _lightingQueue.push_back(ti);
+        //}
+    }
+    CalculateLighting(layer);
 }
 
 void Map::CalculateLighting(Layer* layer) noexcept {
@@ -514,80 +519,34 @@ void Map::CalculateLighting(Layer* layer) noexcept {
     const auto width = static_cast<std::size_t>(layer->tileDimensions.x);
     const auto height = static_cast<std::size_t>(layer->tileDimensions.y);
     const auto tileCount = width * height;
-    for(auto i = std::size_t{}; i != tileCount; ++i) {
-        TileInfo ti{layer, i};
-        if(ti.IsOpaque()) {
-            std::array<uint32_t, 8> lightvalues{};
-            auto iter = std::begin(lightvalues);
-            for(auto& n : ti.GetAllNeighbors()) {
-                if(!n.IsOpaque() && n.index != ti.index) {
-                    (*iter) = n.GetLightValue();
-                }
-                ++iter;
-            }
-            if(auto max_light_neighbor_value = *(std::max_element)(std::cbegin(lightvalues), std::cend(lightvalues))) {
-                ti.SetLightValue(max_light_neighbor_value - uint32_t{1u});
-                ti.SetLightDirty();
-            }
+    for (auto i = std::size_t{}; i != tileCount; ++i) {
+        if (auto* tile = layer->GetTile(i); tile && tile->IsOpaque()) {
+            break;
         } else {
-            DirtyValidNeighbors(ti);
+            tile->SetSky();
+            tile->SetLightValue(_current_global_light);
         }
     }
-}
-
-void Map::DirtyTileLight(TileInfo& ti) noexcept {
-    if(!ti.IsLightDirty()) {
-        ti.SetLightDirty();
-        _lightingQueue.push(ti);
-    }
-}
-
-void Map::UpdateTileLighting(TileInfo& ti) noexcept {
-    PROFILE_BENCHMARK_FUNCTION();
-    const uint32_t idealLighting = [&]() { // Ideal Lighting of tile is highest available from self, neighbor, sky, actor, or feature...
-        const auto self_value = ti.GetSelfIlluminationValue();
-        const auto highestNeighborLightValue = [&]() {
-            if(auto value = ti.GetMaxLightValueFromNeighbors(); value) {
-                return value - uint32_t{1u};
-            }
-            return uint32_t{0u};
-        }(); //IIIL
-        const auto actor_value = ti.GetActorLightValue();
-        const auto feature_value = ti.GetFeatureLightValue();
-        const auto sky_value = [&]() { //If sky, light value is global value
-            if(ti.IsSky()) {
-                return _current_global_light;
-            }
-            return uint32_t{0u};
-        }(); //IIIL
-        const auto edge_value = [&]() { //If at edge, "edge" is global value, so actual tile is one less (if able) or zero.
-            if(auto value = _current_global_light; ti.IsAtEdge() && value) {
-                return value - uint32_t{1u};
-            }
-            return uint32_t{0u};
-        }(); //IIIL
-        return (std::max)({edge_value, sky_value, self_value, highestNeighborLightValue, actor_value, feature_value});
-    }(); //IIIL
-    if(idealLighting != ti.GetLightValue()) {
-        ti.SetLightValue(idealLighting);
-        ti.SetLightDirty();
-        if(ti.IsOpaque()) {
-            DirtyCardinalNeighbors(ti);
+    for (auto i = std::size_t{}; i != tileCount; ++i) {
+        TileInfo ti{ layer, i };
+        if (ti.IsOpaque()) {
+            break;
         }
+        DirtyValidNeighbors(ti);
     }
 }
 
 void Map::DirtyValidNeighbors(TileInfo& ti) noexcept {
-    if(auto n = ti.GetNorthNeighbor(); !n.IsSky() && !n.IsOpaque()) {
+    if (auto n = ti.GetNorthNeighbor(); !n.IsSky() && !n.IsOpaque()) {
         DirtyTileLight(n);
     }
-    if(auto e = ti.GetEastNeighbor(); !e.IsSky() && !e.IsOpaque()) {
+    if (auto e = ti.GetEastNeighbor(); !e.IsSky() && !e.IsOpaque()) {
         DirtyTileLight(e);
     }
-    if(auto s = ti.GetSouthNeighbor(); !s.IsSky() && !s.IsOpaque()) {
+    if (auto s = ti.GetSouthNeighbor(); !s.IsSky() && !s.IsOpaque()) {
         DirtyTileLight(s);
     }
-    if(auto w = ti.GetWestNeighbor(); !w.IsSky() && !w.IsOpaque()) {
+    if (auto w = ti.GetWestNeighbor(); !w.IsSky() && !w.IsOpaque()) {
         DirtyTileLight(w);
     }
 }
@@ -603,6 +562,34 @@ void Map::DirtyCardinalNeighbors(TileInfo& ti) noexcept {
     DirtyTileLight(w);
 }
 
+void Map::DirtyTileLight(TileInfo& ti) noexcept {
+    if (ti.IsLightDirty()) {
+        return;
+    }
+    _lightingQueue.push_back(ti);
+    ti.SetLightDirty();
+}
+
+void Map::UpdateTileLighting(TileInfo& ti) noexcept {
+    uint32_t idealLighting = ti.GetSelfIlluminationValue();
+    if (!ti.IsOpaque()) {
+        if (const auto highestNeighborLightValue = ti.GetMaxLightValueFromNeighbors(); highestNeighborLightValue > 0) {
+            idealLighting = (std::max)(idealLighting, highestNeighborLightValue - 1);
+        }
+    }
+    if (ti.IsSky() || (ti.IsAtEdge() && ti.IsOpaque())) {
+        idealLighting = (std::max)(idealLighting, _current_global_light);
+    }
+    idealLighting = (std::max)(idealLighting, ti.GetActorLightValue());
+    idealLighting = (std::max)(idealLighting, ti.GetFeatureLightValue());
+    if (idealLighting != ti.GetLightValue()) {
+        ti.SetLightValue(idealLighting);
+        DirtyNeighborLighting(ti, Layer::NeighborDirection::North);
+        DirtyNeighborLighting(ti, Layer::NeighborDirection::East);
+        DirtyNeighborLighting(ti, Layer::NeighborDirection::South);
+        DirtyNeighborLighting(ti, Layer::NeighborDirection::West);
+    }
+}
 
 void Map::DirtyNeighborLighting(TileInfo& ti, const Layer::NeighborDirection& direction) noexcept {
     TileInfo neighbor = [&]() {
@@ -1538,7 +1525,9 @@ void Map::LoadTmxTileset(const XMLElement& elem) noexcept {
             }
         }
         constexpr auto fmt = R"(<tileDefinition name="{:s}" index="[{},{}]"><glyph value="{}" /><animation name="{:s}"><animationset startindex="{}" framelength="{}" duration="{}" loop="true" /></animation></tileDefinition>)";
-        const auto anim_str = std::vformat(fmt, std::make_format_args(desc.name, desc.tileId % width, desc.tileId / width, desc.glyph, desc.animName, desc.anim_start_idx, desc.frame_length, desc.anim_duration));
+        const auto tileIdx = desc.tileId % width;
+        const auto tileIdy = desc.tileId / width;
+        const auto anim_str = std::vformat(fmt, std::make_format_args(desc.name, tileIdx, tileIdy, desc.glyph, desc.animName, desc.anim_start_idx, desc.frame_length, desc.anim_duration));
         tinyxml2::XMLDocument d;
         d.Parse(anim_str.c_str(), anim_str.size());
         if(const auto* xml_root = d.RootElement(); xml_root != nullptr) {
