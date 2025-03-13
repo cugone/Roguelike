@@ -133,9 +133,7 @@ bool Feature::LoadFromXml(const XMLElement& elem) {
     }
 
     if(DataUtils::HasAttribute(elem, "position")) {
-        const auto pos = DataUtils::ParseXmlAttribute(elem, "position", IntVector2::Zero);
-        SetPosition(pos);
-        parent_tile = map->GetTile(pos.x, pos.y, this->layer->z_index);
+        SetPosition(DataUtils::ParseXmlAttribute(elem, "position", IntVector2::Zero));
     }
 
     return true;
