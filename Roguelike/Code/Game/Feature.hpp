@@ -60,8 +60,6 @@ public:
 
     void CalculateLightValue() noexcept override;
 
-    Tile* parent_tile{};
-
     FeatureInstance CreateInstance() const noexcept;
     FeatureInstance CreateInstanceAt(const IntVector2& position) const noexcept;
 
