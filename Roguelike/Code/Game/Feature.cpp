@@ -72,7 +72,7 @@ Feature* Feature::GetFeatureByName(const std::string& name) {
 
 Feature* Feature::GetFeatureByGlyph(const char glyph) {
     for(const auto& feature : s_registry) {
-        if(TileDefinition::GetTileDefinitionByName(feature.second->parent_tile->GetType())->glyph == glyph) {
+        if(TileDefinition::GetTileDefinitionByName(feature.second->tile->GetType())->glyph == glyph) {
             return feature.second.get();
         }
     }
@@ -102,8 +102,7 @@ bool Feature::LoadFromXml(const XMLElement& elem) {
         DataUtils::ForEachChildElement(elem, "state", [&definitionName, &featureName, this](const XMLElement& elem) {
             DataUtils::ValidateXmlElement(elem, "state", "", "name");
             const auto cur_name = DataUtils::ParseXmlAttribute(elem, "name", std::string{});
-            definitionName = featureName + "." + cur_name;
-            _states.push_back(definitionName);
+            _states.push_back(cur_name);
             });
         const auto has_initialState = DataUtils::HasAttribute(elem, "initialState");
         const auto attr = elem.Attribute("initialState");
@@ -111,19 +110,15 @@ bool Feature::LoadFromXml(const XMLElement& elem) {
         const auto valid_initialState = has_initialState && !initialState.empty();
         if(!valid_initialState) {
             auto* logger = ServiceLocator::get<IFileLoggerService>();
-            const auto iter = std::begin(_states);
-            const auto first_state_name = iter->substr(iter->find_last_of('.') + 1);
-            logger->LogLineAndFlush(std::format("Feature initialState attribute for feature \"{}\" is empty or missing. Defaulting to first state: {}.", featureName, first_state_name));
+            logger->LogLineAndFlush(std::format("Feature initialState attribute for feature \"{}\" is empty or missing. Defaulting to first state: {}.", featureName, (*std::begin(_states))));
         }
-        initialState = featureName + "." + initialState;
         if(auto found = std::find(std::begin(_states), std::end(_states), initialState); found != std::end(_states)) {
             _current_state = found;
         } else {
             _current_state = std::begin(_states);
         }
-        definitionName = (*_current_state);
+        definitionName = std::format("{}.{}", featureName, (*_current_state));
     } else {
-        _states.push_back(definitionName);
         _current_state = std::begin(_states);
     }
 
@@ -146,16 +141,41 @@ bool Feature::LoadFromXml(const XMLElement& elem) {
     return true;
 }
 
+std::string Feature::GetFullyQualifiedNameFromCurrentState() const noexcept {
+    const auto info = FeatureInfo{layer, layer->GetTileIndex(_position.x, _position.y)};
+    if(info.HasStates()) {
+        return std::format("{}.{}", name, (*_current_state));
+    } else {
+        return name;
+    }
+}
+std::string Feature::GetFullyQualifiedNameFromState(std::string stateName) const noexcept {
+    const auto info = FeatureInfo{ layer, layer->GetTileIndex(_position.x, _position.y) };
+    if (info.HasStates()) {
+        if (info.HasState(stateName)) {
+            return std::format("{}.{}", name, stateName);
+        } else {
+            auto logger = ServiceLocator::get<IFileLoggerService>();
+            logger->LogWarnLine(std::format("Feature {} has no state {}. Defaulting to first state.", name, stateName));
+            return std::format("{}.{}", name, (*std::begin(_states)));
+        }
+    } else {
+        auto logger = ServiceLocator::get<IFileLoggerService>();
+        logger->LogWarnLine(std::format("Feature {} has no states. Defaulting to name.", name));
+        return name;
+    }
+}
+
 bool Feature::IsOpaque() const noexcept {
-    return TileDefinition::GetTileDefinitionByName(*_current_state)->is_opaque;
+    return TileDefinition::GetTileDefinitionByName(GetFullyQualifiedNameFromCurrentState())->is_opaque;
 }
 
 bool Feature::IsSolid() const noexcept {
-    return TileDefinition::GetTileDefinitionByName(*_current_state)->is_solid;
+    return TileDefinition::GetTileDefinitionByName(GetFullyQualifiedNameFromCurrentState())->is_solid;
 }
 
 bool Feature::IsVisible() const noexcept {
-    return TileDefinition::GetTileDefinitionByName(*_current_state)->is_visible;
+    return TileDefinition::GetTileDefinitionByName(GetFullyQualifiedNameFromCurrentState())->is_visible;
 }
 
 bool Feature::IsInvisible() const noexcept {
@@ -172,16 +192,14 @@ void Feature::SetPosition(const IntVector2& position) {
 }
 
 void Feature::SetState(const std::string& stateName) {
-    const auto fully_qualified_name = std::format("{}.{}", name, stateName);
-    if(auto* new_def = TileDefinition::GetTileDefinitionByName(fully_qualified_name)) {
-        //Tile::ChangeTypeFromName(stateName);
-        TileInfo ti{layer, layer->GetTileIndex(_position.x, _position.y)};
+    if(auto* new_def = TileDefinition::GetTileDefinitionByName(GetFullyQualifiedNameFromState(stateName))) {
+        TileInfo ti{layer, tile->GetIndexFromCoords()};
         sprite = new_def->GetSprite();
         _light_value = new_def->light;
         _self_illumination = new_def->self_illumination;
         ti.SetLightDirty();
         CalculateLightValue();
-        if(auto iter = std::find_if(std::begin(_states), std::end(_states), [fully_qualified_name](const std::string& state) { return fully_qualified_name == state; }); iter != std::end(_states)) {
+        if(auto iter = std::find(std::begin(_states), std::end(_states), stateName); iter != std::end(_states)) {
             _current_state = iter;
         }
         return;
@@ -213,7 +231,7 @@ void Feature::AttackerMissed() {
 }
 
 void Feature::OnDestroyed() {
-    auto info = FeatureInfo{ layer, parent_tile->GetIndexFromCoords() };
+    auto info = FeatureInfo{ layer, tile->GetIndexFromCoords() };
     info.SetState("open");
 }
 
@@ -260,7 +278,7 @@ bool FeatureInfo::HasState(std::string stateName) const noexcept {
         return false;
     }
     auto* feature = layer->GetTile(index)->feature;
-    return std::find(std::cbegin(feature->_states), std::cend(feature->_states), std::format("{}.{}", feature->name, stateName)) != std::cend(feature->_states);
+    return std::find(std::cbegin(feature->_states), std::cend(feature->_states), stateName) != std::cend(feature->_states);
 }
 
 bool FeatureInfo::HasStates() const noexcept {

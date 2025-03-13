@@ -48,6 +48,10 @@ public:
     static Feature* GetFeatureByName(const std::string& name);
     static Feature* GetFeatureByGlyph(const char glyph);
 
+    std::string GetFullyQualifiedNameFromCurrentState() const noexcept;
+    std::string GetFullyQualifiedNameFromState(std::string stateName) const noexcept;
+
+
     Feature(Map* map, const XMLElement& elem) noexcept;
 
     bool IsSolid() const noexcept override;
