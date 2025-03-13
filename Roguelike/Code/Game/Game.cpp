@@ -455,7 +455,7 @@ void Game::Render_Title() const {
 
     g_theRenderer->BeginRender();
 
-    g_theRenderer->BeginHUDRender(ui_camera, Vector2::Zero, static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight()));
+    g_theRenderer->BeginHUDRender(ui_camera, Vector2::Zero, static_cast<float>(GetGameAs<Game>()->GetSettings()->GetWindowHeight()));
 
     static const auto line_height = ingamefont->CalculateTextHeight("X");
     //g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
@@ -472,7 +472,7 @@ void Game::Render_Loading() const {
 
     g_theRenderer->BeginRender();
 
-    g_theRenderer->BeginHUDRender(ui_camera, Vector2::Zero, static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight()));
+    g_theRenderer->BeginHUDRender(ui_camera, Vector2::Zero, static_cast<float>(GetGameAs<Game>()->GetSettings()->GetWindowHeight()));
 
     g_theRenderer->SetModelMatrix(Matrix4::I);
     g_theRenderer->DrawTextLine(ingamefont, "LOADING");
@@ -503,11 +503,11 @@ void Game::Render_Main() const {
         g_theRenderer->DrawQuad2D(Vector2::Zero, Vector2::One, Rgba(0, 0, 0, 128));
     }
 
-    g_theRenderer->BeginHUDRender(ui_camera, Vector2::Zero, static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight()));
+    g_theRenderer->BeginHUDRender(ui_camera, Vector2::Zero, static_cast<float>(GetGameAs<Game>()->GetSettings()->GetWindowHeight()));
 
     if(app->LostFocus()) {
-        const auto w = static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowWidth());
-        const auto h = static_cast<float>(GetGameAs<Game>()->GetSettings().GetWindowHeight());
+        const auto w = static_cast<float>(GetGameAs<Game>()->GetSettings()->GetWindowWidth());
+        const auto h = static_cast<float>(GetGameAs<Game>()->GetSettings()->GetWindowHeight());
         g_theRenderer->DrawQuad2D(Matrix4::CreateScaleMatrix(Vector2{w, h}), Rgba{0.0f, 0.0f, 0.0f, 0.5f});
         g_theRenderer->SetModelMatrix(Matrix4::I);
         g_theRenderer->DrawTextLine(ingamefont, "PAUSED");
@@ -983,7 +983,7 @@ void Game::Render() const noexcept {
 }
 
 void Game::EndFrame() noexcept {
-    g_theRenderer->SetVSync(GetGameAs<Game>()->GetSettings().IsVsyncEnabled());
+    g_theRenderer->SetVSync(GetGameAs<Game>()->GetSettings()->IsVsyncEnabled());
     switch(_currentGameState) {
     case GameState::Title:       EndFrame_Title(); break;
     case GameState::Loading:     EndFrame_Loading(); break;
@@ -1142,7 +1142,7 @@ void Game::HandlePlayerMouseInput() {
 void Game::HandlePlayerControllerInput() {
     auto& controller = g_theInputSystem->GetXboxController(0);
     Vector2 rthumb = controller.GetRightThumbPosition();
-    rthumb.y *= static_cast<float>(GetGameAs<Game>()->GetSettings().IsMouseInvertedY()) ? 1.0f : -1.0f;
+    rthumb.y *= static_cast<float>(GetGameAs<Game>()->GetSettings()->IsMouseInvertedY()) ? 1.0f : -1.0f;
     _adventure->CurrentMap()->cameraController.Translate(gameOptions.GetCameraSpeed() * rthumb * g_theRenderer->GetGameFrameTime().count());
 
     if(controller.WasButtonJustPressed(XboxController::Button::RightThumb)) {
@@ -1411,9 +1411,9 @@ void Game::ShowFrameInspectorUI() {
         ImGui::Text("Min: %0.7f", *std::min_element(std::begin(histogram), std::end(histogram)));
         ImGui::Text("Max: %0.7f", *std::max_element(std::begin(histogram), std::end(histogram)));
         ImGui::Text("Avg: %0.7f", std::reduce(std::begin(histogram), std::end(histogram), 0.0f) / max_histogram_count);
-        static bool is_vsync_enabled = GetGameAs<Game>()->GetSettings().IsVsyncEnabled();
+        static bool is_vsync_enabled = GetGameAs<Game>()->GetSettings()->IsVsyncEnabled();
         if(ImGui::Checkbox("Vsync", &is_vsync_enabled)) {
-            GetGameAs<Game>()->GetSettings().SetVsyncEnabled(is_vsync_enabled);
+            GetGameAs<Game>()->GetSettings()->SetVsyncEnabled(is_vsync_enabled);
         }
         if(ImGui::Button("Take Screenshot")) {
             RequestScreenShot();
