@@ -20,6 +20,8 @@
 #include "Engine/Services/ServiceLocator.hpp"
 #include "Engine/Services/IRendererService.hpp"
 
+#include "Engine/UI/UISystem.hpp"
+
 #include "Game/Adventure.hpp"
 #include "Game/Actor.hpp"
 #include "Game/Cursor.hpp"
@@ -387,12 +389,18 @@ Map::Map(const std::filesystem::path& filepath) noexcept
         ERROR_AND_DIE("Bad path for Map constructor");
     }
     Initialize(*_root_xml_element);
+    g_theUISystem->SetClayLayoutCallback([this]() {
+        RenderClayStatsBlock();
+    });
 }
 
 Map::Map(const XMLElement& elem) noexcept
     : _root_xml_element(const_cast<XMLElement*>(&elem))
 {
     Initialize(*_root_xml_element);
+    g_theUISystem->SetClayLayoutCallback([this]() {
+        RenderClayStatsBlock();
+    });
 }
 
 Map::Map(IntVector2 dimensions) noexcept
@@ -405,9 +413,13 @@ Map::Map(IntVector2 dimensions) noexcept
     }
     _pathfinder.Initialize(dimensions);
     cameraController.SetZoomLevelRange(Vector2{ 8.0f, 16.0f });
+    g_theUISystem->SetClayLayoutCallback([this]() {
+        RenderClayStatsBlock();
+    });
 }
 
 Map::~Map() noexcept {
+    g_theUISystem->SetClayLayoutCallback(nullptr);
     _xml_doc.reset();
     _entities.clear();
     _entities.shrink_to_fit();
@@ -623,46 +635,7 @@ void Map::UpdateActorAI(TimeUtils::FPSeconds /*deltaSeconds*/) {
     }
 }
 
-void Map::RenderStatsBlock(Actor* actor) const noexcept {
-    if(!actor) {
-        return;
-    }
-    const auto& stats = actor->GetStats();
-    g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
-//clang-format off
-    const auto text = std::format("Lvl: {}\nHP: {}\nMax HP: {}\nXP: {}\nAtk: {}\nDef: {}\nSpd: {}\nEva: {}\nLck: {}"
-                                 ,stats.GetStat(StatsID::Level)
-                                 ,stats.GetStat(StatsID::Health)
-                                 ,stats.GetStat(StatsID::Health_Max)
-                                 ,stats.GetStat(StatsID::Experience)
-                                 ,stats.GetStat(StatsID::Attack)
-                                 ,stats.GetStat(StatsID::Defense)
-                                 ,stats.GetStat(StatsID::Speed)
-                                 ,stats.GetStat(StatsID::Evasion)
-                                 ,stats.GetStat(StatsID::Luck));
-//clang-format on
-
-    const auto text_height = GetGameAs<Game>()->ingamefont->CalculateTextHeight(text);
-    const auto text_width = GetGameAs<Game>()->ingamefont->CalculateTextWidth(text);
-    AABB2 bounds{};
-    const auto dims_w = text_width;
-    const auto dims_h = text_height;
-    const auto bottom_right = Vector2{dims_w, dims_h};
-    const auto element_padding = Vector2{2.0f, -5.0f};
-    const auto margin_padding = Vector2{0.0f, 0.0f};
-    const auto border_padding = Vector2{2.0f, 2.0f};
-    const auto padding = element_padding + margin_padding + border_padding;
-    bounds.StretchToIncludePoint(bottom_right);
-    bounds.Translate(Vector2{50.0f, 50.0f});
-    const auto text_position = bounds.mins + padding;
-    g_theRenderer->DrawAABB2(bounds, actor->GetFactionAsColor(), Rgba(50, 50, 50, 128), border_padding);
-    const auto S = Matrix4::I;
-    const auto R = Matrix4::I;
-    const auto T = Matrix4::CreateTranslationMatrix(text_position);
-    const auto M = Matrix4::MakeSRT(S, R, T);
-    g_theRenderer->SetModelMatrix(M);
-    g_theRenderer->DrawMultilineText(GetGameAs<Game>()->ingamefont, text);
-}
+static Clay_LayoutConfig fullscreen_layout = { .sizing = {.width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_GROW(0)}, .padding = {.left = 50, .top = 50} };
 
 void Map::SetPriorityLayer(std::size_t i) {
     if(i >= _layers.size()) {
@@ -706,12 +679,6 @@ void Map::Render() const {
 
     for(auto* entity : _text_entities) {
         entity->Render();
-    }
-
-    if(_should_render_stat_window) {
-        if(const auto* tile = this->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile != nullptr) {
-            RenderStatsBlock(tile->actor);
-        }
     }
 
 }
@@ -783,6 +750,60 @@ bool Map::IsPlayerOnExit() const noexcept {
 
 bool Map::IsPlayerOnEntrance() const noexcept {
     return player->tile->IsEntrance();
+}
+
+void Map::RenderClayStatsBlock() const noexcept {
+    if(_should_render_stat_window == false) {
+        return;
+    }
+    if (const auto* tile = this->PickTileFromMouseCoords(g_theInputSystem->GetMouseCoords(), 0); tile == nullptr) {
+        return;
+    } else {
+        if (tile->actor == nullptr) {
+            return;
+        } else {
+            const auto& stats = tile->actor->GetStats();
+            g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
+            CLAY({ .id = CLAY_ID("OuterContainer"), .layout = fullscreen_layout }) {
+                CLAY({ .id = CLAY_ID("SidebarContainer"),.layout = {.padding = CLAY_PADDING_ALL(2)}, .backgroundColor = Clay::RgbaToClayColor(Rgba(50, 50, 50, 128)), .border = {.color = Clay::RgbaToClayColor(tile->actor->GetFactionAsColor()), .width = CLAY_BORDER_ALL(2)} }) {
+                    CLAY({ .id = CLAY_ID("Sidebar"), .layout = {.childGap = 2
+                                                                ,.childAlignment = {.x = Clay_LayoutAlignmentX::CLAY_ALIGN_X_LEFT, .y = Clay_LayoutAlignmentY::CLAY_ALIGN_Y_CENTER }
+                                                                ,.layoutDirection = Clay_LayoutDirection::CLAY_TOP_TO_BOTTOM}
+
+                        }) {
+                        const auto text_config = Clay_TextElementConfig{ .userData = GetGameAs<Game>()->ingamefont, .textColor = Clay::RgbaToClayColor(Rgba::White) };
+                        static std::string lvl;
+                        lvl = std::format("Lvl: {}", stats.GetStat(StatsID::Level));
+                        CLAY_TEXT(Clay::StrToClayString(lvl), CLAY_TEXT_CONFIG(text_config));
+                        static std::string hp;
+                        hp = std::format("HP: {}", stats.GetStat(StatsID::Health));
+                        CLAY_TEXT(Clay::StrToClayString(hp), CLAY_TEXT_CONFIG(text_config));
+                        static std::string max_hp;
+                        max_hp = std::format("Max HP: {}", stats.GetStat(StatsID::Health_Max));
+                        CLAY_TEXT(Clay::StrToClayString(max_hp), CLAY_TEXT_CONFIG(text_config));
+                        static std::string xp;
+                        xp = std::format("XP: {}", stats.GetStat(StatsID::Experience));
+                        CLAY_TEXT(Clay::StrToClayString(xp), CLAY_TEXT_CONFIG(text_config));
+                        static std::string atk;
+                        atk = std::format("Atk: {}", stats.GetStat(StatsID::Attack));
+                        CLAY_TEXT(Clay::StrToClayString(atk), CLAY_TEXT_CONFIG(text_config));
+                        static std::string def;
+                        def = std::format("Def: {}", stats.GetStat(StatsID::Defense));
+                        CLAY_TEXT(Clay::StrToClayString(def), CLAY_TEXT_CONFIG(text_config));
+                        static std::string spd;
+                        spd = std::format("Spd: {}", stats.GetStat(StatsID::Speed));
+                        CLAY_TEXT(Clay::StrToClayString(spd), CLAY_TEXT_CONFIG(text_config));
+                        static std::string eva;
+                        eva = std::format("Eva: {}", stats.GetStat(StatsID::Evasion));
+                        CLAY_TEXT(Clay::StrToClayString(eva), CLAY_TEXT_CONFIG(text_config));
+                        static std::string lck;
+                        lck = std::format("Lck: {}", stats.GetStat(StatsID::Luck));
+                        CLAY_TEXT(Clay::StrToClayString(lck), CLAY_TEXT_CONFIG(text_config));
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Map::Initialize(const XMLElement& elem) noexcept {
