@@ -9,11 +9,6 @@
 #include "Engine/Renderer/Camera2D.hpp"
 #include "Engine/Renderer/FrameBuffer.hpp"
 
-#include "Engine/UI/UICanvas.hpp"
-#include "Engine/UI/UILabel.hpp"
-#include "Engine/UI/UIPanel.hpp"
-#include "Engine/UI/UIWidget.hpp"
-
 #include "Game/Adventure.hpp"
 #include "Game/Cursor.hpp"
 #include "Game/Map.hpp"
@@ -280,7 +275,6 @@ private:
     std::shared_ptr<SpriteSheet> _entity_sheet{};
     std::shared_ptr<SpriteSheet> _item_sheet{};
     std::shared_ptr<SpriteSheet> _tileset_sheet{};
-    std::unique_ptr<UIWidget> _widgetLoading{};
     std::vector<Cursor> _cursors{};
     float _debug_fadeInTime = 1.0f;
     float _debug_fadeOutTime = 1.0f;
