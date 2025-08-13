@@ -457,7 +457,7 @@ void Game::Render_Title() const {
 
     g_theRenderer->BeginHUDRender(ui_camera, Vector2::Zero, static_cast<float>(GetGameAs<Game>()->GetSettings()->GetWindowHeight()));
 
-    static const auto line_height = ingamefont->CalculateTextHeight("X");
+    static const auto line_height = ingamefont->CalculateTextHeight();
     //g_theRenderer->SetMaterial(g_theRenderer->GetMaterial("__2D"));
     //g_theRenderer->DrawFilledCircle2D(Vector2::X_Axis * -20.0f, 10.0f);
     g_theRenderer->DrawTextLine(Matrix4::CreateTranslationMatrix(Vector2{0.0f, line_height * 0.0f}), ingamefont, "RogueLike");

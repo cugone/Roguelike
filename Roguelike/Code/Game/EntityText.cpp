@@ -34,7 +34,7 @@ void EntityText::Render() const {
     const auto worldCoords = _screen_position;
     const auto screen_position = g_theRenderer->ConvertWorldToScreenCoords(map->cameraController.GetCamera(), worldCoords);
     const auto text_width = font->CalculateTextWidth(text);
-    const auto text_height = font->CalculateTextHeight(text);
+    const auto text_height = font->CalculateTextHeight();
     const auto text_half_extents = Vector2{text_width, text_height} *0.5f;
     const auto text_center = screen_position - text_half_extents;
     const auto T = Matrix4::CreateTranslationMatrix(text_center);
