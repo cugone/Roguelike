@@ -130,7 +130,7 @@ void MapEditor::ShowProperties([[maybe_unused]] TimeUtils::FPSeconds deltaSecond
     //ImGui::Text("Tileset:");
     //ImGui::SameLine();
     static std::string tileset_str{ default_tile_definition_src.string()};
-    ImGui::InputText("Tileset##MapEditorTileset", &tileset_str);
+    ImGui::InputText("Tileset##MapEditorTileset", tileset_str.data(), tileset_str.size());
     ImGui::End();
 }
 
