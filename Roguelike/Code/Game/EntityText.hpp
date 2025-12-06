@@ -8,14 +8,16 @@
 #include <vector>
 #include <memory>
 
-class KerningFont;
+namespace a2de {
+    class IFont;
+}
 
 struct TextEntityDesc {
     std::string text = "DAMAGE";
     Rgba color = Rgba::White;
     Vector2 position{0.0f, 0.0f};
     TimeUtils::FPSeconds timeToLive{1.0f};
-    KerningFont* font{nullptr};
+    a2de::IFont* font{nullptr};
     float speed{1.0f};
 };
 
@@ -24,7 +26,7 @@ public:
     std::string text{};
     TimeUtils::FPSeconds ttl{1.0f};
     Rgba color{Rgba::White};
-    KerningFont* font{};
+    a2de::IFont* font{};
     float speed{1.0f};
 
 

@@ -16,7 +16,9 @@
 
 #include <memory>
 
-class KerningFont;
+namespace a2de {
+    class IFont;
+}
 class AnimatedSprite;
 class MapEditor;
 
@@ -127,7 +129,7 @@ public:
     void SetCurrentCursorByName(const std::string& name) noexcept;
     void SetCurrentCursorById(CursorId id) noexcept;
 
-    KerningFont* ingamefont{};
+    a2de::IFont* ingamefont{};
     Cursor* current_cursor{};
     CursorId current_cursorId{};
     mutable Camera2D ui_camera{};

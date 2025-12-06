@@ -6,6 +6,8 @@
 #include "Engine/Core/DataUtils.hpp"
 #include "Engine/Core/FileUtils.hpp"
 #include "Engine/Core/KerningFont.hpp"
+#include "Engine/Core/IFont.hpp"
+#include "Engine/Core/Font.hpp"
 #include "Engine/Core/Utilities.hpp"
 
 #include "Engine/Math/MathUtils.hpp"
@@ -171,7 +173,7 @@ void Game::Initialize() noexcept {
     CreateFullscreenConstantBuffer();
     g_theRenderer->RegisterMaterialsFromFolder(std::string{"Data/Materials"});
     g_theRenderer->RegisterFontsFromFolder(std::string{"Data/Fonts"});
-    ingamefont = g_theRenderer->GetFont("TrebuchetMS32");
+    ingamefont = g_theRenderer->GetDefaultFont();
 
     g_theInputSystem->HideMouseCursor();
 
