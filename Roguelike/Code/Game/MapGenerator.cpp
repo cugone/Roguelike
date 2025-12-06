@@ -281,6 +281,8 @@ void MapGenerator::GenerateMaze() noexcept {
         PlaceActors();
         PlaceFeatures();
         PlaceItems();
+    } else if (algoName == "random") {
+        GenerateRandomMaze();
     }
 }
 
@@ -693,4 +695,26 @@ bool MapGenerator::GenerateExitAndEntrance() noexcept {
         tile->SetExit();
     }
     return true;
+}
+
+void MapGenerator::GenerateRandomMaze() noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
+    DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "", "width,height,floor,wall,default", "", "down,up,enter,exit");
+    const auto width = DataUtils::ParseXmlAttribute(*_xml_element, "width", 3);
+    const auto height = DataUtils::ParseXmlAttribute(*_xml_element, "height", 3);
+
+    _map;
+
+     defaultType = DataUtils::ParseXmlAttribute(*_xml_element, "default", defaultType);
+     floorType = DataUtils::ParseXmlAttribute(*_xml_element, "floor", floorType);
+     wallType = DataUtils::ParseXmlAttribute(*_xml_element, "wall", wallType);
+     stairsDownType = DataUtils::ParseXmlAttribute(*_xml_element, "down", stairsDownType);
+     stairsUpType = DataUtils::ParseXmlAttribute(*_xml_element, "up", stairsUpType);
+     enterType = DataUtils::ParseXmlAttribute(*_xml_element, "enter", enterType);
+     exitType = DataUtils::ParseXmlAttribute(*_xml_element, "exit", exitType);
+
+    _map->GetPathfinder()->Initialize(IntVector2{ width, height });
+
 }

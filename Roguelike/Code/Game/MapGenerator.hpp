@@ -41,6 +41,8 @@ private:
     void GenerateRandomRooms() noexcept;
     void GenerateRooms() noexcept;
     void GenerateCorridors() noexcept;
+    void GenerateRandomMaze() noexcept;
+
     void FillAreaWithTileType(const AABB2& area, std::string typeName) noexcept;
     void FillRoomsWithTileType(std::string typeName) noexcept;
     void FillRoomsWithWallTiles() noexcept;
