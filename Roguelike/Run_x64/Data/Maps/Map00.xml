@@ -27,12 +27,8 @@
         <item name="red_robe" position="[4,4]"/>
     </items>
     -->
+    <mapGenerator type="file" src="Data/Maps/500x500.map" floor="grass" wall="wall" default="void" />
     <!--
-    <mapGenerator type="maze" algorithm="roomsOnly" width="10" height="10" floor="grass" wall="wall" default="void">
-        <minSize>5</minSize>
-        <maxSize>5</maxSize>
-    </mapGenerator>
-    -->
     <mapGenerator type="xml">
         <layers>
             <layer>
@@ -69,4 +65,5 @@
             </layer>
         </layers>
     </mapGenerator>
+    -->
 </map>
