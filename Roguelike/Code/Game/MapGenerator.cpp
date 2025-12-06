@@ -256,9 +256,74 @@ void MapGenerator::GenerateFromTmxFile(const std::filesystem::path& path) noexce
     reader.Parse(*_map);
 }
 
-void MapGenerator::GenerateFromBinFile(const std::filesystem::path& /*path*/) noexcept {
-    //Run-length encoding for tiles.
-    
+void MapGenerator::GenerateFromBinFile(const std::filesystem::path& path) noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
+    defaultType = DataUtils::ParseXmlAttribute(*_xml_element, "default", defaultType);
+    floorType = DataUtils::ParseXmlAttribute(*_xml_element, "floor", floorType);
+    wallType = DataUtils::ParseXmlAttribute(*_xml_element, "wall", wallType);
+    stairsDownType = DataUtils::ParseXmlAttribute(*_xml_element, "down", stairsDownType);
+    stairsUpType = DataUtils::ParseXmlAttribute(*_xml_element, "up", stairsUpType);
+    enterType = DataUtils::ParseXmlAttribute(*_xml_element, "enter", enterType);
+    exitType = DataUtils::ParseXmlAttribute(*_xml_element, "exit", exitType);
+
+    g_theFileLogger->LogLine(std::format("Loading maze from {}", path));
+    if(auto f = FileUtils::ReadBinaryBufferFromFile(path); f.has_value() == false) {
+        g_theFileLogger->LogErrorLine(std::format("Error loading maze at {}", path));
+        return;
+    } else {
+        std::size_t name_size{0u};
+        uint8_t* ptr = f->data();
+        name_size = *(reinterpret_cast<std::size_t*>(ptr));
+        ptr += sizeof(name_size);
+
+        std::string name{};
+        name.resize(name_size);
+        std::copy(ptr, ptr + name_size, name.data());
+        ptr += name_size;
+
+        int width{0};
+        width = *(reinterpret_cast<int*>(ptr));
+        ptr += sizeof(width);
+
+        if ((width & 0x01) == 0 || width < 3) {
+            g_theFileLogger->LogErrorLine("Failed to load maze: Invalid width.");
+            return;
+        }
+
+        int height{0};
+        height = *(reinterpret_cast<int*>(ptr));
+        ptr += sizeof(height);
+
+        if ((height & 0x01) == 0 || height < 3) {
+            g_theFileLogger->LogErrorLine("Failed to load maze: Invalid height.");
+            return;
+        }
+
+        std::vector<unsigned char> grid;
+        grid.resize(static_cast<std::vector<unsigned char, std::allocator<unsigned char>>::size_type>(width) * height);
+        std::copy(ptr, ptr + (width * height), grid.data());
+
+        if(_map->_layers.empty()) {
+            _map->_layers.emplace_back(std::make_unique<Layer>(_map, IntVector2{ width, height }));
+        } else {
+            if (_map->_layers[0]->tileDimensions != IntVector2{ width, height }) {
+                _map->_layers[0] = std::move(std::make_unique<Layer>(_map, IntVector2{width, height}));
+            }
+        }
+
+        {
+            auto* layer = _map->_layers.back().get();
+            std::size_t size = static_cast<std::size_t>(width) * height;
+            for (std::size_t i = 0u; i < size; ++i) {
+                layer->GetTile(i)->ChangeTypeFromGlyph(grid[i]);
+            }
+        }
+
+        g_theFileLogger->LogLine(std::format("Maze {} loaded from {} successfully!", name, path));
+
+    }
 }
 
 void MapGenerator::GenerateMaze() noexcept {
