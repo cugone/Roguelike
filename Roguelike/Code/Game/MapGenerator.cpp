@@ -5,7 +5,9 @@
 
 #include "Engine/Math/MathUtils.hpp"
 
-#include "Engine/Profiling/ProfileLogScope.hpp"
+#ifdef PROFILE_BUILD
+#include <Thirdparty/Tracy/tracy/Tracy.hpp>
+#endif
 
 #include "Game/Actor.hpp"
 #include "Game/GameCommon.hpp"
@@ -30,6 +32,9 @@ MapGenerator::MapGenerator(Map* map, XMLElement* elem) noexcept
 }
 
 void MapGenerator::LoadLayers(const XMLElement& elem) {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     DataUtils::ValidateXmlElement(elem, "layers", "layer", "");
     std::size_t layer_count = DataUtils::GetChildElementCount(elem, "layer");
     if(layer_count > _map->max_layers) {
@@ -49,18 +54,30 @@ void MapGenerator::LoadLayers(const XMLElement& elem) {
 }
 
 void MapGenerator::LoadItems(const XMLElement& elem) noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     _map->LoadItemsForMap(elem);
 }
 
 void MapGenerator::LoadActors(const XMLElement& elem) noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     _map->LoadActorsForMap(elem);
 }
 
 void MapGenerator::LoadFeatures(const XMLElement& elem) noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     _map->LoadFeaturesForMap(elem);
 }
 
 void MapGenerator::PlaceActors() noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     auto open_set = [this]() {
         auto result = std::vector<std::size_t>{};
         result.resize(rooms.size());
@@ -91,6 +108,9 @@ void MapGenerator::PlaceActors() noexcept {
 }
 
 void MapGenerator::PlaceFeatures() noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     const auto map_dims = _map->CalcMaxDimensions();
     for(auto* feature : _map->_features) {
         const auto x = MathUtils::GetRandomLessThan(map_dims.x);
@@ -105,16 +125,25 @@ void MapGenerator::PlaceItems() noexcept {
 }
 
 void MapGenerator::SetRootXmlElement(const XMLElement& root_element) noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     _xml_element = const_cast<XMLElement*>(&root_element);
 }
 
 void MapGenerator::SetParentMap(Map* map) noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     if(map) {
         _map = map;
     }
 }
 
 void MapGenerator::Generate() noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "", "type");
     DataUtils::ValidateXmlAttribute(*_xml_element, "type", "heightmap,file,maze,xml");
     const auto type = DataUtils::GetAttributeAsString(*_xml_element, "type");
@@ -141,6 +170,9 @@ void MapGenerator::Generate() noexcept {
 }
 
 void MapGenerator::GenerateFromEmbeddedXml() noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "layers", "");
     if(auto xml_layers = _xml_element->FirstChildElement("layers")) {
         LoadLayers(*xml_layers);
@@ -149,6 +181,9 @@ void MapGenerator::GenerateFromEmbeddedXml() noexcept {
 }
 
 void MapGenerator::GenerateFromHeightMap() noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     const auto src = DataUtils::ParseXmlAttribute(*_xml_element, "src", std::string{});
     Image img(std::filesystem::path{ src });
     _map->_layers.emplace_back(std::make_unique<Layer>(_map, img));
@@ -173,6 +208,9 @@ void MapGenerator::GenerateFromHeightMap() noexcept {
 }
 
 void MapGenerator::GenerateFromFile() noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "", "src", "", "");
     const auto src = DataUtils::ParseXmlAttribute(*_xml_element, "src", std::string{});
     GUARANTEE_OR_DIE(!src.empty(), "Loading Map from file with empty or invalid source attribute.");
@@ -199,6 +237,9 @@ void MapGenerator::GenerateFromFile() noexcept {
 }
 
 void MapGenerator::GenerateFromXmlFile(const std::filesystem::path& path) noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     tinyxml2::XMLDocument doc;
     if(tinyxml2::XML_SUCCESS == doc.LoadFile(path.string().c_str())) {
         auto* xml_layers = doc.RootElement();
@@ -207,6 +248,9 @@ void MapGenerator::GenerateFromXmlFile(const std::filesystem::path& path) noexce
 }
 
 void MapGenerator::GenerateFromTmxFile(const std::filesystem::path& path) noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     TmxReader reader{ path };
     reader.Parse(*_map);
 }
@@ -217,6 +261,9 @@ void MapGenerator::GenerateFromBinFile(const std::filesystem::path& /*path*/) no
 }
 
 void MapGenerator::GenerateMaze() noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "", "algorithm");
     const auto algoName = DataUtils::ParseXmlAttribute(*_xml_element, "algorithm", std::string{});
     GUARANTEE_OR_DIE(!algoName.empty(), "Maze Generator algorithm type specifier cannot be empty.");
@@ -238,6 +285,9 @@ void MapGenerator::GenerateMaze() noexcept {
 }
 
 void MapGenerator::GenerateRandomRooms() noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     DataUtils::ValidateXmlElement(*_xml_element, "mapGenerator", "minSize,maxSize", "count,floor,wall,default", "", "down,up,enter,exit,width,height");
     const auto min_size = std::clamp([&]()->const int { const auto* xml_min = _xml_element->FirstChildElement("minSize"); int result = DataUtils::ParseXmlElementText(*xml_min, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
     const auto max_size = std::clamp([&]()->const int { const auto* xml_max = _xml_element->FirstChildElement("maxSize"); int result = DataUtils::ParseXmlElementText(*xml_max, 1); if(result < 0) result = 1; return result; }(), 1, Map::max_dimension); //IIIL
@@ -301,6 +351,9 @@ void MapGenerator::GenerateRandomRooms() noexcept {
 }
 
 void MapGenerator::GenerateRooms() noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     //Ref: Using "floorplan" algorithm here: https://www.reddit.com/r/roguelikedev/comments/310ae2/looking_for_a_bit_of_help_on_a_dungeon_generator/cpxrfbh?utm_source=share&utm_medium=web2x&context=3
     //1.  Make up some general constraints, like maximum and minimum room width & height.
     //2.  You need some sort of generic "room" construct, abstract from the map.
@@ -450,12 +503,18 @@ void MapGenerator::GenerateRooms() noexcept {
 }
 
 void MapGenerator::FillAreaWithTileType(const AABB2& area, std::string typeName) noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     for(auto* tile : _map->GetTilesInArea(area)) {
         tile->ChangeTypeFromName(typeName);
     }
 
 }
 void MapGenerator::FillRoomsWithTileType(std::string typeName) noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     for(const auto& room : rooms) {
         FillAreaWithTileType(room, typeName);
     }
@@ -463,14 +522,23 @@ void MapGenerator::FillRoomsWithTileType(std::string typeName) noexcept {
 
 
 void MapGenerator::FillRoomsWithWallTiles() noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     FillRoomsWithTileType(wallType);
 }
 
 void MapGenerator::FillRoomsWithFloorTiles() noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     FillRoomsWithTileType(floorType);
 }
 
 void MapGenerator::GenerateCorridors() noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     const auto roomCount = rooms.size();
     for(auto i = std::size_t{ 0u }; i != roomCount; ++i) {
         const auto& r1 = rooms[i % roomCount];
@@ -488,6 +556,9 @@ void MapGenerator::GenerateCorridors() noexcept {
 }
 
 void MapGenerator::MakeVerticalCorridor(const AABB2& from, const AABB2& to) noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     const auto [start, end] = [&]() {
         auto start = from.CalcCenter().y;
         auto end = to.CalcCenter().y;
@@ -504,6 +575,9 @@ void MapGenerator::MakeVerticalCorridor(const AABB2& from, const AABB2& to) noex
 }
 
 void MapGenerator::MakeHorizontalCorridor(const AABB2& from, const AABB2& to) noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     const auto [start, end] = [&]() {
         auto start = from.CalcCenter().x;
         auto end = to.CalcCenter().x;
@@ -520,6 +594,9 @@ void MapGenerator::MakeHorizontalCorridor(const AABB2& from, const AABB2& to) no
 }
 
 void MapGenerator::MakeCorridorSegmentAt(float x, const float y) const noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     if(auto* tile = _map->GetTile(IntVector3{static_cast<int>(x), static_cast<int>(y), 0})) {
         tile->ChangeTypeFromName(floorType);
         const auto neighbors = tile->GetNeighbors();
@@ -532,6 +609,9 @@ void MapGenerator::MakeCorridorSegmentAt(float x, const float y) const noexcept 
 }
 
 bool MapGenerator::VerifyExitIsReachable(const IntVector2& enter_loc, const IntVector2& exit_loc) const noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     const auto viable = [this](const IntVector2& a)->bool {
         return this->_map->IsTilePassable(a);
     };
@@ -551,10 +631,16 @@ bool MapGenerator::VerifyExitIsReachable(const IntVector2& enter_loc, const IntV
 }
 
 bool MapGenerator::CanTileBeCorridorWall(const std::string& name) const noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     return name != this->floorType;
 }
 
 bool MapGenerator::GenerateExitAndEntrance() noexcept {
+#ifdef PROFILE_BUILD
+    ZoneScoped;
+#endif
     IntVector2 start{};
     IntVector2 end{};
     std::set<std::pair<int, int>> closed_set{};
