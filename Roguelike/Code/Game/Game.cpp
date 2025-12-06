@@ -171,8 +171,8 @@ void Game::Initialize() noexcept {
 
     _consoleCommands = Console::CommandList(g_theConsole);
     CreateFullscreenConstantBuffer();
-    g_theRenderer->RegisterMaterialsFromFolder(std::string{"Data/Materials"});
-    g_theRenderer->RegisterFontsFromFolder(std::string{"Data/Fonts"});
+    g_theRenderer->RegisterMaterialsFromFolder(FileUtils::GetKnownFolderPath(FileUtils::KnownPathID::GameMaterials));
+    g_theRenderer->RegisterFontsFromFolder(FileUtils::GetKnownFolderPath(FileUtils::KnownPathID::GameFonts));
     ingamefont = g_theRenderer->GetDefaultFont();
 
     g_theInputSystem->HideMouseCursor();
