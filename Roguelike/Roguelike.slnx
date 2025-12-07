@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="DebugProfile" />
+    <BuildType Name="FinalBuild" />
+    <BuildType Name="Release" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="../../Abrams2026/Engine/Code/Engine/Engine.vcxproj" Id="acbda225-83de-4fba-a746-0135429fb391" />
+  <Project Path="Code/Game/Game.vcxproj" Id="e09f64d5-1a33-48fc-a80d-3007162b804c" />
+</Solution>
