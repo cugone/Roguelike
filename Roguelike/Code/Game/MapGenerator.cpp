@@ -302,7 +302,7 @@ void MapGenerator::GenerateFromBinFile(const std::filesystem::path& path) noexce
         }
 
         std::vector<unsigned char> grid;
-        grid.resize(static_cast<std::vector<unsigned char, std::allocator<unsigned char>>::size_type>(width) * height);
+        grid.resize(static_cast<decltype(grid)::size_type>(width) * height);
         std::copy(ptr, ptr + (width * height), grid.data());
 
         if(_map->_layers.empty()) {
