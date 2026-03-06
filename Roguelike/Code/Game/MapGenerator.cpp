@@ -275,7 +275,7 @@ void MapGenerator::GenerateFromBinFile(const std::filesystem::path& path) noexce
     } else {
         std::size_t name_size{0u};
         uint8_t* ptr = f->data();
-        name_size = *(reinterpret_cast<std::size_t*>(ptr));
+        std::memcpy(&name_size, ptr, sizeof(name_size));
         ptr += sizeof(name_size);
 
         std::string name{};
@@ -284,7 +284,7 @@ void MapGenerator::GenerateFromBinFile(const std::filesystem::path& path) noexce
         ptr += name_size;
 
         int width{0};
-        width = *(reinterpret_cast<int*>(ptr));
+        std::memcpy(&width, ptr, sizeof(width));
         ptr += sizeof(width);
 
         if ((width & 0x01) == 0 || width < 3) {
@@ -293,7 +293,7 @@ void MapGenerator::GenerateFromBinFile(const std::filesystem::path& path) noexce
         }
 
         int height{0};
-        height = *(reinterpret_cast<int*>(ptr));
+        std::memcpy(&height, ptr, sizeof(height));
         ptr += sizeof(height);
 
         if ((height & 0x01) == 0 || height < 3) {
