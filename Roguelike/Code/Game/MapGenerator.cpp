@@ -288,7 +288,7 @@ void MapGenerator::GenerateFromBinFile(const std::filesystem::path& path) noexce
         ptr += sizeof(width);
 
         if ((width & 0x01) == 0 || width < 3) {
-            g_theFileLogger->LogErrorLine("Failed to load maze: Invalid width.");
+            g_theFileLogger->LogErrorLine(std::format("Failed to load maze \"{}\": Invalid width.", name));
             return;
         }
 
@@ -297,7 +297,7 @@ void MapGenerator::GenerateFromBinFile(const std::filesystem::path& path) noexce
         ptr += sizeof(height);
 
         if ((height & 0x01) == 0 || height < 3) {
-            g_theFileLogger->LogErrorLine("Failed to load maze: Invalid height.");
+            g_theFileLogger->LogErrorLine(std::format("Failed to load maze \"{}\": Invalid height.", name));
             return;
         }
 
