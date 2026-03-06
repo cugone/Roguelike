@@ -191,7 +191,7 @@ const uint32_t Item::GetLightValue() const noexcept {
 ItemBuilder::ItemBuilder(const XMLElement& elem, std::weak_ptr<SpriteSheet> itemSheet) noexcept
     : _itemSheet(itemSheet)
 {
-    LoadFromXml(elem, itemSheet);
+    LoadFromXml(elem);
 }
 
 ItemBuilder& ItemBuilder::Name(const std::string& name) noexcept {
@@ -244,7 +244,7 @@ Item* ItemBuilder::Build() noexcept {
     return item;
 }
 
-void ItemBuilder::LoadFromXml(const XMLElement& elem, std::weak_ptr<SpriteSheet> itemSheet) noexcept {
+void ItemBuilder::LoadFromXml(const XMLElement& elem) noexcept {
     DataUtils::ValidateXmlElement(elem, "item", "", "name", "stats,equipslot,animation", "index,maxstack,light");
     const auto name = DataUtils::ParseXmlAttribute(elem, "name", std::string{"UNKNOWN ITEM"});
     Name(name);

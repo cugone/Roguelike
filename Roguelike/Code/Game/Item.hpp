@@ -120,7 +120,7 @@ public:
 protected:
 private:
 
-    void LoadFromXml(const XMLElement& elem, std::weak_ptr<SpriteSheet> itemSheet) noexcept;
+    void LoadFromXml(const XMLElement& elem) noexcept;
 
     Inventory _parent_inventory{};
     EquipSlot _slot{};
