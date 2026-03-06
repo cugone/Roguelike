@@ -1313,7 +1313,7 @@ bool Map::ParseTmxTileLayerElements(const XMLElement& elem, int firstgid) noexce
         auto* layer = _layers.back().get();
         const auto clr_str = DataUtils::ParseXmlAttribute(xml_layer, "tintcolor", std::string{});
         layer->color.SetRGBAFromARGB(clr_str);
-        layer->z_index = static_cast<int>(_layers.size()) - std::size_t{1u};
+        layer->z_index = static_cast<int>(_layers.size() - std::size_t{1u});
         if(DataUtils::HasChild(xml_layer, "data")) {
             auto* xml_data = xml_layer.FirstChildElement("data");
             InitializeTilesFromTmxData(layer, *xml_data, firstgid);
