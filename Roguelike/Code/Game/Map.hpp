@@ -372,6 +372,7 @@ private:
 
     bool LoadFromTmx(const XMLElement& elem);
     bool LoadFromXML(const XMLElement& elem);
+    bool LoadFromBin(const XMLElement& elem);
     void LoadTimeOfDayForMap(const XMLElement& elem);
     void LoadNameForMap(const XMLElement& elem);
     void LoadMaterialsForMap(const XMLElement& elem);

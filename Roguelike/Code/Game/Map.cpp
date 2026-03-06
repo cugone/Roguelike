@@ -1569,6 +1569,10 @@ bool Map::LoadFromXML(const XMLElement& elem) {
     return true;
 }
 
+bool Map::LoadFromBin(const XMLElement& /*elem*/) {
+    return false;
+}
+
 void Map::GenerateMap(const XMLElement& elem) noexcept {
     LoadGenerator(elem);
 }
