@@ -64,10 +64,10 @@ public:
     explicit Map(IntVector2 dimensions) noexcept;
     explicit Map(const std::filesystem::path& filepath) noexcept;
     explicit Map(const XMLElement& elem) noexcept;
-    Map(const Map& other) = default;
-    Map(Map&& other) = default;
-    Map& operator=(const Map& other) = default;
-    Map& operator=(Map&& other) = default;
+    Map(const Map& other) noexcept = default;
+    Map(Map&& other) noexcept = default;
+    Map& operator=(const Map& other) noexcept = default;
+    Map& operator=(Map&& other) noexcept = default;
     ~Map() noexcept;
 
     void BeginFrame();
