@@ -1290,7 +1290,7 @@ bool Map::ParseTmxTileLayerElements(const XMLElement& elem, int firstgid) noexce
     DataUtils::ForEachChildElement(elem, "layer", [this, map_width, map_height, firstgid](const XMLElement& xml_layer) {
         DataUtils::ValidateXmlElement(xml_layer, "layer", "", "width,height", "properties,data", "id,name,class,x,y,opacity,visible,locked,tintcolor,offsetx,offsety,parallaxx,parallaxy");
         if(DataUtils::HasAttribute(xml_layer, "x") || DataUtils::HasAttribute(xml_layer, "y")) {
-            g_theFileLogger->LogWarnLine(std::string{ "Attributes \"x\" and \"y\" in the layer element are deprecated and unsupported. Remove both attributes to suppress this message." });
+            g_theFileLogger->LogWarnLine(std::string{ R"("Attributes "x" and "y" in the layer element are deprecated and unsupported. Remove both attributes to suppress this message.")" });
             g_theFileLogger->Flush();
         }
         const auto layer_name = DataUtils::ParseXmlAttribute(xml_layer, "name", std::string{});
