@@ -289,6 +289,8 @@ private:
     std::function<void()> _fullscreen_callback{};
     Event<> OnMapEnter;
     Event<> OnMapExit;
+    Event<>::Subscription onMapEnterEventToken;
+    Event<>::Subscription onMapExitEventToken;
     Rgba _fadeIn_color = Rgba::Black;
     Rgba _fadeOut_color = Rgba::Black;
     TimeUtils::FPSeconds _fadeInTime{1.0f};

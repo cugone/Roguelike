@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Engine/Core/Event.hpp"
+
 #include "Game/Entity.hpp"
 
 #include <map>
@@ -36,7 +38,7 @@ public:
     Feature(Feature&& other) = default;
     Feature& operator=(const Feature& other) = default;
     Feature& operator=(Feature&& other) = default;
-    virtual ~Feature() = default;
+    virtual ~Feature() noexcept;
 
     static Feature* CreateFeature(Map* map, const XMLElement& elem);
     static FeatureInstance CreateInstanceFromFeature(const Feature* feature) noexcept;
@@ -79,6 +81,11 @@ private:
     std::vector<std::string> _states{};
     decltype(_states)::iterator _current_state{};
     static inline std::multimap<std::string, std::unique_ptr<Feature>> s_registry = std::multimap<std::string, std::unique_ptr<Feature>>{};
+
+    Event<Entity&, Entity&>::Subscription onFightEventToken;
+    Event<DamageType, long, bool>::Subscription onDamageEventToken;
+    Event<>::Subscription onMissEventToken;
+    Event<>::Subscription onDestroyEventToken;
 
     friend class FeatureInfo;
 };

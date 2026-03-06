@@ -15,7 +15,7 @@
 #include <numeric>
 #include <sstream>
 
-std::multimap<std::string, std::unique_ptr<Actor>> Actor::s_registry{};
+std::multimap<std::string, std::unique_ptr<Actor>> Actor::s_registry;
 
 Actor* Actor::CreateActor(Map* map, const XMLElement& elem) {
     auto new_actor = std::make_unique<Actor>(map, elem);
@@ -29,15 +29,22 @@ void Actor::ClearActorRegistry() noexcept {
     s_registry.clear();
 }
 
+Actor::~Actor() noexcept {
+    OnDamage.unsubscribe(onDamageEventToken);
+    OnFight.unsubscribe(onFightEventToken);
+    OnMiss.unsubscribe(onMissEventToken);
+    OnMove.unsubscribe(onMoveEventToken);
+}
+
 Actor::Actor(Map* map, const XMLElement& elem) noexcept
     : Entity()
 {
     this->map = map;
     this->layer = this->map->GetLayer(0);
     GUARANTEE_OR_DIE(LoadFromXml(elem), "Actor failed to load.");
-    OnDamage.Subscribe_method(this, &Actor::ApplyDamage);
-    OnFight.Subscribe_method(this, &Actor::ResolveAttack);
-    OnMiss.Subscribe_method(this, &Actor::AttackerMissed);
+    onDamageEventToken = OnDamage.subscribe(this, &Actor::ApplyDamage);
+    onFightEventToken =  OnFight.subscribe(this, &Actor::ResolveAttack);
+    onMissEventToken = OnMiss.subscribe(this, &Actor::AttackerMissed);
 }
 
 Actor::Actor(Map* map, EntityDefinition* definition) noexcept
@@ -46,9 +53,9 @@ Actor::Actor(Map* map, EntityDefinition* definition) noexcept
     this->map = map;
     this->layer = this->map->GetLayer(0);
     sprite = definition->GetSprite();
-    OnDamage.Subscribe_method(this, &Actor::ApplyDamage);
-    OnFight.Subscribe_method(this, &Actor::ResolveAttack);
-    OnMiss.Subscribe_method(this, &Actor::AttackerMissed);
+    onDamageEventToken = OnDamage.subscribe(this, &Actor::ApplyDamage);
+    onFightEventToken = OnFight.subscribe(this, &Actor::ResolveAttack);
+    onMissEventToken = OnMiss.subscribe(this, &Actor::AttackerMissed);
 }
 
 bool Actor::Acted() const {
@@ -142,7 +149,7 @@ void Actor::ResolveAttack(Entity& attacker, Entity& defender) {
     case DamageType::Physical:
     {
         if(aSpd < dEva) {
-            defender.OnMiss.Trigger();
+            defender.OnMiss.trigger();
             return;
         }
         const auto [result, crit] = [&]() {
@@ -160,7 +167,7 @@ void Actor::ResolveAttack(Entity& attacker, Entity& defender) {
             }
             return std::tie(result, crit);
         }(); //IIIL
-        defender.OnDamage.Trigger(damageType, result, crit);
+        defender.OnDamage.trigger(damageType, result, crit);
         break;
     }
     default:
@@ -176,7 +183,7 @@ void Actor::ApplyDamage(DamageType type, long amount, bool crit) {
     {
         auto my_total_stats = GetStats();
         if(const auto new_health = my_total_stats.AdjustStat(StatsID::Health, -amount); new_health <= 0L) {
-            OnDestroy.Trigger();
+            OnDestroy.trigger();
             map->KillEntity(*this);
         }
         break;
@@ -257,7 +264,7 @@ bool Actor::Move(const IntVector2& direction) {
         }
         SetPosition(target_position);
         moved = true;
-        OnMove.Trigger(pos, target_position);
+        OnMove.trigger(pos, target_position);
     }
     Act();
     return moved;

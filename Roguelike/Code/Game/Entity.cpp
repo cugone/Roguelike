@@ -123,7 +123,7 @@ void Entity::AddVertsForEquipment() const noexcept {
 }
 
 void Entity::Fight(Entity& attacker, Entity& defender) {
-    attacker.OnFight.Trigger(attacker, defender);
+    attacker.OnFight.trigger(attacker, defender);
 }
 
 void Entity::ResolveAttack(Entity& /*attacker*/, Entity& /*defender*/) {

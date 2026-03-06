@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Engine/Core/Event.hpp"
+
 #include "Game/Behavior.hpp"
 #include "Game/Entity.hpp"
 #include "Game/Item.hpp"
@@ -8,7 +10,9 @@
 #include <memory>
 #include <vector>
 
+class Map;
 class Behavior;
+class EntityDefinition;
 
 class Actor : public Entity {
 public:
@@ -21,7 +25,7 @@ public:
     Actor(Actor&& other) = default;
     Actor& operator=(const Actor& rhs) = default;
     Actor& operator=(Actor&& rrhs) = default;
-    virtual ~Actor() = default;
+    virtual ~Actor() noexcept;
 
     Actor(Map* map, EntityDefinition* definition) noexcept;
     Actor(Map* map, const XMLElement& elem) noexcept;
@@ -82,4 +86,8 @@ private:
     std::vector<Item*> _equipment = std::vector<Item*>(static_cast<std::size_t>(EquipSlot::Max));
     Behavior* _active_behavior{};
     bool _acted = false;
+    Event<DamageType, long, bool>::Subscription onDamageEventToken;
+    Event<Entity&, Entity&>::Subscription onFightEventToken;
+    Event<>::Subscription onMissEventToken;
+    Event<const IntVector2&, const IntVector2&>::Subscription onMoveEventToken;
 };

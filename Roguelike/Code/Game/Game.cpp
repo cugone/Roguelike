@@ -153,6 +153,8 @@ Game::Game()
 }
 
 Game::~Game() noexcept {
+    OnMapExit.unsubscribe(onMapExitEventToken);
+    OnMapEnter.unsubscribe(onMapEnterEventToken);
     _cursors.clear();
     CursorDefinition::ClearCursorRegistry();
     Item::ClearItemRegistry();
@@ -166,8 +168,8 @@ void Game::Initialize() noexcept {
     if(!g_theConfig->AppendFromFile("Data/Config/options.dat")) {
         g_theFileLogger->LogWarnLine("options file not found at Data/Config/options.dat");
     }
-    OnMapExit.Subscribe_method(this, &Game::MapExited);
-    OnMapEnter.Subscribe_method(this, &Game::MapEntered);
+    onMapExitEventToken = OnMapExit.subscribe(this, &Game::MapExited);
+    onMapEnterEventToken = OnMapEnter.subscribe(this, &Game::MapEntered);
 
     _consoleCommands = Console::CommandList(g_theConsole);
     CreateFullscreenConstantBuffer();
@@ -649,8 +651,8 @@ void Game::MapExited() noexcept {
 
 void Game::EndFrame_Main() {
     _adventure->CurrentMap()->EndFrame();
-    OnMapExit.Trigger();
-    OnMapEnter.Trigger();
+    OnMapExit.trigger();
+    OnMapEnter.trigger();
 }
 
 void Game::EndFrame_Editor() {

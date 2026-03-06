@@ -11,6 +11,13 @@
 
 #include <sstream>
 
+Feature::~Feature() noexcept {
+    OnFight.unsubscribe(onFightEventToken);
+    OnDamage.unsubscribe(onDamageEventToken);
+    OnMiss.unsubscribe(onMissEventToken);
+    OnDestroy.unsubscribe(onDestroyEventToken);
+}
+
 Feature* Feature::CreateFeature(Map* map, const XMLElement& elem) {
     auto new_feature = std::make_unique<Feature>(map, elem);
     std::string new_feature_name = new_feature->name;
@@ -85,10 +92,10 @@ Feature::Feature(Map* map, const XMLElement& elem) noexcept
     this->map = map;
     this->layer = this->map->GetLayer(0);
     GUARANTEE_OR_DIE(LoadFromXml(elem), "Feature failed to load.");
-    OnFight.Subscribe_method(this, &Feature::ResolveAttack);
-    OnDamage.Subscribe_method(this, &Feature::ApplyDamage);
-    OnMiss.Subscribe_method(this, &Feature::AttackerMissed);
-    OnDestroy.Subscribe_method(this, &Feature::OnDestroyed);
+    onFightEventToken = OnFight.subscribe(this, &Feature::ResolveAttack);
+    onDamageEventToken = OnDamage.subscribe(this, &Feature::ApplyDamage);
+    onMissEventToken = OnMiss.subscribe(this, &Feature::AttackerMissed);
+    onDestroyEventToken = OnDestroy.subscribe(this, &Feature::OnDestroyed);
 }
 
 //TODO: Refactor for instancing
@@ -219,7 +226,7 @@ void Feature::ApplyDamage(DamageType type, long amount, bool crit) {
     if(type == DamageType::Physical) {
         auto stats = this->GetStats();
         if(const auto newHealth = stats.AdjustStat(StatsID::Health, -amount); crit || newHealth <= 0L) {
-            OnDestroy.Trigger();
+            OnDestroy.trigger();
         }
     }
 }
