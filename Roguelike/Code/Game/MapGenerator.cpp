@@ -317,7 +317,7 @@ void MapGenerator::GenerateFromBinFile(const std::filesystem::path& path) noexce
             auto* layer = _map->_layers.back().get();
             std::size_t size = static_cast<std::size_t>(width) * height;
             for (std::size_t i = 0u; i < size; ++i) {
-                layer->GetTile(i)->ChangeTypeFromGlyph(grid[i]);
+                layer->GetTile(i)->ChangeTypeFromGlyph(static_cast<char>(grid[i]));
             }
         }
 
