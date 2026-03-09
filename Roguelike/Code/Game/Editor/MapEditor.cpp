@@ -238,12 +238,11 @@ bool MapEditor::DeserializeMap(Map& map, std::filesystem::path filepath) noexcep
 }
 
 bool MapEditor::ImportAsXml(Map& map, const std::filesystem::path& filepath) noexcept {
-
+    if(!FileUtils::IsSafeReadPath(filepath)) {
+        return false;
+    }
     if(map._xml_doc) {
-        if(!FileUtils::IsSafeReadPath(filepath)) {
-            return false;
-        }
-        if(std::filesystem::exists(filepath) && filepath.has_extension() && filepath.extension() == ".xml") {
+        if(std::filesystem::exists(filepath) && filepath.has_extension() && StringUtils::ToLowerCase(filepath.extension().string()) == ".xml") {
             if(const auto xml_result = map._xml_doc->LoadFile(filepath.string().c_str()); xml_result == tinyxml2::XML_SUCCESS) {
                 return true;
             }
