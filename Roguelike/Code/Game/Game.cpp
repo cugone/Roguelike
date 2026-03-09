@@ -690,7 +690,7 @@ void Game::OnExitState(const GameState& state) {
 }
 
 const bool Game::IsDebugWindowOpen() const noexcept {
-#ifdef PROFILE_BUILD
+#ifdef DEBUG_BUILD
     return _debug_show_debug_window;
 #else
     return false;
@@ -1172,7 +1172,7 @@ void Game::ZoomIn() {
 }
 
 void Game::HandleDebugInput() {
-#ifdef PROFILE_BUILD
+#ifdef DEBUG_BUILD
     if(_debug_show_debug_window) {
         ShowDebugUI();
     }
@@ -1182,7 +1182,7 @@ void Game::HandleDebugInput() {
 }
 
 void Game::HandleDebugKeyboardInput() {
-#ifdef PROFILE_BUILD
+#ifdef DEBUG_BUILD
     if(g_theUISystem->WantsInputKeyboardCapture()) {
         return;
     }
@@ -1234,7 +1234,7 @@ void Game::HandleDebugKeyboardInput() {
 }
 
 void Game::HandleDebugMouseInput() {
-#ifdef PROFILE_BUILD
+#ifdef DEBUG_BUILD
     if(g_theUISystem->WantsInputMouseCapture()) {
         return;
     }
@@ -1270,7 +1270,7 @@ void Game::HandleDebugMouseInput() {
 
 #pragma region Imgui UI Debugger Code
 
-#ifdef PROFILE_BUILD
+#ifdef DEBUG_BUILD
 
 void Game::ShowDebugUI() {
     ImGui::SetNextWindowSize(Vector2{550.0f, 500.0f}, ImGuiCond_Always);

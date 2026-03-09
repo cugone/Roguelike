@@ -196,7 +196,7 @@ private:
     void ZoomOut();
     void ZoomIn();
 
-#ifdef PROFILE_BUILD
+#ifdef DEBUG_BUILD
     void ShowDebugUI();
 
     std::optional<std::vector<Tile*>> DebugGetTilesFromCursor();
