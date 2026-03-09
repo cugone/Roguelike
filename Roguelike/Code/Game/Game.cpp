@@ -1665,7 +1665,7 @@ void Game::ShowTileInspectorTableUI(const std::vector<Tile*>& tiles, const uint8
 }
 
 void Game::ShowInspectedElementImageUI(const AnimatedSprite* cur_sprite, const Vector2& dims, const AABB2& tex_coords) noexcept {
-    ImGui::Image(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
+    ImGui::ImageWithBg(cur_sprite->GetTexture(), dims, tex_coords.mins, tex_coords.maxs, Rgba::White, Rgba::NoAlpha);
 }
 
 std::optional<std::vector<Tile*>> Game::DebugGetTilesFromCursor() {
@@ -1901,21 +1901,21 @@ void Game::ShowEntityInspectorInventoryColumnUI(Entity* const cur_entity) {
             ImGui::AlignTextToFramePadding();
             ImGui::Text(std::to_string(item->GetCount()).c_str());
             ImGui::SameLine();
-            ImGui::PushButtonRepeat(true);
+            ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
             ImGui::PushID(item);
             if(ImGui::ArrowButton("##Up", ImGuiDir_Up)) {
                 item->IncrementCount();
             }
             ImGui::PopID();
-            ImGui::PopButtonRepeat();
+            ImGui::PopItemFlag();
             ImGui::SameLine();
-            ImGui::PushButtonRepeat(true);
+            ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
             ImGui::PushID(item);
             if(ImGui::ArrowButton("##Down", ImGuiDir_Down)) {
                 item->DecrementCount();
             }
             ImGui::PopID();
-            ImGui::PopButtonRepeat();
+            ImGui::PopItemFlag();
             ++item_number;
         }
 
@@ -1936,7 +1936,7 @@ void Game::ShowInspectedActorEquipmentExceptImageUI(const AnimatedSprite* cur_sp
         for(const auto& eq : actor->GetEquipment()) {
             if(eq && eq->GetEquipSlot() != skip_equip_slot) {
                 ImGui::SameLine(8.0f);
-                ImGui::SetItemAllowOverlap();
+                ImGui::SetNextItemAllowOverlap();
                 const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
                 ShowInspectedElementImageUI(cur_sprite, Vector2::One * 100.0f, eq_coords);
             }
@@ -1949,7 +1949,7 @@ void Game::ShowInspectedActorEquipmentOnlyImageUI(const AnimatedSprite* cur_spri
         for(const auto& eq : actor->GetEquipment()) {
             if(eq && eq->GetEquipSlot() == equip_slot) {
                 ImGui::SameLine(8.0f);
-                ImGui::SetItemAllowOverlap();
+                ImGui::SetNextItemAllowOverlap();
                 const auto eq_coords = eq->GetSprite()->GetCurrentTexCoords();
                 ShowInspectedElementImageUI(cur_sprite, Vector2::One * 100.0f, eq_coords);
             }
