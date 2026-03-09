@@ -48,7 +48,7 @@ void MapEditor::DoSave() noexcept {
 }
 
 void MapEditor::DoSaveAs() noexcept {
-    if(const auto sfdResult = FileDialogs::SaveFile("Map file (*.xml)\0*.xml\0Tiled Map (*.tmx)\0*.tmx\0\0"); !sfdResult.empty()) {
+    if(const auto sfdResult = FileDialogs::SaveFile("Map file (*.xml)\0*.xml\0Tiled Map (*.tmx)\0*.tmx\0Bin file (*.map)\0*.map\0\0"); !sfdResult.empty()) {
         m_map_path = sfdResult;
         if(SerializeMap(m_editorMap, m_map_path)) {
             m_hasUnsavedChanges = false;
