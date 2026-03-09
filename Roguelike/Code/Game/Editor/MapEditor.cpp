@@ -266,6 +266,17 @@ bool MapEditor::ImportAsTmx(Map& map, const std::filesystem::path& filepath) noe
     return false;
 }
 
-bool MapEditor::ImportAsBin(Map& /*map*/, const std::filesystem::path& /*filepath*/) noexcept {
+bool MapEditor::ImportAsBin(Map& map, const std::filesystem::path& filepath) noexcept {
+    if(!FileUtils::IsSafeReadPath(filepath)) {
+        return false;
+    }
+    if(map._xml_doc) {
+        if(std::filesystem::exists(filepath) && filepath.has_extension() && StringUtils::ToLowerCase(filepath.extension().string()) == ".map") {
+            if(tinyxml2::XML_SUCCESS == map._xml_doc->LoadFile(filepath.string().c_str())) {
+                auto* xml_root = map._xml_doc->RootElement();
+                map.LoadFromBin(*xml_root);
+            }
+        }
+    }
     return false;
 }
