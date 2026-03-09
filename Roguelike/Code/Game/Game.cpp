@@ -303,7 +303,7 @@ void Game::Update_Title(TimeUtils::FPSeconds /*deltaSeconds*/) {
     }();
     const auto up = []() {
         const auto keys = g_theInputSystem->WasKeyJustPressed(KeyCode::Up) || g_theInputSystem->WasKeyJustPressed(KeyCode::W);
-        if(const auto controller = g_theInputSystem->GetXboxController(0); controller.IsConnected()) {
+        if(const auto& controller = g_theInputSystem->GetXboxController(0); controller.IsConnected()) {
             if (const auto buttons = controller.WasButtonJustPressed(XboxController::Button::Up)) {
                 return buttons;
             }
@@ -312,7 +312,7 @@ void Game::Update_Title(TimeUtils::FPSeconds /*deltaSeconds*/) {
     }();
     const auto select = []() {
         const auto keys = g_theInputSystem->WasKeyJustPressed(KeyCode::Enter);
-        if(const auto controller = g_theInputSystem->GetXboxController(0); controller.IsConnected()) {
+        if(const auto& controller = g_theInputSystem->GetXboxController(0); controller.IsConnected()) {
             if (const auto buttons = controller.WasButtonJustPressed(XboxController::Button::Start)) {
                 return buttons;
             }
