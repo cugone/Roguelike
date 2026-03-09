@@ -13,7 +13,7 @@
 
 #include "Game/Game.hpp"
 
-#include "Thirdparty/Imgui/imgui.h"
+#include <Thirdparty/Imgui/imgui.h>
 
 MapEditor::MapEditor(IntVector2 dimensions /*= IntVector2{ min_map_width, min_map_height }*/) noexcept
 : m_editorMap{dimensions}
