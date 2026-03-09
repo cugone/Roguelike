@@ -1478,6 +1478,12 @@ void Game::ShowWorldInspectorUI() {
         if (ImGui::Checkbox("Disable lighting", &always_daytime)) {
             auto& m = *(this->_adventure->CurrentMap());
             m.DebugDisableLighting(always_daytime);
+            if(!always_daytime) {
+                m.CalculateLightingForLayers(TimeUtils::FPSeconds{ 0.0f });
+                m.UpdateLighting(TimeUtils::FPSeconds{ 0.0f });
+                m.SetDebugGlobalLight(always_daytime ? max_light_value : light_level);
+                m.SetSkyColorFromGlobalLight();
+            }
         }
         ImGui::EndTabItem();
     }
