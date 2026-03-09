@@ -256,9 +256,11 @@ bool MapEditor::ImportAsTmx(Map& map, const std::filesystem::path& filepath) noe
         return false;
     }
     if(map._xml_doc) {
-        if(tinyxml2::XML_SUCCESS == map._xml_doc->LoadFile(filepath.string().c_str())) {
-            auto* xml_root = map._xml_doc->RootElement();
-            map.LoadFromTmx(*xml_root);
+        if(std::filesystem::exists(filepath) && filepath.has_extension() && StringUtils::ToLowerCase(filepath.extension().string()) == ".tmx") {
+            if(tinyxml2::XML_SUCCESS == map._xml_doc->LoadFile(filepath.string().c_str())) {
+                auto* xml_root = map._xml_doc->RootElement();
+                map.LoadFromTmx(*xml_root);
+            }
         }
     }
     return false;
