@@ -118,7 +118,7 @@ void MapEditor::ShowViewport([[maybe_unused]] TimeUtils::FPSeconds deltaSeconds)
         m_ViewportHeight = static_cast<uint32_t>(std::floor(viewportSize.y));
         m_viewport_fb->Resize(m_ViewportWidth, m_ViewportHeight);
     }
-    ImGui::Image(m_viewport_fb->GetTexture(), viewportSize, Vector2::Zero, Vector2::One, Rgba::White, Rgba::NavyBlue);
+    ImGui::ImageWithBg(m_viewport_fb->GetTexture(), viewportSize, Vector2::Zero, Vector2::One, Rgba::White, Rgba::NavyBlue);
     ImGui::End();
 }
 
