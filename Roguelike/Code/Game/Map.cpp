@@ -89,6 +89,7 @@ void Map::SetCursorForTile() const noexcept {
         } else if(tile->actor) {
             SetCursorForFaction(tile->actor);
         }
+        _layers[0]->DirtyMesh();
     }
 }
 
