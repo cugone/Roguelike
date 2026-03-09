@@ -336,7 +336,7 @@ public:
 
     void SetDebugGridColor(const Rgba& gridColor);
     void SetDebugGlobalLight(uint32_t lightValue);
-    int GetCurrentGlobalLightValue() const noexcept;
+    uint32_t GetCurrentGlobalLightValue() const noexcept;
 
     OrthographicCameraController cameraController{};
     Actor* player = nullptr;

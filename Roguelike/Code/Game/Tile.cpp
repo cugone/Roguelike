@@ -270,16 +270,14 @@ void Tile::SetLightValue(uint32_t newValue) noexcept {
     _flags_coords_lightvalue |= (newValue & tile_flags_light_mask);
 }
 
-void Tile::IncrementLightValue(int value /*= 1*/) noexcept {
-    int lv = GetLightValue();
-    lv = std::clamp(lv + value, min_light_value, max_light_value);
+void Tile::IncrementLightValue(uint32_t value /*= 1*/) noexcept {
+    const auto lv = std::clamp(GetLightValue() + value, min_light_value, max_light_value);
     SetLightValue(lv);
     DirtyLight();
 }
 
-void Tile::DecrementLightValue(int value /*= 1*/) noexcept {
-    int lv = GetLightValue();
-    lv = std::clamp(lv - value, min_light_value, max_light_value);
+void Tile::DecrementLightValue(uint32_t value /*= 1*/) noexcept {
+    const auto lv = std::clamp(GetLightValue() - value, min_light_value, max_light_value);
     SetLightValue(lv);
     DirtyLight();
 }

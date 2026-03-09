@@ -258,7 +258,7 @@ void Map::SetDebugGlobalLight(uint32_t lightValue) {
     _current_global_light = lightValue;
 }
 
-int Map::GetCurrentGlobalLightValue() const noexcept {
+uint32_t Map::GetCurrentGlobalLightValue() const noexcept {
     return _current_global_light;
 }
 
@@ -514,12 +514,12 @@ void Map::InitializeLighting(Layer* layer) noexcept {
         auto* currentTile = layer->GetTile(i);
         currentTile->SetLightValue(0);
         currentTile->SetLightDirty();
-        //if (const auto* def = TileDefinition::GetTileDefinitionByName(currentTile->GetType()); def && def->self_illumination > 0) {
+        if (const auto* def = TileDefinition::GetTileDefinitionByName(currentTile->GetType()); def && def->self_illumination > 0) {
             TileInfo ti{};
             ti.index = i;
             ti.layer = layer;
             _lightingQueue.push_back(ti);
-        //}
+        }
     }
     CalculateLighting(layer);
 }
@@ -533,7 +533,7 @@ void Map::CalculateLighting(Layer* layer) noexcept {
     const auto tileCount = width * height;
     for (auto i = std::size_t{}; i != tileCount; ++i) {
         if (auto* tile = layer->GetTile(i); tile && tile->IsOpaque()) {
-            break;
+            continue;
         } else {
             tile->SetSky();
             tile->SetLightValue(_current_global_light);
@@ -542,7 +542,7 @@ void Map::CalculateLighting(Layer* layer) noexcept {
     for (auto i = std::size_t{}; i != tileCount; ++i) {
         TileInfo ti{ layer, i };
         if (ti.IsOpaque()) {
-            break;
+            continue;
         }
         DirtyValidNeighbors(ti);
     }
