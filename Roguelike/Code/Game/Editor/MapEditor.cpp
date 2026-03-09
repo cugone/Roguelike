@@ -27,7 +27,7 @@ MapEditor::MapEditor(const std::filesystem::path& mapPath) noexcept
     , m_map_path{mapPath}
 {
     m_editorMap.DebugDisableLighting(true);
-
+    m_editorMap.DebugShowInvisibleTiles(true);
 }
 
 void MapEditor::BeginFrame_Editor() noexcept {
