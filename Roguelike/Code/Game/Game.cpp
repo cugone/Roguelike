@@ -1468,7 +1468,7 @@ void Game::ShowWorldInspectorUI() {
         _debug_render = _debug_show_room_bounds | _debug_show_camera | _debug_show_grid | _debug_show_world_bounds | _debug_show_camera_bounds | _debug_show_all_entities | _debug_show_raycasts;
         static int light_level = this->_adventure->CurrentMap()->GetCurrentGlobalLightValue();
         static bool always_daytime = false;
-        if (ImGui::SliderInt("Global Light", &light_level, min_light_value, max_light_value, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat)) {
+        if(ImGui::SliderScalar("Global Light", ImGuiDataType_U32, &light_level, &min_light_value, &max_light_value, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_NoRoundToFormat)) {
             auto& m = *(this->_adventure->CurrentMap());
             m.CalculateLightingForLayers(TimeUtils::FPSeconds{ 0.0f });
             m.UpdateLighting(TimeUtils::FPSeconds{ 0.0f });
