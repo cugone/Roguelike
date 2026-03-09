@@ -514,6 +514,7 @@ void Layer::EndFrame() {
     if(m_meshDirty) {
         m_meshNeedsRebuild = true;
         m_mesh_builder.Clear();
+        m_meshDirty = false;
     }
 }
 
